@@ -1,13 +1,20 @@
 using UnityEngine;
 
-public class Enemy : MonoBehaviour
+/// <summary>
+/// Base class for all enemy types in the game.
+/// Implements core attack, detection, and damage logic shared across all enemies.
+/// Derived classes (e.g., DoggoMon, PeterMon) override behavior for movement or special skills.
+/// </summary>
+public class Enemy : MonoBehaviour, IAttackable, IDamageable
 {
     #region Fields
-    [SerializeField] protected float _speed;
-    [SerializeField] protected int _attackPower;
-    [SerializeField] protected float _detectionRange;
+    [Header("Enemy Stats")]
+    [SerializeField] protected float _speed = 1.5f;
+    [SerializeField] protected int _attackPower = 10;
+    [SerializeField] protected float _detectionRange = 5f;
+    [SerializeField] protected int _health = 1;
     [SerializeField] protected Transform _target;
-    [SerializeField] protected EnemyType _enemyType;
+    [SerializeField] protected EnemyType _enemyType = EnemyType.None;
     #endregion
 
     #region Properties
@@ -15,9 +22,10 @@ public class Enemy : MonoBehaviour
     public int AttackPower { get => _attackPower; set => _attackPower = value; }
     public float DetectionRange { get => _detectionRange; set => _detectionRange = value; }
     public EnemyType EnemyType { get => _enemyType; set => _enemyType = value; }
+    public bool IsDead => _health <= 0;
     #endregion
 
-    #region Unity Methods
+    #region Unity Lifecycle
     protected virtual void Update()
     {
         if (_target == null) return;
@@ -30,7 +38,10 @@ public class Enemy : MonoBehaviour
     }
     #endregion
 
-    #region Core Methods
+    #region Core Logic
+    /// <summary>
+    /// Moves toward the player if within detection range.
+    /// </summary>
     public virtual void Move()
     {
         if (_target == null) return;
@@ -39,26 +50,70 @@ public class Enemy : MonoBehaviour
         transform.position += direction * _speed * Time.deltaTime;
     }
 
+    /// <summary>
+    /// Executes a default melee attack behavior.
+    /// </summary>
     public virtual void Attack()
     {
-        Debug.Log($"{_enemyType} attacks with {_attackPower} power!");
+        Debug.Log($"[{_enemyType}] attacks the player with power {_attackPower}!");
     }
 
+    /// <summary>
+    /// Reduces health when hit by damage.
+    /// </summary>
     public virtual void TakeDamage(int amount)
     {
-        Debug.Log($"{_enemyType} takes {amount} damage!");
+        _health -= amount;
+        Debug.Log($"[{_enemyType}] took {amount} damage! Remaining HP: {_health}");
+
+        if (_health <= 0)
+        {
+            Die();
+        }
     }
 
+    /// <summary>
+    /// Detects player based on distance.
+    /// </summary>
     public virtual bool DetectPlayer(Vector3 playerPos)
     {
         float distance = Vector3.Distance(transform.position, playerPos);
         return distance <= _detectionRange;
     }
 
+    /// <summary>
+    /// Called when this enemy dies.
+    /// </summary>
     public virtual void Die()
     {
-        Debug.Log($"{_enemyType} has died.");
+        Debug.Log($"[{_enemyType}] has been defeated.");
         Destroy(gameObject);
+    }
+    #endregion
+
+    #region IAttackable Implementation
+    public void ChargeAttack(float power)
+    {
+        Debug.Log($"[{_enemyType}] is charging attack with power x{power:F1}!");
+    }
+
+    public void RangeAttack(Transform target)
+    {
+        Debug.Log($"[{_enemyType}] performs a ranged attack on {target?.name ?? "unknown target"}.");
+    }
+
+    public void ApplyDamage(IDamageable target, int amount)
+    {
+        target.TakeDamage(amount);
+        Debug.Log($"[{_enemyType}] dealt {amount} damage to target!");
+    }
+    #endregion
+
+    #region IDamageable Implementation
+    public void Heal(int amount)
+    {
+        _health += amount;
+        Debug.Log($"[{_enemyType}] healed for {amount} HP (Current: {_health}).");
     }
     #endregion
 }

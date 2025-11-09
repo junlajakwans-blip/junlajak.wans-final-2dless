@@ -1,20 +1,45 @@
 using UnityEngine;
 
-#region Show Map Types
+#region Show list Map Types
 
+/// <summary>
+/// Represents all playable map environments in the game.
+/// </summary>
 public enum MapType
 {
-    None = 0,          // No Map Selected
-    School = 1,     // Classroom Level
-    RoadTraffic = 2,   // Road Traffic Level
-    Kitchen = 3,       // Kitchen Level
-    All = 99           // Used for Enemy/Item that appear in all levels
+    /// <summary>
+    /// Default state — not currently assigned to any map.
+    /// </summary>
+    None = 0,
+
+    /// <summary>
+    /// School level — used in the first stage and tutorial missions.
+    /// </summary>
+    School = 1,
+
+    /// <summary>
+    /// Traffic level — includes moving obstacles and vehicles.
+    /// </summary>
+    RoadTraffic = 2,
+
+    /// <summary>
+    /// Kitchen level — indoor environment with cooking hazards.
+    /// </summary>
+    Kitchen = 3,
+
+    /// <summary>
+    /// Special flag — allows spawning on any map.
+    /// </summary>
+    All = 99
 }
+
 #endregion
 
 
 #region MapType Extensions
-
+/// <summary>
+/// Provides helper and extension methods for <see cref="MapType"/>.
+/// </summary>
 public static class MapTypeExtensions
 {
     // Logical Methods

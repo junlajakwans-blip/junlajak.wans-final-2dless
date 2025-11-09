@@ -1,8 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-#region EnemyType Enum (9 Enemies)
+#region EnemyType Enum (Auto Count)
+/// <summary>
+/// Lists all current enemy types in the game.
+/// <para>💡 Total Enemies: <b>9</b></para>
+/// <para>Update this number when adding/removing enemies.</para>
+/// </summary>
 public enum EnemyType
 {
     None = 0,          // No Enemy Selected
@@ -15,9 +21,9 @@ public enum EnemyType
     MamaMon = 7,       // School,Traffic,Kitchen
     MooPingMon = 8,    // School,Traffic,Kitchen
     GoldenMon = 9      // All Maps (Rare)
-
 }
 #endregion
+
 
 #region EnemyType Extensions
 
@@ -73,7 +79,6 @@ public static class EnemyTypeExtensions
     }
 }
 #endregion
-
 
 
 #region EnemyType Debug 
