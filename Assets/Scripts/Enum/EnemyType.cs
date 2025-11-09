@@ -2,28 +2,28 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-#region Show list Enemy Types Current 8 Enemies
+#region EnemyType Enum (9 Enemies)
 public enum EnemyType
 {
     None = 0,          // No Enemy Selected
-
-    GhostWorkMon = 1,  // Appears in School maps
-    MamaMon = 2,       // Also appears in Kitchen and School
-    MooPingMon = 3,    // Also appears in Kitchen and School
-
-    LottoryMon = 4,    // Appears in Road Traffic
-    DoggoMon = 5,      // Appears in Road Traffic
-    RedlightMon = 6,   // Appears in Road Traffic
-
-    PeterMon = 7,      // Appears in Kitchen
-
-    GoldenMon = 8      // Appears in All Maps (Rare) Can drop Card Career
+    KahootMon = 1,     // School
+    GhostWorkMon = 2,  // School
+    LottoryMon = 3,    // Traffic
+    DoggoMon = 4,      // Traffic
+    RedlightMon = 5,   // Traffic
+    PeterMon = 6,      // Kitchen
+    MamaMon = 7,       // School,Traffic,Kitchen
+    MooPingMon = 8,    // School,Traffic,Kitchen
+    GoldenMon = 9      // All Maps (Rare)
 
 }
 #endregion
 
 #region EnemyType Extensions
 
+/// <summary>
+/// Extension methods for logical behavior of EnemyType.
+/// </summary>
 public static class EnemyTypeExtensions
 {
     // Logical Methods
@@ -54,30 +54,33 @@ public static class EnemyTypeExtensions
         return enemyType switch
         {
             EnemyType.GhostWorkMon => new() { MapType.School },
-            EnemyType.MamaMon => new() { MapType.School, MapType.Kitchen },
-            EnemyType.MooPingMon => new() { MapType.School, MapType.RoadTraffic },
             EnemyType.LottoryMon => new() { MapType.RoadTraffic },
             EnemyType.DoggoMon => new() { MapType.RoadTraffic },
             EnemyType.RedlightMon => new() { MapType.RoadTraffic },
             EnemyType.PeterMon => new() { MapType.Kitchen },
+            EnemyType.MamaMon => new() { MapType.School, MapType.RoadTraffic, MapType.Kitchen },
+            EnemyType.MooPingMon => new() { MapType.School, MapType.RoadTraffic, MapType.Kitchen },
             EnemyType.GoldenMon => new() { MapType.All },
-            _ => new() { MapType.None }
+            _ => new List<MapType>()
         };
     }
-    
 
-    public static bool IsAppearsInMap(this EnemyType enemyType, MapType mapType) //Check If EnemyType Can Appear in Given MapType 
+
+    public static bool CanAppearInMap(this EnemyType enemyType, MapType mapType) //Check If EnemyType Can Appear in Given MapType 
     {
         var associated = enemyType.GetAssociatedMaps();
         return associated.Contains(mapType) || associated.Contains(MapType.All);
     }
-#endregion
 }
+#endregion
 
 
 
 #region EnemyType Debug 
-
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+/// <summary>
+/// Debug and friendly name helpers for EnemyType.
+/// </summary>
 public static class EnemyTypeDebugExtensions
 {
     public static string ToFriendlyString(this EnemyType enemyType) //Convert EnemyType to Friendly String
@@ -85,6 +88,7 @@ public static class EnemyTypeDebugExtensions
         return enemyType switch
         {
             EnemyType.None => "No Enemy",
+            EnemyType.KahootMon => "Kahoot Mon",
             EnemyType.GhostWorkMon => "Ghost Work Mon",
             EnemyType.MamaMon => "Mama Mon",
             EnemyType.MooPingMon => "Moo Ping Mon",
@@ -98,12 +102,13 @@ public static class EnemyTypeDebugExtensions
     }
 
 
-    public static string ToDebugString(this EnemyType enemyType)
+    public static string ToDebugString(this EnemyType enemyType) //Debug Info of EnemyType with Associated Maps
     {
-        var maps = string.Join(", ", enemyType.GetAssociatedMaps().Select(m => m.ToFriendlyString()));
+        var maps = string.Join(", ", enemyType.GetAssociatedMaps().Select(m => m.ToFriendlyString() ?? m.ToString()));
         return $"{enemyType.ToFriendlyString()} [Maps: {maps}]";
     }
-    
+
 }
+#endif
 
 #endregion
