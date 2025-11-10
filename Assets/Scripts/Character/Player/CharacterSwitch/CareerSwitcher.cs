@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,15 +10,15 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
 {
     #region Fields
     [Header("Runtime State")]
-    [SerializeField] private DuckCareerData _currentCareer;  // Current career of the player
-    [SerializeField] private DuckCareerData _defaultCareer;  // Default career (e.g., "Duckling")
+    [SerializeField] private DuckCareerData _currentCareer;
+    [SerializeField] private DuckCareerData _defaultCareer;
 
     [Header("Appearance Settings")]
-    [SerializeField] private Dictionary<string, Sprite> _careerSprites = new(); // key = careerName
-    [SerializeField] private CharacterRigAnimator _playerAnimator; // Animator of the Player
+    [SerializeField] private Dictionary<string, Sprite> _careerSprites = new(); 
+    [SerializeField] private CharacterRigAnimator _playerAnimator;
 
     [Header("Career Catalog")]
-    [SerializeField] private List<DuckCareerData> _allCareers = new(); // All available careers
+    [SerializeField] private List<DuckCareerData> _allCareers = new();
 
     [Header("Timing Settings")]
     [SerializeField, Tooltip("Cooldown (seconds) after reverting to default before switching again")]
@@ -26,11 +27,11 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
     private bool _isOnCooldown = false;
     private Coroutine _careerTimerRoutine;
 
-    // Event สำหรับ broadcast เมื่อเปลี่ยนอาชีพ
-    public event System.Action<DuckCareerData> OnCareerChangedEvent;
+    // Events
+    public event Action<DuckCareerData> OnCareerChangedEvent;
+    public event Action OnRevertToDefaultEvent;
 
-    public DuckCareerData CurrentCareer => _currentCareer; // ICareerSwitchable Implementation
-    public bool CanSwitchCareer => !_isOnCooldown && _currentCareer == _defaultCareer;
+    public DuckCareerData CurrentCareer => _currentCareer;
     #endregion
 
 
@@ -43,40 +44,37 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
         _currentCareer = newCareer;
         ApplyCareerAppearance();
         OnCareerChanged(newCareer);
-        OnCareerChangedEvent?.Invoke(newCareer);
     }
 
-    public List<DuckCareer> GetAvailableCareers() //list of enum
+    public List<DuckCareer> GetAvailableCareers()
     {
         var list = new List<DuckCareer>();
         foreach (var career in _allCareers)
-            list.Add(career.CareerID); // Return enum
+            list.Add(career.CareerID);
         return list;
     }
 
     public void OnCareerChanged(DuckCareerData newCareer)
     {
         Debug.Log($"[CareerSwitcher] Changed to career: {newCareer.DisplayName}");
-        // TODO: Add UI effect, SFX, or stat buff update here
+        OnCareerChangedEvent?.Invoke(newCareer);
+        // TODO: Add animation, SFX, or buff logic here
     }
     #endregion
 
 
     #region Logic Methods
-    //TODO: Update player appearance based on career
     public void ApplyCareerAppearance()
     {
         if (_playerAnimator == null || _currentCareer == null)
             return;
 
         Debug.Log($"Applying appearance for {_currentCareer.DisplayName}");
+        // TODO: Replace animator state or sprite
     }
 
-    public DuckCareerData GetCurrentCareer() => _currentCareer; // Get the current career data
+    public DuckCareerData GetCurrentCareer() => _currentCareer;
 
-    /// <summary>
-    /// Revert to default (Duckling) after timer or manually
-    /// </summary>
     public void RevertToDefault()
     {
         if (_defaultCareer == null)
@@ -88,14 +86,11 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
         _currentCareer = _defaultCareer;
         ApplyCareerAppearance();
         OnCareerChanged(_defaultCareer);
-        OnCareerChangedEvent?.Invoke(_defaultCareer);
 
         StartCoroutine(CooldownRoutine());
+        OnRevertToDefaultEvent?.Invoke(); // 🔹 แจ้ง CardManager ปลดล็อกการ์ด
     }
 
-    /// <summary>
-    /// Start timer when card has limited duration
-    /// </summary>
     public void StartCareerTimer(float duration)
     {
         if (_careerTimerRoutine != null)
@@ -117,24 +112,12 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
         Debug.Log($"[CareerSwitcher] Cooldown {_careerCooldown}s...");
         yield return new WaitForSeconds(_careerCooldown);
         _isOnCooldown = false;
-        Debug.Log("[CareerSwitcher] Cooldown ended. Ready to switch again.");
+        Debug.Log("[CareerSwitcher] Cooldown ended.");
     }
     #endregion
 
 
     #region Helper Methods
-    public DuckCareerData GetCareerData(DuckCareer type) //get CarreerData by enum
-    {
-        return _allCareers.Find(c => c.CareerID == type);
-    }
-
-    public void SwitchCareerByName(string careerName)
-    {
-        var found = _allCareers.Find(c => c.DisplayName == careerName);
-        if (found != null)
-            SwitchCareer(found);
-    }
-
     private bool _CanChangeTo(DuckCareerData newCareer)
     {
         if (_isOnCooldown)
@@ -153,6 +136,32 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
             return false;
         }
         return true;
+    }
+
+    public DuckCareerData GetCareerData(DuckCareer type)
+    {
+        return _allCareers.Find(c => c.CareerID == type);
+    }
+
+    public DuckCareerData GetCareerDataByName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name) || _allCareers == null) return null;
+
+        var data = _allCareers.Find(c =>
+            string.Equals(c.DisplayName, name, StringComparison.OrdinalIgnoreCase));
+        if (data != null) return data;
+
+        if (Enum.TryParse<DuckCareer>(name, true, out var careerEnum))
+            return GetCareerData(careerEnum);
+
+        return null;
+    }
+
+    public void SwitchCareerByName(string careerName)
+    {
+        var found = _allCareers.Find(c => c.DisplayName == careerName);
+        if (found != null)
+            SwitchCareer(found);
     }
     #endregion
 }

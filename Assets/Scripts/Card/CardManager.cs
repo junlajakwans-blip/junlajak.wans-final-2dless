@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Manages the player's card collection, usage, and interactions with career switching.
+/// </summary>
 public class CardManager : MonoBehaviour
 {
     #region Fields
@@ -14,22 +17,22 @@ public class CardManager : MonoBehaviour
     [SerializeField] private UIEffectCharacter _uiEffectCharacter;
 
     [Header("Runtime State")]
-    private bool _isCardLocked = false;   // กันกดการ์ดซ้ำระหว่างใช้อาชีพ
-    private Player _player;               // cache reference
+    private bool _isCardLocked = false;
+    private Player _player;
     #endregion
 
     #region Unity Lifecycle
     private void Start()
     {
-        _player = FindObjectOfType<Player>();
+        _player = FindFirstObjectByType<Player>();
         if (_player == null)
             Debug.LogWarning("[CardManager] Player reference not found in scene!");
 
         if (_cardSlotUI != null)
-            _cardSlotUI.UpdateSlots(_collectedCards);  // ใช้ API เดิมของคุณ :contentReference[oaicite:0]{index=0}
+            _cardSlotUI.UpdateSlots(_collectedCards);
 
         if (_careerSwitcher != null)
-            _careerSwitcher.OnCareerChangedEvent += HandleCareerChange; // event จาก CareerSwitcher :contentReference[oaicite:1]{index=1}
+            _careerSwitcher.OnCareerChangedEvent += HandleCareerChange;
         else
             Debug.LogWarning("[CardManager] Missing CareerSwitcher reference!");
     }
@@ -37,7 +40,7 @@ public class CardManager : MonoBehaviour
     private void OnDestroy()
     {
         if (_careerSwitcher != null)
-            _careerSwitcher.OnCareerChangedEvent -= HandleCareerChange; // เลิก subscribe :contentReference[oaicite:2]{index=2}
+            _careerSwitcher.OnCareerChangedEvent -= HandleCareerChange;
     }
     #endregion
 
@@ -53,85 +56,75 @@ public class CardManager : MonoBehaviour
         }
 
         _collectedCards.Add(newCard);
-        _cardSlotUI?.UpdateSlots(_collectedCards);  // อัปเดต slot ตามไฟล์เดิมของคุณ :contentReference[oaicite:3]{index=3}
+        _cardSlotUI?.UpdateSlots(_collectedCards);
 
 #if UNITY_EDITOR
         Debug.Log($"[CardManager] Added card: {newCard.SkillName}");
 #endif
     }
 
+
+    /// <summary>
+    /// Uses a card at the specified index.
+    /// </summary>
+    /// <param name="index"></param>
     public void UseCard(int index)
     {
-        if (!IsValidIndex(index)) return;
-
-        if (_isCardLocked)
-        {
-#if UNITY_EDITOR
-            Debug.LogWarning("[CardManager] Card usage locked — current career active or in cooldown!");
-#endif
-            return;
-        }
+        if (!IsValidIndex(index) || _isCardLocked) return;
 
         Card usedCard = _collectedCards[index];
-        if (usedCard == null)
-        {
-#if UNITY_EDITOR
-            Debug.LogWarning("[CardManager] Invalid card reference!");
-#endif
-            return;
-        }
+        if (usedCard == null) return;
 
-        // ตรวจสภาพ CareerSwitcher ว่าพร้อมสลับอาชีพไหม (cooldown/active)
-        if (_careerSwitcher != null && !_careerSwitcher.CanSwitchCareer)
-        {
-#if UNITY_EDITOR
-            Debug.LogWarning("[CardManager] Cannot switch career yet (cooldown or active)!");
-#endif
-            return;
-        }
-
-        // ใช้เอฟเฟกต์ UI ตามระบบของคุณ (UIEffectCharacter.PlayEffect(string)) :contentReference[oaicite:4]{index=4}
-        usedCard.ActivateEffect(_player);
+        // เล่นเอฟเฟกต์
         _uiEffectCharacter?.PlayEffect(usedCard.SkillName);
-        _cardSlotUI?.PlayUseAnimation(index); // trigger Animator ที่ CardSlotUI ของคุณ :contentReference[oaicite:5]{index=5}
+        _cardSlotUI?.PlayUseAnimation(index);
 
-        // สลับอาชีพด้วย DuckCareerData จากการ์ด + เริ่มนับเวลา ตาม CareerSwitcher ของคุณ :contentReference[oaicite:6]{index=6}
-        if (_careerSwitcher != null && usedCard.DuckCareerData != null)
+        switch (usedCard.Type)
         {
-            _careerSwitcher.SwitchCareer(usedCard.DuckCareerData);
-            _careerSwitcher.StartCareerTimer(usedCard.Duration);
-            LockAllCards(); // ล็อคการ์ดไว้จนกว่าจะ revert
+            case CardType.Career:
+                // 🔹 การ์ดอาชีพ — เปลี่ยนอาชีพชั่วคราว
+                if (_careerSwitcher != null)
+                {
+                    var data = _careerSwitcher.GetCareerDataByName(usedCard.SkillName);
+                    if (data != null)
+                    {
+                        _careerSwitcher.SwitchCareer(data);
+                        _careerSwitcher.StartCareerTimer(10f); // duration 10 seconds
+                        LockAllCards(); // lock cards during career duration until revert
+                    }
+                }
+                break;
+
+            case CardType.Berserk:
+                // call MuscleDuck
+                ExchangeForBerserk();
+                break;
         }
 
-        OnCardUsed(usedCard);
         RemoveCard(index);
-
-#if UNITY_EDITOR
-        Debug.Log($"[CardManager] Used card: {usedCard.SkillName}");
-#endif
     }
-
-    public void RemoveCard(int index)
+    
+    public void RemoveCard(int index) // remove card after use
     {
         if (!IsValidIndex(index)) return;
 
         _collectedCards.RemoveAt(index);
-        _cardSlotUI?.UpdateSlots(_collectedCards); // เคลียร์ slot ตามไฟล์เดิมคุณ :contentReference[oaicite:7]{index=7}
+        _cardSlotUI?.UpdateSlots(_collectedCards);
     }
 
-    public bool HasFullDeck() => _collectedCards.Count >= _maxCards;
+    public bool HasFullDeck() => _collectedCards.Count >= _maxCards; //check if deck is full
 
-    public void ExchangeForBerserk()
+    public void ExchangeForBerserk() //exchange 5 cards for MuscleDuck
     {
 #if UNITY_EDITOR
         Debug.Log("[CardManager] Exchanging cards for Berserk Mode!");
 #endif
         _collectedCards.Clear();
-        _cardSlotUI?.ResetAllSlots(); // reset ตาม CardSlotUI เดิมของคุณ :contentReference[oaicite:8]{index=8}
+        _cardSlotUI?.ResetAllSlots();
 
         if (_careerSwitcher != null)
         {
-            _careerSwitcher.SwitchCareerByName("Muscle"); // helper ใน CareerSwitcher ของคุณ :contentReference[oaicite:9]{index=9}
+            _careerSwitcher.SwitchCareerByName("Muscle");
             _careerSwitcher.StartCareerTimer(10f);
             LockAllCards();
         }
@@ -158,7 +151,7 @@ public class CardManager : MonoBehaviour
 #endif
     }
 
-    private void UnlockAllCards()
+    private void UnlockAllCards() //unlock to use cards again
     {
         _isCardLocked = false;
 #if UNITY_EDITOR
@@ -166,12 +159,14 @@ public class CardManager : MonoBehaviour
 #endif
     }
 
-    private void HandleCareerChange(DuckCareerData newCareer)
+
+
+    private void HandleCareerChange(DuckCareerData newCareer) // when career changed back to default
     {
         if (newCareer == null || _careerSwitcher == null) return;
 
-        // เมื่อ revert กลับ Duckling → ปลดล็อกการ์ด
-        if (newCareer == _careerSwitcher.GetCareerData(DuckCareer.Duckling)) // helper ใน CareerSwitcher ของคุณ :contentReference[oaicite:10]{index=10}
+
+        if (newCareer == _careerSwitcher.GetCareerData(DuckCareer.Duckling))
         {
             UnlockAllCards();
         }

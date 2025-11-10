@@ -1,8 +1,6 @@
 public enum CardType
 {
-    Career,     //Character career type card
-    Buff,       //Positive effect card
-    Debuff,     //Negative effect card
-    Berserk,    //Berserk effect card
-    Utility     //Utility effect card
+    None = 0,
+    Career,     // Normal Career Card
+    Berserk,     // Special MuscleDuck Card (obtained by exchanging 5 cards)
 }
