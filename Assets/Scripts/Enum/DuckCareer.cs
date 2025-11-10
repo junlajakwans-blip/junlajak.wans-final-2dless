@@ -1,12 +1,17 @@
 public enum DuckCareer
 {
-    Programmer,
-    Firefighter,
-    Detective,
-    Chef,
-    Motorcycle,
-    Doctor,
-    Dancer,
-    Singer,
-    Muscle
+    None = 0,
+    Duckling = 1, // Default Career
+
+    //Normal Careers
+    Chef = 2,
+    Dancer = 3,
+    Detective = 4,
+    Doctor = 5,
+    Firefighter = 6,
+    Motorcycle = 7,
+    Programmer = 8,
+    Singer = 9,
+
+    Muscle = 10 // Berserker Type
 }
