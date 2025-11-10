@@ -33,7 +33,7 @@ public class Card
     #region Virtual Methods
      public virtual void ActivateEffect(Player player)
     {
-        Debug.Log($"✨ Card '{_skillName}' activated! Type: {_type}");
+        Debug.Log($"Card '{_skillName}' activated! Type: {_type}");
     }
 
     public virtual string GetDescription()

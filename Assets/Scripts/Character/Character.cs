@@ -52,7 +52,7 @@ public abstract class Character : MonoBehaviour, IDamageable
     public virtual void Move(Vector2 direction)
     {
         if (_rigidbody != null)
-            _rigidbody.velocity = direction * _moveSpeed;
+            _rigidbody.linearVelocity = direction * _moveSpeed;
 
         if (_animator != null)
             _animator.SetFloat("MoveSpeed", direction.magnitude);

@@ -1,71 +1,70 @@
-using System.Collections.Generic;
 using UnityEngine;
-[System.Serializable]
-
 /// <summary>
-/// Player data structure to hold player information and stats.
+/// Class to hold player data such as stats, currency, and progress
 /// </summary>
+[System.Serializable]
 public class PlayerData
 {
     #region Fields
+    [Header("Basic Info")]
     [SerializeField] private string _playerName;
     [SerializeField] private string _selectedCareer;
-    [SerializeField] private int _health;
-    [SerializeField] private int _maxHealth;
-    [SerializeField] private float _speed;
-    [SerializeField] private int _collectedCoins;
-    [SerializeField] private List<string> _ownedCards = new List<string>();
-    [SerializeField] private List<string> _activeBuffs = new List<string>();
+
+    [Header("Stats")]
+    [SerializeField] private int _maxHealth = 100;
+    [SerializeField] private float _speed = 5f;
+    [SerializeField] private float _attackPower = 10f;
+    [SerializeField] private int _defense = 5;
+
+    [Header("Systems")]
+    [SerializeField] private Currency _currency = new Currency();
+    [SerializeField] private GameProgressData _progress = new GameProgressData();
     #endregion
+
 
     #region Properties
     public string PlayerName { get => _playerName; set => _playerName = value; }
     public string SelectedCareer { get => _selectedCareer; set => _selectedCareer = value; }
-    public int Health { get => _health; set => _health = value; }
+
     public int MaxHealth { get => _maxHealth; set => _maxHealth = value; }
     public float Speed { get => _speed; set => _speed = value; }
-    public int CollectedCoins { get => _collectedCoins; set => _collectedCoins = value; }
-    public List<string> OwnedCards { get => _ownedCards; set => _ownedCards = value; }
-    public List<string> ActiveBuffs { get => _activeBuffs; set => _activeBuffs = value; }
+    public float AttackPower { get => _attackPower; set => _attackPower = value; }
+    public int Defense { get => _defense; set => _defense = value; }
+
+    public Currency Currency => _currency;
+    public GameProgressData Progress => _progress;
     #endregion
 
-    #region Core Methods
-    public void TakeDamage(int amount)
-    {
-        _health = Mathf.Max(0, _health - amount);
-        Debug.Log($"{_playerName} took {amount} damage. HP: {_health}/{_maxHealth}");
-    }
 
-    public void Heal(int amount)
+    #region Methods
+    /// <summary>
+    /// Upgrade any permanent player stat (used by shop or level up system)
+    /// </summary>
+    public void UpgradeStat(string statName, int value)
     {
-        _health = Mathf.Min(_maxHealth, _health + amount);
-        Debug.Log($"{_playerName} healed {amount}. HP: {_health}/{_maxHealth}");
-    }
-
-    public void AddCard(string cardName)
-    {
-        if (!_ownedCards.Contains(cardName))
+        switch (statName)
         {
-            _ownedCards.Add(cardName);
-            Debug.Log($"{_playerName} obtained card: {cardName}");
+            case "MaxHealth": _maxHealth += value; break;
+            case "Speed": Speed += value; break;
+            case "AttackPower": AttackPower += value; break;
+            case "Defense": Defense += value; break;
+            default:
+                Debug.LogWarning($"[PlayerData] Unknown stat: {statName}");
+                break;
         }
     }
 
-    public void AddBuff(string buffName)
-    {
-        if (!_activeBuffs.Contains(buffName))
-        {
-            _activeBuffs.Add(buffName);
-            Debug.Log($"{_playerName} gained buff: {buffName}");
-        }
-    }
-
+    /// <summary>
+    /// Reset player state at start of game or after death
+    /// </summary>
     public void ResetPlayerState()
     {
-        _health = _maxHealth;
-        _collectedCoins = 0;
-        _activeBuffs.Clear();
-        Debug.Log($"{_playerName} reset to base state.");
+        MaxHealth = 100;
+        Speed = 5f;
+        AttackPower = 10f;
+        Defense = 5;
+
+        Currency.ResetAll();
     }
-    #endregion
+#endregion
 }

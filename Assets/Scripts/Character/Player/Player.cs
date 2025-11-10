@@ -174,6 +174,12 @@ public class Player : MonoBehaviour, ISkillUser, IDamageable, IAttackable, IInte
     }
     #endregion
 
+    public void Heal(int amount)
+    {
+        _health = Mathf.Min(_maxHealth, _health + amount);
+        Debug.Log($"{_playerName} healed {amount}. HP: {_health}/{_maxHealth}");
+    }
+
 
     #region Animation
     protected virtual void UpdateAnimation()
