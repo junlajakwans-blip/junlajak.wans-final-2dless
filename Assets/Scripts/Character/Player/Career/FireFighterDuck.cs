@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class FireFighterDuck : Player
 {
@@ -7,7 +8,7 @@ public class FireFighterDuck : Player
 
     public override void UseSkill()
     {
-        Debug.Log($"{_playerData.PlayerName} uses Firefighter skill: Water Hose!");
+        Debug.Log($"{PlayerName} uses Firefighter skill: Water Hose!");
         ApplyFireExtinguishEffect();
     }
 

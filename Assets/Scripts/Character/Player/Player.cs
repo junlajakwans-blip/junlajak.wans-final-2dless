@@ -33,6 +33,9 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
     private Coroutine _speedRoutine;
     private WaitForSeconds _speedWait;
 
+    public bool CanInteract => throw new System.NotImplementedException();
+    public string PlayerName => _playerData != null ? _playerData.PlayerName : "Unknown";
+
     #endregion
 
 
@@ -222,7 +225,7 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
         Debug.Log($"[Player] Dealt {amount} damage to {target}");
     }
 
-    public void UseSkill()
+    public virtual void UseSkill()
     {
         Debug.Log("[Player] Skill used.");
         //TODO : Career-based skill activation
@@ -285,6 +288,16 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
     public string GetCollectType()
     {
         return "Player";
+    }
+
+    public void Interact(Player player)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void ShowPrompt()
+    {
+        throw new System.NotImplementedException();
     }
     #endregion
 }

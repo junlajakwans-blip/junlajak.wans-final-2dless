@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class SingerDuck : Player
 {
@@ -7,7 +8,7 @@ public class SingerDuck : Player
 
     public override void UseSkill()
     {
-        Debug.Log($"{_playerData.PlayerName} uses Singer skill: Sonic Stun!");
+        Debug.Log($"{PlayerName} uses Singer skill: Sonic Stun!");
         StunEnemiesInRange();
     }
 

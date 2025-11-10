@@ -5,7 +5,7 @@ public abstract class MapGeneratorBase : MonoBehaviour
 {
     #region Protected Fields
     [Header("Spawner References")]
-    [SerializeField] protected PlatformSpawner _platformSpawner;
+    //[SerializeField] protected PlatformSpawner _platformSpawner;
     [SerializeField] protected EnemySpawner _enemySpawner;
     [SerializeField] protected CollectibleSpawner _collectibleSpawner;
     [SerializeField] protected BackgroundLooper _backgroundLooper;

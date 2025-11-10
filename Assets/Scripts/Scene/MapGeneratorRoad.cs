@@ -33,14 +33,12 @@ public class MapGeneratorRoad : MapGeneratorBase
 
     public override void SpawnEnemies()
     {
-        Debug.Log(" Spawning Road Enemies...");
-        _enemySpawner?.SpawnEnemiesByTag("RoadEnemy");
+        throw new System.NotImplementedException();
     }
 
     public override void SpawnCollectibles()
     {
-        Debug.Log(" Spawning Road Collectibles...");
-        _collectibleSpawner?.SpawnCollectiblesByTag("RoadCollectible");
+        throw new System.NotImplementedException();
     }
 
     public override void SetupBackground()

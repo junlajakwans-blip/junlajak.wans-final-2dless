@@ -51,7 +51,7 @@ public class DoggoMon : Enemy, IMoveable
     }
 
     // Normal patrol movement in limited area
-    public void Move()
+    public override void Move()
     {
         transform.position += (Vector3)_direction * _walkSpeed * Time.deltaTime;
 

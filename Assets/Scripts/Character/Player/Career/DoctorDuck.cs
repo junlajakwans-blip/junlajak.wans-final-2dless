@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class DoctorDuck : Player
 {
@@ -7,7 +8,7 @@ public class DoctorDuck : Player
 
     public override void UseSkill()
     {
-        Debug.Log($"{_playerData.PlayerName} uses Doctor skill: Heal nearby allies!");
+        Debug.Log($"{PlayerName} uses Doctor skill: Heal nearby allies!");
         HealNearbyAllies();
     }
 

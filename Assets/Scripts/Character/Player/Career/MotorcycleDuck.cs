@@ -1,32 +1,33 @@
 using UnityEngine;
+using System.Collections;
 
-public class MuscleDuck : Player
+public class MotorcycleDuck : Player
 {
-    [SerializeField] private GameObject _rageEffect;
-    [SerializeField] private float _damageMultiplier = 2f;
+    [Header("Motorcycle Skill Settings")]
+    [SerializeField] private GameObject _dashEffect;
+    [SerializeField] private float _dashMultiplier = 3f;   // เร่ง x3
+    [SerializeField] private float _dashDuration = 0.5f;
+
+    private bool _isDashing = false;
 
     public override void UseSkill()
     {
-        Debug.Log($"{_playerData.PlayerName} uses Muscle skill: Berserk Mode!");
-        ActivateBerserkMode();
+        Debug.Log($"{PlayerName} activates Motorcycle Dash!");
+        if (!_isDashing)
+            StartCoroutine(DashRoutine());
     }
 
-    private void ActivateBerserkMode()
+
+    private IEnumerator DashRoutine()
     {
-        if (_rageEffect != null)
-            Instantiate(_rageEffect, transform.position, Quaternion.identity);
+        _isDashing = true;
+        if (_dashEffect != null)
+            Instantiate(_dashEffect, transform.position, Quaternion.identity);
 
-        StartCoroutine(BerserkRoutine());
-    }
+        // Temporarily boost speed, system will reset after duration
+        ApplySpeedModifier(_dashMultiplier, _dashDuration);
 
-    private System.Collections.IEnumerator BerserkRoutine()
-    {
-        float originalDamage = _currentCareer.BaseSpeed;
-        _currentCareer.BaseSpeed *= _damageMultiplier;
-
-        yield return new WaitForSeconds(5f);
-
-        _currentCareer.BaseSpeed = originalDamage;
-        Debug.Log("Berserk mode ended.");
+        yield return new WaitForSeconds(_dashDuration);
+        _isDashing = false;
     }
 }

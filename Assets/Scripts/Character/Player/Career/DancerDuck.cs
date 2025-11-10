@@ -1,31 +1,27 @@
 using UnityEngine;
+using System.Collections;
 
 public class DancerDuck : Player
 {
     [SerializeField] private GameObject _danceEffect;
-    [SerializeField] private float _comboBoost = 1.3f;
+    [SerializeField] private float _speedBoost = 1.75f;
+    [SerializeField] private float _boostDuration = 5f;
 
     public override void UseSkill()
     {
-        Debug.Log($"{_playerData.PlayerName} uses Dancer skill: Evade Attack!");
-        EvadeIncomingAttack();
+        Debug.Log($"{PlayerName} uses Dancer skill: Graceful Step!");
+        StartCoroutine(SpeedBoostRoutine());
     }
 
-    private void EvadeIncomingAttack()
+    private IEnumerator SpeedBoostRoutine()
     {
         if (_danceEffect != null)
             Instantiate(_danceEffect, transform.position, Quaternion.identity);
 
-        StartCoroutine(EvadeRoutine());
-    }
+        ApplySpeedModifier(_speedBoost, _boostDuration);
+        Debug.Log("[DancerDuck] Speed boosted!");
 
-    private System.Collections.IEnumerator EvadeRoutine()
-    {
-        _isInvincible = true;
-        _moveSpeed *= _comboBoost;
-        yield return new WaitForSeconds(2f);
-        _isInvincible = false;
-        _moveSpeed /= _comboBoost;
-        Debug.Log("Evade buff ended.");
+        yield return new WaitForSeconds(_boostDuration);
+        Debug.Log("[DancerDuck] Boost ended.");
     }
 }

@@ -1,35 +1,29 @@
 using UnityEngine;
+using System.Collections;
 
 public class ChefDuck : Player
 {
     [SerializeField] private GameObject _panEffect;
     [SerializeField] private float _cookBuffTime = 5f;
+    [SerializeField] private float _speedMultiplier = 1.5f;
 
     public override void UseSkill()
     {
-        Debug.Log($"{_playerData.PlayerName} uses Chef skill: Cooking Buff!");
-        ApplyCookBuff();
-    }
-
-    private void ApplyCookBuff()
-    {
-        if (_panEffect != null)
-        {
-            Instantiate(_panEffect, transform.position, Quaternion.identity);
-        }
-
+        Debug.Log($"{PlayerName} uses Chef skill: Cooking Buff!");
         StartCoroutine(CookBuffRoutine());
     }
 
-    private System.Collections.IEnumerator CookBuffRoutine()
+    private IEnumerator CookBuffRoutine()
     {
-        float originalSpeed = _playerData.Speed;
-        _playerData.Speed *= 1.5f;
-        Debug.Log("Cooking buff applied: speed increased!");
+        // Pan effect
+        if (_panEffect != null)
+            Instantiate(_panEffect, transform.position, Quaternion.identity);
+
+        // Temporary speed boost
+        ApplySpeedModifier(_speedMultiplier, _cookBuffTime);
+        Debug.Log("[ChefDuck] Cooking buff applied: increased speed!");
 
         yield return new WaitForSeconds(_cookBuffTime);
-
-        _playerData.Speed = originalSpeed;
-        Debug.Log("Cooking buff ended.");
+        Debug.Log("[ChefDuck] Cooking buff ended.");
     }
 }
