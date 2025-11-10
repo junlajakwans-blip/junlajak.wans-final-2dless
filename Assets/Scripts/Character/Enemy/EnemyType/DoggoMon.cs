@@ -19,19 +19,19 @@ public class DoggoMon : Enemy, IMoveable
     private bool _isDead = false;
     private bool _isStunned = false;
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (_isDead || _isStunned) return;
 
         if (_target == null)
         {
-            Move(); // เดินปกติถ้าไม่มี target
+            Move(); // Patrol if no target
             return;
         }
 
         float distance = Vector3.Distance(transform.position, _target.position);
 
-        if (distance <= _detectRange)  // ตรวจจับผู้เล่นในระยะ
+        if (distance <= _detectRange)  // detect player
         {
             if (distance <= _barkRange)
             {
@@ -50,12 +50,12 @@ public class DoggoMon : Enemy, IMoveable
         }
     }
 
-    // 🧭 เดินทั่วไปภายในขอบเขตที่กำหนด
+    // Normal patrol movement in limited area
     public void Move()
     {
         transform.position += (Vector3)_direction * _walkSpeed * Time.deltaTime;
 
-        // ถ้าเดินเกิน limit จะเปลี่ยนทิศกลับ
+        // If walking beyond limit, change direction back
         if (transform.position.x < _patrolLimitLeft)
             _direction = Vector2.right;
         else if (transform.position.x > _patrolLimitRight)
@@ -128,7 +128,7 @@ public class DoggoMon : Enemy, IMoveable
         Destroy(gameObject, 1.2f);
     }
 
-    public void Stop() // Stop movement when die or stunned
+    public void Stop() // Stop movement when die
     {
         _direction = Vector2.zero;
     }

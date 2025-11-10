@@ -1,5 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// Handles player input and movement.
+/// Works with Player, Rigidbody2D, and Animator.
+/// </summary>
 [RequireComponent(typeof(Player))]
 public class PlayerController : MonoBehaviour
 {
@@ -16,6 +20,8 @@ public class PlayerController : MonoBehaviour
         _player = GetComponent<Player>();
         if (_rigidbody == null)
             _rigidbody = GetComponent<Rigidbody2D>();
+        if (_animator == null)
+            _animator = GetComponentInChildren<Animator>();
     }
 
     private void Update()
@@ -43,19 +49,49 @@ public class PlayerController : MonoBehaviour
 
     private void HandleActionInput()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            _player.Attack();
-        }
+        // --------------------------------------
+        //  MOVE LEFT / RIGHT (A, D, ←, →)
+        // --------------------------------------
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+            _moveInput.x = -1;
+        else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+            _moveInput.x = 1;
+        else
+            _moveInput.x = 0;
 
-        if (Input.GetKeyDown(KeyCode.F))
+        // --------------------------------------
+        // USE CAREER SKILL (W)
+        // --------------------------------------
+        if (Input.GetKeyDown(KeyCode.W))
         {
             _player.UseSkill();
         }
 
+        // --------------------------------------
+        // INTERACT / PICKUP (E)
+        // --------------------------------------
         if (Input.GetKeyDown(KeyCode.E))
         {
-            _player.Interact(_player);
+            // Only Duckling can interact for now
+            if (_player.GetCurrentCareerID() == DuckCareer.Duckling)
+                _player.Interact(_player);
+        }
+
+        // --------------------------------------
+        // THROW ITEM (F)
+        // --------------------------------------
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            if (_player.GetCurrentCareerID() == DuckCareer.Duckling)
+                _player.ThrowItem();
+        }
+
+        // --------------------------------------
+        // PAUSE GAME (P / ESC)
+        // --------------------------------------
+        if (Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.Escape))
+        {
+            TogglePauseGame();
         }
     }
     #endregion
@@ -66,6 +102,16 @@ public class PlayerController : MonoBehaviour
         if (_rigidbody == null) return;
 
         _rigidbody.linearVelocity = _moveInput * _moveSpeed;
+    }
+    #endregion
+
+    #region Game Control
+    private void TogglePauseGame()
+    {
+        bool isPaused = Time.timeScale == 0;
+        Time.timeScale = isPaused ? 1 : 0;
+
+        Debug.Log(isPaused ? "[Game] Resumed" : "[Game] Paused");
     }
     #endregion
 }

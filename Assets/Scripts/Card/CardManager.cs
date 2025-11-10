@@ -82,7 +82,7 @@ public class CardManager : MonoBehaviour
         switch (usedCard.Type)
         {
             case CardType.Career:
-                // 🔹 การ์ดอาชีพ — เปลี่ยนอาชีพชั่วคราว
+               
                 if (_careerSwitcher != null)
                 {
                     var data = _careerSwitcher.GetCareerDataByName(usedCard.SkillName);

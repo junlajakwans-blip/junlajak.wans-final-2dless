@@ -6,7 +6,7 @@ using UnityEngine;
 /// Implements IDamageable, IAttackable, ISkillUser, ICollectable.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
-public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, ICollectable
+public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, ICollectable, IInteractable
 {
     #region Fields
     [Header("Core Data")]
@@ -72,15 +72,26 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
     {
         if (_isDead) return;
 
-        Vector2 velocity = new Vector2(direction.x * _moveSpeed, _rigidbody.linearVelocity.y);
+        float speed = _moveSpeed * _speedModifier;
+
+        #if UNITY_2022_3_OR_NEWER
+        Vector2 velocity = new Vector2(direction.x * speed, _rigidbody.linearVelocity.y);
         _rigidbody.linearVelocity = velocity;
+        #else
+        Vector2 velocity = new Vector2(direction.x * speed, _rigidbody.velocity.y);
+        _rigidbody.velocity = velocity;
+        #endif
 
-        if (_animator != null)
-            _animator.SetMoveAnimation(direction.x);
+        _animator?.SetMoveAnimation(direction.x);
 
+        #if UNITY_2022_3_OR_NEWER
         _isGrounded = Mathf.Abs(_rigidbody.linearVelocity.y) < 0.01f;
+        #else
+        _isGrounded = Mathf.Abs(_rigidbody.velocity.y) < 0.01f;
+        #endif
     }
-    #region 🧊 Speed Modifier (Slow / Boost)
+
+    #region  Speed Modifier (Slow / Boost)
     /// <summary>
     /// Temporarily modifies the player's move speed.
     /// Example: ApplySpeedModifier(0.5f, 3f) → Slow 50% for 3 seconds.
@@ -151,6 +162,22 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
         Debug.Log("[Player] Player died.");
         // TODO: Notify GameManager / Trigger respawn / GameOver event
     }
+
+    public DuckCareer GetCurrentCareerID()
+    {
+        return _careerSwitcher != null && _careerSwitcher.CurrentCareer != null
+            ? _careerSwitcher.CurrentCareer.CareerID
+            : DuckCareer.Duckling;
+    }
+
+    public void ThrowItem()
+    {
+        Debug.Log("[Player] Threw an item!");
+        // TODO: projectile, animation, or effect
+    }
+
+
+
     #endregion
 
 
