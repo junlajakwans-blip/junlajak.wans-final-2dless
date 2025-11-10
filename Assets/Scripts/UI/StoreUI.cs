@@ -41,12 +41,13 @@ public class StoreUI : MonoBehaviour
         throw new System.NotImplementedException();
     }
 
-    //public void SelectItem(StoreItemUI item)
-    //{
-        // TODO: Select item
-        //_selectedItem = item;
-        //Debug.Log($" Selected item: {_selectedItem.ItemName}");
-    //}
+    public void SelectItem()
+    {
+    // TODO: Select item
+    //_selectedItem = item;
+    //Debug.Log($" Selected item: {_selectedItem.ItemName}");
+    throw new System.NotImplementedException();
+    }
 
     public void PurchaseSelectedItem()
     {

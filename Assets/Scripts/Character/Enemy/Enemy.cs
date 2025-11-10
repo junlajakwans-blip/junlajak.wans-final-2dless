@@ -5,6 +5,7 @@ using UnityEngine;
 /// Implements core attack, detection, and damage logic shared across all enemies.
 /// Derived classes (e.g., DoggoMon, PeterMon) override behavior for movement or special skills.
 /// </summary>
+[RequireComponent(typeof(Rigidbody2D))]
 public class Enemy : MonoBehaviour, IAttackable, IDamageable
 {
     #region Fields
@@ -47,7 +48,7 @@ public class Enemy : MonoBehaviour, IAttackable, IDamageable
         if (_target == null) return;
 
         Vector3 direction = (_target.position - transform.position).normalized;
-        transform.position += direction * _speed * Time.deltaTime;
+        transform.position += direction * Speed * Time.deltaTime;
     }
 
     /// <summary>
