@@ -1,115 +1,90 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-
 /// <summary>
-/// Base Player class for all player characters. and on rumtime.
+/// Main Player entity — handles movement, combat, currency, and interaction systems.
+/// Implements IDamageable, IAttackable, ISkillUser, ICollectable.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
-public class Player : MonoBehaviour, ISkillUser, IDamageable, IAttackable, IInteractable, ICollectable
+public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, ICollectable
 {
     #region Fields
-    [SerializeField] protected PlayerData _playerData;
-    [SerializeField] protected DuckCareerData _currentCareer;
-    [SerializeField] protected Animator _animator;
-    [SerializeField, Tooltip("Physics body for movement and collision")] protected Rigidbody2D _rigidbody = null;
+    [Header("Core Data")]
+    [SerializeField] private PlayerData _playerData;
+    [SerializeField] private CareerSwitcher _careerSwitcher;
+    [SerializeField] private CardManager _cardManager;
+    [SerializeField] private Currency _currency;
 
-    private WaitForSeconds _speedWait;
-    private WaitForSeconds _invincibleWait;
-    private static readonly WaitForSeconds DEFAULT_INVINCIBLE_WAIT = new WaitForSeconds(1.5f);
-    private WaitForSeconds _instanceWait;
+    [Header("Components")]
+    [SerializeField] private Rigidbody2D _rigidbody;
+    [SerializeField] private CharacterRigAnimator _animator;
 
-    protected bool _isInvincible;
-    protected float _invincibleTime = 1.5f;
-    protected float _moveSpeed = 5f;
+    [Header("Stats")]
+    [SerializeField] private float _moveSpeed = 5f;
+    [SerializeField] private float _jumpForce = 5f;
+    [SerializeField] private int _maxHealth = 100;
+    [SerializeField] private int _currentHealth;
+
+    [Header("Runtime State")]
+    [SerializeField] private bool _isGrounded = false;
+    [SerializeField] private bool _isDead = false;
+
     private float _speedModifier = 1f;
     private Coroutine _speedRoutine;
-    protected float _jumpForce = 8f;
-    protected bool _isGrounded;
-    private float _healRate = 1.0f;
+    private WaitForSeconds _speedWait;
 
-    public bool CanInteract => throw new System.NotImplementedException();
     #endregion
 
+
     #region Initialization
-    public virtual void Initialize(PlayerData data)
+    public void Initialize(PlayerData data)
     {
         _playerData = data;
-        _playerData.ResetPlayerState();
-        _isInvincible = false;
-        Debug.Log($"Player initialized: {_playerData.PlayerName}");
+        _maxHealth = data.MaxHealth;
+        _currentHealth = _maxHealth;
+        _moveSpeed = data.Speed;
+
+        if (_careerSwitcher == null)
+            _careerSwitcher = GetComponent<CareerSwitcher>();
+
+        if (_cardManager == null)
+            _cardManager = GetComponent<CardManager>();
+
+        if (_rigidbody == null)
+            _rigidbody = GetComponent<Rigidbody2D>();
+
+        if (_animator == null)
+            _animator = GetComponent<CharacterRigAnimator>();
+
+        // Currency setup
+        if (_currency == null)
+            _currency = new Currency();
+
+        _currency.Initialize(_careerSwitcher);
+
+        Debug.Log($"[Player] Initialized with HP: {_maxHealth}, Speed: {_moveSpeed}");
     }
+    #endregion
 
-        #endregion
 
-    #region Health
-
-    public virtual void TakeDamage(int amount)
-        {
-            if (_isInvincible) return;
-
-            _currentHealth -= amount;
-            _currentHealth = Mathf.Max(_currentHealth, 0);
-            _animator?.SetTrigger("Hit");
-
-            if (_currentHealth <= 0)
-            {
-                Die();
-                return;
-            }
-
-            // Lazy create invincibility delay
-            _invincibleWait ??= new WaitForSeconds(_invincibleTime);
-            StartCoroutine(InvincibleCooldown());
-        }
-
-    public virtual void Heal(int amount) //Can heal during game for skill career or item
+    #region Movement
+    public void Move(Vector2 direction)
     {
-        if (amount <= 0) return;
+        if (_isDead) return;
 
-        int finalHeal = Mathf.RoundToInt(amount * _healRate);
-        _currentHealth = Mathf.Min(_currentHealth + finalHeal, _maxHealth);
-
-        _animator?.SetTrigger("Heal");
-        Debug.Log($"[Player] Healed {finalHeal} HP (Total: {_currentHealth}/{_maxHealth})")
-    }
-
-    private IEnumerator InvincibleCooldown()
-    {
-        _isInvincible = true;
-
-        // Auto choose best WaitForSeconds object
-        if (Mathf.Approximately(_invincibleTime, 1.5f))
-        {
-            yield return DEFAULT_INVINCIBLE_WAIT; 
-        }
-        else
-        {
-            _instanceWait ??= new WaitForSeconds(_invincibleTime); // lazy init
-            yield return _instanceWait;
-        }
-
-        _isInvincible = false;
-    }
-        #endregion
-
-
-        #region Movement
-    public virtual void Move(float direction)
-    {
-        if (_rigidbody == null) return;
-
-        Vector2 velocity = new Vector2(direction * _moveSpeed * _speedModifier, _rigidbody.linearVelocity.y);
+        Vector2 velocity = new Vector2(direction.x * _moveSpeed, _rigidbody.linearVelocity.y);
         _rigidbody.linearVelocity = velocity;
 
-        if (direction != 0)
-            transform.localScale = new Vector3(Mathf.Sign(direction), 1, 1);
+        if (_animator != null)
+            _animator.SetMoveAnimation(direction.x);
 
-        UpdateAnimation();
+        _isGrounded = Mathf.Abs(_rigidbody.linearVelocity.y) < 0.01f;
     }
-
-
+    #region 🧊 Speed Modifier (Slow / Boost)
+    /// <summary>
+    /// Temporarily modifies the player's move speed.
+    /// Example: ApplySpeedModifier(0.5f, 3f) → Slow 50% for 3 seconds.
+    /// </summary>
     public void ApplySpeedModifier(float multiplier, float duration)
     {
         if (_speedRoutine != null)
@@ -122,123 +97,167 @@ public class Player : MonoBehaviour, ISkillUser, IDamageable, IAttackable, IInte
     private IEnumerator SpeedModifierRoutine(float multiplier)
     {
         _speedModifier = multiplier;
-        yield return _speedWait; // ใช้ cache เดิม
+        Debug.Log($"[Player] Speed modifier applied: x{_speedModifier}");
+        yield return _speedWait;
         _speedModifier = 1f;
+        Debug.Log("[Player] Speed modifier reset to normal.");
     }
+    #endregion
 
 
-    public virtual void Jump()
+    public void Jump()
     {
-        if (!_isGrounded) return;
+        if (_isDead || !_isGrounded) return;
 
         _rigidbody.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse);
-        _animator?.SetTrigger("Jump");
         _isGrounded = false;
-    }
 
-    protected void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.contacts[0].normal.y > 0.5f)
-            _isGrounded = true;
+        if (_animator != null)
+            _animator.SetTrigger("Jump");
     }
     #endregion
 
 
-    #region Career & Skills
-    public virtual void SwitchCareer(DuckCareerData newCareer)
+    #region Health System (IDamageable)
+    public void TakeDamage(int amount)
     {
-        if (newCareer == null) return;
+        if (_isDead) return;
 
-        _currentCareer = newCareer;
-        _playerData.SelectedCareer = newCareer.CareerID.ToString();
-        Debug.Log($"Switched career to {_currentCareer.DisplayName}");
+        _currentHealth -= amount;
+        if (_currentHealth <= 0)
+        {
+            _currentHealth = 0;
+            Die();
+        }
+
+        Debug.Log($"[Player] Took {amount} damage. HP: {_currentHealth}/{_maxHealth}");
     }
-
-    public virtual void UseSkill()
-    {
-        Debug.Log($"{_playerData.PlayerName} used skill of {_currentCareer.CareerID}");
-    }
-
-    public virtual void OnSkillCooldown()
-    {
-        Debug.Log("Skill on cooldown...");
-    }
-    #endregion
-
-
-    #region Combat
-    public virtual void Attack()
-    {
-        _animator?.SetTrigger("Attack");
-        Debug.Log($"{_playerData.PlayerName} attacks!");
-    }
-    #endregion
 
     public void Heal(int amount)
     {
-        _health = Mathf.Min(_maxHealth, _health + amount);
-        Debug.Log($"{_playerName} healed {amount}. HP: {_health}/{_maxHealth}");
+        if (_isDead) return;
+        _currentHealth = Mathf.Min(_maxHealth, _currentHealth + amount);
+
+        Debug.Log($"[Player] Healed +{amount}. HP: {_currentHealth}/{_maxHealth}");
     }
 
-
-    #region Animation
-    protected virtual void UpdateAnimation()
+    private void Die()
     {
-        _animator?.SetBool("IsMoving", Mathf.Abs(_rigidbody.linearVelocity.x) > 0.1f);
+        _isDead = true;
+        _rigidbody.linearVelocity = Vector2.zero;
+        if (_animator != null)
+            _animator.SetTrigger("Die");
+
+        Debug.Log("[Player] Player died.");
+        // TODO: Notify GameManager / Trigger respawn / GameOver event
     }
     #endregion
 
 
-    #region Death
-    public virtual void Die()
+    #region Currency System
+    public void AddCoin(int amount)
     {
-        Debug.Log($"{_playerData.PlayerName} has died!");
-        _animator?.SetTrigger("Die");
-        this.enabled = false;
+        if (_currency == null) return;
+        _currency.AddCoin(amount);
     }
+
+    public bool SpendCoin(int amount)
+    {
+        return _currency != null && _currency.UseCoin(amount);
+    }
+
+    public Currency GetCurrency() => _currency;
     #endregion
 
 
-    #region Interface Implementations
+    #region Combat System (IAttackable, ISkillUser)
+    public void Attack()
+    {
+        Debug.Log("[Player] Basic attack triggered.");
+        // TODO: integrate with weapon or animation
+    }
+
     public void ChargeAttack(float power)
     {
-        throw new System.NotImplementedException();
+        Debug.Log($"[Player] Charge attack power: {power}");
+        // TODO: implement hold-release mechanic
     }
 
     public void RangeAttack(Transform target)
     {
-        throw new System.NotImplementedException();
+        Debug.Log($"[Player] Range attack at {target.name}");
+        // TODO: projectile or ability cast
     }
 
     public void ApplyDamage(IDamageable target, int amount)
     {
-        throw new System.NotImplementedException();
+        target.TakeDamage(amount);
+        Debug.Log($"[Player] Dealt {amount} damage to {target}");
     }
 
-    public void Interact(Player player)
+    public void UseSkill()
     {
-        throw new System.NotImplementedException();
+        Debug.Log("[Player] Skill used.");
+        //TODO : Career-based skill activation
+        //_careerSwitcher?.ActivateCareerSkill();
     }
 
-    public void ShowPrompt()
+    public void OnSkillCooldown()
     {
-        throw new System.NotImplementedException();
+        Debug.Log("[Player] Skill cooldown started.");
     }
+    #endregion
 
+
+    #region Card System
+    public void UseCard(Card card)
+    {
+        if (card == null) return;
+        Debug.Log($"[Player] Using card: {card.SkillName}");
+        card.ActivateEffect(this);
+    }
+    #endregion
+
+
+    #region Career System
+    public void OnCareerChanged(DuckCareerData newCareer)
+    {
+        _playerData.SelectedCareer = newCareer.DisplayName;
+        Debug.Log($"[Player] Career switched to: {newCareer.DisplayName}");
+    }
+    #endregion
+
+
+    #region Reset
+    public void ResetState()
+    {
+        _isDead = false;
+        _currentHealth = _maxHealth;
+        _currency.ResetAll();
+        _rigidbody.linearVelocity = Vector2.zero;
+
+        if (_animator != null)
+            _animator.ResetAllTriggers();
+
+        Debug.Log("[Player] Reset to initial state.");
+    }
+    #endregion
+
+
+    #region ICollectable Implementation
     public void Collect(Player player)
     {
-        throw new System.NotImplementedException();
+        // Player collecting itself doesn't make sense — handled by items
     }
 
     public void OnCollectedEffect()
     {
-        throw new System.NotImplementedException();
+        // For CoinItem or other ICollectable only
     }
 
     public string GetCollectType()
     {
-        throw new System.NotImplementedException();
+        return "Player";
     }
     #endregion
-
 }
