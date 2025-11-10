@@ -65,7 +65,7 @@ public class PlayerController : MonoBehaviour
     {
         if (_rigidbody == null) return;
 
-        _rigidbody.velocity = _moveInput * _moveSpeed;
+        _rigidbody.linearVelocity = _moveInput * _moveSpeed;
     }
     #endregion
 }

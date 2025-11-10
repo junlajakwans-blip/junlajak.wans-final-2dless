@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
-
 [System.Serializable]
+
+/// <summary>
+/// Player data structure to hold player information and stats.
+/// </summary>
 public class PlayerData
 {
     #region Fields

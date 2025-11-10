@@ -63,10 +63,7 @@ public class CardManager : MonoBehaviour
         _cardSlotUI?.UpdateSlots(_collectedCards);
     }
 
-    public bool HasFullDeck()
-    {
-        return _collectedCards.Count >= _maxCards;
-    }
+    public bool HasFullDeck() => _collectedCards.Count >= _maxCards;
 
 
     public void ExchangeForBerserk()
