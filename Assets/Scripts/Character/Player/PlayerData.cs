@@ -19,6 +19,7 @@ public class PlayerData
     [Header("Systems")]
     [SerializeField] private Currency _currency = new Currency();
     [SerializeField] private GameProgressData _progress = new GameProgressData();
+    [SerializeField] private bool _isDefaultDuckling = true;
     #endregion
 
 
@@ -53,6 +54,13 @@ public class PlayerData
                 break;
         }
     }
+
+    public bool IsDefaultDuckling
+    {
+        get => _isDefaultDuckling;
+        set => _isDefaultDuckling = value;
+    }
+
 
     /// <summary>
     /// Reset player state at start of game or after death

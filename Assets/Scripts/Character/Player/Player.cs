@@ -255,6 +255,20 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
         _playerData.SelectedCareer = newCareer.DisplayName;
         Debug.Log($"[Player] Career switched to: {newCareer.DisplayName}");
     }
+
+    public bool IsDuckling =>
+    _careerSwitcher != null && _careerSwitcher.IsDuckling;
+
+    public void UpdatePlayerFormState()
+    {
+        // sync ข้อมูลระหว่าง Data และ CareerSwitcher
+        if (_careerSwitcher != null)
+            _playerData.IsDefaultDuckling = _careerSwitcher.IsDuckling;
+
+        Debug.Log($"[Player] Form state updated. Duckling = {_playerData.IsDefaultDuckling}");
+    }
+
+
     #endregion
 
 
