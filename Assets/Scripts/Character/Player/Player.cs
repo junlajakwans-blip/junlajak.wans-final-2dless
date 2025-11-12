@@ -223,7 +223,7 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
     /// Apply damage to the player.
     /// </summary>
     /// <param name="amount"></param>
-    public void TakeDamage(int amount)
+    public virtual void TakeDamage(int amount)
     {
         if (_isDead) return;
 
