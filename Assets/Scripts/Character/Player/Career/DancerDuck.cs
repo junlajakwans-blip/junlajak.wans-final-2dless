@@ -173,15 +173,4 @@ public class DancerDuck : Player, ISkillUser, IAttackable
         target.TakeDamage(amount);
     }
     #endregion
-
-    #region Debug Visual
-    // Only for visualizing burn range in editor
-#if UNITY_EDITOR
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = new Color(1f, 0.3f, 0f, 0.35f);
-        Gizmos.DrawWireSphere(transform.position, _burnRange);
-    }
-#endif
-    #endregion
 }

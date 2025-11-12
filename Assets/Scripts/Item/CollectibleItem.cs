@@ -2,8 +2,8 @@ using UnityEngine;
 using System.Collections;
 
 /// <summary>
-/// CollectibleItem – ใช้สำหรับ Coin, Token, Buff Item, และ Card Pickup
-/// (GoldenMon จะดรอปการ์ดอาชีพ 1 ใบตามเรต PDF)
+/// CollectibleItem – Used for Coin, Token, Buff Item, and Card Pickup.
+/// This item now delegates all time-based effects to the BuffManager.
 /// </summary>
 public enum CollectibleType
 {
@@ -25,7 +25,7 @@ public class CollectibleItem : MonoBehaviour, ICollectable
     [SerializeField] private Sprite _icon;
 
     [Header("Buff Settings")]
-    [SerializeField] private float _buffDuration = 5f; // ใช้กับ Coffee / MooKrata
+    [SerializeField] private float _buffDuration = 5f; // Used for Coffee / MooKrata
     [SerializeField] private int _healAmount = 30;     // Coffee
     [SerializeField] private int _smallHeal = 10;      // GreenTea
 
@@ -43,6 +43,16 @@ public class CollectibleItem : MonoBehaviour, ICollectable
 
     private void ApplyEffect(Player player)
     {
+        // Check if BuffManager exists (Required for timed buffs)
+        if (_type == CollectibleType.Coffee || _type == CollectibleType.MooKrata)
+        {
+            if (BuffManager.Instance == null)
+            {
+                Debug.LogWarning("[Collectible] BuffManager not found! Timed buff will not apply.");
+                return;
+            }
+        }
+        
         switch (_type)
         {
             // Coin
@@ -57,57 +67,29 @@ public class CollectibleItem : MonoBehaviour, ICollectable
                 Debug.Log($"[Collectible] +{_value} Token");
                 break;
 
-            // Tea → Heal +10 HP
+            // Tea → Heal +10 HP (Instant effect)
             case CollectibleType.GreenTea:
                 player.Heal(_smallHeal);
                 Debug.Log($"[Buff] Green Tea: +{_smallHeal} HP");
                 break;
 
-            // Coffee → Heal +30 HP 5 s
+            // Coffee → Heal +30 HP 5 s (Timed effect - delegated)
             case CollectibleType.Coffee:
-                StartCoroutine(ApplyCoffeeBuff(player));
+                // DELEGATE: Send command to BuffManager to run the routine
+                BuffManager.Instance.ApplyCollectibleBuff(_type, player, _healAmount, _buffDuration);
                 break;
 
-            // Mookrata → Enemy No Attack 5 s
+            // Mookrata → Enemy No Attack 5 s (Timed effect - delegated)
             case CollectibleType.MooKrata:
-                StartCoroutine(ApplyMooKrataBuff());
+                // DELEGATE: Send command to BuffManager to run the routine
+                BuffManager.Instance.ApplyCollectibleBuff(_type, player, 0, _buffDuration);
                 break;
 
-            // การ์ด (Drop Career per rate in CardManager)
+            // Card Pickup (Instant effect - delegated to CardManager)
             case CollectibleType.CardPickup:
                 DropCareerCard();
                 break;
         }
-    }
-
-    // Coffee Buff
-    private IEnumerator ApplyCoffeeBuff(Player player)
-    {
-        int oldHP = player.CurrentHealth;
-        player.Heal(_healAmount);
-        Debug.Log($"[Buff] Coffee: Heal +{_healAmount} (Temporary)");
-
-        yield return new WaitForSeconds(_buffDuration);
-
-        if (!player.IsDead && player.CurrentHealth > oldHP)
-        {
-            int diff = player.CurrentHealth - oldHP;
-            player.TakeDamage(diff);
-            Debug.Log($"[Buff] Coffee expired → HP reverted to {oldHP}");
-        }
-    }
-
-    // MooKrata Buff
-    private IEnumerator ApplyMooKrataBuff()
-    {
-        Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
-        foreach (var enemy in enemies)
-            //TODO Enemy no attack 5 s
-            //enemy.DisableBehavior(_buffDuration);
-
-        Debug.Log($"[Buff] MooKrata: Disable enemies for {_buffDuration}s");
-        yield return new WaitForSeconds(_buffDuration);
-        Debug.Log("[Buff] MooKrata ended → Enemies resume attack");
     }
 
     // Card Pickup 
@@ -123,4 +105,5 @@ public class CollectibleItem : MonoBehaviour, ICollectable
         manager.AddCareerCard(); // Call fuction in CardManager
         Debug.Log("[CardPickup] Career Card dropped (via manager).");
     }
+
 }

@@ -1,44 +1,31 @@
+// DoggoMon.cs
+
 using UnityEngine;
 using System.Collections;
 
 public class DoggoMon : Enemy, IMoveable
 {
-    [Header("Doggo Attributes")]
-    [SerializeField] private float _walkSpeed = 1.5f;
-    [SerializeField] private float _chaseSpeed = 3.5f;
-    [SerializeField] private float _barkRange = 3f;
-    [SerializeField] private float _detectRange = 5f;
-    [SerializeField] private int _biteDamage = 5;
+    [Header("DoggoMon Settings")]
+    [SerializeField] private float _chaseSpeed = 2.5f;
+    [SerializeField] private float _barkRange = 1.25f;
+    [SerializeField] private int _damage = 15;
 
-    [Header("Patrol Settings")]
-    [SerializeField] private float _patrolLimitLeft = -5f;
-    [SerializeField] private float _patrolLimitRight = 5f;
+    private Vector2 _moveDirection = Vector2.left;
+    private bool _isChasing;
 
-    private Vector2 _direction = Vector2.right;
-    private bool _isChasing = false;
-    private bool _isDead = false;
-    private bool _isStunned = false;
-
-    private void FixedUpdate()
+    protected override void Update()
     {
-        if (_isDead || _isStunned) return;
+        if (_isDisabled) return;
 
+        // Detect is player nearby
         if (_target == null)
-        {
-            Move(); // Patrol if no target
-            return;
-        }
+            _target = FindFirstObjectByType<Player>()?.transform;
 
-        float distance = Vector3.Distance(transform.position, _target.position);
+        if (_target == null) return;
 
-        if (distance <= _detectRange)  // detect player
-        {
-            if (distance <= _barkRange)
-            {
-                Bark();
-                _isChasing = true;
-            }
-        }
+
+        if (DetectPlayer(_target.position))
+            _isChasing = true;
 
         if (_isChasing)
         {
@@ -47,97 +34,106 @@ public class DoggoMon : Enemy, IMoveable
         else
         {
             Move();
+
+            Bark();
         }
     }
 
-    // Normal patrol movement in limited area
+    // Move Default
     public override void Move()
     {
-        transform.position += (Vector3)_direction * _walkSpeed * Time.deltaTime;
-
-        // If walking beyond limit, change direction back
-        if (transform.position.x < _patrolLimitLeft)
-            _direction = Vector2.right;
-        else if (transform.position.x > _patrolLimitRight)
-            _direction = Vector2.left;
+        if (!_isDisabled)
+            transform.Translate(_moveDirection * _speed * Time.deltaTime);
     }
 
-    // Bark to startle the player when nearby
-    public void Bark()
-    {
-        Debug.Log($"{_enemyType} barks! Player is startled!");
-        if (_target != null)
-        {
-            Player player = _target.GetComponent<Player>();
-            if (player != null)
-                player.ApplySpeedModifier(0.8f, 2f); //Slow player for 2 seconds
-        }
-    }
-
-    // When player is within chase range chase and bark
     public void ChasePlayer(Player player)
     {
-        if (player == null) return; //if no player no chase
+        if (_isDisabled || player == null) return;
 
-        // Move towards player when nearby
-        Vector3 direction = (player.transform.position - transform.position).normalized;
-        transform.position += direction * _chaseSpeed * Time.deltaTime;
+        Vector2 dir = (player.transform.position - transform.position).normalized;
+        transform.Translate(dir * _chaseSpeed * Time.deltaTime);
+    }
 
-        float distance = Vector3.Distance(transform.position, player.transform.position);
+    private void Bark()
+    {
+        if (_target == null || !CanDetectOverride || _isDisabled) return;
 
-        if (distance < 1.2f)
+        float dist = Vector2.Distance(transform.position, _target.position);
+        if (dist <= _barkRange)
         {
-            Attack();
-            player.TakeDamage(_biteDamage);
-            _isChasing = false; // Stop chasing after one bite
-        }
-        else if (distance > _detectRange * 1.5f)
-        {
-            _isChasing = false; // Stop chasing if out of range
+            Debug.Log("[DoggoMon] Bark! Player in range!");
+            _target.GetComponent<Player>()?.TakeDamage(1); 
         }
     }
 
-
-    // bite attack
-    public override void Attack()
+    public void Stop()
     {
-        Debug.Log($"{_enemyType} bites the player for {_biteDamage} damage!");
+        _moveDirection = Vector2.zero;
+        _isChasing = false;
     }
 
-    // Stun the enemy briefly when taking damage from player
-    public override void TakeDamage(int amount)
+    public void SetDirection(Vector2 direction)
     {
-        if (_isDead) return;
-
-        Debug.Log($"{_enemyType} takes {amount} damage and is stunned!");
-        StartCoroutine(Stun(1.5f));
+        _moveDirection = direction.sqrMagnitude > 0f ? direction.normalized : Vector2.left;
     }
 
-    private IEnumerator Stun(float duration) //stun self
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        _isStunned = true;
-        yield return new WaitForSeconds(duration);
-        _isStunned = false;
+        if (_isDisabled) return;
+
+        if (collision.gameObject.TryGetComponent<Player>(out var player))
+            player.TakeDamage(_damage);
     }
 
-    public override void Die() // Die and remove from scene
+    public override void DisableBehavior(float duration)
     {
-        if (_isDead) return;
-        _isDead = true;
-        StopAllCoroutines();
-        Debug.Log($"{_enemyType} has fainted.");
-        Destroy(gameObject, 1.2f);
+        if (_isDisabled) return;
+        StartCoroutine(DisableRoutine(duration));
     }
 
-    public void Stop() // Stop movement when die
+    private IEnumerator DisableRoutine(float time)
     {
-        _direction = Vector2.zero;
+        _isDisabled = true;
+        CanDetectOverride = false; 
+        var oldDir = _moveDirection;
+        _moveDirection = Vector2.zero;
+        _isChasing = false;
+
+        yield return new WaitForSeconds(time);
+
+        _moveDirection = oldDir;
+        CanDetectOverride = true;
+        _isDisabled = false;
     }
 
-    public void SetDirection(Vector2 direction) // Set movement direction
+    public override void Die()
     {
-        _direction = direction.normalized;
+        // 1. Call Base Class For Event OnEnemyDied And Destroy this Object 
+        base.Die(); 
+
+        // 2. Drop Item
+        CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
+        
+        if (spawner != null)
+        {
+            float roll = Random.value;
+            
+            // Drop Coin with 30% chance (0.00% <= roll < 30.00%)
+            if (roll < 0.30f)
+            {
+                spawner.DropCollectible(CollectibleType.Coin, transform.position);
+                Debug.Log($"[DoggoMon] Dropped: Coin ({roll:F2})");
+            }
+            // Drop Coffee with 3% chance (30.00% <= roll < 33.00%)
+            else if (roll < 0.33f)
+            {
+                spawner.DropCollectible(CollectibleType.Coffee, transform.position);
+                Debug.Log($"[DoggoMon] Dropped: Coffee ({roll:F2})");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[DoggoMon] Cannot drop item: CollectibleSpawner not found in scene!");
+        }
     }
-
-
 }

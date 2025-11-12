@@ -24,7 +24,7 @@ public class MamaMon : Enemy
 
     public void RecoverHP()
     {
-        Heal(10);
+        base.Heal(10); // Call the base class's Heal method
         Debug.Log($"{name} slurps noodles to heal HP!");
     }
 }

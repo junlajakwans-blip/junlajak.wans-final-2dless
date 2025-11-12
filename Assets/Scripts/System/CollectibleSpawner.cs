@@ -98,4 +98,35 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
         return item;
     }
     #endregion
+
+    #region Item Drop From Mon
+    /// <summary>
+    /// Spawns a specific collectible item using the Object Pool based on CollectibleType.
+    /// </summary>
+    /// <param name="type">The type of item to drop (e.g., Coin, Coffee).</param>
+    /// <param name="position">The world position to spawn the item.</param>
+    public GameObject DropCollectible(CollectibleType type, Vector3 position)
+    {
+        if (_objectPool == null)
+        {
+            Debug.LogError("[CollectibleSpawner] Object Pool is not initialized!");
+            return null;
+        }
+
+        string prefabName = type.ToString();
+
+        var collectible = _objectPool.SpawnFromPool(
+            prefabName,
+            position,
+            Quaternion.identity
+        );
+
+        if (collectible != null)
+        {
+            _activeCollectibles.Add(collectible);
+            Debug.Log($"[CollectibleSpawner] Dropped {type} at {position} (via Pool)");
+        }
+        return collectible;
+    }
+    #endregion  
 }

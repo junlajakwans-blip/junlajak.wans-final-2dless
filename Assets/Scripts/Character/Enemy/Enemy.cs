@@ -16,6 +16,8 @@ public class Enemy : MonoBehaviour, IAttackable, IDamageable
     [SerializeField] protected int _health = 1;
     [SerializeField] protected Transform _target;
     [SerializeField] protected EnemyType _enemyType = EnemyType.None;
+    [SerializeField] protected bool _isDisabled = false;
+
     #endregion
 
     #region Properties
@@ -24,6 +26,8 @@ public class Enemy : MonoBehaviour, IAttackable, IDamageable
     public float DetectionRange { get => _detectionRange; set => _detectionRange = value; }
     public EnemyType EnemyType { get => _enemyType; set => _enemyType = value; }
     public bool IsDead => _health <= 0;
+    public System.Action<Enemy> OnEnemyDied;
+
     #endregion
 
     #region Unity Lifecycle
@@ -33,6 +37,7 @@ public class Enemy : MonoBehaviour, IAttackable, IDamageable
 
         if (DetectPlayer(_target.position))
         {
+            if (_isDisabled) return;
             Move();
             Attack();
         }
@@ -60,6 +65,32 @@ public class Enemy : MonoBehaviour, IAttackable, IDamageable
     }
 
     /// <summary>
+    /// Detects player based on distance.
+    /// </summary>
+    public bool CanDetectOverride = true;
+
+    public virtual bool DetectPlayer(Vector3 playerPos)
+    {
+        if (!CanDetectOverride) return false;
+        float distance = Vector3.Distance(transform.position, playerPos);
+        return distance <= _detectionRange;
+    }
+
+    public virtual void DisableBehavior(float duration)
+        {
+            if (_isDisabled) return;
+            StartCoroutine(DisableRoutine(duration));
+        }
+
+        private System.Collections.IEnumerator DisableRoutine(float time)
+        {
+            _isDisabled = true;
+            yield return new WaitForSeconds(time);
+            _isDisabled = false;
+        }
+
+
+    /// <summary>
     /// Reduces health when hit by damage.
     /// </summary>
     public virtual void TakeDamage(int amount)
@@ -74,23 +105,13 @@ public class Enemy : MonoBehaviour, IAttackable, IDamageable
     }
 
     /// <summary>
-    /// Detects player based on distance.
-    /// </summary>
-    public bool CanDetectOverride = true;
-
-    public virtual bool DetectPlayer(Vector3 playerPos)
-    {
-        if (!CanDetectOverride) return false;
-        float distance = Vector3.Distance(transform.position, playerPos);
-        return distance <= _detectionRange;
-    }
-
-    /// <summary>
     /// Called when this enemy dies.
     /// </summary>
     public virtual void Die()
     {
         Debug.Log($"[{_enemyType}] has been defeated.");
+
+        OnEnemyDied?.Invoke(this);
         Destroy(gameObject);
     }
     #endregion
