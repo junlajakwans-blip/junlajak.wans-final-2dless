@@ -17,7 +17,6 @@ public class SingerDuck : Player, ISkillUser, IAttackable
 
     [Header("Skill Settings")]
     [SerializeField] private float _goldenMonSpawnChance = 0.5f; // 50% Chance Meet GoldenMon
-    [SerializeField] private float _goldenMonSpawnDuration = 5f; // 5 Sec (Used as buff window)
 
     [Header("Career Timing")]
     [SerializeField] private float _skillDuration = 32f;   // 32 Sec

@@ -179,8 +179,13 @@ public class FireFighterDuck : Player, ISkillUser, IAttackable
     {
         // [CareerAttack] WaterBall (2 Block) 
         Debug.Log($"[{PlayerName}] uses WaterBall (2 Block)!");
-        
+
         if (_waterBallPrefab != null)
+        Instantiate(_waterBallPrefab, transform.position, Quaternion.identity);
+        
+        // Apply AOE damage using the _waterBallRange
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, _waterBallRange);
+        foreach (var hit in hits)
         {
             var go = Instantiate(_waterBallPrefab, transform.position + (transform.right * 0.5f), Quaternion.identity);
             if (go.TryGetComponent<Projectile>(out var proj))

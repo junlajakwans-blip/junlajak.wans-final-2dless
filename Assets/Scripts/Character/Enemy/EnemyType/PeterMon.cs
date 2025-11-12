@@ -17,7 +17,6 @@ public class PeterMon : Enemy, IMoveable
     private float _hoverOffsetY;
     private float _nextAttackTime;
     private Vector2 _direction = Vector2.left;
-    private bool _isChasing = false; // Unused in stationary mon
     #endregion
 
     #region Unity Lifecycle

@@ -5,7 +5,7 @@ public class GoldenMon : Enemy
 {
     #region Fields
     [Header("GoldenMon Settings")]
-    [SerializeField] private float _danceDuration = 3f;
+    //[SerializeField] private float _danceDuration = 3f;
     [SerializeField] private int _breakPlatformCount = 2;
     [SerializeField] private int _coinDropMultiplier = 5; // Multiplier for massive coin drop
     #endregion

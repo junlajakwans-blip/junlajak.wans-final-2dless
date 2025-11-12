@@ -32,6 +32,23 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
     public event Action OnRevertToDefaultEvent;
 
     public DuckCareerData CurrentCareer => _currentCareer;
+
+    /// <summary>
+    /// Checks if the current active career is the default Duckling.
+    /// </summary>
+    public bool IsDuckling
+    {
+        get
+        {
+            if (_currentCareer == null)
+            {
+                // If no career is set, check against the default data
+                return _defaultCareer != null && _defaultCareer.CareerID == DuckCareer.Duckling;
+            }
+            // Check the currently active career's ID
+            return _currentCareer.CareerID == DuckCareer.Duckling;
+        }
+    }
     #endregion
 
 
@@ -163,5 +180,6 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
         if (found != null)
             SwitchCareer(found);
     }
+
     #endregion
 }
