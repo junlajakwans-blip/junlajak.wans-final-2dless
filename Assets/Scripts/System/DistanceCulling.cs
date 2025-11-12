@@ -28,6 +28,13 @@ public class DistanceCulling : MonoBehaviour
         if (!_enableCulling || _cameraTransform == null) return;
         CullObjects();
     }
+
+    private void OnDestroy()
+    {
+        ClearAllTargets();
+        Debug.Log("[DistanceCulling] Clearing all target on destruction");
+    }
+
     #endregion
 
     #region Public Methods

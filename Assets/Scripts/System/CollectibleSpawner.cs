@@ -14,13 +14,15 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
 
     [Header("References")]
     [SerializeField] private IObjectPool _objectPool;
+    [SerializeField] private DistanceCulling _cullingManager;
     #endregion
 
     #region Initialization
 
-    public void InitializeSpawner(IObjectPool pool)
+    public void InitializeSpawner(IObjectPool pool, DistanceCulling cullingManager)
     {
         _objectPool = pool;
+        _cullingManager = cullingManager;
         Debug.Log("[CollectibleSpawner] Initialized with object pool.");
     }
     #endregion
@@ -44,6 +46,7 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
         );
 
         _activeCollectibles.Add(collectible);
+        _cullingManager?.RegisterObject(collectible);
     }
 
     public GameObject SpawnAtPosition(Vector3 position)
@@ -56,12 +59,15 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
         );
 
         _activeCollectibles.Add(collectible);
+        _cullingManager?.RegisterObject(collectible);
         return collectible;
     }
 
     public void Despawn(GameObject item)
     {
         if (item == null) return;
+
+        _cullingManager?.UnregisterObject(item);
         _activeCollectibles.Remove(item);
         _objectPool.ReturnToPool(item.name, item);
     }

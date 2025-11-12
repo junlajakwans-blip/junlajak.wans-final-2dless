@@ -23,6 +23,10 @@ public class EnemySpawner : MonoBehaviour, ISpawn
 
     [Header("References")]
     [SerializeField] private IObjectPool _objectPool;
+    [SerializeField] private DistanceCulling _cullingManager;
+
+    private List<GameObject> _validPrefabsCache = new();
+
     #endregion
 
 
@@ -32,13 +36,13 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     /// </summary>
     private int GetRecommendedEnemyCount()
     {
-    #if UNITY_WEBGL
+#if UNITY_WEBGL
             return 4;
-    #elif UNITY_ANDROID || UNITY_IOS
+#elif UNITY_ANDROID || UNITY_IOS
             return 5;
-    #else
-            return 8; // PC / Console
-    #endif
+#else
+        return 8; // PC / Console
+#endif
     }
     #endregion
 
@@ -52,10 +56,34 @@ public class EnemySpawner : MonoBehaviour, ISpawn
         _objectPool = pool;
         _mapType = mapType;
         _maxEnemies = GetRecommendedEnemyCount();
+
+        CacheValidEnemies();
+
         Debug.Log($"[EnemySpawner] Initialized for map: {_mapType.ToFriendlyString()} | " + $"Platform: {Application.platform} | MaxEnemies={_maxEnemies}");
     }
+
+    /// <summary>
+    /// Filters the main prefab list based on the current MapType and stores the result in a cache.
+    /// This prevents repeated GC allocation from LINQ in the Spawn methods.
+    /// </summary>
+    private void CacheValidEnemies()
+    {
+         _validPrefabsCache = _enemyPrefabs
+            .Where(prefab =>
+            {
+                var enemyComp = prefab.GetComponent<Enemy>();
+                // Assuming EnemyTypeExtensions has CanAppearInMap() method
+                return enemyComp != null && enemyComp.EnemyType.CanAppearInMap(_mapType); 
+            })
+            .ToList();
+        
+        if (_validPrefabsCache.Count == 0)
+        {
+            Debug.LogWarning($"[EnemySpawner] Caching resulted in 0 valid enemies for map {_mapType}. Check CanAppearInMap logic.");
+        }
+    }
     #endregion
-    
+
 
     #region ISpawn Implementation
     /// <summary>
@@ -69,10 +97,10 @@ public class EnemySpawner : MonoBehaviour, ISpawn
             return;
         }
 
-        if (_activeEnemies.Count >= _maxEnemies)
+        if (_activeEnemies.Count >= _maxEnemies || _validPrefabsCache.Count ==0)
             return;
 
-        // 🎯 Filter only enemies that can appear in this map
+        // Filter only enemies that can appear in this map
         var validEnemies = _enemyPrefabs
             .Where(prefab =>
             {
@@ -94,36 +122,33 @@ public class EnemySpawner : MonoBehaviour, ISpawn
         Quaternion spawnRot = _spawnPoints[randomPoint].rotation;
 
         var enemy = _objectPool.SpawnFromPool(validEnemies[randomEnemy].name, spawnPos, spawnRot);
+
         _activeEnemies.Add(enemy);
+        _cullingManager?.RegisterObject(enemy);
 
         Debug.Log($"[EnemySpawner] Spawned {enemy.name} at {spawnPos}");
     }
 
     public GameObject SpawnAtPosition(Vector3 position)
     {
-        var validEnemies = _enemyPrefabs
-            .Where(prefab =>
-            {
-                var enemyComp = prefab.GetComponent<Enemy>();
-                return enemyComp != null && enemyComp.EnemyType.CanAppearInMap(_mapType);
-            })
-            .ToList();
-
-        if (validEnemies.Count == 0)
+        if (_validPrefabsCache.Count == 0)
         {
             Debug.LogWarning($"[EnemySpawner] No valid enemies for map {_mapType}.");
             return null;
         }
 
-        int randomEnemy = Random.Range(0, validEnemies.Count);
-        var enemy = _objectPool.SpawnFromPool(validEnemies[randomEnemy].name, position, Quaternion.identity);
+        int randomEnemy = Random.Range(0, _validPrefabsCache.Count);
+        var enemy = _objectPool.SpawnFromPool(_validPrefabsCache[randomEnemy].name, position, Quaternion.identity);
         _activeEnemies.Add(enemy);
+        _cullingManager?.RegisterObject(enemy);
         return enemy;
     }
 
     public void Despawn(GameObject enemy)
     {
         if (enemy == null) return;
+
+        _cullingManager?.UnregisterObject(enemy);
         _activeEnemies.Remove(enemy);
         _objectPool.ReturnToPool(enemy.name, enemy);
     }
@@ -166,6 +191,7 @@ public class EnemySpawner : MonoBehaviour, ISpawn
         if (enemy != null)
         {
             _activeEnemies.Add(enemy);
+            _cullingManager?.RegisterObject(enemy);
             Debug.Log($"[EnemySpawner] Spawned specific enemy {enemy.name} at {position}");
         }
 

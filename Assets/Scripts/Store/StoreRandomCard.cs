@@ -8,7 +8,6 @@ public class StoreRandomCard : StoreBase
 {
     #region Fields
     [Header("Card Summon Settings")]
-    private CardManager _cardManager;
     private const string SUMMON_NAME = "Random Summon";
     private const int TOKEN_COST = 1;
 
@@ -62,16 +61,14 @@ public class StoreRandomCard : StoreBase
     /// </summary>
     public void SummonRandomCard()
     {
-        if (_cardManager == null)
+        if (_storeManager.CardManager == null)
         {
             Debug.LogError("[StoreRandomCard] Cannot summon card; CardManager is missing.");
             return;
         }
 
         // Delegate the complex drop rate and card creation logic to CardManager
-        _cardManager.AddCareerCard(); 
-        
-        // Note: CardManager.AddCareerCard() already handles the B-A-S tier drop rate logic.
+        _storeManager.CardManager.AddCareerCard();
     }
     #endregion
 }
