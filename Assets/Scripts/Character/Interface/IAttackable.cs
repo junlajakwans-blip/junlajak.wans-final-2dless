@@ -17,4 +17,5 @@ public interface IAttackable
 
     /// <summary>Applies damage to the given target.</summary>
     void ApplyDamage(IDamageable target, int amount);
+
 }

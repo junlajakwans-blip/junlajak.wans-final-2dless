@@ -11,6 +11,7 @@ public abstract class Character : MonoBehaviour, IDamageable
     [SerializeField] protected Rigidbody2D _rigidbody;
     [SerializeField] protected Animator _animator;
 
+
     protected bool _isDead = false;
 
     #region Initialization
@@ -21,6 +22,7 @@ public abstract class Character : MonoBehaviour, IDamageable
         _isDead = false;
     }
     #endregion
+    
 
     #region Health System
     public virtual void TakeDamage(int amount)

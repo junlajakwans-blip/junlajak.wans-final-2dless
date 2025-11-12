@@ -8,7 +8,7 @@ public class DetectiveDuck : Player
 
     public override void UseSkill()
     {
-        Debug.Log($"{_playerData.PlayerName} uses Detective skill: Scan Area!");
+        Debug.Log($"{PlayerName} uses Detective skill: Scan Area!");
         RevealHiddenItems();
     }
 

@@ -97,6 +97,7 @@ public class DoggoMon : Enemy, IMoveable
         }
     }
 
+
     // bite attack
     public override void Attack()
     {
@@ -137,4 +138,6 @@ public class DoggoMon : Enemy, IMoveable
     {
         _direction = direction.normalized;
     }
+
+
 }

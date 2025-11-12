@@ -14,6 +14,7 @@ public abstract class MapGeneratorBase : MonoBehaviour
     [SerializeField] protected Vector2 _spawnStartPosition;
     [SerializeField] protected int _maxPlatformCount = 10;
     [SerializeField] protected float _sceneWidth = 50f;
+
     #endregion
 
     #region Initialization

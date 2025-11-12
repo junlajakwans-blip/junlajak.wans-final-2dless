@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
+
 /// <summary>
 /// Main Player entity — handles movement, combat, currency, and interaction systems.
 /// Implements IDamageable, IAttackable, ISkillUser, ICollectable.
@@ -28,6 +29,13 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
     [Header("Runtime State")]
     [SerializeField] private bool _isGrounded = false;
     [SerializeField] private bool _isDead = false;
+
+    [Header("Environment Awareness")]
+    [SerializeField] protected MapType _currentMapType = MapType.None;
+
+    [Header("Buff Settings")]
+    [SerializeField] protected bool _hasMapBuff;
+    [SerializeField] protected float _buffMultiplier = 1.0f;
 
     private float _speedModifier = 1f;
     private Coroutine _speedRoutine;
@@ -65,6 +73,10 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
 
         _currency.Initialize(_careerSwitcher);
 
+        UpdatePlayerFormState();
+
+        DetectMap();
+
         Debug.Log($"[Player] Initialized with HP: {_maxHealth}, Speed: {_moveSpeed}");
     }
     #endregion
@@ -77,22 +89,23 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
 
         float speed = _moveSpeed * _speedModifier;
 
-        #if UNITY_2022_3_OR_NEWER
+#if UNITY_2022_3_OR_NEWER
         Vector2 velocity = new Vector2(direction.x * speed, _rigidbody.linearVelocity.y);
         _rigidbody.linearVelocity = velocity;
-        #else
+#else
         Vector2 velocity = new Vector2(direction.x * speed, _rigidbody.velocity.y);
         _rigidbody.velocity = velocity;
-        #endif
+#endif
 
         _animator?.SetMoveAnimation(direction.x);
 
-        #if UNITY_2022_3_OR_NEWER
+#if UNITY_2022_3_OR_NEWER
         _isGrounded = Mathf.Abs(_rigidbody.linearVelocity.y) < 0.01f;
-        #else
+#else
         _isGrounded = Mathf.Abs(_rigidbody.velocity.y) < 0.01f;
-        #endif
+#endif
     }
+    #endregion
 
     #region  Speed Modifier (Slow / Boost)
     /// <summary>
@@ -119,6 +132,7 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
     #endregion
 
 
+    #region Jump & Jump Attack
     public void Jump()
     {
         if (_isDead || !_isGrounded) return;
@@ -129,10 +143,82 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
         if (_animator != null)
             _animator.SetTrigger("Jump");
     }
+
+    // detwect jump attack on collision
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        // Reset grounded
+        _isGrounded = true;
+
+        // Check only if collided with Enemy
+        if (collision.gameObject.TryGetComponent<Enemy>(out var enemy))
+        {
+            foreach (var contact in collision.contacts)
+            {
+                // Collided from above and falling
+                if (contact.normal.y > 0.5f && _rigidbody.linearVelocity.y < 0f)
+                {
+                    // Execute jump attack
+                    HandleJumpAttack(enemy);
+                    break;
+                }
+            }
+        }
+    }
+
+    // Stomp on enemy after Jump
+    private void HandleJumpAttack(Enemy enemy)
+    {
+        Debug.Log($"[{PlayerName}] stomped on {enemy.EnemyType}");
+
+        // If enemy is moveable, stop its movement
+        if (enemy is IMoveable moveableEnemy)
+            moveableEnemy.Stop();
+
+        // Bounce back slightly
+        _rigidbody.linearVelocity = new Vector2(_rigidbody.linearVelocity.x, _jumpForce * 0.8f);
+
+        // If there is a stomp animation
+        if (_animator != null)
+            _animator.SetTrigger("JumpAttack");
+            
+    }
+    #endregion
+
+
+    #region Map Detection
+    /// <summary>
+    /// Detects current map type from SceneManager and caches it.
+    /// </summary>
+    protected virtual void DetectMap()
+    {
+        var sceneManager = FindFirstObjectByType<SceneManager>();
+
+        if (sceneManager != null && sceneManager.IsInitialized)
+        {
+            _currentMapType = sceneManager.GetCurrentMapType();
+            Debug.Log($"[{name}] detected map: {_currentMapType}");
+        }
+        else
+        {
+            _currentMapType = MapType.None;
+            Debug.LogWarning($"[{name}] SceneManager not found or not ready!");
+        }
+    }
+
+    /// <summary>
+    /// Returns the cached current map type for subclasses (careers).
+    /// </summary>
+    protected MapType GetCurrentMapType() => _currentMapType;
+
     #endregion
 
 
     #region Health System (IDamageable)
+    /// <summary>
+    /// Apply damage to the player.
+    /// </summary>
+    /// <param name="amount"></param>
     public void TakeDamage(int amount)
     {
         if (_isDead) return;
@@ -147,6 +233,10 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
         Debug.Log($"[Player] Took {amount} damage. HP: {_currentHealth}/{_maxHealth}");
     }
 
+    /// <summary>
+    /// Heal the player by a specified amount.
+    /// </summary>
+    /// <param name="amount"></param>
     public void Heal(int amount)
     {
         if (_isDead) return;
@@ -173,6 +263,9 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
             : DuckCareer.Duckling;
     }
 
+    /// <summary>
+    /// Player throws an item.
+    /// </summary>
     public void ThrowItem()
     {
         Debug.Log("[Player] Threw an item!");
@@ -201,25 +294,25 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
 
 
     #region Combat System (IAttackable, ISkillUser)
-    public void Attack()
+    public virtual void Attack()
     {
         Debug.Log("[Player] Basic attack triggered.");
         // TODO: integrate with weapon or animation
     }
 
-    public void ChargeAttack(float power)
+    public virtual void ChargeAttack(float power)
     {
         Debug.Log($"[Player] Charge attack power: {power}");
         // TODO: implement hold-release mechanic
     }
 
-    public void RangeAttack(Transform target)
+    public virtual void RangeAttack(Transform target)
     {
         Debug.Log($"[Player] Range attack at {target.name}");
         // TODO: projectile or ability cast
     }
 
-    public void ApplyDamage(IDamageable target, int amount)
+    public virtual void ApplyDamage(IDamageable target, int amount)
     {
         target.TakeDamage(amount);
         Debug.Log($"[Player] Dealt {amount} damage to {target}");
@@ -232,7 +325,7 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
         //_careerSwitcher?.ActivateCareerSkill();
     }
 
-    public void OnSkillCooldown()
+    public virtual void OnSkillCooldown()
     {
         Debug.Log("[Player] Skill cooldown started.");
     }
@@ -288,7 +381,7 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
     #endregion
 
 
-    #region ICollectable Implementation
+    #region ICollectable and IInteractable Implementation
     public void Collect(Player player)
     {
         // Player collecting itself doesn't make sense — handled by items

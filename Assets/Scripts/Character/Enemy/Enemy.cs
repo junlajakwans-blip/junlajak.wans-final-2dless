@@ -76,8 +76,11 @@ public class Enemy : MonoBehaviour, IAttackable, IDamageable
     /// <summary>
     /// Detects player based on distance.
     /// </summary>
+    public bool CanDetectOverride = true;
+
     public virtual bool DetectPlayer(Vector3 playerPos)
     {
+        if (!CanDetectOverride) return false;
         float distance = Vector3.Distance(transform.position, playerPos);
         return distance <= _detectionRange;
     }
@@ -93,17 +96,17 @@ public class Enemy : MonoBehaviour, IAttackable, IDamageable
     #endregion
 
     #region IAttackable Implementation
-    public void ChargeAttack(float power)
+    public virtual void ChargeAttack(float power)
     {
         Debug.Log($"[{_enemyType}] is charging attack with power x{power:F1}!");
     }
 
-    public void RangeAttack(Transform target)
+    public virtual void RangeAttack(Transform target)
     {
         Debug.Log($"[{_enemyType}] performs a ranged attack on {target?.name ?? "unknown target"}.");
     }
 
-    public void ApplyDamage(IDamageable target, int amount)
+    public virtual void ApplyDamage(IDamageable target, int amount)
     {
         target.TakeDamage(amount);
         Debug.Log($"[{_enemyType}] dealt {amount} damage to target!");
@@ -115,6 +118,11 @@ public class Enemy : MonoBehaviour, IAttackable, IDamageable
     {
         _health += amount;
         Debug.Log($"[{_enemyType}] healed for {amount} HP (Current: {_health}).");
+    }
+
+    void IAttackable.RangeAttack(Transform target)
+    {
+        throw new System.NotImplementedException();
     }
     #endregion
 }

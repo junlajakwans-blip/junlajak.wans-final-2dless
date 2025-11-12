@@ -27,8 +27,7 @@ public class MapGeneratorRoad : MapGeneratorBase
 
     public override void SpawnPlatforms()
     {
-        Debug.Log(" Spawning Road Platforms...");
-        _platformSpawner?.SpawnFromPrefix(_assetPrefix);
+       throw new System.NotImplementedException();
     }
 
     public override void SpawnEnemies()

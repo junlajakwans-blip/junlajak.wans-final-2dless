@@ -31,10 +31,6 @@ public class CollectibleItem
                 Debug.Log($"Restore {_value} HP");
                 break;
 
-            case CollectibleType.CareerUnlock:
-                Debug.Log("Unlock new career");
-                break;
-
             default:
                 Debug.Log("Unknown collectible type");
                 break;
