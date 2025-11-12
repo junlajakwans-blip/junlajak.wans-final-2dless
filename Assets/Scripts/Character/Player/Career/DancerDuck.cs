@@ -2,11 +2,11 @@ using UnityEngine;
 using System.Collections;
 
 /// <summary>
-/// DancerDuck – Evasion / Crowd Control career
-/// StepDance: temporarily undetectable by enemies (2s) + stop moving enemies within 3–4 blocks.
+/// DancerDuck – Evasion / Crowd Control career (ID 3, Tier B)
+/// StepDance: temporarily undetectable by enemies (2s) + stop moving/damage enemies within 3–4 blocks.
 /// 
-/// BuffMon: (None currently implemented)
-/// BuffMap: (None currently; reserved for future maps such as DanceHall or CityStage)
+/// BuffMon: (None) [cite: 3]
+/// BuffMap: (None) [cite: 3]
 /// </summary>
 public class DancerDuck : Player, ISkillUser, IAttackable
 {
@@ -14,42 +14,29 @@ public class DancerDuck : Player, ISkillUser, IAttackable
     [Header("DancerDuck Settings")]
     [SerializeField] private GameObject _danceEffect;
     [SerializeField] private float _speedBoost = 1.75f;
-    [SerializeField] private float _hideDuration = 2f;
-    [SerializeField] private float _stopRange = 3.5f;
-    [SerializeField] private float _skillDuration = 22f;
-    [SerializeField] private float _skillCooldown = 18f;
+    [SerializeField] private float _hideDuration = 2f;    // PDF: StepDance no take any damage 2 sec [cite: 3]
+    [SerializeField] private float _stopRange = 3.5f;     // PDF: StepDance 3-4 Block [cite: 3]
+    [SerializeField] private float _skillDuration = 22f;  // PDF: 22 Sec [cite: 3]
+    [SerializeField] private float _skillCooldown = 18f;  // PDF: 18 Sec [cite: 3]
+    [SerializeField] private int _stepDanceDamage = 15; // Damage for the StepDance AOE
 
     private bool _isSkillActive;
     private bool _isCooldown;
-    private Rigidbody2D _rb;
-    private float _jumpBounceForce = 6f;
+    // NOTE: Removed private _rb and _jumpBounceForce as they are redundant.
+    // The base Player class already handles the Rigidbody.
     #endregion
 
-    private void Start()
-    {
-        _rb = GetComponent<Rigidbody2D>();
-        InitializeCareerMapBuff(); // เตรียมระบบ BuffMap เฉพาะอาชีพ (รองรับอนาคต)
-    }
+    #region Buffs (Map & Monster)
 
-    #region Map Buff (Career-Specific, Future Ready)
     /// <summary>
-    /// Checks if the current map provides any buff for DancerDuck.
-    /// Future-ready design for MapBuff expansion.
+    /// (Override) Applies DancerDuck-specific buffs when the career is initialized.
+    /// This method is called by the base Player.Initialize() method.
     /// </summary>
-    private void InitializeCareerMapBuff()
+    protected override void InitializeCareerBuffs()
     {
-        var map = GetCurrentMapType();
-
-        // no current map buff detected
-        // for future maps, can add specific buffs here
-        // if (map == MapType.DanceHall) { ... } หรือ MapType.CityStage 
-
-        switch (map)
-        {
-            default:
-                Debug.Log($"[DancerDuck] No Map Buff applied on current map ({map}). Ready for future maps.");
-                break;
-        }
+        // PDF (Page 3) confirms Dancer has no BuffMap or BuffMon.
+        // This override is intentionally left blank.
+        Debug.Log($"[DancerDuck] No BuffMon or BuffMap to initialize.");
     }
     #endregion
 
@@ -61,6 +48,9 @@ public class DancerDuck : Player, ISkillUser, IAttackable
         StartCoroutine(StepDanceRoutine());
     }
 
+    /// <summary>
+    /// PDF: StepDance -> no take any damage -> Stun Enemy in Range [cite: 3]
+    /// </summary>
     private IEnumerator StepDanceRoutine()
     {
         _isSkillActive = true;
@@ -68,13 +58,18 @@ public class DancerDuck : Player, ISkillUser, IAttackable
         if (_danceEffect != null)
             Instantiate(_danceEffect, transform.position, Quaternion.identity);
 
+        // 1. Apply "no take any damage" (by hiding from enemies) for 2s
         HideFromEnemies(_hideDuration);
-        AffectNearbyEnemies();
+        
+        // 2. Apply Stun (Stop) and Damage (RangeAttack 3-4 Block) [cite: 3]
+        AffectNearbyEnemies(); 
+        
+        // 3. Apply speed boost for the *full skill duration*
         ApplySpeedModifier(_speedBoost, _skillDuration);
 
         yield return new WaitForSeconds(_skillDuration);
         _isSkillActive = false;
-        OnSkillCooldown();
+        OnSkillCooldown(); // Call the base override
     }
 
     public override void OnSkillCooldown()
@@ -92,6 +87,9 @@ public class DancerDuck : Player, ISkillUser, IAttackable
     #endregion
 
     #region Enemy Interaction
+    /// <summary>
+    /// Makes the player undetectable by enemies for a short duration.
+    /// </summary>
     private void HideFromEnemies(float time)
     {
         Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
@@ -100,6 +98,7 @@ public class DancerDuck : Player, ISkillUser, IAttackable
 
     private IEnumerator TemporarilyHide(Enemy[] enemies, float time)
     {
+        // Set CanDetectOverride to false to proxy "no take any damage" [cite: 3]
         foreach (var enemy in enemies)
             enemy.CanDetectOverride = false;
 
@@ -109,6 +108,9 @@ public class DancerDuck : Player, ISkillUser, IAttackable
             enemy.CanDetectOverride = true;
     }
 
+    /// <summary>
+    /// Applies Stun (Stop) and Damage to nearby enemies (3-4 Block range) [cite: 3]
+    /// </summary>
     private void AffectNearbyEnemies()
     {
         Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
@@ -119,8 +121,15 @@ public class DancerDuck : Player, ISkillUser, IAttackable
             if (enemy.DetectPlayer(playerPos))
             {
                 float distance = Vector2.Distance(playerPos, enemy.transform.position);
+                
+                // Check if enemy is in the 3.5f (3-4 block) range
                 if (distance <= _stopRange)
                 {
+                    // FIX: Added damage logic to match PDF "RangeAttack StepDance 3-4 Block" [cite: 3]
+                    if (enemy.TryGetComponent<IDamageable>(out var target))
+                        ApplyDamage(target, _stepDanceDamage);
+
+                    // Apply Stun (Stop) [cite: 3]
                     if (enemy is IMoveable moveableEnemy)
                         moveableEnemy.Stop();
                 }
@@ -132,11 +141,11 @@ public class DancerDuck : Player, ISkillUser, IAttackable
     #region IAttackable Implementation
     public override void Attack()
     {
-        // Waving Fan – 2 block attack (ground use)
+        // Waving Fan – 2 block attack (ground use) [cite: 3]
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 2f);
         foreach (var hit in hits)
         {
-            if (hit.TryGetComponent<IDamageable>(out var target))
+            if (hit.TryGetComponent<IDamageable>(out var target) && hit.GetComponent<Player>() == null)
                 ApplyDamage(target, 15);
         }
     }
@@ -153,7 +162,7 @@ public class DancerDuck : Player, ISkillUser, IAttackable
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, attackRange);
         foreach (var hit in hits)
         {
-            if (hit.TryGetComponent<IDamageable>(out var target))
+            if (hit.TryGetComponent<IDamageable>(out var target) && hit.GetComponent<Player>() == null)
                 ApplyDamage(target, scaledDamage);
         }
     }

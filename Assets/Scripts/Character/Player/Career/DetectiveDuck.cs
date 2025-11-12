@@ -2,16 +2,9 @@ using UnityEngine;
 using System.Collections;
 
 /// <summary>
-/// DetectiveDuck – Utility / Reveal career
-/// RevealHiddenItems → Randomly spawns 3 Buff Items within scan radius.
-/// 
-/// Attack:
-/// - JumpAttack (Default)
-/// - [CareerAttack] MagnifyLight (short-range cone attack)
-/// 
-/// ChargeAttack:
-/// - Infrared Scanner → All enemies lose detection for 3 sec (no alert / chase)
-/// 
+/// DetectiveDuck – Utility / Reveal career (ID 4, Tier B)
+/// RevealHiddenItems → Randomly spawns 3 Buff Items.
+/// ChargeAttack: Infrared Scanner → All enemies lose detection for 3 sec.
 /// BuffMon: None
 /// BuffMap: None
 /// </summary>
@@ -21,14 +14,28 @@ public class DetectiveDuck : Player, ISkillUser, IAttackable
     [Header("DetectiveDuck Settings")]
     [SerializeField] private GameObject _scanEffect;
     [SerializeField] private GameObject _magnifyLightPrefab;
-    [SerializeField] private float _magnifyRange = 2f;
+    [SerializeField] private float _magnifyRange = 2f;      // PDF: 2 Block
     [SerializeField] private float _scanRadius = 5f;
-    [SerializeField] private float _skillDuration = 25f;
-    [SerializeField] private float _skillCooldown = 20f;
-    [SerializeField] private float _noDetectDuration = 3f;
+    [SerializeField] private float _skillDuration = 25f;   // PDF: 25 Sec
+    [SerializeField] private float _skillCooldown = 20f;   // PDF: 20 Sec
+    [SerializeField] private float _noDetectDuration = 3f; // PDF: 3 Sec
 
     private bool _isSkillActive;
     private bool _isCooldown;
+    #endregion
+
+    #region Buffs (Map & Monster)
+
+    /// <summary>
+    /// (Override) Applies DetectiveDuck-specific buffs when the career is initialized.
+    /// This method is called by the base Player.Initialize() method.
+    /// </summary>
+    protected override void InitializeCareerBuffs()
+    {
+        // PDF (Page 4) confirms Detective has no BuffMap or BuffMon.
+        // This override is intentionally left blank.
+        Debug.Log($"[DetectiveDuck] No BuffMon or BuffMap to initialize.");
+    }
     #endregion
 
     #region ISkillUser Implementation
@@ -38,39 +45,40 @@ public class DetectiveDuck : Player, ISkillUser, IAttackable
         StartCoroutine(RevealHiddenItemsRoutine());
     }
 
+    /// <summary>
+    /// PDF: Reveal HiddenItems -> Random Spawn Buff Item 3 piece
+    /// </summary>
     private IEnumerator RevealHiddenItemsRoutine()
     {
         _isSkillActive = true;
         Debug.Log($"{PlayerName} uses skill: RevealHiddenItems!");
 
-        // สร้างเอฟเฟกต์สแกนในฉาก
         if (_scanEffect != null)
             Instantiate(_scanEffect, transform.position, Quaternion.identity);
 
-        // Detect env in range _scanRadius
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, _scanRadius);
         int buffSpawned = 0;
 
+        // 1. Reveal existing hidden items (assuming tag "HiddenItem")
         foreach (var hit in hits)
         {
             if (hit.CompareTag("HiddenItem") && buffSpawned < 3)
             {
-                // Make item visible (or respawn)
                 hit.gameObject.SetActive(true);
                 buffSpawned++;
                 Debug.Log($"[{PlayerName}] Revealed hidden buff item at {hit.transform.position}");
             }
         }
 
-        if (buffSpawned == 0)
+        // 2. If no hidden items were found (or not enough), spawn new ones
+        // (PDF: "Random Spawn Buff Item 3 piece" - implies spawning if not found)
+        for (int i = buffSpawned; i < 3; i++)
         {
-            // No hidden items → random spawn 3 new ones
-            for (int i = 0; i < 3; i++)
-            {
-                Vector2 randomPos = (Vector2)transform.position + Random.insideUnitCircle * _scanRadius;
-                SpawnBuffItem(randomPos);
-            }
+            Vector2 randomPos = (Vector2)transform.position + Random.insideUnitCircle * _scanRadius;
+            // Call the helper to spawn an item via the spawner
+            SpawnBuffItem(randomPos); 
         }
+        
 
         yield return new WaitForSeconds(_skillDuration);
         _isSkillActive = false;
@@ -91,10 +99,9 @@ public class DetectiveDuck : Player, ISkillUser, IAttackable
     }
     #endregion
     
-
     #region CareerAbility: Infrared Scanner (ChargeAttack)
     /// <summary>
-    /// Infrared Scanner → Temporarily disables enemy detection for _noDetectDuration seconds.
+    /// PDF: Infrared Scanner -> All Mon No Detect Range 3 Sec
     /// </summary>
     public override void ChargeAttack(float power)
     {
@@ -107,15 +114,18 @@ public class DetectiveDuck : Player, ISkillUser, IAttackable
         Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
         foreach (var enemy in enemies)
         {
-            enemy.CanDetectOverride = false;
+            if (enemy != null)
+                enemy.CanDetectOverride = false;
         }
 
         Debug.Log($"[{PlayerName}] All enemies detection disabled for {_noDetectDuration}s");
         yield return new WaitForSeconds(_noDetectDuration);
 
+        // Re-enable detection
         foreach (var enemy in enemies)
         {
-            enemy.CanDetectOverride = true;
+            if (enemy != null)
+                enemy.CanDetectOverride = true;
         }
     }
     #endregion
@@ -123,11 +133,11 @@ public class DetectiveDuck : Player, ISkillUser, IAttackable
     #region IAttackable Implementation
     public override void Attack()
     {
-        // MagnifyLight short cone attack
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, _magnifyRange);
+        // PDF: [CareerAttack] MagnifyLight (2 Block)
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, _magnifyRange); // _magnifyRange = 2f
         foreach (var hit in hits)
         {
-            if (hit.TryGetComponent<IDamageable>(out var target))
+            if (hit.TryGetComponent<IDamageable>(out var target) && hit.GetComponent<Player>() == null)
                 ApplyDamage(target, 15);
         }
 
@@ -139,8 +149,9 @@ public class DetectiveDuck : Player, ISkillUser, IAttackable
 
     public override void RangeAttack(Transform target)
     {
+        // PDF: MagnifyLight 2 Block [LightRay]
         if (target == null) return;
-        if (Vector2.Distance(transform.position, target.position) <= _magnifyRange + 1f)
+        if (Vector2.Distance(transform.position, target.position) <= _magnifyRange) // Use _magnifyRange
         {
             if (target.TryGetComponent<IDamageable>(out var enemy))
                 ApplyDamage(enemy, 10);
@@ -154,10 +165,24 @@ public class DetectiveDuck : Player, ISkillUser, IAttackable
     #endregion
 
     #region Helper
+    /// <summary>
+    /// Spawns a buff item by calling the CollectibleSpawner.
+    /// </summary>
     private void SpawnBuffItem(Vector2 position)
     {
-        // เรียกผ่านระบบ CollectibleSpawner จริงในอนาคต
-        Debug.Log($"[{PlayerName}] Spawned Buff Item at {position}");
+        // FIX: Call the actual Spawner (using the quick find method)
+        CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
+        if (spawner != null)
+        {
+            // Assuming SpawnAtPosition spawns a random item (Coin, Buff, etc.)
+            // To guarantee ONLY buff items, CollectibleSpawner would need a specific method.
+            spawner.SpawnAtPosition(position);
+            Debug.Log($"[{PlayerName}] Spawned Buff Item at {position}");
+        }
+        else
+        {
+            Debug.LogWarning($"[{PlayerName}] CollectibleSpawner not found! Cannot spawn item.");
+        }
     }
     #endregion
 }

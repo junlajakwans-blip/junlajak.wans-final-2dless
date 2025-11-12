@@ -132,8 +132,8 @@ public class ChefDuck : Player, ISkillUser, IAttackable
                 case EnemyType.DoggoMon:
                 case EnemyType.MooPingMon:
                 case EnemyType.PeterMon:
-               // case EnemyType.LotteryMon:
-               //     enemy.DisableBehavior(_buffTime);
+                case EnemyType.LottoryMon:
+                    enemy.DisableBehavior(_buffTime);
                     Debug.Log($"[{PlayerName}] BuffMon applied: {enemy.EnemyType} disabled for {_buffTime}s");
                     break;
             }
@@ -180,16 +180,5 @@ public class ChefDuck : Player, ISkillUser, IAttackable
     {
         target.TakeDamage(amount);
     }
-    #endregion
-
-    #region Debug Visual
-    // Only for visualizing burn range in editor
-#if UNITY_EDITOR
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = new Color(1f, 0.3f, 0f, 0.35f);
-        Gizmos.DrawWireSphere(transform.position, _burnRange);
-    }
-#endif
     #endregion
 }

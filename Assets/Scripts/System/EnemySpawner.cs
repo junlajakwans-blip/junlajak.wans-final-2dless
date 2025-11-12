@@ -131,6 +131,46 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     public int GetSpawnCount() => _activeEnemies.Count;
     #endregion
 
+    /// <summary>
+    /// Spawns a specific enemy type at a given position.
+    /// Used by special skills (e.g., SingerDuck).
+    /// </summary>
+    /// <param name="type">The specific EnemyType to spawn.</param>
+    /// <param name="position">The world position to spawn at.</param>
+    public GameObject SpawnSpecificEnemy(EnemyType type, Vector3 position)
+    {
+        if (_objectPool == null)
+        {
+            Debug.LogWarning("[EnemySpawner] Object Pool not initialized. Cannot spawn specific enemy.");
+            return null;
+        }
+
+        // Find the prefab that matches the requested EnemyType
+        GameObject prefabToSpawn = _enemyPrefabs.FirstOrDefault(prefab =>
+        {
+            var enemyComp = prefab.GetComponent<Enemy>();
+            return enemyComp != null && enemyComp.EnemyType == type;
+        });
+
+        if (prefabToSpawn == null)
+        {
+            Debug.LogError($"[EnemySpawner] No prefab found for EnemyType: {type}");
+            return null;
+        }
+
+        // Use the prefab's name as the tag for the object pool
+        string objectTag = prefabToSpawn.name;
+
+        var enemy = _objectPool.SpawnFromPool(objectTag, position, Quaternion.identity);
+        
+        if (enemy != null)
+        {
+            _activeEnemies.Add(enemy);
+            Debug.Log($"[EnemySpawner] Spawned specific enemy {enemy.name} at {position}");
+        }
+
+        return enemy;
+    }
 
     #region Wave Control
     /// <summary>

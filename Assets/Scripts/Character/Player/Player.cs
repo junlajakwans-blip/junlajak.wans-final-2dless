@@ -17,12 +17,12 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
     [SerializeField] private Currency _currency;
 
     [Header("Components")]
-    [SerializeField] private Rigidbody2D _rigidbody;
+    [SerializeField] protected Rigidbody2D _rigidbody;
     [SerializeField] private CharacterRigAnimator _animator;
 
     [Header("Stats")]
     [SerializeField] private float _moveSpeed = 5f;
-    [SerializeField] private float _jumpForce = 5f;
+    [SerializeField] protected float _jumpForce = 5f;
     [SerializeField] protected int _maxHealth = 100;
     [SerializeField] protected int _currentHealth;
 
@@ -137,7 +137,7 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
 
 
     #region Jump & Jump Attack
-    public void Jump()
+    public virtual void Jump()
     {
         if (_isDead || !_isGrounded) return;
 
@@ -365,7 +365,10 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
         Debug.Log($"[Player] Form state updated. Duckling = {_playerData.IsDefaultDuckling}");
     }
 
-
+    protected virtual void InitializeCareerBuffs()
+    {
+        //Ducklng No Buff
+    }
     #endregion
 
 
