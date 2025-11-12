@@ -26,4 +26,18 @@ public class GoldenMon : Enemy
         int coins = Random.Range(10, 20) * _coinDropMultiplier;
         Debug.Log($"{name} drops {coins} GOLD coins!");
     }
+
+    public override void Die()
+    {
+        base.Die();
+
+        // GarunteeDrop 1 Card
+        CardManager manager = FindFirstObjectByType<CardManager>();
+        if (manager != null)
+            manager.AddCareerCard();
+        else
+            Debug.LogWarning("[GoldenMon] CardManager not found!");
+
+        DropGoldenCoins();
+    }
 }

@@ -4,7 +4,9 @@ using System.Collections;
 /// <summary>
 /// DancerDuck – Evasion / Crowd Control career
 /// StepDance: temporarily undetectable by enemies (2s) + stop moving enemies within 3–4 blocks.
-/// Also supports JumpAttack logic (jump-on-enemy collider kill).
+/// 
+/// BuffMon: (None currently implemented)
+/// BuffMap: (None currently; reserved for future maps such as DanceHall or CityStage)
 /// </summary>
 public class DancerDuck : Player, ISkillUser, IAttackable
 {
@@ -170,5 +172,16 @@ public class DancerDuck : Player, ISkillUser, IAttackable
     {
         target.TakeDamage(amount);
     }
+    #endregion
+
+    #region Debug Visual
+    // Only for visualizing burn range in editor
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = new Color(1f, 0.3f, 0f, 0.35f);
+        Gizmos.DrawWireSphere(transform.position, _burnRange);
+    }
+#endif
     #endregion
 }

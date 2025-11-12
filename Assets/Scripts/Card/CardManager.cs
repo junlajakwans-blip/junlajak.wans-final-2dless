@@ -172,4 +172,58 @@ public class CardManager : MonoBehaviour
         }
     }
     #endregion
+
+
+    #region Career Card Drop (GoldenMon)
+    /// <summary>
+    /// Called when a GoldenMon dies.
+    /// Adds exactly 1 career card based on defined PDF drop rates.
+    /// </summary>
+    public void AddCareerCard()
+    {
+        DuckCareer career = GetRandomCareerFromRate();
+        if (career == DuckCareer.None || career == DuckCareer.Muscle)
+        {
+            Debug.LogWarning("[CardManager] Invalid or non-droppable career type.");
+            return;
+        }
+
+        // contructor
+        string cardID = System.Guid.NewGuid().ToString();
+        string skillName = career.ToString();
+        string description = $"Career Card: {career}";
+        Sprite icon = null; //Can call from spiteatlas
+
+        Card newCard = new Card(cardID, CardType.Career, skillName, description, icon);
+
+        AddCard(newCard);
+        Debug.Log($"[CardManager] Dropped career card: {career}");
+    }
+
+    /// <summary>
+    /// Randomly selects a career based on DUFFDUCK_CAREER.pdf drop rate table.
+    /// </summary>
+    private DuckCareer GetRandomCareerFromRate()
+    {
+        float roll = Random.Range(0f, 100f);
+        float sum = 0f;
+
+        // B-tier
+        if (roll < (sum += 13f)) return DuckCareer.Dancer;        // 13%
+        else if (roll < (sum += 12f)) return DuckCareer.Detective; // 25%
+        else if (roll < (sum += 12f)) return DuckCareer.Motorcycle; // 37%
+
+        // A-tier
+        else if (roll < (sum += 10f)) return DuckCareer.Chef;       // 47%
+        else if (roll < (sum += 9f)) return DuckCareer.Firefighter; // 56%
+        else if (roll < (sum += 10f)) return DuckCareer.Programmer; // 66%
+
+        // S-tier
+        else if (roll < (sum += 10f)) return DuckCareer.Doctor;     // 76%
+        else if (roll < (sum += 6f)) return DuckCareer.Singer;      // 82%
+
+        // No Drop (should not happen for GoldenMon)
+        return DuckCareer.None;
+    }
+    #endregion
 }

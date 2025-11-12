@@ -27,14 +27,6 @@ public class MapCollectibleData
     #endregion
 }
 
-public enum CollectibleType
-{
-    Coin,
-    PowerUp,
-    Special,
-    KeyItem
-}
-
 public enum RarityLevel
 {
     Common,

@@ -2,9 +2,19 @@ using UnityEngine;
 using System.Collections;
 
 /// <summary>
-/// ChefDuck – Career Buff / AoE playstyle
-/// (ISkillUser, IAttackable, IDamageable)
+/// ChefDuck – AoE / Support career
+/// Ducklicious → Roast Duckeddon: burns enemies in 5 blocks, grants bonus coins.
+///
+/// BuffMon : CookBuffRoutine() supports disabling certain enemies behaviors for a short time:
+/// - DoggoMon → No Barking
+/// - MooPingMon → No ThrowSkewer
+/// - PeterMon → No Attack
+/// - LotteryMon → % Drop Coin between 3–8 coins
+///
+/// BuffMap: Kitchen → Wall behind pushes slowly.
 /// </summary>
+
+
 public class ChefDuck : Player, ISkillUser, IAttackable
 {
     #region Fields
@@ -23,6 +33,38 @@ public class ChefDuck : Player, ISkillUser, IAttackable
     private bool _isCooldown;
     #endregion
 
+    private void Start()
+    {
+        InitializeCareerMapBuff(); // ตรวจและใช้ MapBuff จริง
+    }
+
+    #region Map Buff (Active for Kitchen + future-ready)
+    /// <summary>
+    /// Applies ChefDuck-specific map buff when in Kitchen (and supports future maps).
+    /// </summary>
+    private void InitializeCareerMapBuff()
+    {
+        var map = GetCurrentMapType();
+
+        switch (map)
+        {
+            case MapType.Kitchen:
+                var mapGen = FindFirstObjectByType<MapGeneratorBase>();
+                if (mapGen != null)
+                {
+                    //TODO: Implement actual wall push speed adjustment in MapGeneratorBase
+                    //mapGen.SetWallPushSpeed(0.3f); // Wall speed Slower 
+                    Debug.Log("[ChefDuck] Map Buff applied: Kitchen → Wall behind pushes slowly.");
+                }
+                break;
+
+            default:
+                Debug.Log($"[ChefDuck] No map-specific buff active. Ready for future maps. (Current: {map})");
+                break;
+        }
+    }
+    #endregion
+
     #region ISkillUser Implementation
     public override void UseSkill()
     {
@@ -30,29 +72,23 @@ public class ChefDuck : Player, ISkillUser, IAttackable
         StartCoroutine(RoastDuckeddon());
     }
 
-    private IEnumerator RoastDuckeddon()
+    private IEnumerator RoastDuckeddon() // Ducklicious → Roast Duckeddon Chef Skill
     {
         _isSkillActive = true;
         Debug.Log($"{PlayerName} uses skill: Ducklicious → Roast Duckeddon!");
 
-        // Show pan effect
         if (_panEffect != null)
             Instantiate(_panEffect, transform.position, Quaternion.identity);
 
-        // Start CookBuff concurrently (increase Speed, BuffMap, BuffMon)
         StartCoroutine(CookBuffRoutine());
 
-        // Deal AoE damage
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, _burnRange);
         foreach (var hit in hits)
         {
             if (hit.TryGetComponent<IDamageable>(out var target))
-            {
                 ApplyDamage(target, _burnDamage);
-            }
         }
 
-        // Random bonus Coin (like LotteryMon)
         int bonusCoin = Random.Range(_minCoinBonus, _maxCoinBonus + 1);
         AddCoin(bonusCoin);
         Debug.Log($"[ChefDuck] +{bonusCoin} bonus coins from Roast Duckeddon!");
@@ -67,7 +103,7 @@ public class ChefDuck : Player, ISkillUser, IAttackable
         StartCoroutine(CooldownRoutine());
     }
 
-    private IEnumerator CooldownRoutine()
+    private IEnumerator CooldownRoutine() // Skill Cooldown
     {
         _isCooldown = true;
         yield return new WaitForSeconds(_skillCooldown);
@@ -76,39 +112,37 @@ public class ChefDuck : Player, ISkillUser, IAttackable
     }
     #endregion
 
+    #region CookBuffRoutine : BuffMon Support
 
-    #region  CookBuffRoutine : Secondary buff (increase Speed and BuffMap/Mon)
+    /// <summary>
+    /// BuffMon: DoggoMon -> No Barking / MooPingMon -> No ThrowSkewer / PeterMon -> No Attack /LotteryMon  -> % Drop Coin Between 3-8 Coin
+    /// </summary>
     private IEnumerator CookBuffRoutine()
+    //TODO: Disable certain enemies for _buffTime 
     {
         Debug.Log($"[{PlayerName}] starts CookBuff!");
         ApplySpeedModifier(_speedMultiplier, _buffTime);
 
-        // Example of enabling BuffMap / BuffMon
-        // (In a real system, might send event to Manager to handle)
-        EnableMapBuff("Kitchen", _buffTime);
-        DisableEnemyBehavior("DoggoMon", _buffTime);
-        DisableEnemyBehavior("MooPingMon", _buffTime);
-        DisableEnemyBehavior("PeterMon", _buffTime);
-        DisableEnemyBehavior("LotteryMon", _buffTime);
+        // Enemy Interaction: disable certain enemies
+        Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
+        foreach (var enemy in enemies)
+        {
+            switch (enemy.EnemyType)
+            {
+                case EnemyType.DoggoMon:
+                case EnemyType.MooPingMon:
+                case EnemyType.PeterMon:
+               // case EnemyType.LotteryMon:
+               //     enemy.DisableBehavior(_buffTime);
+                    Debug.Log($"[{PlayerName}] BuffMon applied: {enemy.EnemyType} disabled for {_buffTime}s");
+                    break;
+            }
+        }
 
         yield return new WaitForSeconds(_buffTime);
         Debug.Log($"[{PlayerName}] CookBuff ended!");
     }
-
-    // --------------------------------------------------------
-    // ฟังก์ชันช่วยจำลอง BuffMap / BuffMon
-    // --------------------------------------------------------
-    private void EnableMapBuff(string mapName, float time)
-    {
-        Debug.Log($"[MapBuff] {mapName} - Wall behind push slowly for {time}s");
-    }
-
-    private void DisableEnemyBehavior(string enemyName, float time)
-    {
-        Debug.Log($"[BuffMon] {enemyName} disabled for {time}s");
-    }
     #endregion
-
 
     #region IAttackable Implementation
     public override void Attack()
@@ -117,9 +151,7 @@ public class ChefDuck : Player, ISkillUser, IAttackable
         foreach (var hit in hits)
         {
             if (hit.TryGetComponent<IDamageable>(out var target))
-            {
                 ApplyDamage(target, 15);
-            }
         }
     }
 
@@ -130,9 +162,7 @@ public class ChefDuck : Player, ISkillUser, IAttackable
         foreach (var hit in hits)
         {
             if (hit.TryGetComponent<IDamageable>(out var target))
-            {
                 ApplyDamage(target, 20);
-            }
         }
     }
 
@@ -150,15 +180,16 @@ public class ChefDuck : Player, ISkillUser, IAttackable
     {
         target.TakeDamage(amount);
     }
-
     #endregion
 
-
     #region Debug Visual
+    // Only for visualizing burn range in editor
+#if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = new Color(1f, 0.3f, 0f, 0.35f);
         Gizmos.DrawWireSphere(transform.position, _burnRange);
     }
-#endregion
+#endif
+    #endregion
 }

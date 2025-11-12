@@ -23,12 +23,12 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
     [Header("Stats")]
     [SerializeField] private float _moveSpeed = 5f;
     [SerializeField] private float _jumpForce = 5f;
-    [SerializeField] private int _maxHealth = 100;
-    [SerializeField] private int _currentHealth;
+    [SerializeField] protected int _maxHealth = 100;
+    [SerializeField] protected int _currentHealth;
 
     [Header("Runtime State")]
     [SerializeField] private bool _isGrounded = false;
-    [SerializeField] private bool _isDead = false;
+    [SerializeField] protected bool _isDead = false;
 
     [Header("Environment Awareness")]
     [SerializeField] protected MapType _currentMapType = MapType.None;
@@ -40,6 +40,10 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
     private float _speedModifier = 1f;
     private Coroutine _speedRoutine;
     private WaitForSeconds _speedWait;
+    
+    public int CurrentHealth => _currentHealth;
+    public int MaxHealth => _maxHealth;
+    public bool IsDead => _isDead;
 
     public bool CanInteract => throw new System.NotImplementedException();
     public string PlayerName => _playerData != null ? _playerData.PlayerName : "Unknown";
@@ -234,7 +238,8 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
     }
 
     /// <summary>
-    /// Heal the player by a specified amount.
+    /// Player – Default form (no passive heal)
+    /// Only way to Heal Player or some career must use BuffItem when Icollectable
     /// </summary>
     /// <param name="amount"></param>
     public void Heal(int amount)
@@ -245,7 +250,7 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
         Debug.Log($"[Player] Healed +{amount}. HP: {_currentHealth}/{_maxHealth}");
     }
 
-    private void Die()
+    protected virtual void Die()
     {
         _isDead = true;
         _rigidbody.linearVelocity = Vector2.zero;
@@ -266,13 +271,11 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
     /// <summary>
     /// Player throws an item.
     /// </summary>
-    public void ThrowItem()
+    public virtual void ThrowItem()
     {
         Debug.Log("[Player] Threw an item!");
         // TODO: projectile, animation, or effect
     }
-
-
 
     #endregion
 
@@ -284,9 +287,10 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
         _currency.AddCoin(amount);
     }
 
-    public bool SpendCoin(int amount)
+    public void AddToken(int amount)
     {
-        return _currency != null && _currency.UseCoin(amount);
+        if (_currency == null) return;
+        _currency.AddToken(amount);
     }
 
     public Currency GetCurrency() => _currency;
@@ -407,4 +411,5 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
         throw new System.NotImplementedException();
     }
     #endregion
+
 }
