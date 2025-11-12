@@ -180,4 +180,25 @@ public class GameManager : MonoBehaviour
         Debug.Log("[GameManager] Game progress saved.");
     }
     #endregion
+
+    public void SetupStores()
+    {
+        Currency currencyData = new Currency();
+        StoreManager storeManager = new StoreManager(currencyData); 
+
+        CardManager cardManager = FindFirstObjectByType<CardManager>();
+        
+        //  Get Store Can access Card Manager
+        if (cardManager != null)
+            storeManager.SetCardManager(cardManager);
+
+        // 3. Initialize Store Random Card
+        StoreRandomCard cardStore = new StoreRandomCard();
+        
+        //4. Upgrade Stat Player Shop
+        StoreUpgrade upgradeStore = new StoreUpgrade();
+        upgradeStore.Initialize(storeManager); 
+
+        Debug.Log("[GameManager] All store systems initialized successfully.");
+}
 }

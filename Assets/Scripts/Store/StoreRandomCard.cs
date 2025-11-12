@@ -1,62 +1,77 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// StoreRandomCard – Handles the exchange of 1 Token for a random Career Card (Tier B-A).
+/// </summary>
 public class StoreRandomCard : StoreBase
 {
     #region Fields
-    [SerializeField] private List<string> _cardPool = new List<string>();
-    [SerializeField] private int _drawPrice = 50;
-    [SerializeField, Range(0f, 1f)] private float _rareChance = 0.1f;
-    private System.Random _rng = new System.Random();
+    [Header("Card Summon Settings")]
+    private CardManager _cardManager;
+    private const string SUMMON_NAME = "Random Summon";
+    private const int TOKEN_COST = 1;
+
+    #endregion
+
+    #region Initialization
+    public override void Initialize(StoreManager storeManager)
+    {
+        base.Initialize(storeManager);
+        _storeName = "Card Exchange (Tier B-A)";
+        
+        // Add the service item (cost is tracked by Token, not Coin price in _storeItems)
+        _storeItems.Add(SUMMON_NAME, TOKEN_COST); 
+    }
     #endregion
 
     #region Override Methods
     public override void DisplayItems()
     {
         Debug.Log($" Store: {_storeName}");
-        Debug.Log($"Card draw price: {_drawPrice} coins");
-        Debug.Log($"Rare chance: {_rareChance * 100}%");
+        Debug.Log($" - {SUMMON_NAME}: {TOKEN_COST} Token");
     }
 
+    /// <summary>
+    /// Purchases the random card summon service using 1 Token.
+    /// </summary>
     public override bool Purchase(string itemName)
     {
-        return DrawRandomCard();
+        if (itemName != SUMMON_NAME)
+        {
+            Debug.LogWarning($" Invalid item for this store: {itemName}. Must be '{SUMMON_NAME}'.");
+            return false;
+        }
+
+        // Check currency (uses Token)
+        if (_storeManager.Currency.UseToken(TOKEN_COST))
+        {
+            SummonRandomCard();
+            Debug.Log($" Summon successful: 1 Card received.");
+            return true;
+        }
+
+        Debug.Log($" Not enough tokens to summon card: Need {TOKEN_COST} Token.");
+        return false;
     }
     #endregion
 
-    #region Random Draw Logic
-    public bool DrawRandomCard()
+    #region Summon Logic
+    /// <summary>
+    /// Calls the CardManager to add a random Tier B-A card to the inventory.
+    /// </summary>
+    public void SummonRandomCard()
     {
-        if (_cardPool == null || _cardPool.Count == 0)
+        if (_cardManager == null)
         {
-            Debug.LogWarning(" Card pool is empty, cannot draw.");
-            return false;
+            Debug.LogError("[StoreRandomCard] Cannot summon card; CardManager is missing.");
+            return;
         }
 
-        if (!_storeManager.Currency.UseCoin(_drawPrice))
-        {
-            Debug.Log(" Not enough coins to draw a card.");
-            return false;
-        }
-
-        string drawnCard = GetRandomCard();
-        _storeManager.UnlockItem(drawnCard);
-
-        Debug.Log($" You received card: {drawnCard}");
-        return true;
-    }
-
-    private string GetRandomCard()
-    {
-        int index = _rng.Next(0, _cardPool.Count);
-        string card = _cardPool[index];
-
-        if (_rng.NextDouble() < _rareChance)
-        {
-            card = card.ToUpper() + " ★RARE★";
-        }
-
-        return card;
+        // Delegate the complex drop rate and card creation logic to CardManager
+        _cardManager.AddCareerCard(); 
+        
+        // Note: CardManager.AddCareerCard() already handles the B-A-S tier drop rate logic.
     }
     #endregion
 }

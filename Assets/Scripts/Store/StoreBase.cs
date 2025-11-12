@@ -24,7 +24,7 @@ public abstract class StoreBase
     public abstract void DisplayItems();
     public abstract bool Purchase(string itemName);
 
-    public int GetItemPrice(string itemName)
+    public virtual int GetItemPrice(string itemName)
     {
         if (_storeItems.ContainsKey(itemName))
             return _storeItems[itemName];

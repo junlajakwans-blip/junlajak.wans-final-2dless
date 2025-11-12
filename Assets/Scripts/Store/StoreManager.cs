@@ -8,13 +8,21 @@ public class StoreManager
     [SerializeField] private Currency _currency;
     [SerializeField] private Dictionary<string, int> _availableItems = new Dictionary<string, int>();
     [SerializeField] private List<string> _unlockedItems = new List<string>();
+    private CardManager _cardManager;
     #endregion
 
     #region Properties
+
     public Currency Currency => _currency;
+    public CardManager CardManager => _cardManager;
     public Dictionary<string, int> AvailableItems => _availableItems;
     public List<string> UnlockedItems => _unlockedItems;
     #endregion
+
+    public StoreManager(Currency currency)
+    {
+        _currency = currency;
+    }
 
     #region Methods
     public bool CanAfford(string itemName)
@@ -67,4 +75,10 @@ public class StoreManager
         return -1;
     }
     #endregion
+
+    public void SetCardManager(CardManager manager)
+    {
+        _cardManager = manager;
+        Debug.Log("[StoreManager] CardManager dependency set.");
+    }
 }
