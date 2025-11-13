@@ -24,8 +24,14 @@ public class UIManager : MonoBehaviour
     [SerializeField] private CardSlotUI _cardSlotUI;
     [SerializeField] private MenuUI _menuUI;
     [SerializeField] private StoreUI _storeUI;
+
+    [Header("System References")]
+    [SerializeField] private StoreManager _storeManager;
+    
     #endregion
 
+
+        
     #region Health UI
     public void InitializeHealth(int maxHP)
     {
@@ -98,11 +104,6 @@ public class UIManager : MonoBehaviour
         _menuUI?.ShowResultMenu(score, coins);
     }
 
-    public void ShowStoreMenu(bool isActive)
-    {
-        _menuUI?.ShowStoreMenu(isActive);
-    }
-
     public void CloseAllMenus()
     {
         _menuUI?.CloseAllPanels();
@@ -112,17 +113,35 @@ public class UIManager : MonoBehaviour
     {
         return _menuUI != null && _menuUI.IsAnyPanelActive();
     }
+
+    public void ShowStoreMenu(bool isActive)
+    {
+        _menuUI?.ShowStoreMenu(isActive);
+    }
     #endregion
 
     #region Store UI
-    public void InitializeStore(System.Collections.Generic.List<string> items)
-    {
-        _storeUI?.InitializeStore(items);
+    public void InitializeStore(System.Collections.Generic.List<StoreBase> stores, StoreManager manager)
+{
+        // Store the manager instance locally (optional, but good for quick access)
+        _storeManager = manager; 
+        
+        if (_storeUI != null && stores.Count > 0)
+        {
+            // Pass the manager and the full store list to StoreUI
+            _storeUI.InitializeStore(manager, stores); 
+            
+            // Immediately update currency display
+            if (_storeManager.Currency != null)
+            {
+                 UpdateStoreCurrency(_storeManager.Currency.Coin, _storeManager.Currency.Token, _storeManager.Currency.KeyMap);
+            }
+        }
     }
 
-    public void UpdateStoreCurrency(int coins)
+    public void UpdateStoreCurrency(int coins, int tokens, int keys)
     {
-        _storeUI?.UpdateCurrencyDisplay(coins);
+        _storeUI?.UpdateCurrencyDisplay(coins, tokens, keys);
     }
     #endregion
 }

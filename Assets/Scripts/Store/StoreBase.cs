@@ -7,6 +7,7 @@ public abstract class StoreBase
     protected string _storeName;
     protected Dictionary<string, int> _storeItems = new Dictionary<string, int>();
     protected StoreManager _storeManager;
+
     #endregion
 
     #region Properties

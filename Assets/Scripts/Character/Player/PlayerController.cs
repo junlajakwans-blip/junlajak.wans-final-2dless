@@ -60,6 +60,14 @@ public class PlayerController : MonoBehaviour
             _moveInput.x = 0;
 
         // --------------------------------------
+        // JUMP (space)
+        // --------------------------------------
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            _player.Jump();
+        }
+
+        // --------------------------------------
         // USE CAREER SKILL (W)
         // --------------------------------------
         if (Input.GetKeyDown(KeyCode.W))
@@ -78,9 +86,9 @@ public class PlayerController : MonoBehaviour
         }
 
         // --------------------------------------
-        // THROW ITEM (F)
+        // THROW ITEM (R)
         // --------------------------------------
-        if (Input.GetKeyDown(KeyCode.F))
+        if (Input.GetKeyDown(KeyCode.R))
         {
             if (_player.GetCurrentCareerID() == DuckCareer.Duckling)
                 _player.ThrowItem();

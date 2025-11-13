@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic; // Added for list access in ShowStoreMenu (removed below)
 
 public class MenuUI : MonoBehaviour
 {
@@ -33,6 +34,10 @@ public class MenuUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Controls the visibility of the Store Menu panel.
+    /// NOTE: Data initialization must be handled by UIManager.InitializeStore().
+    /// </summary>
     public void ShowStoreMenu(bool isActive)
     {
         if (_storePanel != null)
@@ -40,9 +45,6 @@ public class MenuUI : MonoBehaviour
             _storePanel.SetActive(isActive);
             _currentActivePanel = isActive ? _storePanel : null;
         }
-
-        if (isActive && _storeUI != null)
-            _storeUI.InitializeStore(new System.Collections.Generic.List<string>());
     }
 
     public void CloseAllPanels()
