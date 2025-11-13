@@ -8,7 +8,6 @@ public class SaveSystem : MonoBehaviour
     private static SaveSystem _instance;
     private string _saveFilePath;
     private string _backupFilePath;
-    private PlayerData _playerData;
     private GameProgressData _progressData;
     #endregion
 
@@ -38,9 +37,13 @@ public class SaveSystem : MonoBehaviour
         _backupFilePath = Path.Combine(Application.persistentDataPath, "save_backup.json");
 
         _progressData = new GameProgressData();
-        _playerData = new PlayerData();
 
         LoadData();
+    }
+
+    public GameProgressData GetProgressData()
+    {
+        return _progressData;
     }
 
     public void SaveData()
@@ -66,7 +69,7 @@ public class SaveSystem : MonoBehaviour
             {
                 string json = File.ReadAllText(_saveFilePath);
                 _progressData = JsonUtility.FromJson<GameProgressData>(json);
-                Debug.Log($"✅ Loaded save file: {_saveFilePath}");
+                Debug.Log($"Loaded save file: {_saveFilePath}");
             }
             else
             {
@@ -84,7 +87,7 @@ public class SaveSystem : MonoBehaviour
     {
         _progressData = new GameProgressData();
         SaveData();
-        Debug.Log("🗑️ Save data reset complete.");
+        Debug.Log("Save data reset complete.");
     }
 
     public void BackupSaveFile()
@@ -94,7 +97,7 @@ public class SaveSystem : MonoBehaviour
             if (File.Exists(_saveFilePath))
             {
                 File.Copy(_saveFilePath, _backupFilePath, true);
-                Debug.Log($"📦 Backup created at {_backupFilePath}");
+                Debug.Log($"Backup created at {_backupFilePath}");
             }
         }
         catch (System.Exception e)

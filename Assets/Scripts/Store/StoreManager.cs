@@ -6,6 +6,7 @@ public class StoreManager
 {
     #region Fields
     [SerializeField] private Currency _currency;
+    [SerializeField] private GameProgressData _progressData;
     [SerializeField] private Dictionary<string, int> _availableItems = new Dictionary<string, int>();
     [SerializeField] private List<string> _unlockedItems = new List<string>();
     private CardManager _cardManager;
@@ -15,13 +16,15 @@ public class StoreManager
 
     public Currency Currency => _currency;
     public CardManager CardManager => _cardManager;
+    public GameProgressData ProgressData => _progressData;
     public Dictionary<string, int> AvailableItems => _availableItems;
     public List<string> UnlockedItems => _unlockedItems;
     #endregion
 
-    public StoreManager(Currency currency)
+    public StoreManager(Currency currency, GameProgressData progressData)
     {
         _currency = currency;
+        _progressData = progressData;
     }
 
     #region Methods

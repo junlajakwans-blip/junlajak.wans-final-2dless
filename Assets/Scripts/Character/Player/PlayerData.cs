@@ -36,6 +36,21 @@ public class PlayerData
     public GameProgressData Progress => _progress;
     #endregion
 
+    #region Constructor
+    public PlayerData(Currency currency, GameProgressData progress)
+    {
+        _currency = currency;
+        _progress = progress;
+
+        // Set base stats
+        _maxHealth = 100;
+        _speed = 5f;
+        _attackPower = 10f;
+        _defense = 5;
+        _isDefaultDuckling = true;
+    }
+    #endregion
+
 
     #region Methods
     /// <summary>

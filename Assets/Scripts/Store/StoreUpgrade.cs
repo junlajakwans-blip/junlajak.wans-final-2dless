@@ -109,6 +109,8 @@ public class StoreUpgrade : StoreBase
         {
             // NOTE: External system (GameManager/PlayerData) must read this level 
             // and apply the corresponding HP multiplier (Level * 10).
+            _storeManager.ProgressData.PermanentHPUpgradeLevel = newLevel;
+
             effectLog = $" → Permanent Max HP +{HP_BONUS_PER_LEVEL} (Total Bonus: {HP_BONUS_PER_LEVEL * newLevel})";
         }
         

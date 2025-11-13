@@ -30,6 +30,9 @@ public class GameManager : MonoBehaviour
     public int Score => _score;
     public float PlayTime => _playTime;
     public Player Player => _player;
+    private GameProgressData _persistentProgress;
+    private StoreManager _storeManager;
+    private Currency _currencyData;
     #endregion
 
 
@@ -66,10 +69,20 @@ public class GameManager : MonoBehaviour
     #region Initialization
     public void InitializeGame() //TODO: Implement initialization logic
     {
-        _saveSystem ??= FindFirstObjectOfType<SaveSystem>();
-        _uiManager ??= FindFirstObjectOfType<UIManager>();
-        //_sceneLoader ??= FindFirstObjectOfType<SceneLoader>();
-        _player ??= FindFirstObjectOfType<Player>();
+        _saveSystem ??= FindFirstObjectByType<SaveSystem>();
+        _uiManager ??= FindFirstObjectByType<UIManager>();
+        _player ??= FindFirstObjectByType<Player>();
+
+        _persistentProgress = _saveSystem != null ? _saveSystem.GetProgressData() : new GameProgressData();
+
+        SetupStores(_persistentProgress);
+        
+        PlayerData playerData = new PlayerData(_currencyData, _persistentProgress);
+        
+        int hpBonus = _persistentProgress.PermanentHPUpgradeLevel * 10;
+        playerData.UpgradeStat("MaxHealth", hpBonus);
+        
+        _player.Initialize(playerData);
 
         _currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
         _isPaused = false;
@@ -79,15 +92,6 @@ public class GameManager : MonoBehaviour
         Debug.Log($"[GameManager] Initialized. Scene: {_currentScene}");
     }
 
-    private T FindFirstObjectOfType<T>()
-    {
-        throw new NotImplementedException();
-    }
-
-    private T FindfirstObjectOfType<T>()
-    {
-        throw new NotImplementedException();
-    }
     #endregion
 
 
@@ -176,29 +180,46 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        //_saveSystem.SaveData(_player, _score, _playTime);
+        _persistentProgress.UpdateBestScore(_score);
+        _persistentProgress.PlayTime += _playTime;
+        _persistentProgress.TotalCoins = _currencyData.Coin;
+        
+        _saveSystem.SaveData();
         Debug.Log("[GameManager] Game progress saved.");
     }
     #endregion
 
-    public void SetupStores()
+    public void SetupStores(GameProgressData progressData)
     {
-        Currency currencyData = new Currency();
-        StoreManager storeManager = new StoreManager(currencyData); 
+        _currencyData = new Currency();
+        _storeManager = new StoreManager(_currencyData, progressData);
 
         CardManager cardManager = FindFirstObjectByType<CardManager>();
-        
+
         //  Get Store Can access Card Manager
         if (cardManager != null)
-            storeManager.SetCardManager(cardManager);
+            _storeManager.SetCardManager(cardManager);
 
-        // 3. Initialize Store Random Card
+        // 3. STORE : RANDOM career card sell
         StoreRandomCard cardStore = new StoreRandomCard();
-        
-        //4. Upgrade Stat Player Shop
+        cardStore.Initialize(_storeManager);
+
+        //4. STORE : UPGRADE stat player shop
         StoreUpgrade upgradeStore = new StoreUpgrade();
-        upgradeStore.Initialize(storeManager); 
+        upgradeStore.Initialize(_storeManager);
+
+        // 5. STORE : MAP sell
+        StoreMap mapStore = new StoreMap();
+        mapStore.Initialize(_storeManager);
+        mapStore.OnMapUnlockedEvent += HandleMapUnlocked;
 
         Debug.Log("[GameManager] All store systems initialized successfully.");
-}
+    }
+    
+    private void HandleMapUnlocked(string mapName)
+    {
+        _persistentProgress.AddUnlockedMap(mapName);
+        SaveProgress(); 
+        Debug.Log($"[GameManager] New map unlocked and saved: {mapName}");
+    }
 }
