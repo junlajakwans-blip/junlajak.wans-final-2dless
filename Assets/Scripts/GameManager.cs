@@ -1,5 +1,7 @@
 using UnityEngine;
 using System;
+using System.Collections.Generic;
+
 
 /// <summary>
 /// Centralized Game Manager — controls scene flow, pause state, saving, and global references.
@@ -31,10 +33,13 @@ public class GameManager : MonoBehaviour
     public float PlayTime => _playTime;
     public Player Player => _player;
     private GameProgressData _persistentProgress;
-    private StoreManager _storeManager;
     private Currency _currencyData;
+    private StoreManager _storeManager;
     #endregion
 
+    public Currency GetCurrency() => _currencyData;
+    public StoreManager GetStoreManager() => _storeManager; 
+    public List<StoreBase> GetStoreList() => _storeManager?.Stores;
 
     #region Unity Lifecycle
     private void Awake()

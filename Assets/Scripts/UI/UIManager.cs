@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class UIManager : MonoBehaviour
 {
@@ -14,6 +15,8 @@ public class UIManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        ShowMainMenu();
     }
     #endregion
 
@@ -30,8 +33,52 @@ public class UIManager : MonoBehaviour
     
     #endregion
 
+    public GameObject panelMainMenu;
+    public GameObject panelSelectMap;
+    public GameObject panelStore;
+    public GameObject panelSettings;
 
+
+    #region Main Menu
+
+    public void ShowMainMenu()
+    {
+        Debug.Log(">> OPEN MAIN MENU");
+        SetPanel(panelMainMenu);
+    }
+
+    public void ShowSelectMap()
+    {
+        Debug.Log(">> OPEN SELECT MAP");
+        SetPanel(panelSelectMap);
+    }
+
+    public void ShowStoreMenu(bool isActive)
+    {
+        _menuUI?.ShowStoreMenu(isActive);
+
+        if (isActive)
+        {
+            var gm = GameManager.Instance;
+            if (gm != null)
+            {
+                var stores = gm.GetStoreList();
+                var storeManager = gm.GetStoreManager();
+                _menuUI?.InitializeStore(stores, storeManager);  
+            }
+        }
+    }
+
+    private void SetPanel(GameObject target)
+    {
+        panelMainMenu.SetActive(panelMainMenu == target);
+        panelSelectMap.SetActive(panelSelectMap == target);
+        panelStore.SetActive(panelStore == target);
+        panelSettings.SetActive(panelSettings == target);
+    }
+    #endregion
         
+
     #region Health UI
     public void InitializeHealth(int maxHP)
     {
@@ -93,7 +140,8 @@ public class UIManager : MonoBehaviour
     }
     #endregion
 
-    #region Menu UI
+
+    #region Menu UI During Gameplay
     public void ShowPauseMenu(bool isActive)
     {
         _menuUI?.ShowPauseMenu(isActive);
@@ -114,34 +162,21 @@ public class UIManager : MonoBehaviour
         return _menuUI != null && _menuUI.IsAnyPanelActive();
     }
 
-    public void ShowStoreMenu(bool isActive)
-    {
-        _menuUI?.ShowStoreMenu(isActive);
-    }
     #endregion
 
-    #region Store UI
-    public void InitializeStore(System.Collections.Generic.List<StoreBase> stores, StoreManager manager)
-{
-        // Store the manager instance locally (optional, but good for quick access)
-        _storeManager = manager; 
-        
-        if (_storeUI != null && stores.Count > 0)
-        {
-            // Pass the manager and the full store list to StoreUI
-            _storeUI.InitializeStore(manager, stores); 
-            
-            // Immediately update currency display
-            if (_storeManager.Currency != null)
-            {
-                 UpdateStoreCurrency(_storeManager.Currency.Coin, _storeManager.Currency.Token, _storeManager.Currency.KeyMap);
-            }
-        }
-    }
 
-    public void UpdateStoreCurrency(int coins, int tokens, int keys)
-    {
-        _storeUI?.UpdateCurrencyDisplay(coins, tokens, keys);
-    }
+    #region  Store UI
+        public void InitializeStore(List<StoreBase> stores, StoreManager manager)
+        {
+            if (_storeUI != null)
+                _storeUI.InitializeStore(manager, stores);
+        }
+
+        public void UpdateStoreCurrency(int coins, int tokens, int keys)
+        {
+            _storeUI?.UpdateCurrencyDisplay(coins, tokens, keys);
+        }
     #endregion
 }
+
+

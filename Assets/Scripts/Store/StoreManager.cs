@@ -19,6 +19,8 @@ public class StoreManager
     public GameProgressData ProgressData => _progressData;
     public Dictionary<string, int> AvailableItems => _availableItems;
     public List<string> UnlockedItems => _unlockedItems;
+    public List<StoreBase> Stores { get; private set; } = new List<StoreBase>();
+
     #endregion
 
     public StoreManager(Currency currency, GameProgressData progressData)

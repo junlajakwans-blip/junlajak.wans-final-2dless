@@ -15,6 +15,13 @@ public class MenuUI : MonoBehaviour
     #endregion
 
     #region Public Methods
+    public void InitializeStore(List<StoreBase> stores, StoreManager manager)
+    {
+        if (_storeUI != null)
+            _storeUI.InitializeStore(manager, stores);
+    }
+
+
     public void ShowPauseMenu(bool isActive)
     {
         if (_pausePanel != null)
