@@ -92,7 +92,7 @@ public class PeterMon : Enemy, IMoveable
         if (proj.TryGetComponent<Projectile>(out var projectile))
             projectile.SetDamage(_projectileDamage);
             
-        // ⚠️ REMOVED DUPLICATE CODE BLOCK that was causing errors.
+        // REMOVED DUPLICATE CODE BLOCK that was causing errors.
     }
 
     private void OnCollisionEnter2D(Collision2D collision)

@@ -7,7 +7,6 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
     [Header("Spawner Settings")]
     [SerializeField] private List<GameObject> _collectiblePrefabs = new();
     [SerializeField] private Rect _spawnArea = new Rect(-5f, -2f, 10f, 4f);
-    [SerializeField] private float _spawnInterval = 2.5f;
 
     [Header("Runtime Data")]
     [SerializeField] private List<GameObject> _activeCollectibles = new();
