@@ -18,14 +18,14 @@ public class MuscleDuck : Player, ISkillUser, IAttackable
     [SerializeField] private GameObject _roarEffect;
     
     [Header("Career Timing")]
-    [SerializeField] private float _skillDuration = 35f;   // PDF: 35 Sec
-    [SerializeField] private float _baseCooldown = 40f;    // PDF: First use 40 sec
-    [SerializeField] private float _cooldownIncrease = 15f; // PDF: plus 15 Sec every after usetime
-    [SerializeField] private int _maxUsesPerRound = 2;       // PDF: ≤ 2 per Round
+    [SerializeField] private float _skillDuration = 35f;   // 35 Sec
+    [SerializeField] private float _baseCooldown = 40f;    // First use 40 sec
+    [SerializeField] private float _cooldownIncrease = 15f; // plus 15 Sec every after usetime
+    [SerializeField] private int _maxUsesPerRound = 2;       // ≤ 2 per Round
 
     [Header("Attack Settings")]
-    [SerializeField] private float _ironFistRange = 3f;    // PDF: 3 Block
-    [SerializeField] private float _pumpedUpRange = 8f;    // PDF: 8 Block
+    [SerializeField] private float _ironFistRange = 3f;    // 3 Block
+    [SerializeField] private float _pumpedUpRange = 8f;    // 8 Block
 
     private bool _isSkillActive;
     private bool _isCooldown;
@@ -45,22 +45,22 @@ public class MuscleDuck : Player, ISkillUser, IAttackable
         _currentCooldown = _baseCooldown;
         
         // 1. BuffMap Logic
-        // PDF: Roar -> All Mon Fear
+        // Roar -> All Mon Fear
         ApplyMapBuffRoar();
         
         // 2. Passive Logic
-        // PDF: Coinx2 [AllMap]
+        // Coinx2 [AllMap]
         // TODO: Requires a public method in Currency.cs or Player.cs
         // SetCoinMultiplier(2); 
         Debug.Log("[MuscleDuck] Passive Buff applied: Coinx2 (AllMap) (TODO).");
 
-        // PDF: BuffMon: GoldenMon -> Drop Coinx2, Token -> Drop 1 Token
+        // BuffMon: GoldenMon -> Drop Coinx2, Token -> Drop 1 Token
         // This is handled by GoldenMon.Die() checking if the player is MuscleDuck.
         Debug.Log("[MuscleDuck] BuffMon (GoldenMon) logic is active.");
     }
 
     /// <summary>
-    /// PDF: Roar -> All Mon Fear
+    /// Roar -> All Mon Fear
     /// </summary>
     private void ApplyMapBuffRoar()
     {
@@ -89,7 +89,7 @@ public class MuscleDuck : Player, ISkillUser, IAttackable
     }
 
     /// <summary>
-    /// PDF: Hulk Smash -> Destroy All Enemy And obstacle
+    /// Hulk Smash -> Destroy All Enemy And obstacle
     /// </summary>
     private IEnumerator HulkSmashRoutine()
     {
@@ -127,7 +127,7 @@ public class MuscleDuck : Player, ISkillUser, IAttackable
     }
 
     /// <summary>
-    /// PDF: CoolDown Card plus 15 Sec every after usetime
+    /// CoolDown Card plus 15 Sec every after usetime
     /// </summary>
     private IEnumerator CooldownRoutine()
     {
@@ -146,7 +146,7 @@ public class MuscleDuck : Player, ISkillUser, IAttackable
 
     #region Immunity
     /// <summary>
-    /// (Override) PDF: TakeDamage: No (Immortal)
+    /// (Override) TakeDamage: No (Immortal)
     /// </summary>
     public override void TakeDamage(int damage)
     {
@@ -159,7 +159,7 @@ public class MuscleDuck : Player, ISkillUser, IAttackable
     #region IAttackable Implementation
     public override void Attack()
     {
-        // PDF: [CareerAttack] Iron Fist(AOE) (3 Block)
+        // [CareerAttack] Iron Fist(AOE) (3 Block)
         Debug.Log($"[{PlayerName}] uses Iron Fist (3 Block)!");
         if (_rageEffect != null)
             Instantiate(_rageEffect, transform.position, Quaternion.identity);
@@ -174,7 +174,7 @@ public class MuscleDuck : Player, ISkillUser, IAttackable
 
     public override void ChargeAttack(float power)
     {
-        // PDF: Pumped Up (8 Block)
+        // Pumped Up (8 Block)
         Debug.Log($"[{PlayerName}] uses Pumped Up (8 Block)!");
         
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, _pumpedUpRange);

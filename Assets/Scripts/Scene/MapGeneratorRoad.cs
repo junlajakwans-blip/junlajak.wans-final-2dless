@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// MapGeneratorRoad — ตัวสร้างฉากธีมถนน (Road / Traffic)
+/// MapGeneratorRoad : RoadTraffic = 2
 /// BuffMap:
 /// - FireFighterDuck (All Green Light / No Platform Break)
 /// </summary>

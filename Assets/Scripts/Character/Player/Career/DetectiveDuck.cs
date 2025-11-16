@@ -14,11 +14,11 @@ public class DetectiveDuck : Player, ISkillUser, IAttackable
     [Header("DetectiveDuck Settings")]
     [SerializeField] private GameObject _scanEffect;
     [SerializeField] private GameObject _magnifyLightPrefab;
-    [SerializeField] private float _magnifyRange = 2f;      // PDF: 2 Block
+    [SerializeField] private float _magnifyRange = 2f;      // 2 Block
     [SerializeField] private float _scanRadius = 5f;
-    [SerializeField] private float _skillDuration = 25f;   // PDF: 25 Sec
-    [SerializeField] private float _skillCooldown = 20f;   // PDF: 20 Sec
-    [SerializeField] private float _noDetectDuration = 3f; // PDF: 3 Sec
+    [SerializeField] private float _skillDuration = 25f;   // 25 Sec
+    [SerializeField] private float _skillCooldown = 20f;   // 20 Sec
+    [SerializeField] private float _noDetectDuration = 3f; // 3 Sec
 
     private bool _isSkillActive;
     private bool _isCooldown;
@@ -46,7 +46,7 @@ public class DetectiveDuck : Player, ISkillUser, IAttackable
     }
 
     /// <summary>
-    /// PDF: Reveal HiddenItems -> Random Spawn Buff Item 3 piece
+    /// Reveal HiddenItems -> Random Spawn Buff Item 3 piece
     /// </summary>
     private IEnumerator RevealHiddenItemsRoutine()
     {
@@ -71,7 +71,7 @@ public class DetectiveDuck : Player, ISkillUser, IAttackable
         }
 
         // 2. If no hidden items were found (or not enough), spawn new ones
-        // (PDF: "Random Spawn Buff Item 3 piece" - implies spawning if not found)
+        // ("Random Spawn Buff Item 3 piece" - implies spawning if not found)
         for (int i = buffSpawned; i < 3; i++)
         {
             Vector2 randomPos = (Vector2)transform.position + Random.insideUnitCircle * _scanRadius;
@@ -101,7 +101,7 @@ public class DetectiveDuck : Player, ISkillUser, IAttackable
     
     #region CareerAbility: Infrared Scanner (ChargeAttack)
     /// <summary>
-    /// PDF: Infrared Scanner -> All Mon No Detect Range 3 Sec
+    /// Infrared Scanner -> All Mon No Detect Range 3 Sec
     /// </summary>
     public override void ChargeAttack(float power)
     {
@@ -133,7 +133,7 @@ public class DetectiveDuck : Player, ISkillUser, IAttackable
     #region IAttackable Implementation
     public override void Attack()
     {
-        // PDF: [CareerAttack] MagnifyLight (2 Block)
+        // [CareerAttack] MagnifyLight (2 Block)
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, _magnifyRange); // _magnifyRange = 2f
         foreach (var hit in hits)
         {
@@ -149,7 +149,7 @@ public class DetectiveDuck : Player, ISkillUser, IAttackable
 
     public override void RangeAttack(Transform target)
     {
-        // PDF: MagnifyLight 2 Block [LightRay]
+        // MagnifyLight 2 Block [LightRay]
         if (target == null) return;
         if (Vector2.Distance(transform.position, target.position) <= _magnifyRange) // Use _magnifyRange
         {

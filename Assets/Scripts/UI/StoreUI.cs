@@ -7,115 +7,115 @@ public class StoreUI : MonoBehaviour
 {
     #region Fields
     [Header("UI Components")]
-    [SerializeField] private TextMeshProUGUI _currencyText;
-    [SerializeField] private TextMeshProUGUI _tokenKeyText; 
+    [SerializeField] private TextMeshProUGUI _coinText;
+    [SerializeField] private TextMeshProUGUI _tokenText;
+    [SerializeField] private TextMeshProUGUI _keyText;
     [SerializeField] private TextMeshProUGUI _storeTitleText;
-    
-    // ✅ FIX: ใช้ List<TextMeshProUGUI> เพื่อเป็นตัวแทนของ Slots 
-    [SerializeField] private List<TextMeshProUGUI> _itemSlots = new List<TextMeshProUGUI>(); 
-    
-    // Runtime References to Logic
-    private StoreManager _storeManager; 
+
+    [SerializeField] private List<TextMeshProUGUI> _itemSlots = new List<TextMeshProUGUI>();
+
+    private StoreManager _storeManager;
     private List<StoreBase> _availableStoreFacades = new List<StoreBase>();
-    private StoreBase _activeStoreFacade; 
-    private string _selectedItemName = string.Empty; // Tracks the currently selected item
+    private StoreBase _activeStoreFacade;
+    private string _selectedItemName = string.Empty;
     #endregion
 
-    #region Public Methods
+    #region Public API
 
-    public void InitializeStore(StoreManager manager, List<StoreBase> storesToDisplay) 
+    public void InitializeStore(StoreManager manager, List<StoreBase> storesToDisplay)
     {
         _storeManager = manager;
         _availableStoreFacades = storesToDisplay;
-        Debug.Log($" Store UI Initialized. Manager Status: {(_storeManager != null ? "Ready" : "MISSING")}");
 
-        // Default to displaying the Upgrade Store items
-        SetActiveStore(_availableStoreFacades.FirstOrDefault(s => s.StoreName == "Permanent Upgrades"));
+        Debug.Log($"[StoreUI] Initialized — StoreManager: {(_storeManager != null ? "READY" : "NULL")}");
 
-        UpdateCurrencyDisplay();
+        // Default open Upgrade store
+        SetActiveStore(_availableStoreFacades.FirstOrDefault());
+        RefreshCurrency();
     }
-    
+
     public void SetActiveStore(StoreBase store)
     {
         if (store == null) return;
 
         _activeStoreFacade = store;
-        
-        if (_storeTitleText != null)
-            _storeTitleText.text = store.StoreName;
+        _storeTitleText.text = store.StoreName;
 
-        // Redraw Items
+        // Fill Slot Texts
         int i = 0;
-        foreach (var itemKVP in store.StoreItems)
+        foreach (var kvp in store.StoreItems)
         {
-            if (i < _itemSlots.Count)
-            {
-               int price = store.GetItemPrice(itemKVP.Key);
-               string currencyType = store is StoreRandomCard ? "Token" : (store is StoreMap ? "Keys" : "Coin");
-               
-               _itemSlots[i].text = $"{itemKVP.Key} | Cost: {price} {currencyType}";
-               _itemSlots[i].gameObject.SetActive(true);
-            }
+            if (i >= _itemSlots.Count) break;
+
+            int price = store.GetItemPrice(kvp.Key);
+            string currencyType =
+                store is StoreRandomCard ? "Token" :
+                store is StoreMap ? "Key" :
+                "Coin";
+
+            _itemSlots[i].text = $"{kvp.Key} — {price} {currencyType}";
+            _itemSlots[i].gameObject.SetActive(true);
             i++;
         }
+
         // Hide unused slots
-        for (int j = i; j < _itemSlots.Count; j++)
-        {
-            _itemSlots[j].gameObject.SetActive(false);
-        }
+        for (; i < _itemSlots.Count; i++)
+            _itemSlots[i].gameObject.SetActive(false);
+
+        RefreshCurrency();
     }
 
-
-    public void UpdateCurrencyDisplay()
-    {
-        if (_storeManager == null || _currencyText == null) return;
-        
-        int coins = _storeManager.Currency.Coin;
-        int tokens = _storeManager.Currency.Token;
-        int keys = _storeManager.Currency.KeyMap;
-        
-        // Assuming _currencyText shows Coin and _tokenKeyText shows Tokens/Keys
-        _currencyText.text = $"Coins: {coins}";
-        if (_tokenKeyText != null)
-            _tokenKeyText.text = $"Tokens: {tokens} | Keys: {keys}";
-    }
-    
-    // ⚠️ New method to accept all currency types from UIManager
-    public void UpdateCurrencyDisplay(int currentCoins, int currentTokens, int currentKeys)
-    {
-        if (_currencyText != null)
-            _currencyText.text = $"Coins: {currentCoins}";
-        
-        if (_tokenKeyText != null)
-            _tokenKeyText.text = $"Tokens: {currentTokens} | Keys: {currentKeys}";
-    }
-
-
-    // Called by a button click (e.g., UI slot button).
-    public void SelectItem(string itemName) 
+    public void SelectItem(string itemName)
     {
         _selectedItemName = itemName;
-        Debug.Log($" Selected item for purchase: {itemName}");
+        Debug.Log($"[StoreUI] Selected → {itemName}");
     }
 
     public void PurchaseSelectedItem()
     {
         if (string.IsNullOrEmpty(_selectedItemName) || _activeStoreFacade == null)
         {
-            Debug.LogWarning(" No item selected or no store active.");
+            Debug.LogWarning("[StoreUI] Purchase failed → No item selected.");
             return;
         }
 
-        StoreBase targetStore = _activeStoreFacade; // Purchase from the currently active store
-        
-        bool result = targetStore.Purchase(_selectedItemName); 
-        
-        if (result)
+        bool purchased = _activeStoreFacade.Purchase(_selectedItemName);
+
+        if (purchased)
         {
-            Debug.Log($" Purchased: {_selectedItemName} successful!");
-            SetActiveStore(_activeStoreFacade); 
-            UpdateCurrencyDisplay(); // Reflect currency change
+            Debug.Log($"[StoreUI] Purchase Success → {_selectedItemName}");
+            SetActiveStore(_activeStoreFacade);
+            RefreshCurrency();
+        }
+        else
+        {
+            Debug.LogWarning($"[StoreUI] Purchase failed → {_selectedItemName}");
         }
     }
+
+    #endregion
+
+    #region Currency
+
+    public void RefreshCurrency()
+    {
+        var currency = GameManager.Instance?.GetCurrency();
+        if (currency == null) return;
+
+        if (_coinText)  _coinText.text  = $"x{currency.Coin}";
+        if (_tokenText) _tokenText.text = $"x{currency.Token}";
+        if (_keyText)   _keyText.text   = $"x{currency.KeyMap}";
+    }
+
+    /// <summary>
+    /// UIManager / DevCheat can call this directly
+    /// </summary>
+    public void RefreshCurrency(int coin, int token, int key)
+    {
+        if (_coinText)  _coinText.text  = $"x{coin}";
+        if (_tokenText) _tokenText.text = $"x{token}";
+        if (_keyText)   _keyText.text   = $"x{key}";
+    }
+
     #endregion
 }

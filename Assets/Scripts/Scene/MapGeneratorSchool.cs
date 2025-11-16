@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// MapGeneratorSchool School = 1,
+/// MapGeneratorSchool School = 1
 /// BuffMap
 /// - ProgrammerDuck (Wall behind Push Slowly)
 /// </summary>

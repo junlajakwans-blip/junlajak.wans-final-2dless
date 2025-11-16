@@ -14,10 +14,10 @@ public class DancerDuck : Player, ISkillUser, IAttackable
     [Header("DancerDuck Settings")]
     [SerializeField] private GameObject _danceEffect;
     [SerializeField] private float _speedBoost = 1.75f;
-    [SerializeField] private float _hideDuration = 2f;    // PDF: StepDance no take any damage 2 sec [cite: 3]
-    [SerializeField] private float _stopRange = 3.5f;     // PDF: StepDance 3-4 Block [cite: 3]
-    [SerializeField] private float _skillDuration = 22f;  // PDF: 22 Sec [cite: 3]
-    [SerializeField] private float _skillCooldown = 18f;  // PDF: 18 Sec [cite: 3]
+    [SerializeField] private float _hideDuration = 2f;    // StepDance no take any damage 2 sec [cite: 3]
+    [SerializeField] private float _stopRange = 3.5f;     // StepDance 3-4 Block [cite: 3]
+    [SerializeField] private float _skillDuration = 22f;  // 22 Sec [cite: 3]
+    [SerializeField] private float _skillCooldown = 18f;  // 18 Sec [cite: 3]
     [SerializeField] private int _stepDanceDamage = 15; // Damage for the StepDance AOE
 
     private bool _isSkillActive;
@@ -49,7 +49,7 @@ public class DancerDuck : Player, ISkillUser, IAttackable
     }
 
     /// <summary>
-    /// PDF: StepDance -> no take any damage -> Stun Enemy in Range [cite: 3]
+    /// StepDance -> no take any damage -> Stun Enemy in Range [cite: 3]
     /// </summary>
     private IEnumerator StepDanceRoutine()
     {

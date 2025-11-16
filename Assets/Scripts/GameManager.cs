@@ -27,6 +27,9 @@ public class GameManager : MonoBehaviour
 
 
     #region Properties
+    public static event System.Action OnCurrencyReady;
+
+    public static event System.Action OnMainMenuUIReady;
     public static GameManager Instance => _instance;
     public bool IsPaused => _isPaused;
     public int Score => _score;
@@ -35,8 +38,12 @@ public class GameManager : MonoBehaviour
     private GameProgressData _persistentProgress;
     private Currency _currencyData;
     private StoreManager _storeManager;
+    private StoreRandomCard _cardStore;
+    private StoreUpgrade _upgradeStore;
+    private StoreMap _mapStore;
     #endregion
 
+    public GameProgressData GetProgressData() => _persistentProgress;
     public Currency GetCurrency() => _currencyData;
     public StoreManager GetStoreManager() => _storeManager; 
     public List<StoreBase> GetStoreList() => _storeManager?.Stores;
@@ -53,6 +60,10 @@ public class GameManager : MonoBehaviour
         _instance = this;
         DontDestroyOnLoad(gameObject);
 
+    }
+
+    private void Start()
+    {
         InitializeGame();
     }
 
@@ -72,30 +83,41 @@ public class GameManager : MonoBehaviour
 
 
     #region Initialization
-    public void InitializeGame() //TODO: Implement initialization logic
+public void InitializeGame()
+{
+    
+    _saveSystem ??= FindFirstObjectByType<SaveSystem>();
+
+    Debug.Log(">> OPEN MAIN MENU");
+    _persistentProgress = _saveSystem != null ? _saveSystem.GetProgressData() : new GameProgressData();
+
+    _currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+
+
+    if (_currentScene == "MainMenu")
     {
-        _saveSystem ??= FindFirstObjectByType<SaveSystem>();
-        _uiManager ??= FindFirstObjectByType<UIManager>();
-        _player ??= FindFirstObjectByType<Player>();
-
-        _persistentProgress = _saveSystem != null ? _saveSystem.GetProgressData() : new GameProgressData();
-
+        Debug.Log("[GameManager] Main Menu scene detected → skipping gameplay initialization.");
         SetupStores(_persistentProgress);
-        
-        PlayerData playerData = new PlayerData(_currencyData, _persistentProgress);
-        
-        int hpBonus = _persistentProgress.PermanentHPUpgradeLevel * 10;
-        playerData.UpgradeStat("MaxHealth", hpBonus);
-        
+        OnCurrencyReady?.Invoke();
+        return;
+    }
+
+    
+    PlayerData playerData = new PlayerData(_currencyData, _persistentProgress);
+    int hpBonus = _persistentProgress.PermanentHPUpgradeLevel * 10;
+    playerData.UpgradeStat("MaxHealth", hpBonus);
+
+
+    _player ??= FindFirstObjectByType<Player>();
+    if (_player != null)
         _player.Initialize(playerData);
 
-        _currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-        _isPaused = false;
-        _score = 0;
-        _playTime = 0f;
+    _isPaused = false;
+    _score = 0;
+    _playTime = 0f;
+}
 
-        Debug.Log($"[GameManager] Initialized. Scene: {_currentScene}");
-    }
+
 
     #endregion
 
@@ -177,7 +199,7 @@ public class GameManager : MonoBehaviour
 
     public float GetPlayTime() => _playTime;
 
-    public void SaveProgress() //TODO: Implement save system
+    public void SaveProgress() 
     {
         if (_saveSystem == null)
         {
@@ -187,36 +209,35 @@ public class GameManager : MonoBehaviour
 
         _persistentProgress.UpdateBestScore(_score);
         _persistentProgress.PlayTime += _playTime;
+        
         _persistentProgress.TotalCoins = _currencyData.Coin;
+        _persistentProgress.TotalTokens = _currencyData.Token;
+        _persistentProgress.TotalKeyMaps = _currencyData.KeyMap;
         
         _saveSystem.SaveData();
         Debug.Log("[GameManager] Game progress saved.");
     }
     #endregion
 
+#region  store
     public void SetupStores(GameProgressData progressData)
     {
         _currencyData = new Currency();
         _storeManager = new StoreManager(_currencyData, progressData);
 
         CardManager cardManager = FindFirstObjectByType<CardManager>();
-
-        //  Get Store Can access Card Manager
         if (cardManager != null)
             _storeManager.SetCardManager(cardManager);
 
-        // 3. STORE : RANDOM career card sell
-        StoreRandomCard cardStore = new StoreRandomCard();
-        cardStore.Initialize(_storeManager);
+        _cardStore = new StoreRandomCard();
+        _cardStore.Initialize(_storeManager);
 
-        //4. STORE : UPGRADE stat player shop
-        StoreUpgrade upgradeStore = new StoreUpgrade();
-        upgradeStore.Initialize(_storeManager);
+        _upgradeStore = new StoreUpgrade();
+        _upgradeStore.Initialize(_storeManager);
 
-        // 5. STORE : MAP sell
-        StoreMap mapStore = new StoreMap();
-        mapStore.Initialize(_storeManager);
-        mapStore.OnMapUnlockedEvent += HandleMapUnlocked;
+        _mapStore = new StoreMap();
+        _mapStore.Initialize(_storeManager);
+        _mapStore.OnMapUnlockedEvent += HandleMapUnlocked;
 
         Debug.Log("[GameManager] All store systems initialized successfully.");
     }
@@ -227,4 +248,6 @@ public class GameManager : MonoBehaviour
         SaveProgress(); 
         Debug.Log($"[GameManager] New map unlocked and saved: {mapName}");
     }
+    #endregion
+
 }

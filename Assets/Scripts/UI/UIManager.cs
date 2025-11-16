@@ -16,7 +16,7 @@ public class UIManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        ShowMainMenu();
+
     }
     #endregion
 
@@ -57,24 +57,23 @@ public class UIManager : MonoBehaviour
     {
         _menuUI?.ShowStoreMenu(isActive);
 
-        if (isActive)
-        {
-            var gm = GameManager.Instance;
-            if (gm != null)
-            {
-                var stores = gm.GetStoreList();
-                var storeManager = gm.GetStoreManager();
-                _menuUI?.InitializeStore(stores, storeManager);  
-            }
-        }
+        if (!isActive) return; // ❗ ห้าม initialize ตอนปิดร้าน
+
+        var gm = GameManager.Instance;
+        if (gm == null) return;
+
+        var stores = gm.GetStoreList();
+        var storeManager = gm.GetStoreManager();
+        if (stores != null && storeManager != null)
+            InitializeStore(stores, storeManager);
     }
 
     private void SetPanel(GameObject target)
     {
-        panelMainMenu.SetActive(panelMainMenu == target);
-        panelSelectMap.SetActive(panelSelectMap == target);
-        panelStore.SetActive(panelStore == target);
-        panelSettings.SetActive(panelSettings == target);
+        panelMainMenu.SetActive(target == panelMainMenu);
+        panelSelectMap.SetActive(target == panelSelectMap);
+        panelStore.SetActive(target == panelStore);
+        panelSettings.SetActive(target == panelSettings);
     }
     #endregion
         

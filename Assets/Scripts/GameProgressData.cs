@@ -15,6 +15,8 @@ public class GameProgressData
     //[SerializeField] private int _permanentCoinMultiplier = 1; // Future expansion
 
     [SerializeField] private int _totalCoins;
+    [SerializeField] private int _totalTokens;
+    [SerializeField] private int _totalKeyMaps;
     [SerializeField] private int _bestScore;
     [SerializeField] private float _playTime;
     [SerializeField] private DateTime _lastPlayDate;
@@ -27,6 +29,8 @@ public class GameProgressData
     public int PermanentHPUpgradeLevel { get => _permanentHPUpgradeLevel; set => _permanentHPUpgradeLevel = value; }
 
     public int TotalCoins { get => _totalCoins; set => _totalCoins = value; }
+    public int TotalTokens { get => _totalTokens; set => _totalTokens = value; }
+    public int TotalKeyMaps { get => _totalKeyMaps; set => _totalKeyMaps = value; }
     public int BestScore { get => _bestScore; set => _bestScore = value; }
     public float PlayTime { get => _playTime; set => _playTime = value; }
     public DateTime LastPlayDate { get => _lastPlayDate; set => _lastPlayDate = value; }
@@ -55,6 +59,12 @@ public class GameProgressData
         if (!_unlockedMaps.Contains(mapName))
             _unlockedMaps.Add(mapName);
     }
+
+    public bool IsMapUnlocked(string mapName)
+    {
+        return _unlockedMaps.Contains(mapName);
+    }
+
 
     public void AddUnlockedCareer(string careerName)
     {

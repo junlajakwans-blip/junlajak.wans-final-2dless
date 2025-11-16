@@ -22,6 +22,24 @@ public sealed class SceneManager : MonoBehaviour
     /// </summary>
     private void Start()
     {
+        string scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        Debug.Log($"[SceneManager] Scene detected: {scene}");
+
+        if (scene == "MainMenu")
+        {
+            Debug.Log("[SceneManager] Main Menu detected → no map generation required.");
+            return;
+        }
+
+        // ดำเนินงานเฉพาะฉาก Gameplay
+        _mapGenerator = FindFirstObjectByType<MapGeneratorBase>();
+
+        if (_mapGenerator == null)
+        {
+            Debug.LogError("[SceneManager] MapGeneratorBase not found in scene.");
+            return;
+        }
+
         if (_isInitialized) return;
 
         _sceneName   = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
@@ -30,7 +48,9 @@ public sealed class SceneManager : MonoBehaviour
 
         if (_mapGenerator == null)
         {
-            Debug.LogError("[SceneManager] MapGeneratorBase not found in scene.");
+            Debug.Log("SceneManager searching MapGenerator in scene: " +
+            UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+
             return;
         }
 
