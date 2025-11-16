@@ -1,34 +1,19 @@
 fileFormatVersion: 2
-guid: e62f3c140a5af1f459936473ea4e0c58
+guid: ab15ae65a7f8bfe4ebaf6944bf5eb9e7
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5375067851774802590
-    second: Item_Upgrade_WayProtien_0
+      213: 799837110122352257
+    second: Icon_Pointer_0
   - first:
-      213: 2536078039234870808
-    second: Item_Upgrade_WayProtien_1
+      213: 5070828271495562538
+    second: Icon_Pointer_1
   - first:
-      213: 2683952767262482523
-    second: Item_Upgrade_WayProtien_2
+      213: -7877133601352689698
+    second: Icon_Pointer_2
   - first:
-      213: -7930412791908039363
-    second: Item_Upgrade_WayProtien_3
-  - first:
-      213: 1873726816225456098
-    second: Item_Upgrade_WayProtien_4
-  - first:
-      213: -1673892079790416163
-    second: Item_Upgrade_WayProtien_5
-  - first:
-      213: 7019379275650318166
-    second: Item_Upgrade_WayProtien_6
-  - first:
-      213: -7233595101044723065
-    second: Item_Upgrade_WayProtien_7
-  - first:
-      213: 4418151478117097810
-    second: Item_Upgrade_WayProtien_8
+      213: -3917077480649256579
+    second: Icon_Pointer_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -150,13 +135,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Item_Upgrade_WayProtien_0
+      name: Icon_Pointer_0
       rect:
         serializedVersion: 2
-        x: 185
-        y: 583
-        width: 65
-        height: 65
+        x: 192
+        y: 423
+        width: 21
+        height: 24
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -165,20 +150,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2654753644ce765b0800000000000000
-      internalID: -5375067851774802590
+      spriteID: 18e840b2d97991b00800000000000000
+      internalID: 799837110122352257
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Item_Upgrade_WayProtien_1
+      name: Icon_Pointer_1
       rect:
         serializedVersion: 2
-        x: 214
-        y: 80
-        width: 335
-        height: 585
+        x: 229
+        y: 435
+        width: 13
+        height: 28
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -187,20 +172,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 81e734b3a85f13320800000000000000
-      internalID: 2536078039234870808
+      spriteID: a25408f42733f5640800000000000000
+      internalID: 5070828271495562538
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Item_Upgrade_WayProtien_2
+      name: Icon_Pointer_2
       rect:
         serializedVersion: 2
-        x: 525
-        y: 584
-        width: 49
-        height: 50
+        x: 258
+        y: 422
+        width: 22
+        height: 24
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -209,20 +194,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b506b9652d05f3520800000000000000
-      internalID: 2683952767262482523
+      spriteID: ed7541379bccea290800000000000000
+      internalID: -7877133601352689698
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Item_Upgrade_WayProtien_3
+      name: Icon_Pointer_3
       rect:
         serializedVersion: 2
-        x: 154
-        y: 421
-        width: 73
-        height: 98
+        x: 133
+        y: 51
+        width: 275
+        height: 380
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -231,118 +216,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d358b18359381f190800000000000000
-      internalID: -7930412791908039363
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Item_Upgrade_WayProtien_4
-      rect:
-        serializedVersion: 2
-        x: 531
-        y: 362
-        width: 67
-        height: 122
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 2efed37ac90d00a10800000000000000
-      internalID: 1873726816225456098
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Item_Upgrade_WayProtien_5
-      rect:
-        serializedVersion: 2
-        x: 187
-        y: 376
-        width: 36
-        height: 35
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: dde90c7a50425c8e0800000000000000
-      internalID: -1673892079790416163
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Item_Upgrade_WayProtien_6
-      rect:
-        serializedVersion: 2
-        x: 543
-        y: 320
-        width: 34
-        height: 35
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 65f30ecc248d96160800000000000000
-      internalID: 7019379275650318166
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Item_Upgrade_WayProtien_7
-      rect:
-        serializedVersion: 2
-        x: 185
-        y: 145
-        width: 56
-        height: 96
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 7823931b49b1d9b90800000000000000
-      internalID: -7233595101044723065
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Item_Upgrade_WayProtien_8
-      rect:
-        serializedVersion: 2
-        x: 517
-        y: 165
-        width: 57
-        height: 77
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 25169096c5d605d30800000000000000
-      internalID: 4418151478117097810
+      spriteID: d711830f8ceb3a9c0800000000000000
+      internalID: -3917077480649256579
       vertices: []
       indices: 
       edges: []
@@ -361,15 +236,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Item_Upgrade_WayProtien_0: -5375067851774802590
-      Item_Upgrade_WayProtien_1: 2536078039234870808
-      Item_Upgrade_WayProtien_2: 2683952767262482523
-      Item_Upgrade_WayProtien_3: -7930412791908039363
-      Item_Upgrade_WayProtien_4: 1873726816225456098
-      Item_Upgrade_WayProtien_5: -1673892079790416163
-      Item_Upgrade_WayProtien_6: 7019379275650318166
-      Item_Upgrade_WayProtien_7: -7233595101044723065
-      Item_Upgrade_WayProtien_8: 4418151478117097810
+      Icon_Pointer_0: 799837110122352257
+      Icon_Pointer_1: 5070828271495562538
+      Icon_Pointer_2: -7877133601352689698
+      Icon_Pointer_3: -3917077480649256579
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

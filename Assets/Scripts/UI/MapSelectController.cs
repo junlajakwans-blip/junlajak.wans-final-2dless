@@ -73,11 +73,6 @@ public class MapSelectController : MonoBehaviour
         StartCoroutine(DelayedInitialRefresh());
     }
 
-    private void Awake()
-    {
-        GameManager.OnCurrencyReady += RefreshUI;
-    }
-
     private void Update()
     {
         // กด Spacebar เพื่อเล่นแมพที่เลือกอยู่ (เฉพาะตอน Panel นี้ active)
@@ -289,6 +284,19 @@ public class MapSelectController : MonoBehaviour
         Debug.Log($"[MapSelectController] Load scene: {map.sceneName}");
         gm.LoadScene(map.sceneName);
     }
+#endregion
+
+#region 
+    private void OnEnable()
+    {
+        Currency.OnCurrencyChanged += RefreshKeyUI;
+    }
+
+    private void OnDisable()
+    {
+        Currency.OnCurrencyChanged -= RefreshKeyUI;
+    }
+
 
     private void OnDestroy()
     {

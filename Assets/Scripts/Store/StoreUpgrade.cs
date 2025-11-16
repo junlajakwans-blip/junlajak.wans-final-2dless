@@ -1,126 +1,144 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// StoreUpgrade – Handles permanent player stat upgrades.
+/// Handles level scaling, price scaling, saving to ProgressData,
+/// and communication with StoreUI / UpgradeUI.
+/// </summary>
 public class StoreUpgrade : StoreBase
 {
-    #region Fields
-    [Header("Upgrade Data")]
-    private Dictionary<string, int> _upgradeLevels = new Dictionary<string, int>();
-    [SerializeField] private int _maxUpgradeLevel = 5;
-    
-    // New Fields for Dynamic Pricing (Based on 200 Coin base and 1.5x multiplier)
-    private const float UPGRADE_MULTIPLIER = 1.5f;
-    private const string WHEY_PROTEIN = "Whey Protein";
+    // Display name for UI
+    public override string StoreName => "Permanent Upgrades";
+
+    // Tell StoreUI this store uses Upgrade panel
+    public override StoreType StoreType => StoreType.Upgrade;
+
+    // Items shown in the shop UI (auto-filled by RefreshStorePrice)
+    public override Dictionary<string, int> StoreItems { get; } = new Dictionary<string, int>();
+
+
+    // Internal upgrade ID (for saving and logic)
+    private const string UPGRADE_ID_WHEY = "UPGRADE_WHEY_HP";
+
+    // UI item name (visible to player + must match SlotUI purchase call)
+    private const string UI_NAME_WHEY = "Whey";
+
+    // Upgrade configuration
+    private const int BASE_PRICE = 500;
+    private const float PRICE_MULTIPLIER = 1.5f;
     private const int HP_BONUS_PER_LEVEL = 10;
-    #endregion
+    private const int MAX_LEVEL = 5;
 
-    #region Initialization
-    public override void Initialize(StoreManager storeManager)
-    {
-        base.Initialize(storeManager);
-        _storeName = "Permanent Upgrades";
-        
-        // Initialize the base price for Whey Protein (Level 1 price = 200 Coin)
-        _storeItems.Add(WHEY_PROTEIN, 200); 
-    }
-    #endregion
+    private StoreManager _storeManager;
+    private Dictionary<string, int> _upgradeLevels = new Dictionary<string, int>();
 
-    #region Override Methods
-    public override void DisplayItems()
-    {
-        Debug.Log($" Store: {_storeName}");
-        foreach (var upgrade in _storeItems)
-        {
-            int level = GetUpgradeLevel(upgrade.Key);
-            int nextPrice = GetItemPrice(upgrade.Key);
-
-            Debug.Log($" - {upgrade.Key}: {nextPrice} coins (Level {level}/{_maxUpgradeLevel})");
-        }
-    }
 
     /// <summary>
-    /// Purchase method handles dynamic price calculation for the next level.
+    /// Called when the StoreManager is created.
+    /// </summary>
+    public override void Initialize(StoreManager manager)
+    {
+        _storeManager = manager;
+        RefreshStorePrice();
+    }
+
+
+    /// <summary>
+    /// Called by StoreUI when the user presses BUY.
     /// </summary>
     public override bool Purchase(string itemName)
     {
-        int price = GetItemPrice(itemName); // Gets price for the *next* level
-        
-        if (price <= 0)
+        // Must match UI_NAME_WHEY from SlotUI
+        if (itemName != UI_NAME_WHEY)
+            return false;
+
+        int level = GetLevel();
+
+        if (level >= MAX_LEVEL)
         {
-            Debug.LogWarning($" Invalid upgrade item: {itemName}");
+            Debug.Log("[StoreUpgrade] Already at MAX level.");
             return false;
         }
 
-        int currentLevel = GetUpgradeLevel(itemName);
+        int price = StoreItems[UI_NAME_WHEY];
 
-        if (currentLevel >= _maxUpgradeLevel)
+        // Try spending coins
+        if (!_storeManager.Currency.UseCoin(price))
         {
-            Debug.Log($" {itemName} is already at max level.");
+            Debug.Log("[StoreUpgrade] Not enough coins.");
             return false;
         }
 
-        if (_storeManager.Currency.UseCoin(price))
-        {
-            ApplyUpgrade(itemName);
-            Debug.Log($" Upgrade purchased: {itemName} (Level {GetUpgradeLevel(itemName)}/{_maxUpgradeLevel})");
-            return true;
-        }
+        ApplyUpgrade();
+        RefreshStorePrice();
+        return true;
+    }
 
-        Debug.Log($" Not enough coins for upgrade: {itemName}");
-        return false;
+
+    /// <summary>
+    /// Actually applies the stat upgrade and saves progress data.
+    /// </summary>
+    private void ApplyUpgrade()
+    {
+        if (!_upgradeLevels.ContainsKey(UPGRADE_ID_WHEY))
+            _upgradeLevels[UPGRADE_ID_WHEY] = 0;
+
+        _upgradeLevels[UPGRADE_ID_WHEY]++;
+
+        int level = _upgradeLevels[UPGRADE_ID_WHEY];
+
+        // Save to progress
+        _storeManager.ProgressData.PermanentHPUpgradeLevel = level;
+
+        Debug.Log($"[UPGRADE] HP +{HP_BONUS_PER_LEVEL}  (Lv {level}/{MAX_LEVEL})");
+    }
+
+
+    /// <summary>
+    /// Returns current upgrade level (0–5).
+    /// </summary>
+    private int GetLevel()
+    {
+        return _upgradeLevels.ContainsKey(UPGRADE_ID_WHEY)
+            ? _upgradeLevels[UPGRADE_ID_WHEY]
+            : 0;
     }
 
     /// <summary>
-    /// Calculates the price for the NEXT level based on the current level and multiplier (1.5x).
+    /// Used by UpgradeUI to display glowing icons.
     /// </summary>
-    public override int GetItemPrice(string itemName)
+    public int GetWheyLevelForUI() => GetLevel();
+
+
+    /// <summary>
+    /// Rebuilds StoreItems with correct name and price.
+    /// Called after Initialize() and after every purchase.
+    /// </summary>
+    private void RefreshStorePrice()
     {
-        if (!_storeItems.ContainsKey(itemName))
+        StoreItems.Clear();
+        int level = GetLevel();
+
+        // Max level = price is disabled (UI should gray out)
+        if (level >= MAX_LEVEL)
         {
-            Debug.LogWarning($" Item '{itemName}' not found in {_storeName} store.");
-            return -1;
+            StoreItems.Add(UI_NAME_WHEY, int.MaxValue);
+            return;
         }
 
-        int basePrice = _storeItems[itemName]; // Base is 200
-        int currentLevel = GetUpgradeLevel(itemName);
-        
-        // Price for next level = Base Price * 1.5 ^ (Current Level)
-        float price = basePrice * Mathf.Pow(UPGRADE_MULTIPLIER, currentLevel); 
-        
-        // Round up to nearest whole number for clean prices (e.g., 675, 1012)
-        return Mathf.RoundToInt(price);
+        int nextPrice = Mathf.RoundToInt(BASE_PRICE * Mathf.Pow(PRICE_MULTIPLIER, level));
+        StoreItems.Add(UI_NAME_WHEY, nextPrice);
     }
-    #endregion
 
-    #region Upgrade Logic
-    public void ApplyUpgrade(string itemName)
+    public override void DisplayItems()
     {
-        if (!_upgradeLevels.ContainsKey(itemName))
-            _upgradeLevels[itemName] = 0;
-
-        _upgradeLevels[itemName]++;
-        _storeManager.UnlockItem(itemName);
-
-        string effectLog = "";
-        int newLevel = _upgradeLevels[itemName];
-
-        //  Whey Protein Logic: +10 Max HP per level
-        if (itemName.Equals(WHEY_PROTEIN, System.StringComparison.OrdinalIgnoreCase))
+        // This store does not rely on console-printing anymore.
+        // StoreUI handles all item display logic.
+        foreach (var item in StoreItems)
         {
-            // NOTE: External system (GameManager/PlayerData) must read this level 
-            // and apply the corresponding HP multiplier (Level * 10).
-            _storeManager.ProgressData.PermanentHPUpgradeLevel = newLevel;
-
-            effectLog = $" → Permanent Max HP +{HP_BONUS_PER_LEVEL} (Total Bonus: {HP_BONUS_PER_LEVEL * newLevel})";
+            int level = GetWheyLevelForUI();
+            Debug.Log($"[StoreUpgrade] {item.Key} : {item.Value} coins (Lv {level}/{MAX_LEVEL})");
         }
-        
-        Debug.Log($" Applied upgrade for {itemName}{effectLog} (New Level: {newLevel}/{_maxUpgradeLevel})");
     }
-
-    public int GetUpgradeLevel(string itemName)
-    {
-        // Ensures the item exists in the levels tracker, defaulting to 0
-        return _upgradeLevels.ContainsKey(itemName) ? _upgradeLevels[itemName] : 0;
-    }
-    #endregion
 }

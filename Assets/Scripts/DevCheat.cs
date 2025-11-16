@@ -14,7 +14,6 @@ public class DevCheat : MonoBehaviour
     public KeyCode addScoreKey = KeyCode.F6;
 
     private Player _player;
-    private Currency _currency;
     private GameManager _gm;
 
     public GameObject cheatPanel;
@@ -28,69 +27,83 @@ public class DevCheat : MonoBehaviour
     {
         if (!cheatEnabled) return;
 
-        // รอระบบให้พร้อม — ป้องกัน Error
+        // รอ GameManager พร้อม
         if (_gm == null)
             _gm = GameManager.Instance;
         if (_gm == null) return;
 
-        if (_currency == null)
-            _currency = _gm.GetCurrency();
-        if (_currency == null) return;
+        // รอ Currency พร้อม
+        Currency currency = _gm.GetCurrency();
+        if (currency == null) return;
 
+        // Player อาจยังไม่มีจนกว่าเข้าสู่เกม
         if (_player == null)
             _player = FindFirstObjectByType<Player>();
 
-        // ---------- CHEATS ----------
+        // ============= CHEATS =============
         if (Input.GetKeyDown(addCoinKey))
         {
-            _currency.Coin += 999;
-            UIManager.Instance?.UpdateStoreCurrency(_currency.Coin, _currency.Token, _currency.KeyMap);
-            FindFirstObjectByType<MapSelectController>()?.RefreshUI();
-            Debug.Log("<color=yellow>[CHEAT]</color> Coin +999");
+            currency.Coin += 999;
+            RefreshCurrencyUI();
+            Debug.Log("<color=yellow>[CHEAT]</color> +999 Coin");
         }
 
         if (Input.GetKeyDown(addTokenKey))
         {
-            _currency.Token += 25;
-            UIManager.Instance?.UpdateStoreCurrency(_currency.Coin, _currency.Token, _currency.KeyMap);
-            FindFirstObjectByType<MapSelectController>()?.RefreshUI();
-            Debug.Log("<color=yellow>[CHEAT]</color> Token +25");
+            currency.Token += 25;
+            RefreshCurrencyUI();
+            Debug.Log("<color=yellow>[CHEAT]</color> +25 Token");
         }
 
         if (Input.GetKeyDown(addKeyMapKey))
         {
-            _currency.KeyMap += 5;
-            UIManager.Instance?.UpdateStoreCurrency(_currency.Coin, _currency.Token, _currency.KeyMap);
-            FindFirstObjectByType<MapSelectController>()?.RefreshUI();
-            Debug.Log("<color=yellow>[CHEAT]</color> Key +5");
+            currency.KeyMap += 5;
+            RefreshCurrencyUI();
+            FindAnyObjectByType<MapSelectController>()?.RefreshKeyUI();
+            Debug.Log("<color=yellow>[CHEAT]</color> +5 Keys");
         }
 
         if (Input.GetKeyDown(unlockAllMapsKey))
         {
-            var progress = _gm.GetProgressData();
-            progress.AddUnlockedMap("School Zone");
-            progress.AddUnlockedMap("City Road");
-            progress.AddUnlockedMap("Kitchen Mayhem");
+            var p = _gm.GetProgressData();
+            p.AddUnlockedMap("School Zone");
+            p.AddUnlockedMap("City Road");
+            p.AddUnlockedMap("Kitchen Mayhem");
             _gm.SaveProgress();
-            FindFirstObjectByType<MapSelectController>()?.RefreshUI();
             Debug.Log("<color=cyan>[CHEAT]</color> All Maps Unlocked");
         }
 
         if (Input.GetKeyDown(godModeKey) && _player != null)
         {
             _player.Heal(99999);
-            UIManager.Instance?.UpdateHealth(_player.CurrentHealth);
-            Debug.Log("<color=red>[CHEAT]</color> GOD MODE — HP RESTORED");
+            RefreshHealthUI();
+            Debug.Log("<color=red>[CHEAT] GOD MODE — HP RESTORED</color>");
         }
 
         if (Input.GetKeyDown(addScoreKey))
         {
             _gm.AddScore(250);
-            Debug.Log("<color=yellow>[CHEAT]</color> Score +250");
+            Debug.Log("<color=yellow>[CHEAT]</color> +250 Score");
         }
 
         // Toggle Cheat Panel
         if (Input.GetKeyDown(KeyCode.Y) && cheatPanel != null)
             cheatPanel.SetActive(!cheatPanel.activeSelf);
+    }
+
+    // ==================== UI Helper ====================
+    private void RefreshCurrencyUI()
+    {
+        // อัปเดต UI ร้านค้า
+        FindAnyObjectByType<StoreUI>()?.RefreshCurrency();
+
+        // อัปเดต UI เลือกแมพ ถ้าหน้า Select Map เปิดอยู่
+        FindAnyObjectByType<MapSelectController>()?.RefreshKeyUI();
+    }
+
+    private void RefreshHealthUI()
+    {
+        // ถ้ามี Health UI ใน Scene
+        UIManager.Instance?.UpdateHealth(_player.CurrentHealth);
     }
 }

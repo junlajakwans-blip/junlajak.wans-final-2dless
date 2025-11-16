@@ -27,9 +27,18 @@ public class StoreManager
     {
         _currency = currency;
         _progressData = progressData;
+
+        Stores = new List<StoreBase>();
     }
 
     #region Methods
+    public void RegisterStore(StoreBase store)
+    {
+        if (!Stores.Contains(store))
+            Stores.Add(store);
+    }
+
+
     public bool CanAfford(string itemName)
     {
         if (!_availableItems.ContainsKey(itemName)) return false;

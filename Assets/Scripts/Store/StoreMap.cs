@@ -1,116 +1,84 @@
-using System; // Required for Action
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class StoreMap : StoreBase
 {
-    #region Fields
+    public override string StoreName => "Map Unlock Portal";
+
+    // รายการในร้าน: Key = ชื่อแมพ , Value = ราคาเป็นจำนวนกุญแจ
+    public override Dictionary<string, int> StoreItems { get; } = new Dictionary<string, int>();
+
+    private StoreManager _storeManager;
     private List<string> _unlockedMaps = new List<string>();
-    
-    // Alias for Keys Required from Currency.cs
-    private const int KEY_COST = Currency.KEYS_PER_MAP; 
 
-    // NEW/FIXED: Event to notify external managers (GameManager/SceneManager)
-    public Action<string> OnMapUnlockedEvent; 
-    #endregion
+    private const int KEY_COST = Currency.KEYS_PER_MAP; // ค่า 3 กุญแจต่อการปลดล็อก map
 
-    #region Initialization
-    public override void Initialize(StoreManager storeManager)
+    // ส่ง event บอก GameManager / UI
+    public Action<string> OnMapUnlockedEvent;
+
+    public override StoreType StoreType => StoreType.Exchange;
+
+    public override void Initialize(StoreManager manager)
     {
-        base.Initialize(storeManager);
-        _storeName = "Map Unlock Portal";
+        _storeManager = manager;
 
-        // Add maps available for purchase 
-        AddMapToList(MapType.RoadTraffic.ToFriendlyString(), KEY_COST);
-        AddMapToList(MapType.Kitchen.ToFriendlyString(), KEY_COST);
+        // แมพที่เริ่มเกมมาจะไม่ต้องซื้อ
+        // School -> default unlocked
 
-        // NOTE: School (Default) is not listed for purchase.
-    }
-    #endregion
-
-    #region Override Methods
-    public override void DisplayItems()
-    {
-        Debug.Log($" Store: {_storeName} (Keys: {_storeManager.Currency.KeyMap})");
-        
-        foreach (var map in _storeItems)
-        {
-            // Display cost in Keys
-            Debug.Log($" - {map.Key}: {KEY_COST} Keys (Current Status: {(IsMapUnlocked(map.Key) ? "UNLOCKED" : "LOCKED")})");
-        }
+        AddMap("Road Traffic");
+        AddMap("Kitchen");
     }
 
-    /// <summary>
-    /// Purchases the map unlock service using the required number of Keys.
-    /// </summary>
     public override bool Purchase(string itemName)
     {
-        if (!IsMapPurchasable(itemName)) return false;
-
-        if (IsMapUnlocked(itemName))
+        if (!StoreItems.ContainsKey(itemName))
         {
-            Debug.Log($"ℹ Map '{itemName}' already unlocked.");
+            Debug.LogWarning($"[StoreMap] No such map item: {itemName}");
             return false;
         }
 
-        // 3. Attempt to unlock the map using the Currency system (which consumes 3 Keys).
-        if (_storeManager.Currency.UnlockMap())
+        if (_unlockedMaps.Contains(itemName))
         {
-            UnlockMap(itemName); // Calls the core logic below
-            Debug.Log($" Map unlocked: {itemName}. Keys remaining: {_storeManager.Currency.KeyMap}");
-            return true;
+            Debug.Log($"[StoreMap] {itemName} already unlocked.");
+            return false;
         }
 
-        // Log failure due to insufficient keys (handled inside Currency.UnlockMap)
-        Debug.Log($" Not enough keys to unlock map! Required: {KEY_COST} Keys.");
-        return false;
-    }
-
-    /// <summary>
-    /// Returns the Key cost, not the Coin cost.
-    /// </summary>
-    public override int GetItemPrice(string itemName)
-    {
-        // For maps, the 'price' returned is the KEY cost.
-        if (_storeItems.ContainsKey(itemName))
-            return KEY_COST; 
-        
-        Debug.LogWarning($" Map '{itemName}' not found in store catalog.");
-        return 0;
-    }
-    #endregion
-
-    #region Map Logic (Core Unlocking)
-    private void AddMapToList(string mapName, int price)
-    {
-        if (!_storeItems.ContainsKey(mapName))
+        // ใช้ระบบใช้กุญแจ (3 ดอก)
+        if (!_storeManager.Currency.UnlockMap())
         {
-            _storeItems.Add(mapName, price);
+            Debug.Log($"[StoreMap] Not enough keys → Need {KEY_COST}");
+            return false;
+        }
+
+        UnlockMap(itemName);
+        Debug.Log($"[StoreMap] Map unlocked → {itemName}");
+        return true;
+    }
+
+    public override void DisplayItems()
+    {
+        foreach (var map in StoreItems)
+        {
+            bool unlocked = _unlockedMaps.Contains(map.Key);
+            Debug.Log($" - {map.Key} | Cost: {KEY_COST} Keys | Status: {(unlocked ? "UNLOCKED" : "LOCKED")}");
         }
     }
 
-    private bool IsMapPurchasable(string mapName)
+    // ---------------- HELPER ----------------
+    private void AddMap(string mapName)
     {
-        return _storeItems.ContainsKey(mapName);
+        if (!StoreItems.ContainsKey(mapName))
+            StoreItems.Add(mapName, KEY_COST);
     }
 
-    private bool IsMapUnlocked(string mapName)
+    private void UnlockMap(string mapName)
     {
-        return _unlockedMaps.Contains(mapName);
-    }
-    
-    public void UnlockMap(string mapName)
-    {
-        if (!IsMapUnlocked(mapName))
+        if (!_unlockedMaps.Contains(mapName))
         {
             _unlockedMaps.Add(mapName);
             _storeManager.UnlockItem(mapName);
-
-            // 🎯 Event Trigger
             OnMapUnlockedEvent?.Invoke(mapName);
-
-            Debug.Log($" Map added to unlocked list: {mapName}");
         }
     }
-    #endregion
 }

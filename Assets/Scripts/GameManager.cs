@@ -29,7 +29,6 @@ public class GameManager : MonoBehaviour
     #region Properties
     public static event System.Action OnCurrencyReady;
 
-    public static event System.Action OnMainMenuUIReady;
     public static GameManager Instance => _instance;
     public bool IsPaused => _isPaused;
     public int Score => _score;
@@ -38,7 +37,7 @@ public class GameManager : MonoBehaviour
     private GameProgressData _persistentProgress;
     private Currency _currencyData;
     private StoreManager _storeManager;
-    private StoreRandomCard _cardStore;
+    private StoreExchange _exchangeStore;
     private StoreUpgrade _upgradeStore;
     private StoreMap _mapStore;
     #endregion
@@ -47,6 +46,7 @@ public class GameManager : MonoBehaviour
     public Currency GetCurrency() => _currencyData;
     public StoreManager GetStoreManager() => _storeManager; 
     public List<StoreBase> GetStoreList() => _storeManager?.Stores;
+
 
     #region Unity Lifecycle
     private void Awake()
@@ -116,7 +116,6 @@ public void InitializeGame()
     _score = 0;
     _playTime = 0f;
 }
-
 
 
     #endregion
@@ -221,23 +220,35 @@ public void InitializeGame()
 
 #region  store
     public void SetupStores(GameProgressData progressData)
-    {
+{
         _currencyData = new Currency();
+        
+        // =============================================================
+        // *** FIX: โหลดค่าเงินจาก Save เข้าสู่ Currency Object ใหม่ ***
+        // =============================================================
+        _currencyData.Coin = progressData.TotalCoins;
+        _currencyData.Token = progressData.TotalTokens;
+        _currencyData.KeyMap = progressData.TotalKeyMaps;
+        
+        
         _storeManager = new StoreManager(_currencyData, progressData);
 
-        CardManager cardManager = FindFirstObjectByType<CardManager>();
-        if (cardManager != null)
-            _storeManager.SetCardManager(cardManager);
+        // Exchange Store
+        _exchangeStore = new StoreExchange();
+        _exchangeStore.Initialize(_storeManager);
+        _storeManager.RegisterStore(_exchangeStore);
 
-        _cardStore = new StoreRandomCard();
-        _cardStore.Initialize(_storeManager);
-
+        // Upgrade Store
         _upgradeStore = new StoreUpgrade();
         _upgradeStore.Initialize(_storeManager);
+        _storeManager.RegisterStore(_upgradeStore);
 
+        // Map Store (ถ้าต้องใช้)
         _mapStore = new StoreMap();
         _mapStore.Initialize(_storeManager);
+        _storeManager.RegisterStore(_mapStore);
         _mapStore.OnMapUnlockedEvent += HandleMapUnlocked;
+
 
         Debug.Log("[GameManager] All store systems initialized successfully.");
     }
