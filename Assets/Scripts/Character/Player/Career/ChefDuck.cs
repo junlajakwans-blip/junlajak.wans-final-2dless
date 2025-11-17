@@ -52,7 +52,7 @@ public class ChefDuck : Player, ISkillUser, IAttackable
         }
 
         // 2. BuffMon Logic (Passive check)
-        Debug.Log("[ChefDuck] BuffMon (Doggo, MooPing, Peter, Lottory) is active when skill is used.");
+        Debug.Log("[ChefDuck] BuffMon (Doggo, MooPing, Peter, Lottery) is active when skill is used.");
     }
     #endregion
 
@@ -126,7 +126,7 @@ public class ChefDuck : Player, ISkillUser, IAttackable
     }
 
     /// <summary>
-    /// BuffMon Logic: Disables specific enemies and forces LottoryMon to drop coins.
+    /// BuffMon Logic: Disables specific enemies and forces LotteryMon to drop coins.
     /// </summary>
     private IEnumerator CookBuffRoutine()
     {
@@ -146,12 +146,12 @@ public class ChefDuck : Player, ISkillUser, IAttackable
                     Debug.Log($"[{PlayerName}] BuffMon applied: {enemy.EnemyType} attacks disabled for {_buffTime}s");
                     break;
                 
-                // ⚠️ FIX: ใช้ LottoryMon ตามโค้ดของคุณ และแก้ไข Logic ให้ถูกต้อง
-                case EnemyType.LottoryMon: 
+                // FIX: ใช้ LotteryMon ตามโค้ดของคุณ และแก้ไข Logic ให้ถูกต้อง
+                case EnemyType.LotteryMon: 
                     // LotteryMon -> % Drop Coin Between 3-8 Coin
                     int bonusCoin = Random.Range(_minCoinBonus, _maxCoinBonus + 1);
                     AddCoin(bonusCoin); // Add coin directly to player
-                    Debug.Log($"[{PlayerName}] BuffMon applied: LottoryMon dropped {bonusCoin} bonus coins instantly.");
+                    Debug.Log($"[{PlayerName}] BuffMon applied: LotteryMon dropped {bonusCoin} bonus coins instantly.");
                     break;
             }
         }

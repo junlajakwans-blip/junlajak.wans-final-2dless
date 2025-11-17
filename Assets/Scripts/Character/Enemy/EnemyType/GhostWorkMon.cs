@@ -1,25 +1,20 @@
 using UnityEngine;
 using System.Collections;
+using Random = UnityEngine.Random; 
 
 public class GhostWorkMon : Enemy
 {
-    #region Fields
-    [Header("GhostWorkMon Settings")]
-    [SerializeField] private float _fadeDuration = 1.5f;
-    [SerializeField] private float _hauntRange = 6f;
-    [SerializeField] private float _teleportCooldown = 5f;
-    [SerializeField] private float _baseTeleportDistance = 2f; // Distance behind player to teleport
+    // NOTE: _data field is inherited from Enemy.cs
 
-    private float _nextTeleportTime;
-    #endregion
+    private float _nextTeleportTime;    
 
     #region Unity Lifecycle
-    public void Start()
+    
+    protected override void Start()
     {
-        // Set high HP to be a persistent annoyance (Damage Sponge)
-        // Assuming base health is 1, set it much higher.
-        _health = 10; 
-        _nextTeleportTime = Time.time + _teleportCooldown;
+        base.Start();
+        _nextTeleportTime = Time.time + _data.GhostWorkTeleportCooldown;
+        
     }
 
     protected override void Update()
@@ -40,81 +35,56 @@ public class GhostWorkMon : Enemy
         if (_target != null && Time.time >= _nextTeleportTime)
         {
             TryTeleportAttack();
-            _nextTeleportTime = Time.time + _teleportCooldown;
-        }
-
-        // Base attack logic (inherited from Enemy.cs)
-        // base.Update() handles the Attack() call if DetectPlayer() is true.
-    }
-    #endregion
-
-    #region Movement/Teleport
-    public override void Move()
-    {
-        if (_target != null)
-        {
-            // Simple float toward target (inherited from base Enemy)
-            base.Move();
-        }
-        Debug.Log($"{name} floats silently toward the player...");
-    }
-
-    private void TryTeleportAttack()
-    {
-        if (_target == null) return;
-
-        // Teleport is the main attack trigger
-        if (DetectPlayer(_target.position))
-        {
-            // Calculate a position slightly behind the player
-            Vector3 teleportPos = _target.position + (transform.position - _target.position).normalized * _baseTeleportDistance;
-            
-            // Limit teleport range to prevent abuse
-            if (Vector3.Distance(transform.position, _target.position) < _hauntRange)
-            {
-                // Start fade routine before teleporting (for visual effect)
-                StartCoroutine(TeleportRoutine(teleportPos));
-            }
+            //  Use Data From EnemyData:Unique | Asset: _data.GhostWorkTeleportCooldown
+            _nextTeleportTime = Time.time + _data.GhostWorkTeleportCooldown;
         }
     }
-
-    private IEnumerator TeleportRoutine(Vector3 targetPos)
-    {
-        // 1. Fade out (Visuals needed: e.g., Renderer.material.color.a = 0)
-        // TODO: Implement fade out visuals
-        Debug.Log($"[{name}] fades out...");
-        _isDisabled = true;
-        yield return new WaitForSeconds(_fadeDuration / 2f);
-        
-        // 2. Teleport
-        transform.position = targetPos;
-        Debug.Log($"{name} teleported behind you!");
-        
-        // 3. Fade in and attack immediately
-        // TODO: Implement fade in visuals
-        yield return new WaitForSeconds(_fadeDuration / 2f);
-        _isDisabled = false;
-        
-        Attack(); // Attack immediately after reappearing
-    }
-
-    // Teleport method modified for internal routine use
-    public void Teleport(Vector3 target)
-    {
-        // Logic moved to TeleportRoutine for visual timing
-        // This method can be removed or kept as a utility if needed elsewhere.
-    }
+    
     #endregion
 
     #region Combat
+    
+    public void TryTeleportAttack()
+    {
+        //  Use Data From EnemyData:Unique | Asset: _data.GhostWorkHauntRange
+        if (DetectPlayer(_target.position, _data.GhostWorkHauntRange))
+        {
+            StartCoroutine(TeleportRoutine());
+        }
+    }
+    
+    private IEnumerator TeleportRoutine()
+    {
+        // 1. Fade Out
+        //  Use Data From EnemyData:Unique | Asset: _data.GhostWorkFadeDuration
+        Debug.Log($"{name} fading out for {_data.GhostWorkFadeDuration}s...");
+        // TODO: Implement actual visual fade out using Coroutine and Renderer
+        yield return new WaitForSeconds(_data.GhostWorkFadeDuration);
+
+        // 2. Calculate New Position
+        //  Use Data From EnemyData:Unique | Asset: _data.GhostWorkBaseTeleportDistance
+        Vector3 playerPos = _target.position;
+        Vector3 teleportOffset = Vector3.left * _data.GhostWorkBaseTeleportDistance;
+        transform.position = playerPos + teleportOffset;
+        
+        // 3. Fade In
+        //  Use Data From EnemyData:Unique | Asset: _data.GhostWorkFadeDuration
+        Debug.Log($"{name} fading in at new position.");
+        // TODO: Implement actual visual fade in
+        yield return new WaitForSeconds(_data.GhostWorkFadeDuration); 
+        
+        // 4. Attack Immediately
+        Attack();
+    }
+    
     public override void Attack()
     {
         // Base attack (e.g., small touch damage or debuff)
         if (_target != null && _target.TryGetComponent<Player>(out var player))
         {
-            // Apply small damage to be annoying
-            player.TakeDamage(5); 
-            Debug.Log($"{name} haunts the player with 5 damage!");
+            //  Use Data From EnemyData:Unique | Asset: _data.GhostWorkHauntDamage
+            player.TakeDamage(_data.GhostWorkHauntDamage); 
+            Debug.Log($"{name} haunts the player with {_data.GhostWorkHauntDamage} damage!");
         }
     }
     #endregion
@@ -126,26 +96,29 @@ public class GhostWorkMon : Enemy
 
         CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
         
-        if (spawner != null)
+        if (spawner != null && _data != null)
         {
             float roll = Random.value;
             
-            // Drop Coin with 45% chance
-            if (roll < 0.45f)
+            //  Drop Chance from Asset
+            float coinChance = _data.GhostWorkCoinDropChance;
+            float greenTeaChance = _data.GhostWorkGreenTeaDropChance;
+            float totalGreenTeaChance = coinChance + greenTeaChance;
+            
+            // Drop Coin: (roll < 45%)
+            if (roll < coinChance)
             {
                 spawner.DropCollectible(CollectibleType.Coin, transform.position);
-                Debug.Log($"[GhostMon] Dropped: Coin ({roll:F2})");
             }
-            // Drop GreenTea with 15% chance
-            else if (roll < 0.60f) 
+            // Drop GreenTea: (45% <= roll < 60%)
+            else if (roll < totalGreenTeaChance) 
             {
                 spawner.DropCollectible(CollectibleType.GreenTea, transform.position);
-                Debug.Log($"[GhostMon] Dropped: GreenTea ({roll:F2})");
             }
         }
-        else
+        else if (spawner == null)
         {
-            Debug.LogWarning("[GhostMon] CollectibleSpawner not found! Cannot drop items.");
+            Debug.LogWarning("[GhostWorkMon] CollectibleSpawner not found! Cannot drop items.");
         }
     }
     #endregion

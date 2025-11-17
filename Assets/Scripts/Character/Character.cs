@@ -25,7 +25,7 @@ public abstract class Character : MonoBehaviour, IDamageable
     
 
     #region Health System
-    public void TakeDamage(int amount)
+    public virtual void TakeDamage(int amount)
     {
         if (_isDead) return;
 

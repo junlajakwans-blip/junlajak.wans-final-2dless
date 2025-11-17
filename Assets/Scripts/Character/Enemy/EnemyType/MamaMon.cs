@@ -1,37 +1,40 @@
 using UnityEngine;
-using System.Collections;
+using System.Collections; 
+using Random = UnityEngine.Random; // Ensure Random refers to Unity's Random
 
 public class MamaMon : Enemy
 {
+    // NOTE: _data field (EnemyData) is inherited from Enemy.cs
+    // NOTE: _target, _isDisabled, _currentHealth, _maxHealth are inherited.
+
     #region Fields
-    [Header("MamaMon Settings")]
-    [SerializeField] private int _noodleCount = 3;
-    [SerializeField] private float _attackCooldown = 2f;
-    [SerializeField] private float _boilRange = 4f;
-    [SerializeField] private int _boilDamage = 10;
-    
     [Header("Projectile Attack")]
-    [SerializeField] private GameObject _noodleProjectilePrefab;
-    [SerializeField] private Transform _firePoint;
-    [SerializeField] private float _projectileSpeed = 5f;
-    [SerializeField] private int _projectileDamage = 15;
-
-    [Header("Behavior")]
-    [SerializeField] private float _healChance = 0.1f; // 10% chance to heal on cooldown
-    [SerializeField] private float _healCooldown = 8f;
-
-    [SerializeField] private int _maxHealth = 100; // Set Max HP for MamaMon
+    [SerializeField] private GameObject _noodleProjectilePrefab; // Prefab must remain in MonoBehaviour
+    [SerializeField] private Transform _firePoint; // Fire point must remain in MonoBehaviour
+    
     
     private float _nextAttackTime;
     private float _nextHealAttempt;
     #endregion
 
     #region Unity Lifecycle
+    
+    protected override void Start()
+    {
+        base.Start();
+
+        //  2. Initialize custom timers using loaded data
+        // _data is now guaranteed to be loaded and accessible here.
+        _nextAttackTime = Time.time + _data.MamaAttackCooldown; 
+        _nextHealAttempt = Time.time + _data.MamaHealCooldown;
+    }
+
     protected override void Update()
     {
+
         if (_isDisabled) return;
 
-        // Find target if missing
+        // Find target (Logic is okay here, better handled in a Manager but functional)
         if (_target == null)
         {
             var player = FindFirstObjectByType<Player>();
@@ -48,29 +51,29 @@ public class MamaMon : Enemy
             // --- Attack Logic ---
             if (Time.time >= _nextAttackTime)
             {
-                // Decide which attack to use
-                if (distanceToPlayer <= _boilRange)
+                // Use Data From EnemyData:Unique | Asset: _data.MamaBoilRange
+                if (distanceToPlayer <= _data.MamaBoilRange)
                 {
-                    // If player is close, use AOE BoilSplash
                     BoilSplash();
                 }
                 else
                 {
-                    // If player is far, throw noodles
                     Attack();
                 }
-                _nextAttackTime = Time.time + _attackCooldown;
+                // Use Data From EnemyData:Unique | Asset: _data.MamaAttackCooldown
+                _nextAttackTime = Time.time + _data.MamaAttackCooldown;
             }
 
             // --- Heal Logic ---
             if (Time.time >= _nextHealAttempt)
             {
-                // Check if HP is below max and roll for heal chance
-                if (_health < _maxHealth && Random.value < _healChance)
+                // Use Data From EnemyData:Unique | Asset: _data.MamaHealChance
+                if (_currentHealth < _maxHealth && Random.value < _data.MamaHealChance)
                 {
                     RecoverHP();
                 }
-                _nextHealAttempt = Time.time + _healCooldown;
+                // Use Data From EnemyData:Unique | Asset: _data.MamaHealCooldown
+                _nextHealAttempt = Time.time + _data.MamaHealCooldown;
             }
         }
     }
@@ -94,20 +97,22 @@ public class MamaMon : Enemy
         if (_noodleProjectilePrefab == null || _firePoint == null || _target == null)
             yield break;
 
-        for (int i = 0; i < _noodleCount; i++)
+        // Use Data From EnemyData:Unique | Asset: _data.MamaNoodleCount
+        for (int i = 0; i < _data.MamaNoodleCount; i++)
         {
             var go = Instantiate(_noodleProjectilePrefab, _firePoint.position, Quaternion.identity);
             
             if (go.TryGetComponent<Rigidbody2D>(out var rb))
             {
                 Vector2 aim = ((Vector2)_target.position - (Vector2)_firePoint.position).normalized;
-                rb.linearVelocity = aim * _projectileSpeed;
+                // Use Data From EnemyData:Unique | Asset: _data.MamaProjectileSpeed
+                rb.linearVelocity = aim * _data.MamaProjectileSpeed;
             }
 
             if (go.TryGetComponent<Projectile>(out var proj))
-                proj.SetDamage(_projectileDamage);
+                // Use Data From EnemyData:Unique | Asset: _data.MamaProjectileDamage
+                proj.SetDamage(_data.MamaProjectileDamage); 
             
-            // Wait a very short time between each noodle throw
             yield return new WaitForSeconds(0.2f); 
         }
     }
@@ -117,14 +122,16 @@ public class MamaMon : Enemy
     /// </summary>
     public void BoilSplash()
     {
-        Debug.Log($"[{name}] creates boiling splash in {_boilRange}m radius!");
+        // Use Data From EnemyData:Unique | Asset: _data.MamaBoilRange
+        Debug.Log($"[{name}] creates boiling splash in {_data.MamaBoilRange}m radius!");
         
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, _boilRange);
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, _data.MamaBoilRange);
         foreach (var hit in hits)
         {
             if (hit.TryGetComponent<Player>(out var player))
             {
-                player.TakeDamage(_boilDamage);
+                // Use Data From EnemyData:Unique | Asset: _data.MamaBoilDamage
+                player.TakeDamage(_data.MamaBoilDamage);
             }
         }
     }
@@ -132,11 +139,12 @@ public class MamaMon : Enemy
 
     #region Utility / Healing
     /// <summary>
-    /// Recovers MamaMon's HP by 10 points.
+    /// Recovers MamaMon's HP by a fixed amount (10 points).
     /// </summary>
     public void RecoverHP()
     {
-        base.Heal(10); // Call the base class's Heal method
+        // NOTE: ค่า Heal 10 points ยังคงเป็น Hardcoded ถ้าต้องการให้ปรับได้ต้องเพิ่มใน EnemyData
+        base.Heal(10); 
         Debug.Log($"[{name}] slurps noodles to heal HP!");
     }
     #endregion
@@ -151,26 +159,29 @@ public class MamaMon : Enemy
         
         CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
         
-        if (spawner != null)
+        if (spawner != null && _data != null)
         {
             float roll = Random.value;
             
-            // Drop Coin with 35% chance
-            if (roll < 0.35f)
+            // โอกาสรวมสำหรับการดรอป GreenTea
+            float totalChanceForGreenTea = _data.MamaCoinDropChance + _data.MamaGreenTeaDropChance; // e.g., 0.35 + 0.10 = 0.45f
+            
+            // Drop Coin: (roll < 35%)
+            if (roll < _data.MamaCoinDropChance)
             {
                 spawner.DropCollectible(CollectibleType.Coin, transform.position);
-                Debug.Log($"[MamaMon] Dropped: Coin ({roll:F2})");
+                Debug.Log($"[MamaMon] Dropped: Coin (Chance: {_data.MamaCoinDropChance * 100:F0}%)");
             }
-            // Drop GreenTea with 10% chance 
-            else if (roll < 0.45f)
+            // Drop GreenTea: (35% <= roll < 45%)
+            else if (roll < totalChanceForGreenTea)
             {
                 spawner.DropCollectible(CollectibleType.GreenTea, transform.position);
-                Debug.Log($"[MamaMon] Dropped: GreenTea ({roll:F2})");
+                Debug.Log($"[MamaMon] Dropped: GreenTea (Chance: {_data.MamaGreenTeaDropChance * 100:F0}%)");
             }
         }
-        else
+        else if (spawner == null)
         {
-            Debug.LogWarning("[MamaMon] Cannot drop items.");
+            Debug.LogWarning("[MamaMon] CollectibleSpawner not found! Cannot drop items.");
         }
     }
     #endregion

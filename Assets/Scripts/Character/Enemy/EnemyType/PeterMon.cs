@@ -1,28 +1,32 @@
 using UnityEngine;
 using System.Collections;
+using Random = UnityEngine.Random;
 
-public class PeterMon : Enemy, IMoveable
+public class PeterMon : Enemy // Removed IMoveable as Enemy already has Move()
 {
+    // NOTE: _data field (EnemyData) is inherited from Enemy.cs
+    
     #region Fields
-    [Header("PeterMon Settings")]
-    [SerializeField] private float _hoverAmplitude = 0.25f;
-    [SerializeField] private float _hoverSpeed = 2f;
-    [SerializeField] private float _attackRange = 4.5f;
-    [SerializeField] private float _attackCooldown = 2.5f;
-    [SerializeField] private GameObject _projectilePrefab;
-    [SerializeField] private Transform _firePoint;
-    [SerializeField] private int _projectileDamage = 10;
-    [SerializeField] private float _projectileSpeed = 4f;
+    [Header("Projectile Attack")]
+    [SerializeField] private GameObject _projectilePrefab; // Prefab must remain in MonoBehaviour
+    [SerializeField] private Transform _firePoint; // Fire point must remain in MonoBehaviour
+
 
     private float _hoverOffsetY;
     private float _nextAttackTime;
-    private Vector2 _direction = Vector2.left;
+    private Vector2 _direction = Vector2.left; // Unused for hovering, but kept if needed
     #endregion
 
     #region Unity Lifecycle
-    public void Start()
+    
+    protected override void Start()
     {
+        
+        base.Start();
+
+        //  2. Initialize runtime state and custom timers using loaded data
         _hoverOffsetY = transform.position.y;
+        _nextAttackTime = Time.time + _data.PeterAttackCooldown; // ใช้ค่าจาก Asset
     }
 
     protected override void Update()
@@ -35,42 +39,42 @@ public class PeterMon : Enemy, IMoveable
             var player = FindFirstObjectByType<Player>();
             if (player != null) _target = player.transform;
         }
+        
+        //  DetectPlayer use _detectionRange in Enemy.cs
         if (_target != null && DetectPlayer(_target.position))
             AttackPlayer();
     }
     #endregion
 
     #region Movement
-    // Hover behaviour (Visual motion only)
+    /// <summary>
+    /// Hover behaviour (Visual motion only)
+    /// </summary>
     private void HoverMotion()
     {
-        float newY = _hoverOffsetY + Mathf.Sin(Time.time * _hoverSpeed) * _hoverAmplitude;
+        // Use Data From EnemyData:Unique | Asset: _data.PeterHoverSpeed และ _data.PeterHoverAmplitude
+        float newY = _hoverOffsetY + Mathf.Sin(Time.time * _data.PeterHoverSpeed) * _data.PeterHoverAmplitude;
         transform.position = new Vector3(transform.position.x, newY, transform.position.z);
     }
 
     // PeterMon is stationary and only hovers.
     public override void Move() { } 
     
-    // Unused in stationary mon, kept for IMoveable interface compliance.
-    public void ChasePlayer(Player player) { } 
-    
-    // Unused in stationary mon, kept for IMoveable interface compliance.
-    public void Stop() { }
-    
-    // Unused in stationary mon, kept for IMoveable interface compliance.
-    public void SetDirection(Vector2 direction) { }
+    // ... (IMoveable methods omitted for brevity) ...
     #endregion
 
     #region Combat
     private void AttackPlayer()
     {
+        // Use Data From EnemyData:Unique | Asset: _data.PeterAttackCooldown
         if (Time.time < _nextAttackTime) return;
         if (_target == null) return;
         
-        if (Vector2.Distance(transform.position, _target.position) <= _attackRange)
+        // Use Data From EnemyData:Unique | Asset: _data.PeterAttackRange
+        if (Vector2.Distance(transform.position, _target.position) <= _data.PeterAttackRange)
         {
             ShootProjectile();
-            _nextAttackTime = Time.time + _attackCooldown;
+            _nextAttackTime = Time.time + _data.PeterAttackCooldown;
         }
     }
     
@@ -78,21 +82,21 @@ public class PeterMon : Enemy, IMoveable
     {
         if (_projectilePrefab == null || _firePoint == null || _target == null) return;
         
-        // Instantiate the projectile (Should ideally use Pooling via Spawner)
+        // NOTE: ควรใช้ Object Pooling แทน Instantiate
         var proj = Instantiate(_projectilePrefab, _firePoint.position, Quaternion.identity);
 
         // Calculate direction and set velocity (Aiming at target)
         if (proj.TryGetComponent<Rigidbody2D>(out var rb))
         {
             Vector2 aim = ((Vector2)_target.position - (Vector2)_firePoint.position).normalized;
-            rb.linearVelocity = aim * _projectileSpeed;
+            // Use Data From EnemyData:Unique | Asset: _data.PeterProjectileSpeed
+            rb.linearVelocity = aim * _data.PeterProjectileSpeed;
         }
         
         // Set damage value using the Projectile component
         if (proj.TryGetComponent<Projectile>(out var projectile))
-            projectile.SetDamage(_projectileDamage);
-            
-        // REMOVED DUPLICATE CODE BLOCK that was causing errors.
+            // Use Data From EnemyData:Unique | Asset: _data.PeterProjectileDamage
+            projectile.SetDamage(_data.PeterProjectileDamage);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -100,7 +104,8 @@ public class PeterMon : Enemy, IMoveable
         // Default melee attack if player runs into PeterMon
         if (_isDisabled) return;
         if (collision.gameObject.TryGetComponent<Player>(out var player))
-            player.TakeDamage(_projectileDamage); 
+            // Use Data From EnemyData:Unique | Asset: _data.PeterProjectileDamage
+            player.TakeDamage(_data.PeterProjectileDamage); 
     }
     #endregion
 
@@ -113,6 +118,7 @@ public class PeterMon : Enemy, IMoveable
 
     private IEnumerator DisableRoutine(float time)
     {
+        // NOTE: PeterMon doesn't move, so no need to zero out velocity, just set flag
         _isDisabled = true;
         yield return new WaitForSeconds(time);
         _isDisabled = false;
@@ -124,25 +130,26 @@ public class PeterMon : Enemy, IMoveable
     {
         base.Die();
         
-        // Find Spawner instance (Quick Fix for Manager access)
         CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
         
-        if (spawner != null)
+        if (spawner != null && _data != null)
         {
             float roll = Random.value;
             
-            // Drop Coin with 25% chance (0.00% <= roll < 25.00%)
-            if (roll < 0.25f)
+            float totalGreenTeaChance = _data.PeterCoinDropChance + _data.PeterGreenTeaDropChance;
+            
+            // Drop Coin
+            if (roll < _data.PeterCoinDropChance)
             {
                 spawner.DropCollectible(CollectibleType.Coin, transform.position);
             }
-            // Drop GreenTea with 5% chance (25.00% <= roll < 30.00%)
-            else if (roll < 0.30f)
+            // Drop GreenTea
+            else if (roll < totalGreenTeaChance)
             {
                 spawner.DropCollectible(CollectibleType.GreenTea, transform.position);
             }
         }
-        else
+        else if (spawner == null)
         {
             Debug.LogWarning("[PeterMon] CollectibleSpawner not found! Cannot drop items.");
         }

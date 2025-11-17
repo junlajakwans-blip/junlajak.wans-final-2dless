@@ -1,23 +1,29 @@
 using UnityEngine;
 using System.Collections;
+using Random = UnityEngine.Random; 
 
 public class LotteryMon : Enemy
 {
+    // NOTE: _data field (EnemyData) is inherited from Enemy.cs
+
     #region Fields
-    [Header("LotteryMon Settings")]
-    [SerializeField] private float _luckFactor = 0.15f; // Chance (15%) of giving Good Luck
-    [SerializeField] private float _curseDuration = 4f; // Bad Luck duration
-    [SerializeField] private int _baseCoinDrop = 1;      // Base minimum coins on defeat (FIXED to 1)
-    [SerializeField] private int _maxCoinDrop = 40;      // Max coins on defeat (BALANCED to 40)
+    [Header("LotteryMon State")]
+    // 🔥 ลบ Fields ตัวเลขทั้งหมดออก (ถูกย้ายไป EnemyData แล้ว)
 
     private float _nextAttackTime;
-    private float _attackCooldown = 5f;
+    // 🔥 _attackCooldown ถูกลบออก (ใช้ _data.LotteryAttackCooldown แทน)
     #endregion
 
     #region Unity Lifecycle
-    public void Start()
+    
+    protected override void Start()
     {
-        _nextAttackTime = Time.time + _attackCooldown;
+        // 🚨 1. เรียก Base.Start() เพื่อให้ Enemy.InitializeFromData() รันก่อน
+        base.Start(); 
+        
+        // 🚨 2. Initialize custom timers using loaded data
+        // _data.LotteryAttackCooldown ถูกโหลดจาก EnemyData
+        _nextAttackTime = Time.time + _data.LotteryAttackCooldown;
     }
 
     protected override void Update()
@@ -33,7 +39,8 @@ public class LotteryMon : Enemy
         if (_target != null && Time.time >= _nextAttackTime)
         {
             Attack();
-            _nextAttackTime = Time.time + _attackCooldown;
+            // Use Data From EnemyData:Unique | Asset: _data.LotteryAttackCooldown
+            _nextAttackTime = Time.time + _data.LotteryAttackCooldown;
         }
     }
     #endregion
@@ -45,12 +52,13 @@ public class LotteryMon : Enemy
 
         float roll = Random.value;
         
-        if (roll < _luckFactor) // 15% chance for good luck
+        // Use Data From EnemyData:Unique | Asset: _data.LotteryLuckFactor
+        if (roll < _data.LotteryLuckFactor) // Chance for good luck
         {
             ApplyGoodLuck(player);
             Debug.Log($"[{name}] rolled: {roll:F2}. Player wins!");
         }
-        else // 85% chance for bad luck
+        else // Chance for bad luck
         {
             ApplyBadLuck(player);
             Debug.Log($"[{name}] rolled: {roll:F2}. Player loses!");
@@ -59,25 +67,26 @@ public class LotteryMon : Enemy
 
     public void ApplyGoodLuck(Player player)
     {
-        // Give player a random amount of Coin immediately (1-10)
-        int coinAmount = Random.Range(1, 11);
+        // Use Data From EnemyData:Unique | Asset: LotteryGoodLuckMinCoin และ LotteryGoodLuckMaxCoin
+        int coinAmount = Random.Range(_data.LotteryGoodLuckMinCoin, _data.LotteryGoodLuckMaxCoin + 1);
         player.AddCoin(coinAmount);
-        Debug.Log($"[Lottery] {player.name} got lucky: +{coinAmount} Coin!");
+        Debug.Log($"[Lottery] {player.name} got lucky: +{coinAmount} Coin! (Roll chance: {_data.LotteryLuckFactor * 100:F0}%)");
     }
 
     public void ApplyBadLuck(Player player)
     {
         if (BuffManager.Instance != null)
         {
-            player.ApplySpeedModifier(0.5f, _curseDuration);
+            // Use Data From EnemyData:Unique | Asset: _data.LotteryCurseDuration
+            player.ApplySpeedModifier(0.5f, _data.LotteryCurseDuration);
         }
-        Debug.Log($"[Lottery] {player.name} got cursed: Speed reduced for {_curseDuration}s!");
+        Debug.Log($"[Lottery] {player.name} got cursed: Speed reduced for {_data.LotteryCurseDuration}s!");
     }
     #endregion
 
     #region Death/Drop
     /// <summary>
-    /// Drops a guaranteed amount of Coin between 1 and 40 upon defeat.
+    /// Drops a guaranteed amount of Coin between min and max upon defeat.
     /// </summary>
     public override void Die()
     {
@@ -85,19 +94,19 @@ public class LotteryMon : Enemy
         
         CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
         
-        if (spawner != null)
+        if (spawner != null && _data != null)
         {
-            // Drop Coin amount between 1 and 40 (inclusive)
-            int coinAmount = Random.Range(_baseCoinDrop, _maxCoinDrop + 1);
+            // Use Data From EnemyData:Unique | Asset: LotteryMinCoinDrop และ LotteryMaxCoinDrop
+            int coinAmount = Random.Range(_data.LotteryMinCoinDrop, _data.LotteryMaxCoinDrop + 1);
             
             for (int i = 0; i < coinAmount; i++)
             {
                 // Spawn individual coins (scattered position)
                 spawner.DropCollectible(CollectibleType.Coin, transform.position + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0));
             }
-            Debug.Log($"[LotteryMon] Dropped {coinAmount} coins on defeat.");
+            Debug.Log($"[LotteryMon] Dropped {coinAmount} coins on defeat (Range: {_data.LotteryMinCoinDrop} - {_data.LotteryMaxCoinDrop}).");
         }
-        else
+        else if (spawner == null)
         {
             Debug.LogWarning("[LotteryMon] CollectibleSpawner not found! Cannot drop items.");
         }

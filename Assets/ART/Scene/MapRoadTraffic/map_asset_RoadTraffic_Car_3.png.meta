@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 561408cfb0119a849a933370c4aff70f
+guid: ad6c0b422288b0b44958c689ab86d6f1
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -820893395310873459
-    second: Artboard 105_0
+      213: 5913781657915667584
+    second: map_asset_RoadTraffic_Car_3_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Artboard 105_0
+      name: map_asset_RoadTraffic_Car_3_0
       rect:
         serializedVersion: 2
-        x: 52
-        y: 28
-        width: 1175
-        height: 201
+        x: 69
+        y: 25
+        width: 1063
+        height: 377
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d84f7066ec99b94f0800000000000000
-      internalID: -820893395310873459
+      spriteID: 084b847d519f11250800000000000000
+      internalID: 5913781657915667584
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Artboard 105_0: -820893395310873459
+      map_asset_RoadTraffic_Car_3_0: 5913781657915667584
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

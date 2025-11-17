@@ -134,7 +134,7 @@ public class ProgrammerDuck : Player, ISkillUser, IAttackable
         Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
         foreach (var enemy in enemies)
         {
-            if (enemy.EnemyType == EnemyType.LottoryMon)
+            if (enemy.EnemyType == EnemyType.LotteryMon)
             {
                 // LotteryMon -> Add Luck -> Drop 10 Coin
                 AddCoin(10); 

@@ -14,7 +14,7 @@ public enum EnemyType
     None = 0,          // No Enemy Selected
     KahootMon = 1,     // School
     GhostWorkMon = 2,  // School
-    LottoryMon = 3,    // Traffic
+    LotteryMon = 3,    // Traffic
     DoggoMon = 4,      // Traffic
     RedlightMon = 5,   // Traffic
     PeterMon = 6,      // Kitchen
@@ -40,7 +40,7 @@ public static class EnemyTypeExtensions
             case EnemyType.GhostWorkMon:
             case EnemyType.MamaMon:
             case EnemyType.MooPingMon:
-            case EnemyType.LottoryMon:
+            case EnemyType.LotteryMon:
             case EnemyType.DoggoMon:
             case EnemyType.RedlightMon:
             case EnemyType.PeterMon:
@@ -60,7 +60,7 @@ public static class EnemyTypeExtensions
         return enemyType switch
         {
             EnemyType.GhostWorkMon => new() { MapType.School },
-            EnemyType.LottoryMon => new() { MapType.RoadTraffic },
+            EnemyType.LotteryMon => new() { MapType.RoadTraffic },
             EnemyType.DoggoMon => new() { MapType.RoadTraffic },
             EnemyType.RedlightMon => new() { MapType.RoadTraffic },
             EnemyType.PeterMon => new() { MapType.Kitchen },
@@ -80,6 +80,20 @@ public static class EnemyTypeExtensions
 }
 #endregion
 
+#region state
+
+        public enum EnemyState 
+    {
+        Idle,                  
+        Chase,                 
+        Attack,        
+        Confused,   
+        Disabled,      
+        Dead        
+    }
+
+#endregion
+
 
 #region EnemyType Debug 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -97,7 +111,7 @@ public static class EnemyTypeDebugExtensions
             EnemyType.GhostWorkMon => "Ghost Work Mon",
             EnemyType.MamaMon => "Mama Mon",
             EnemyType.MooPingMon => "Moo Ping Mon",
-            EnemyType.LottoryMon => "Lottory Mon",
+            EnemyType.LotteryMon => "Lottory Mon",
             EnemyType.DoggoMon => "Doggo Mon",
             EnemyType.RedlightMon => "Redlight Mon",
             EnemyType.PeterMon => "Peter Mon",

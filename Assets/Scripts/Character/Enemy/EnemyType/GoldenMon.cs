@@ -1,19 +1,16 @@
 using UnityEngine;
 using System.Collections;
+using Random = UnityEngine.Random; 
+using System.Linq; // Required for Player.GetCurrentCareerID() logic if used
 
 public class GoldenMon : Enemy
 {
-    #region Fields
-    [Header("GoldenMon Settings")]
-    //[SerializeField] private float _danceDuration = 3f;
-    [SerializeField] private int _breakPlatformCount = 2;
-    [SerializeField] private int _coinDropMultiplier = 5; // Multiplier for massive coin drop
-    #endregion
+    // NOTE: _data field (EnemyData) is inherited from Enemy.cs
 
     #region Movement/Attack
     public override void Move()
     {
-        Debug.Log($"{name} dances elegantly across the map!");
+        Debug.Log($"{name} dances elegantly across the map! (Speed: {Speed:F1})");
         // TODO: Implement actual elegant movement here
     }
 
@@ -25,10 +22,14 @@ public class GoldenMon : Enemy
 
     public void BreakPlatform()
     {
-        Debug.Log($"{name} destroys {_breakPlatformCount} platforms!");
+        //  Use Data From EnemyData:Unique | Asset: _data.GoldenMonBreakPlatformCount
+        Debug.Log($"{name} destroys {_data.GoldenMonBreakPlatformCount} platforms!");
         // TODO: Implement platform destruction logic here
     }
 
+    /// <summary>
+    /// Drops a guaranteed amount of golden coins based on EnemyData multipliers.
+    /// </summary>
     public void DropGoldenCoins()
     {
         CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
@@ -38,45 +39,53 @@ public class GoldenMon : Enemy
             return;
         }
 
-        int baseCoins = Random.Range(10, 20);
-        int coins = baseCoins * _coinDropMultiplier;
+        //  Use Data From EnemyData:Unique | Asset: Min/Max Coin ก่อนคูณ และตัวคูณ
+        int baseCoins = Random.Range(_data.GoldenMonBaseMinCoin, _data.GoldenMonBaseMaxCoin + 1);
+        int coins = baseCoins * _data.GoldenMonCoinDropMultiplier;
         
-        Debug.Log($"{name} drops {coins} GOLD coins!");
+        Debug.Log($"{name} drops {coins} GOLD coins! (Base: {baseCoins}, Multiplier: {_data.GoldenMonCoinDropMultiplier})");
 
-        // Spawn individual coins
+        // Spawn individual coins (scattered position)
         for (int i = 0; i < coins; i++)
         {
-             spawner.DropCollectible(CollectibleType.Coin, transform.position + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0));
+            spawner.DropCollectible(CollectibleType.Coin, transform.position + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0));
         }
     }
     #endregion
 
-    #region Death/Drop
+#region Death/Drop
+    /// <summary>
+    /// Guaranteed drop of Career Card + massive Coin drop + potential Token bonus.
+    /// </summary>
     public override void Die()
     {
-        // 1. Send OnEnemyDied event
         base.Die(); 
 
-        // Find necessary Managers
         CardManager cardManager = FindFirstObjectByType<CardManager>();
-        Player player = FindFirstObjectByType<Player>(); // Find player to check MuslceDuck status
+        Player player = FindFirstObjectByType<Player>(); 
         CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
 
-        // --- 2. Guaranteed Career Card Drop ---
-        if (cardManager != null)
+        // --- 2. Guaranteed Career Card Drop (Data-Linked) ---
+        if (cardManager != null && _data != null)
         {
-            // Assuming AddCareerCard() handles spawning the CardPickup collectible
-            cardManager.AddCareerCard(); 
-            Debug.Log("[GoldenMon] Guaranteed Career Card dropped.");
+            // 🚨 Check drop chance (should be 1.0 for guaranteed)
+            if (UnityEngine.Random.value < _data.GoldenCardDropChance)
+            {
+                // Note: The CardManager.AddCareerCard() method implicitly uses CardType.Career
+                // which aligns with the GoldenGuaranteedCardType setting.
+                cardManager.AddCareerCard(); 
+                
+                Debug.Log($"[GoldenMon] Card Dropped ({_data.GoldenGuaranteedCardType}) with chance {_data.GoldenCardDropChance * 100:F0}%");
+            }
         }
         else
         {
-            Debug.LogWarning("[GoldenMon] CardManager not found!");
+            Debug.LogWarning("[GoldenMon] CardManager or EnemyData not found! Cannot drop card.");
         }
 
+
         // --- 3. Special Token Drop (MuscleDuck/Berserk Condition) ---
-        // MuscleDuck ID Enum is DuckCareer.Muscle = 10 (from PDF)
-        // We check if the nearby player is currently in the MuscleDuck state.
+        // MuscleDuck ID Enum is DuckCareer.Muscle = 10
         if (player != null && player.GetCurrentCareerID() == DuckCareer.Muscle) 
         {
              if (spawner != null)

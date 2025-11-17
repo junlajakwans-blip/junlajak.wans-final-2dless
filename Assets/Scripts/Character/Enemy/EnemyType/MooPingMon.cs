@@ -1,28 +1,32 @@
 using UnityEngine;
 using System.Collections;
+using Random = UnityEngine.Random; // Ensure Random refers to Unity's Random
 
-public class MooPingMon : Enemy, IMoveable
+public class MooPingMon : Enemy // Removed IMoveable as Enemy already has Move()
 {
+    // NOTE: _data field (EnemyData) is inherited from Enemy.cs
+
     #region Fields
-    [Header("MooPingMon")]
-    [SerializeField] private int _fireDamage = 20;
-    [SerializeField] private float _smokeRadius = 2.5f; // for FanFire()
-    [SerializeField] private float _detectRange = 6f;
+    [Header("Projectile Attack")]
+    [SerializeField] private GameObject _skewerProjectile; // Prefab
+    [SerializeField] private Transform _throwPoint;       // Spawn point
 
-    [SerializeField] private GameObject _skewerProjectile; // prefab
-    [SerializeField] private Transform _throwPoint;       // spawn point
-    [SerializeField] private float _projectileSpeed = 5f;
-    [SerializeField] private float _throwCooldown = 2.2f;
-
-    [SerializeField] private float _patternSpeed = 2.0f; // MovePattern speed
-    [SerializeField] private float _patternWidth = 1.5f; // horizontal sway
 
     private float _nextThrowTime;
-    private Vector2 _dir = Vector2.left;
+    private Vector2 _dir = Vector2.left; // Default direction for the pattern
     private float _patternPhase;
     #endregion
 
     #region Unity
+    
+    protected override void Start()
+    {
+        base.Start();
+        
+        // 2. Initialize custom timers using loaded data
+        _nextThrowTime = Time.time + _data.MooPingThrowCooldown;
+    }
+    
     protected override void Update()
     {
         if (_isDisabled) return;
@@ -38,15 +42,22 @@ public class MooPingMon : Enemy, IMoveable
     #region Movement
     public override void Move()
     {
+        // MooPingMon จะใช้ MovePattern เสมอ
         MovePattern();
     }
 
-    // Simple sway pattern for endless lanes (x oscillation)
+    /// <summary>
+    /// Simple sway pattern for endless lanes (x oscillation).
+    /// </summary>
     private void MovePattern()
     {
-        _patternPhase += Time.deltaTime * _patternSpeed;
-        float swayX = Mathf.Sin(_patternPhase) * _patternWidth * Time.deltaTime;
-        transform.Translate(new Vector2(_dir.x * _speed * Time.deltaTime + swayX, 0f));
+        // Use Data From EnemyData:Unique | Asset: _data.MooPingPatternSpeed
+        _patternPhase += Time.deltaTime * _data.MooPingPatternSpeed;
+        
+        // Use Data From EnemyData:Unique | Asset: _data.MooPingPatternWidth
+        float swayX = Mathf.Sin(_patternPhase) * _data.MooPingPatternWidth * Time.deltaTime;
+        
+        transform.Translate(new Vector2(_dir.x * Speed * Time.deltaTime + swayX, 0f)); 
     }
 
     public void ChasePlayer(Player player)
@@ -71,13 +82,15 @@ public class MooPingMon : Enemy, IMoveable
         if (_target == null) return;
 
         float dist = Vector2.Distance(transform.position, _target.transform.position);
-        if (dist > _detectRange) return;
+        
+        if (dist > _detectionRange) return; 
 
         // Alternate between ThrowSkewer and FanFire by cooldown window
         if (Time.time >= _nextThrowTime)
         {
             ThrowSkewer();
-            _nextThrowTime = Time.time + _throwCooldown;
+            // Use Data From EnemyData:Unique | Asset: _data.MooPingThrowCooldown
+            _nextThrowTime = Time.time + _data.MooPingThrowCooldown;
         }
         else
         {
@@ -88,29 +101,38 @@ public class MooPingMon : Enemy, IMoveable
 
     private void ThrowSkewer()
     {
-        if (_skewerProjectile == null || _throwPoint == null) return; // Removed || _target == null as aiming is not required
+        if (_skewerProjectile == null || _throwPoint == null) return;
 
-        // NOTE: Instantiating is generally poor practice with Pooling.
+        // NOTE: ควรใช้ Object Pooling แทน Instantiate
         var go = Instantiate(_skewerProjectile, _throwPoint.position, Quaternion.identity);
+        
         if (go.TryGetComponent<Rigidbody2D>(out var rb))
         {
-            Vector2 aim = _dir; // Throw in the monster's current direction
-            rb.linearVelocity = aim * _projectileSpeed;
+            Vector2 aim = _dir;
+            // Use Data From EnemyData:Unique | Asset: _data.MooPingProjectileSpeed
+            rb.linearVelocity = aim * _data.MooPingProjectileSpeed;
         }
 
-        // FIX: Set damage value using the Projectile component
         if (go.TryGetComponent<Projectile>(out var proj))
-            proj.SetDamage(_fireDamage); 
+            // Use Data From EnemyData:Unique | Asset: _data.MooPingFireDamage
+            proj.SetDamage(_data.MooPingFireDamage); 
     }
 
-    // Short AOE smoke/fire puff around front arc
+    /// <summary>
+    /// Short AOE smoke/fire puff around front arc
+    /// </summary>
     private void FanFire()
     {
-        var hits = Physics2D.OverlapCircleAll(transform.position, _smokeRadius);
+        // Use Data From EnemyData:Unique | Asset: _data.MooPingSmokeRadius
+        var hits = Physics2D.OverlapCircleAll(transform.position, _data.MooPingSmokeRadius);
+        
         foreach (var h in hits)
         {
             if (h.TryGetComponent<Player>(out var player))
-                player.TakeDamage(Mathf.CeilToInt(_fireDamage * 0.5f));
+            {
+                // Use Data From EnemyData:Unique | Asset: _data.MooPingFireDamage
+                player.TakeDamage(Mathf.CeilToInt(_data.MooPingFireDamage * 0.5f));
+            }
         }
     }
 
@@ -118,7 +140,8 @@ public class MooPingMon : Enemy, IMoveable
     {
         if (_isDisabled) return;
         if (c.gameObject.TryGetComponent<Player>(out var p))
-            p.TakeDamage(Mathf.CeilToInt(_fireDamage * 0.75f));
+            // Use Data From EnemyData:Unique | Asset: _data.MooPingFireDamage
+            p.TakeDamage(Mathf.CeilToInt(_data.MooPingFireDamage * 0.75f));
     }
     #endregion
 
@@ -134,6 +157,7 @@ public class MooPingMon : Enemy, IMoveable
         _isDisabled = true;
         var oldDir = _dir;
         _dir = Vector2.zero;
+        base.Move(Vector2.zero); // หยุดการเคลื่อนที่หลัก
         yield return new WaitForSeconds(t);
         _dir = oldDir;
         _isDisabled = false;
@@ -143,24 +167,25 @@ public class MooPingMon : Enemy, IMoveable
     #region Death/Drop
     public override void Die()
     {
-        // 1. Send OnEnemyDied event and self-destruct (or return to pool)
         base.Die();
         
-        // 2. Drop Item Logic: Find the Spawner and command it to drop.
         CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
         
-        if (spawner != null)
+        if (spawner != null && _data != null)
         {
             float roll = Random.value;
             
-            // Drop Coin with 20% chance
-            if (roll < 0.20f)
+            
+            float totalChanceForCoffee = _data.MooPingCoinDropChance + _data.MooPingCoffeeDropChance;
+            
+            // Drop Coin: (roll < 20%)
+            if (roll < _data.MooPingCoinDropChance)
             {
                 spawner.DropCollectible(CollectibleType.Coin, transform.position);
                 Debug.Log($"[MooPingMon] Dropped: Coin ({roll:F2})");
             }
-            // Drop Coffee with 5% chance (0.20f <= roll < 0.25f)
-            else if (roll < 0.25f)
+            // Drop Coffee: (20% <= roll < 25%)
+            else if (roll < totalChanceForCoffee)
             {
                 spawner.DropCollectible(CollectibleType.Coffee, transform.position);
                 Debug.Log($"[MooPingMon] Dropped: Coffee ({roll:F2})");
@@ -168,7 +193,7 @@ public class MooPingMon : Enemy, IMoveable
         }
         else
         {
-            Debug.LogWarning("[MooPingMon] Cannot drop item: CollectibleSpawner not found!");
+            Debug.LogWarning("[MooPingMon] Cannot drop item: CollectibleSpawner not found or EnemyData missing!");
         }
     }
     #endregion
