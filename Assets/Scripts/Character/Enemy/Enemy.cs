@@ -43,8 +43,13 @@ public abstract class Enemy : Character, IAttackable
     public EnemyType EnemyType { get => _enemyType; set => _enemyType = value; }
     public System.Action<Enemy> OnEnemyDied;
 
-    public bool IsDead => _currentHealth <= 0; // _currentHealth from Character.cs
-    
+    //For Dependenciess
+    protected Player _playerRef;
+    protected CollectibleSpawner _spawnerRef;
+    protected CardManager _cardManagerRef;
+    protected BuffManager _buffManagerRef;
+    protected IObjectPool _poolRef;
+
     #endregion
 
 #region Unity Lifecycle
@@ -103,6 +108,22 @@ public abstract class Enemy : Character, IAttackable
     #endregion
 
 
+    #region  Dependencies
+    public void SetDependencies(Player player, CollectibleSpawner spawner, CardManager cardManager, BuffManager buffManager, IObjectPool pool)
+    {
+        _playerRef = player;
+        // The _target field in Enemy.cs is used for movement/detection. Set it here once.
+        _target = player?.transform; 
+
+        _spawnerRef = spawner;
+        _cardManagerRef = cardManager;
+        _buffManagerRef = buffManager;
+        _poolRef = pool;
+    }
+
+    #endregion
+
+
     #region Core Logic
     
     
@@ -128,24 +149,34 @@ public abstract class Enemy : Character, IAttackable
     }
 
     /// <summary>
-    /// (รDefault)
+    /// (Default)
     /// For normal Update()
     /// </summary>
     public virtual bool DetectPlayer(Vector3 playerPos)
     {
-        // เรียกใช้ร่าง 2 โดยใช้ค่า default _detectionRange
+        
         return DetectPlayer(playerPos, _detectionRange); 
     }
 
     /// <summary>
-    /// (ร่างที่ 2: Custom)
-    /// For Monter custom Range (เช่น GhostWorkMon) 
+    /// (Custom)
+    /// For Monter custom Range (ex GhostWorkMon) 
     /// </summary>
     public virtual bool DetectPlayer(Vector3 playerPos, float customRange) 
     {
     if (!CanDetectOverride) return false;
     float distance = Vector3.Distance(transform.position, playerPos);
     return distance <= customRange;
+    }
+
+    /// <summary>
+    /// Applies passive or active buff effects tied to a player career (e.g., Coin bonus, Debuffs).
+    /// This method is designed to be overridden by specific enemy types.
+    /// </summary>
+    /// <param name="data">The career data asset containing buff values.</param>
+    public virtual void ApplyCareerBuff(DuckCareerData data)
+    {
+        // Default enemies have no career-specific buff interaction by default.
     }
 
     public virtual void DisableBehavior(float duration)
@@ -176,12 +207,16 @@ public abstract class Enemy : Character, IAttackable
     }
     
     //Die form abstract Character
+
     public override void Die() 
     {
-        Debug.Log($"[{_enemyType}] has been defeated.");
+        if (_isDead) return;
+        _isDead = true; 
+        
+        // [FIX 1]: เรียก Event เพื่อให้ EnemySpawner จัดการ Despawn
+        OnEnemyDied?.Invoke(this); 
 
-        OnEnemyDied?.Invoke(this);
-        Destroy(gameObject);
+        Destroy(gameObject) ;
     }
     #endregion
 
@@ -196,8 +231,26 @@ public abstract class Enemy : Character, IAttackable
         Debug.Log($"[{_enemyType}] performs a ranged attack on {target?.name ?? "unknown target"}.");
     }
 
+    /// <summary>
+    /// Applies damage to the target (Player), checking for global passive buffs like MuscleDuck's 'No Attack' chance.
+    /// </summary>
     public virtual void ApplyDamage(IDamageable target, int amount)
     {
+        // Check Global/Map Buffs before attack
+        Player player = _playerRef;
+        
+        // BuffMap: MuscleDuck (Roar Passive) -> 15% No Attack Chance
+        if (player != null && player.GetCurrentCareerID() == DuckCareer.Muscle)
+        {
+            float noAttackChance = 0.15f; // 15%
+            if (Random.value < noAttackChance)
+            {
+                Debug.Log($"<color=green>[MuscleDuck BuffMap]</color> Enemy attack IGNORED (15% No Attack Chance)!");
+                return; // หยุดการโจมตีทั้งหมด
+            }
+        }
+        
+        // Of no buff fight with normal way
         target.TakeDamage(amount);
         Debug.Log($"[{_enemyType}] dealt {amount} damage to target!");
     }
@@ -227,4 +280,6 @@ public abstract class Enemy : Character, IAttackable
         Debug.Log($"[{name}] is no longer confused.");
 
     }
+
+
 }

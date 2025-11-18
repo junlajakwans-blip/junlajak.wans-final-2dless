@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 6ee87457e9e9ad843aefe7e0d92cbc4c
+guid: 30d26c51aa28f6549b08e8ff2f8ade01
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -8537961956278638234
-    second: Artboard 106_0
+      213: -2857533816453354202
+    second: map_Wall_Kitchen_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Artboard 106_0
+      name: map_Wall_Kitchen_0
       rect:
         serializedVersion: 2
-        x: 51
-        y: 27
-        width: 1178
-        height: 202
+        x: 126
+        y: 68
+        width: 774
+        height: 748
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 669663a36d0138980800000000000000
-      internalID: -8537961956278638234
+      spriteID: 62da1a042200858d0800000000000000
+      internalID: -2857533816453354202
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Artboard 106_0: -8537961956278638234
+      map_Wall_Kitchen_0: -2857533816453354202
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

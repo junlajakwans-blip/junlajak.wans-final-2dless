@@ -7,7 +7,7 @@ using System.Collections;
 /// BuffMon: LotteryMon -> +10 Coin, KahootMon -> 25% chance to disable.
 /// BuffMap: School -> Wall behind pushes slowly.
 /// </summary>
-public class ProgrammerDuck : Player, ISkillUser, IAttackable
+public class ProgrammerDuck : Player
 {
     #region Fields
     [Header("Programmer Settings")]
@@ -26,6 +26,9 @@ public class ProgrammerDuck : Player, ISkillUser, IAttackable
 
     private bool _isSkillActive;
     private bool _isCooldown;
+    
+    // Reference to the Spawner for BuffMon
+    private EnemySpawner _enemySpawner;
     #endregion
 
     #region Buffs (Map & Monster)
@@ -36,30 +39,134 @@ public class ProgrammerDuck : Player, ISkillUser, IAttackable
     /// </summary>
     protected override void InitializeCareerBuffs()
     {
-        var map = GetCurrentMapType();
-
+        var careerData = _careerSwitcher?.CurrentCareer; 
+        if (careerData == null) return;
+        
         // 1. BuffMap Logic
-        // School -> Wall behind Push Slowly
+        var map = GetCurrentMapType();
         if (map == MapType.School)
         {
             ApplySchoolMapBuff();
             Debug.Log("[ProgrammerDuck] Map Buff applied: School (Wall pushes slowly).");
         }
 
-        // 2. BuffMon Logic (Passive check)
-        Debug.Log("[ProgrammerDuck] BuffMon (LotteryMon, KahootMon) logic is active when skill is used.");
+        // 2. BuffMon Setup (Passive, Continuous)
+        _enemySpawner = FindFirstObjectByType<EnemySpawner>();
+        
+        // Subscribe to CareerSwitcher Revert Event for cleanup
+        if (_careerSwitcher != null)
+        {
+            _careerSwitcher.OnRevertToDefaultEvent += HandleCareerRevert;
+        }
+
+        if (_enemySpawner == null)
+        {
+            Debug.LogWarning("[ProgrammerDuck] EnemySpawner not found. Cannot apply BuffMon continuously.");
+            return; 
+        }
+
+        // 2A. Subscribe to Event: ApplyBuffToNewEnemy whenever a new enemy spawns
+        _enemySpawner.OnEnemySpawned += ApplyBuffToNewEnemy;
+        
+        // 2B. Apply Buff to enemies already in the scene (initial check)
+        ApplyBuffsToExistingEnemies(careerData); 
+
+        Debug.Log("[ProgrammerDuck] BuffMon Listener successfully registered for LotteryMon/KahootMon.");
     }
 
     private void ApplySchoolMapBuff()
     {
+        // ASSUME: DuckCareerData มีค่าความเร็ว _schoolWallPushSpeed (เช่น 0.3f)
+        float slowSpeed = 0.3f; // ใช้ค่าคงที่แทนชั่วคราว
+        
         var mapGen = FindFirstObjectByType<MapGeneratorBase>();
         if (mapGen != null)
         {
-            // TODO: Requires a public method on MapGeneratorBase
-            // mapGen.SetWallPushSpeed(0.3f); // Example: Slower speed
+ 
+            // mapGen.SetWallPushSpeed(slowSpeed); 
+            Debug.Log($"[ProgrammerDuck] Slowing down School wall (TODO) to {slowSpeed}.");
         }
-        Debug.Log("[ProgrammerDuck] Slowing down School wall (TODO).");
     }
+
+    /// <summary>
+    /// Applies buffs to target enemies currently active in the scene (called once on switch).
+    /// </summary>
+    private void ApplyBuffsToExistingEnemies(DuckCareerData careerData)
+    {
+        // Target is LotteryMon or KahootMon
+        Enemy[] allEnemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
+        int buffsApplied = 0;
+        
+        foreach (var enemy in allEnemies)
+        {
+            if (enemy.EnemyType == EnemyType.LotteryMon || enemy.EnemyType == EnemyType.KahootMon) 
+            {
+                enemy.ApplyCareerBuff(careerData); 
+                buffsApplied++;
+            }
+        }
+        Debug.Log($"[ProgrammerDuck] BuffMon Logic applied to {buffsApplied} existing enemies.");
+    }
+    
+    /// <summary>
+    /// Event handler: Applies buff to enemies as they spawn.
+    /// </summary>
+    private void ApplyBuffToNewEnemy(Enemy newEnemy)
+    {
+        var careerData = _careerSwitcher?.CurrentCareer; 
+        if (careerData == null) return;
+        
+        // Target is LotteryMon or KahootMon
+        if (newEnemy.EnemyType == EnemyType.LotteryMon || newEnemy.EnemyType == EnemyType.KahootMon) 
+        {
+            newEnemy.ApplyCareerBuff(careerData);
+            Debug.Log($"[ProgrammerDuck] BuffMon applied to NEW: {newEnemy.EnemyType}.");
+        }
+    }
+
+    // ---------------------------------------------------------------------------------
+    // CLEANUP/REVERT LOGIC
+    // ---------------------------------------------------------------------------------
+    
+    private void RevertSchoolMapBuff()
+    {
+        // ASSUME: DuckCareerData มีค่าความเร็ว default _defaultWallPushSpeed
+        float defaultSpeed = 1.0f; // ใช้ค่าคงที่แทนชั่วคราว
+        
+        var mapGen = FindFirstObjectByType<MapGeneratorBase>();
+        if (mapGen != null)
+        {
+            // 🚨 FIX 3: Revert Wall Push Speed
+            // mapGen.SetWallPushSpeed(defaultSpeed); 
+            Debug.Log($"[ProgrammerDuck] Reverting School wall speed (TODO) to {defaultSpeed}.");
+        }
+    }
+
+    /// <summary>
+    /// EVENT HANDLER: Called by CareerSwitcher.OnRevertToDefaultEvent for cleanup.
+    /// </summary>
+    private void HandleCareerRevert()
+    {
+        // --- 1. Map Buff Cleanup ---
+        if (GetCurrentMapType() == MapType.School)
+        {
+            RevertSchoolMapBuff();
+        }
+        
+        // --- 2. BuffMon Listener Cleanup ---
+        if (_enemySpawner != null)
+        {
+            _enemySpawner.OnEnemySpawned -= ApplyBuffToNewEnemy;
+            Debug.Log("[ProgrammerDuck] BuffMon Listener UNREGISTERED (Cleanup complete).");
+        }
+
+        // 3. Unsubscribe from the CareerSwitcher event itself
+        if (_careerSwitcher != null)
+        {
+            _careerSwitcher.OnRevertToDefaultEvent -= HandleCareerRevert;
+        }
+    }
+
     #endregion
 
     #region ISkillUser Implementation
@@ -80,10 +187,7 @@ public class ProgrammerDuck : Player, ISkillUser, IAttackable
         if (_codeEffect != null)
             Instantiate(_codeEffect, transform.position, Quaternion.identity);
 
-        // 1. Apply BuffMon effects (Instant)
-        ApplyBuffMonEffects();
-        
-        // 2. Apply Stun effect (Instant)
+        // Apply Stun effect (Instant)
         ApplyBlueScreenStun();
 
         // Wait for the full skill duration (27s)
@@ -125,38 +229,6 @@ public class ProgrammerDuck : Player, ISkillUser, IAttackable
         }
     }
 
-    /// <summary>
-    /// Applies BuffMon effects once at the start of the skill.
-    /// LotteryMon -> +10 Coin, KahootMon -> 25% chance no attack
-    /// </summary>
-    private void ApplyBuffMonEffects()
-    {
-        Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
-        foreach (var enemy in enemies)
-        {
-            if (enemy.EnemyType == EnemyType.LotteryMon)
-            {
-                // LotteryMon -> Add Luck -> Drop 10 Coin
-                AddCoin(10); 
-                Debug.Log("[ProgrammerDuck] BuffMon: Forced LotteryMon to drop 10 Coin!");
-            }
-            
-            if (enemy.EnemyType == EnemyType.KahootMon)
-            {
-                // KahootMon -> 25% chane no attack
-                if (Random.value < 0.25f) 
-                {
-                    // Disable for the *full skill duration* if 25% chance hits
-                    enemy.DisableBehavior(_skillDuration); 
-                    Debug.Log($"[ProgrammerDuck] BuffMon: KahootMon 25% chance SUCCESS. Disabled for {_skillDuration}s.");
-                }
-                else
-                {
-                    Debug.Log("[ProgrammerDuck] BuffMon: KahootMon 25% chance failed.");
-                }
-            }
-        }
-    }
     #endregion
 
     #region IAttackable Implementation

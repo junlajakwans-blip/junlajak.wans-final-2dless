@@ -12,9 +12,12 @@ public class RedlightMon : Enemy
 
     private float _nextAttackTime;
     private float _nextSwitchTime;
+
+    private bool _isForcedByBuff = false;
     #endregion
 
     #region Unity Lifecycle
+
     
     protected override void Start()
     {
@@ -28,7 +31,12 @@ public class RedlightMon : Enemy
 
     protected override void Update()
     {
-        if (_isDisabled) return;
+        if (_isDisabled || _isForcedByBuff) return;
+        
+        // **[FIX 1]: Target Check**
+        // RedlightMon ไม่ได้ใช้ _target สำหรับการเคลื่อนที่/ตรวจจับระยะ
+        // แต่ถ้าไม่มีเป้าหมาย (Player ตาย) ก็ควรหยุด Attack
+        if (_target == null) return; 
 
         // Check and execute attack if the light is green and cooldown is ready
         if (_signalState == "Green" && Time.time >= _nextAttackTime)
@@ -101,6 +109,8 @@ public class RedlightMon : Enemy
             if (car != null)
             {
                 // TODO: Add initialization for car movement/damage here
+                // Note: ถ้ารถเป็น Projectile ต้องเรียก car.GetComponent<Projectile>().SetDependencies(_poolRef, carTag);
+                // แต่โค้ดนี้ไม่ได้ใช้ Projectile.cs จึงไม่จำเป็นต้องทำ
                 Debug.Log($"Spawned Car Tag: {carTag} at {spawnPosition}");
             }
             else
@@ -129,6 +139,17 @@ public class RedlightMon : Enemy
         Debug.Log($"{name} warns player before light changes to Green!");
         // TODO: Implement visual/audio warning cue here
     }
+
+    public void ForceSignalState(string state, bool forcePermanent)
+    {
+        // 1. Logic: ตั้งค่าสถานะไฟ
+        _signalState = state; 
+        
+        // 2. Logic: เปิด/ปิด Master Switch
+        _isForcedByBuff = forcePermanent; 
+        
+        // ... (logic อื่นๆ) ...
+    }
     #endregion
 
 #region Death/Drop
@@ -139,7 +160,7 @@ public class RedlightMon : Enemy
     {
         base.Die(); 
         
-        CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
+        CollectibleSpawner spawner = _spawnerRef;
         
         if (spawner != null && _data != null)
         {
@@ -167,7 +188,7 @@ public class RedlightMon : Enemy
         }
         else if (spawner == null)
         {
-            Debug.LogWarning("[RedlightMon] CollectibleSpawner not found! Cannot drop items.");
+            Debug.LogWarning("[RedlightMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
         }
     }
     #endregion

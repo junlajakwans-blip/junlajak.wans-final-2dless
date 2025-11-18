@@ -11,8 +11,14 @@ public abstract class Character : MonoBehaviour, IDamageable
     [SerializeField] protected Rigidbody2D _rigidbody;
     [SerializeField] protected Animator _animator;
 
-
     protected bool _isDead = false;
+
+
+    #region Properties
+    public int CurrentHealth => _currentHealth;
+    public int MaxHealth => _maxHealth;
+    public bool IsDead => _isDead;
+    #endregion
 
     #region Initialization
     public virtual void Initialize(int maxHealth)

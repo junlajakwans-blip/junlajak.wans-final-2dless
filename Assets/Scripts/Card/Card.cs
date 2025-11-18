@@ -20,12 +20,14 @@ public class Card
     #endregion
 
     #region Constructors
-    public Card(string cardID, CardType type, string skillName, string rarity, Sprite icon = null)
+    public Card(string cardID, CardType type, string skillName, string description, Sprite icon = null)
     {
         _cardID = cardID;
         _type = type;
         _skillName = skillName;
-        _rarity = rarity;
+        
+        _rarity = "Career"; 
+        
         _icon = icon;
     }
     #endregion

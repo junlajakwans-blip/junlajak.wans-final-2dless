@@ -32,10 +32,10 @@ public class GoldenMon : Enemy
     /// </summary>
     public void DropGoldenCoins()
     {
-        CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
+        CollectibleSpawner spawner = _spawnerRef;
         if (spawner == null)
         {
-            Debug.LogWarning("[GoldenMon] CollectibleSpawner not found for coin drop!");
+            Debug.LogWarning("[GoldenMon] CollectibleSpawner NOT INJECTED for coin drop!");
             return;
         }
 
@@ -61,9 +61,9 @@ public class GoldenMon : Enemy
     {
         base.Die(); 
 
-        CardManager cardManager = FindFirstObjectByType<CardManager>();
-        Player player = FindFirstObjectByType<Player>(); 
-        CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
+        CardManager cardManager = _cardManagerRef;
+        Player player = _playerRef;
+        CollectibleSpawner spawner = _spawnerRef;
 
         // --- 2. Guaranteed Career Card Drop (Data-Linked) ---
         if (cardManager != null && _data != null)
@@ -73,14 +73,14 @@ public class GoldenMon : Enemy
             {
                 // Note: The CardManager.AddCareerCard() method implicitly uses CardType.Career
                 // which aligns with the GoldenGuaranteedCardType setting.
-                cardManager.AddCareerCard(); 
+                cardManager.AddCareerCard();
                 
                 Debug.Log($"[GoldenMon] Card Dropped ({_data.GoldenGuaranteedCardType}) with chance {_data.GoldenCardDropChance * 100:F0}%");
             }
         }
         else
         {
-            Debug.LogWarning("[GoldenMon] CardManager or EnemyData not found! Cannot drop card.");
+            Debug.LogWarning("[GoldenMon] CardManager or EnemyData NOT INJECTED! Cannot drop card.");
         }
 
 
@@ -95,7 +95,7 @@ public class GoldenMon : Enemy
              }
              else
              {
-                 Debug.LogWarning("[GoldenMon] Spawner missing for Token drop!");
+                 Debug.LogWarning("[GoldenMon] Spawner NOT INJECTED for Token drop!");
              }
         }
         

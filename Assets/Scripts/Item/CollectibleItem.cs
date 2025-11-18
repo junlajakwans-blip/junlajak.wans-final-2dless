@@ -12,6 +12,7 @@ public enum CollectibleType
     GreenTea,
     Coffee,
     MooKrata,
+    Takoyaki,
     CardPickup
 }
 
@@ -29,6 +30,25 @@ public class CollectibleItem : MonoBehaviour, ICollectable
     [SerializeField] private int _healAmount = 30;     // Coffee
     [SerializeField] private int _smallHeal = 10;      // GreenTea
 
+    private CardManager _cardManagerRef;
+    private CollectibleSpawner _spawnerRef; //use for return pool cause it know tag
+    private BuffManager _buffManagerRef; 
+
+
+#region Dependencies
+
+    public void SetDependencies(CardManager manager, CollectibleSpawner spawner, BuffManager buffManager)
+    {
+        _cardManagerRef = manager;
+        _spawnerRef = spawner;
+        this._buffManagerRef = buffManager;
+    }
+
+#endregion
+
+#region  Collect
+
+
     public void Collect(Player player)
     {
         if (player == null) return;
@@ -38,20 +58,34 @@ public class CollectibleItem : MonoBehaviour, ICollectable
         OnCollectedEffect();
     }
 
-    public void OnCollectedEffect() => Destroy(gameObject);
+    public void OnCollectedEffect()
+    {
+        if (_spawnerRef != null)
+        {
+            //return to Pool pass Spawner (Spawner call ObjectPoolManager)
+            _spawnerRef.Despawn(gameObject); 
+        }
+        else
+        {
+            // Fallback
+            Destroy(gameObject); 
+        }
+    }
     public string GetCollectType() => _type.ToString();
 
     private void ApplyEffect(Player player)
+ {
+    // [NEW FIX 2]: ตรวจสอบความปลอดภัยตามหลัก DI
+    // เปลี่ยนการตรวจสอบความปลอดภัยให้เป็นไปตาม Reference ที่ถูก Inject
+    if (_type == CollectibleType.Coffee || _type == CollectibleType.MooKrata || _type == CollectibleType.Takoyaki)
     {
-        // Check if BuffManager exists (Required for timed buffs)
-        if (_type == CollectibleType.Coffee || _type == CollectibleType.MooKrata)
+        // OLD: if (BuffManager.Instance == null) // <<< เราต้องการลบการพึ่งพา Instance
+        if (_buffManagerRef == null) // <<< FIX: ตรวจสอบ Reference ที่เรามีอยู่
         {
-            if (BuffManager.Instance == null)
-            {
-                Debug.LogWarning("[Collectible] BuffManager not found! Timed buff will not apply.");
-                return;
-            }
+            Debug.LogWarning("[Collectible] BuffManager NOT INJECTED! Timed buff will not apply.");
+            return;
         }
+    }
         
         switch (_type)
         {
@@ -76,14 +110,20 @@ public class CollectibleItem : MonoBehaviour, ICollectable
             // Coffee → Heal +30 HP 5 s (Timed effect - delegated)
             case CollectibleType.Coffee:
                 // DELEGATE: Send command to BuffManager to run the routine
-                BuffManager.Instance.ApplyCollectibleBuff(_type, player, _healAmount, _buffDuration);
+                _buffManagerRef.ApplyCollectibleBuff(_type, player, _healAmount, _buffDuration);
                 break;
 
             // Mookrata → Enemy No Attack 5 s (Timed effect - delegated)
             case CollectibleType.MooKrata:
                 // DELEGATE: Send command to BuffManager to run the routine
-                BuffManager.Instance.ApplyCollectibleBuff(_type, player, 0, _buffDuration);
+                _buffManagerRef.ApplyCollectibleBuff(_type, player, 0, _buffDuration);
                 break;
+
+            // Takoyaki → HOT then COOL (Timed effect - delegated) || Hot -> Damage | Cool -> Heal
+            case CollectibleType.Takoyaki:
+                // ใช้ _healAmount เป็นค่า Damage/Heal ใน TakoyakiRoutine
+                _buffManagerRef.ApplyCollectibleBuff(_type, player, _healAmount, _buffDuration); 
+            break;
 
             // Card Pickup (Instant effect - delegated to CardManager)
             case CollectibleType.CardPickup:
@@ -95,15 +135,17 @@ public class CollectibleItem : MonoBehaviour, ICollectable
     // Card Pickup 
     private void DropCareerCard()
     {
-        CardManager manager = FindFirstObjectByType<CardManager>();
+        // OLD: CardManager manager = FindFirstObjectByType<CardManager>();
+        CardManager manager = _cardManagerRef; // << ใช้ Reference ที่ถูก Inject
         if (manager == null)
         {
-            Debug.LogWarning("[CardPickup] CardManager not found!");
+            Debug.LogWarning("[CardPickup] CardManager not found! (Injection Failed)");
             return;
         }
 
         manager.AddCareerCard(); // Call fuction in CardManager
-        Debug.Log("[CardPickup] Career Card dropped (via manager).");
+        Debug.Log("[CardPickup] Career Card Added.");
     }
 
+#endregion
 }

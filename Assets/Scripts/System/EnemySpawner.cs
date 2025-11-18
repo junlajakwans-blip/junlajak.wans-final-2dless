@@ -21,11 +21,27 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     [SerializeField] private int _currentWaveCount = 0;
     [SerializeField] private List<GameObject> _activeEnemies = new();
 
+    // SingerDuck BuffMap Field
+    [SerializeField] private float _goldenMonBonusChance = 0.02f; 
+
     [Header("References")]
     [SerializeField] private IObjectPool _objectPool;
     [SerializeField] private DistanceCulling _cullingManager;
 
+
+    [Header("Injected Managers")]
+    [SerializeField] private Player _player; 
+    [SerializeField] private CollectibleSpawner _collectibleSpawner; 
+    [SerializeField] private CardManager _cardManager;
+    protected BuffManager _buffManagerRef;
+
     private List<GameObject> _validPrefabsCache = new();
+
+    /// <summary>
+    /// Event triggered every time a new enemy is spawned from the pool.
+    /// Payload: The Enemy component of the newly spawned object.
+    /// </summary>
+    public event System.Action<Enemy> OnEnemySpawned;
 
     #endregion
 
@@ -51,10 +67,16 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     /// <summary>
     /// Initializes the spawner with a given object pool and map context.
     /// </summary>
-    public void InitializeSpawner(IObjectPool pool, MapType mapType)
+    public void InitializeSpawner(IObjectPool pool, MapType mapType, Player player, CollectibleSpawner collectibleSpawner, CardManager cardManager)
     {
         _objectPool = pool;
         _mapType = mapType;
+        this._player = player;
+        this._collectibleSpawner = collectibleSpawner;
+        this._cardManager = cardManager;
+        
+        Debug.Log("[EnemySpawner] Initialized with dependencies (Player, CollectibleSpawner, CardManager).");
+
         _maxEnemies = GetRecommendedEnemyCount();
 
         CacheValidEnemies();
@@ -85,6 +107,41 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     #endregion
 
 
+    #region Enemy Handling & BuffMap Logic
+    
+    /// <summary>
+    /// Event handler for enemy death, used to trigger BuffMap effects.
+    /// </summary>
+    private void HandleEnemyDied(Enemy enemy)
+    {
+        // 1. Clean up from active list and event
+        _activeEnemies.Remove(enemy.gameObject);
+        enemy.OnEnemyDied -= HandleEnemyDied; // Unsubscribe from the instance event
+
+        // 2. SingerDuck BuffMap Logic: +2% GoldenMon Chance
+        if (_player != null && _player.TryGetComponent<SingerDuck>(out var singerDuck))
+        {
+            // Check the public hook on SingerDuck
+            if (singerDuck.IsMapBuffActive())
+            {
+                // The "Stacking" is passive, meaning the buff is always active (no decay)
+                // If we want actual stacking, we'd need to increase _goldenMonBonusChance
+                // based on the number of enemies killed or time. For now, use the base 2%.
+                
+                if (Random.value < _goldenMonBonusChance)
+                {
+                    // The bonus GoldenMon should spawn near the player or the dead enemy.
+                    SpawnSpecificEnemy(EnemyType.GoldenMon, enemy.transform.position);
+                    Debug.Log("<color=yellow>[SingerDuck BuffMap]</color> SUCCESS! GoldenMon spawned from +2% passive chance.");
+                }
+            }
+        }
+    }
+    
+    #endregion
+
+
+
     #region ISpawn Implementation
     /// <summary>
     /// Spawns a random valid enemy for the current map.
@@ -97,36 +154,42 @@ public class EnemySpawner : MonoBehaviour, ISpawn
             return;
         }
 
-        if (_activeEnemies.Count >= _maxEnemies || _validPrefabsCache.Count ==0)
+        if (_activeEnemies.Count >= _maxEnemies || _validPrefabsCache.Count == 0)
             return;
 
-        // Filter only enemies that can appear in this map
-        var validEnemies = _enemyPrefabs
-            .Where(prefab =>
-            {
-                var enemyComp = prefab.GetComponent<Enemy>();
-                return enemyComp != null && enemyComp.EnemyType.CanAppearInMap(_mapType);
-            })
-            .ToList();
-
-        if (validEnemies.Count == 0)
-        {
-            Debug.LogWarning($"[EnemySpawner] No valid enemies for map {_mapType}.");
-            return;
-        }
-
-        int randomEnemy = Random.Range(0, validEnemies.Count);
+        // 1. Select enemy and spawn from cache
+        int randomEnemy = Random.Range(0, _validPrefabsCache.Count); 
         int randomPoint = Random.Range(0, _spawnPoints.Count);
 
         Vector3 spawnPos = _spawnPoints[randomPoint].position;
         Quaternion spawnRot = _spawnPoints[randomPoint].rotation;
 
-        var enemy = _objectPool.SpawnFromPool(validEnemies[randomEnemy].name, spawnPos, spawnRot);
+        // Use the prefab's name as the tag for the object pool
+        string objectTag = _validPrefabsCache[randomEnemy].name;
+        
+        // 2. Spawn
+        var enemyGO = _objectPool.SpawnFromPool(objectTag, spawnPos, spawnRot); 
 
-        _activeEnemies.Add(enemy);
-        _cullingManager?.RegisterObject(enemy);
+        if (enemyGO != null)
+        {
+            _activeEnemies.Add(enemyGO);
+            _cullingManager?.RegisterObject(enemyGO);
+            
+            // [NEW FIX] INJECT DEPENDENCIES & SUBSCRIBE
+            if (enemyGO.TryGetComponent<Enemy>(out var enemyComponent))
+            {
+                // 1. INJECT DEPENDENCIES (DI)
+                enemyComponent.SetDependencies(_player, _collectibleSpawner, _cardManager, _buffManagerRef, _objectPool);
 
-        Debug.Log($"[EnemySpawner] Spawned {enemy.name} at {spawnPos}");
+                // 2. SUBSCRIBE TO DEATH EVENT
+                enemyComponent.OnEnemyDied += HandleEnemyDied;
+                
+                // 3. INVOKE SPAWN EVENT 
+                OnEnemySpawned?.Invoke(enemyComponent);
+            }
+            
+            Debug.Log($"[EnemySpawner] Spawned {enemyGO.name} at {spawnPos}");
+        }
     }
 
     public GameObject SpawnAtPosition(Vector3 position)
@@ -138,10 +201,27 @@ public class EnemySpawner : MonoBehaviour, ISpawn
         }
 
         int randomEnemy = Random.Range(0, _validPrefabsCache.Count);
-        var enemy = _objectPool.SpawnFromPool(_validPrefabsCache[randomEnemy].name, position, Quaternion.identity);
-        _activeEnemies.Add(enemy);
-        _cullingManager?.RegisterObject(enemy);
-        return enemy;
+        var enemyGO = _objectPool.SpawnFromPool(_validPrefabsCache[randomEnemy].name, position, Quaternion.identity);
+        
+        if (enemyGO != null)
+        {
+            _activeEnemies.Add(enemyGO);
+            _cullingManager?.RegisterObject(enemyGO);
+            
+            // [NEW FIX] INJECT DEPENDENCIES & SUBSCRIBE
+            if (enemyGO.TryGetComponent<Enemy>(out var enemyComponent))
+            {
+                // 1. INJECT DEPENDENCIES (DI)
+                enemyComponent.SetDependencies(_player, _collectibleSpawner, _cardManager, _buffManagerRef, _objectPool);
+
+                // 2. SUBSCRIBE TO DEATH EVENT
+                enemyComponent.OnEnemyDied += HandleEnemyDied;
+                
+                // 3. INVOKE SPAWN EVENT
+                OnEnemySpawned?.Invoke(enemyComponent);
+            }
+        }
+        return enemyGO;
     }
 
     public void Despawn(GameObject enemy)
@@ -156,12 +236,12 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     public int GetSpawnCount() => _activeEnemies.Count;
     #endregion
 
-    /// <summary>
-    /// Spawns a specific enemy type at a given position.
-    /// Used by special skills (e.g., SingerDuck).
-    /// </summary>
-    /// <param name="type">The specific EnemyType to spawn.</param>
-    /// <param name="position">The world position to spawn at.</param>
+/// <summary>
+/// Spawns a specific enemy type at a given position.
+/// Used by special skills (e.g., SingerDuck).
+/// </summary>
+/// <param name="type">The specific EnemyType to spawn.</param>
+/// <param name="position">The world position to spawn at.</param>
     public GameObject SpawnSpecificEnemy(EnemyType type, Vector3 position)
     {
         if (_objectPool == null)
@@ -170,7 +250,7 @@ public class EnemySpawner : MonoBehaviour, ISpawn
             return null;
         }
 
-        // Find the prefab that matches the requested EnemyType
+        // Find the prefab that matches the requested EnemyType (LINQ is okay here as it's not frequent)
         GameObject prefabToSpawn = _enemyPrefabs.FirstOrDefault(prefab =>
         {
             var enemyComp = prefab.GetComponent<Enemy>();
@@ -186,16 +266,28 @@ public class EnemySpawner : MonoBehaviour, ISpawn
         // Use the prefab's name as the tag for the object pool
         string objectTag = prefabToSpawn.name;
 
-        var enemy = _objectPool.SpawnFromPool(objectTag, position, Quaternion.identity);
+        var enemyGO = _objectPool.SpawnFromPool(objectTag, position, Quaternion.identity);
         
-        if (enemy != null)
-        {
-            _activeEnemies.Add(enemy);
-            _cullingManager?.RegisterObject(enemy);
-            Debug.Log($"[EnemySpawner] Spawned specific enemy {enemy.name} at {position}");
-        }
+        if (enemyGO != null) 
+        { 
+            _activeEnemies.Add(enemyGO); 
+            _cullingManager?.RegisterObject(enemyGO); 
+            Debug.Log($"[EnemySpawner] Spawned specific enemy {enemyGO.name} at {position}"); 
 
-        return enemy;
+            // [NEW FIX] INJECT DEPENDENCIES & SUBSCRIBE
+            if (enemyGO.TryGetComponent<Enemy>(out var enemyComponent)) 
+            { 
+                // 1. INJECT DEPENDENCIES (DI)
+                enemyComponent.SetDependencies(_player, _collectibleSpawner, _cardManager, _buffManagerRef, _objectPool);
+
+                // 2. SUBSCRIBE TO DEATH EVENT (เพื่อให้ HandleEnemyDied จัดการ Despawn)
+                enemyComponent.OnEnemyDied += HandleEnemyDied; 
+
+                // 3. INVOKE SPAWN EVENT 
+                OnEnemySpawned?.Invoke(enemyComponent); 
+            } 
+        } 
+        return enemyGO;
     }
 
     #region Wave Control

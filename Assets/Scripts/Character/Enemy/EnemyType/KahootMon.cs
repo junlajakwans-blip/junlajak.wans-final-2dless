@@ -19,6 +19,9 @@ public class KahootMon : Enemy
     [SerializeField] private Transform _firePoint;
 
     private float _nextAttackTime;
+
+    // ProgrammerDuck Buff Field
+    private float _disableChanceFromBuff = 0f;
     #endregion
 
     #region Unity Lifecycle
@@ -33,11 +36,7 @@ public class KahootMon : Enemy
     {
         if (_isDisabled) return;
         
-        if (_target == null)
-        {
-            var player = FindFirstObjectByType<Player>();
-            if (player != null) _target = player.transform;
-        }
+        if (_target == null) return; 
 
         if (_target != null && Time.time >= _nextAttackTime)
         {
@@ -46,6 +45,42 @@ public class KahootMon : Enemy
         }
     }
     #endregion
+
+
+#region Buffs
+    /// <summary>
+    /// Overrides base method to receive Career Buffs.
+    /// </summary>
+    public override void ApplyCareerBuff(DuckCareerData data)
+    {
+        if (data == null) return;
+
+        // Check for ProgrammerDuck Buff (25% chance to disable)
+        if (data.CareerID == DuckCareer.Programmer)
+        {
+            // 1. Get the chance value from the Career Data Asset
+            _disableChanceFromBuff = data.KahootMonDisableChance; 
+            
+            Debug.Log($"[KahootMon] Programmer Buff Applied: {_disableChanceFromBuff * 100:F0}% chance to disable on spawn.");
+            
+            // 2. Apply the chance check immediately upon receiving the buff
+            float roll = Random.value; // Random value between 0.0 and 1.0
+            
+            if (roll < _disableChanceFromBuff) // e.g., if roll < 0.25 (25% chance)
+            {
+                // Disable KahootMon for a long duration (e.g., 60 seconds)
+                const float disableDuration = 60f; 
+                DisableBehavior(disableDuration); 
+                Debug.Log($"[KahootMon] Programmer Buff SUCCESS: Disabled for {disableDuration}s. (Roll: {roll:F2})");
+            }
+            else
+            {
+                Debug.Log($"[KahootMon] Programmer Buff failed. (Roll: {roll:F2})");
+            }
+        }
+    }
+    #endregion
+
 
     #region Combat
     public override void Attack()
@@ -73,15 +108,17 @@ public class KahootMon : Enemy
         return colors[Random.Range(0, colors.Length)];
     }
 
-    // ... (ShowQuestion และ GetRandomBlockColor methods ถูกละไว้) ...
 
     public void FireBlock(Color color)
     {
-        if (_blockPrefab == null || _firePoint == null || _target == null) return;
+        // [FIX 2.1]: เปลี่ยนการตรวจสอบ Prefab เป็นการตรวจสอบ Pool Reference
+        if (_blockPrefab == null || _firePoint == null || _target == null || _poolRef == null) return; 
         
         Debug.Log($"KahootMon fires block of color {color}");
         
-        var go = Instantiate(_blockPrefab, _firePoint.position, Quaternion.identity);
+        // [FIX 2.2]: ใช้ SpawnFromPool แทน Instantiate
+        string poolTag = _blockPrefab.name; // ใช้ชื่อ Prefab เป็น Tag
+        var go = _poolRef.SpawnFromPool(poolTag, _firePoint.position, Quaternion.identity);
 
         if (go.TryGetComponent<Rigidbody2D>(out var rb) && _target != null)
         {
@@ -92,13 +129,14 @@ public class KahootMon : Enemy
         if (go.TryGetComponent<Projectile>(out var proj))
         {
             proj.SetDamage(_data.KahootBlockDamage);
+            
         }
     }
 
     public void ActivateEffect(Player player)
     {
 
-        if (player == null || BuffManager.Instance == null) return;
+        if (player == null || _buffManagerRef == null) return;
 
         float roll = Random.value;
         
@@ -145,7 +183,7 @@ public class KahootMon : Enemy
     {
         base.Die();
         
-        CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
+        CollectibleSpawner spawner = _spawnerRef;
         
         if (spawner != null && _data != null)
         {
@@ -161,7 +199,7 @@ public class KahootMon : Enemy
         }
         else if (spawner == null)
         {
-            Debug.LogWarning("[KahootMon] CollectibleSpawner not found! Cannot drop items.");
+            Debug.LogWarning("[KahootMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
         }
     }
     #endregion

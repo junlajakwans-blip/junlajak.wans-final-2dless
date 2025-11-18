@@ -8,8 +8,14 @@ public class MooPingMon : Enemy // Removed IMoveable as Enemy already has Move()
 
     #region Fields
     [Header("Projectile Attack")]
-    [SerializeField] private GameObject _skewerProjectile; // Prefab
+    [SerializeField] private GameObject _skewerProjectile; // Prefab (ใช้ชื่อเป็น Tag)
     [SerializeField] private Transform _throwPoint;       // Spawn point
+
+
+    // ChefDuck Buff Flag
+    private bool _isThrowingDisabled = false;
+    //FireFighter Buff Flag
+    private bool _isBuffItemGuaranteed = false;
 
 
     private float _nextThrowTime;
@@ -76,8 +82,34 @@ public class MooPingMon : Enemy // Removed IMoveable as Enemy already has Move()
     }
     #endregion
 
+
+#region Buffs from Career
+    /// <summary>
+    /// Overrides base method to receive ChefDuck's Buff (Disable ThrowSkewer).
+    /// </summary>
+    public override void ApplyCareerBuff(DuckCareerData data)
+    {
+        if (data == null) return;
+
+        // Check which career applied the buff
+        if (data.CareerID == DuckCareer.Chef)
+        {
+            // ChefDuck Buff Logic (Disable ThrowSkewer)
+            _isThrowingDisabled = true;
+            Debug.Log("[MooPingMon] Chef Buff Applied: ThrowSkewer DISABLED.");
+        }
+        else if (data.CareerID == DuckCareer.Firefighter)
+        {
+            // FireFighterDuck Buff Logic (Guaranteed Buff Item Drop)
+            _isBuffItemGuaranteed = true;
+            Debug.Log("[MooPingMon] FireFighter Buff Applied: Buff Item guaranteed on death.");
+        }
+    }
+#endregion
+
+  
     #region Combat
-    private void TryAttack()
+private void TryAttack()
     {
         if (_target == null) return;
 
@@ -88,7 +120,17 @@ public class MooPingMon : Enemy // Removed IMoveable as Enemy already has Move()
         // Alternate between ThrowSkewer and FanFire by cooldown window
         if (Time.time >= _nextThrowTime)
         {
-            ThrowSkewer();
+            // FIX: Check Flag Buff before ThrowSkewer() || if ChefDuck No throwskew
+            if (!_isThrowingDisabled) 
+            {
+                ThrowSkewer();
+            } 
+            else 
+            {
+                // if didn't throw check next cooldown
+                Debug.Log("[MooPingMon] ThrowSkewer attack skipped due to Chef Buff.");
+            }
+            
             // Use Data From EnemyData:Unique | Asset: _data.MooPingThrowCooldown
             _nextThrowTime = Time.time + _data.MooPingThrowCooldown;
         }
@@ -98,25 +140,39 @@ public class MooPingMon : Enemy // Removed IMoveable as Enemy already has Move()
             if (Random.value < 0.15f) FanFire();
         }
     }
-
     private void ThrowSkewer()
     {
         if (_skewerProjectile == null || _throwPoint == null) return;
 
+        // [FIX 2.1]: ตรวจสอบ Pool Reference ที่ถูก Inject
+        if (_poolRef == null) 
+        {
+            Debug.LogError("[MooPingMon] Object Pool NOT INJECTED! Cannot spawn projectile.");
+            return;
+        }
+
         // NOTE: ควรใช้ Object Pooling แทน Instantiate
-        var go = Instantiate(_skewerProjectile, _throwPoint.position, Quaternion.identity);
+        string poolTag = _skewerProjectile.name; // ใช้ชื่อ Prefab เป็น Tag
+        var go = _poolRef.SpawnFromPool(poolTag, _throwPoint.position, Quaternion.identity);
         
         if (go.TryGetComponent<Rigidbody2D>(out var rb))
         {
-            Vector2 aim = _dir;
+            Vector2 aim = (_target.position - _throwPoint.position).normalized; // NOTE: ควรยิงไปหา target เสมอ
+            
             // Use Data From EnemyData:Unique | Asset: _data.MooPingProjectileSpeed
             rb.linearVelocity = aim * _data.MooPingProjectileSpeed;
         }
 
         if (go.TryGetComponent<Projectile>(out var proj))
+        {
             // Use Data From EnemyData:Unique | Asset: _data.MooPingFireDamage
             proj.SetDamage(_data.MooPingFireDamage); 
+            
+            // [FIX 2.3]: INJECT DEPENDENCY เข้าไปใน Projectile
+            proj.SetDependencies(_poolRef, poolTag); 
+        }
     }
+
 
     /// <summary>
     /// Short AOE smoke/fire puff around front arc
@@ -157,7 +213,7 @@ public class MooPingMon : Enemy // Removed IMoveable as Enemy already has Move()
         _isDisabled = true;
         var oldDir = _dir;
         _dir = Vector2.zero;
-        base.Move(Vector2.zero); // หยุดการเคลื่อนที่หลัก
+        base.Move(Vector2.zero); // Stop Base move
         yield return new WaitForSeconds(t);
         _dir = oldDir;
         _isDisabled = false;
@@ -169,13 +225,22 @@ public class MooPingMon : Enemy // Removed IMoveable as Enemy already has Move()
     {
         base.Die();
         
-        CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
+        CollectibleSpawner spawner = _spawnerRef;
         
         if (spawner != null && _data != null)
         {
+            // --- 1. FireFighter Buff Drop Logic ---
+            if (_isBuffItemGuaranteed)
+            {
+                // Drop 1 random buff item (Coffee or GreenTea - assuming CollectibleType has these)
+                CollectibleType buffItem = (Random.value < 0.5f) ? CollectibleType.Coffee : CollectibleType.GreenTea;
+                spawner.DropCollectible(buffItem, transform.position + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0));
+                Debug.Log($"[MooPingMon] FireFighter Bonus: Dropped guaranteed {buffItem}.");
+            }
+
+
+            // --- 2. Base Drop Logic (Original MooPingMon chance) ---
             float roll = Random.value;
-            
-            
             float totalChanceForCoffee = _data.MooPingCoinDropChance + _data.MooPingCoffeeDropChance;
             
             // Drop Coin: (roll < 20%)

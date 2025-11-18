@@ -8,7 +8,7 @@ public class DoggoMon : Enemy // IMoveable is redundant as Enemy already provide
 
     [Header("DoggoMon State")]
 
-    
+    private bool _isBarkingDisabled = false;
     private Vector2 _moveDirection = Vector2.left;
     private bool _isChasing;
 
@@ -17,9 +17,6 @@ public class DoggoMon : Enemy // IMoveable is redundant as Enemy already provide
         if (_isDisabled) return;
 
         // Detect is player nearby
-        if (_target == null)
-            _target = FindFirstObjectByType<Player>()?.transform;
-
         if (_target == null) return;
 
         //  DetectPlayer uses _detectionRange loaded from Enemy.cs
@@ -33,10 +30,19 @@ public class DoggoMon : Enemy // IMoveable is redundant as Enemy already provide
         else
         {
             Move();
-            Bark();
+            if (!_isBarkingDisabled) 
+            {
+                Bark();
+            }
+            else
+            {
+                // Optional: สามารถลบ Debug นี้ออกได้เมื่อระบบทำงานสมบูรณ์แล้ว
+                Debug.Log("[DoggoMon] Barking attack skipped due to Chef Buff."); 
+            }
         }
     }
 
+#region Beahavior
     // Move Default (uses inherited Speed property, linked to _data.BaseMovementSpeed)
     public override void Move()
     {
@@ -89,14 +95,27 @@ public class DoggoMon : Enemy // IMoveable is redundant as Enemy already provide
             //  Use Data From EnemyData:Unique | Asset: _data.DoggoDamage (เป็น Melee Damage)
             player.TakeDamage(_data.DoggoDamage);
     }
+#endregion
 
-    // ... (DisableBehavior methods omitted for brevity) ...
+#region Buffs
+    /// <summary>
+    /// Overrides base method to receive ChefDuck's Buff (Disable Barking).
+    /// </summary>
+    public override void ApplyCareerBuff(DuckCareerData data)
+    {
+        // Buff is simply a toggle for disabling the bark attack
+        _isBarkingDisabled = true;
+        Debug.Log("[DoggoMon] Chef Buff Applied: Barking DISABLED.");
+    }
+#endregion
 
+
+#region Death Drop
     public override void Die()
     {
         base.Die(); 
 
-        CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
+        CollectibleSpawner spawner = _spawnerRef;
         
         if (spawner != null && _data != null)
         {
@@ -115,7 +134,8 @@ public class DoggoMon : Enemy // IMoveable is redundant as Enemy already provide
         }
         else if (spawner == null)
         {
-            Debug.LogWarning("[DoggoMon] Cannot drop item: CollectibleSpawner not found in scene!");
+            Debug.LogWarning("[DoggoMon] CollectibleSpawner NOT INJECTED! Cannot drop item.");
         }
     }
+#endregion
 }

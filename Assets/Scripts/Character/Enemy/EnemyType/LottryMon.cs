@@ -8,33 +8,27 @@ public class LotteryMon : Enemy
 
     #region Fields
     [Header("LotteryMon State")]
-    // 🔥 ลบ Fields ตัวเลขทั้งหมดออก (ถูกย้ายไป EnemyData แล้ว)
+    private int _chefCoinBonusMin = 0;
+    private int _chefCoinBonusMax = 0;
 
     private float _nextAttackTime;
-    // 🔥 _attackCooldown ถูกลบออก (ใช้ _data.LotteryAttackCooldown แทน)
     #endregion
 
     #region Unity Lifecycle
     
     protected override void Start()
     {
-        // 🚨 1. เรียก Base.Start() เพื่อให้ Enemy.InitializeFromData() รันก่อน
+        
         base.Start(); 
         
-        // 🚨 2. Initialize custom timers using loaded data
-        // _data.LotteryAttackCooldown ถูกโหลดจาก EnemyData
+        // 2. Initialize custom timers using loaded data
+        // _data.LotteryAttackCooldown from EnemyData
         _nextAttackTime = Time.time + _data.LotteryAttackCooldown;
     }
 
-    protected override void Update()
+protected override void Update()
     {
         if (_isDisabled) return;
-        
-        if (_target == null)
-        {
-            var player = FindFirstObjectByType<Player>();
-            if (player != null) _target = player.transform;
-        }
 
         if (_target != null && Time.time >= _nextAttackTime)
         {
@@ -42,6 +36,9 @@ public class LotteryMon : Enemy
             // Use Data From EnemyData:Unique | Asset: _data.LotteryAttackCooldown
             _nextAttackTime = Time.time + _data.LotteryAttackCooldown;
         }
+        
+        // ถ้า _target เป็น null (เช่น Player ตาย) ให้หยุดทำงาน
+        if (_target == null) return; 
     }
     #endregion
 
@@ -73,9 +70,9 @@ public class LotteryMon : Enemy
         Debug.Log($"[Lottery] {player.name} got lucky: +{coinAmount} Coin! (Roll chance: {_data.LotteryLuckFactor * 100:F0}%)");
     }
 
-    public void ApplyBadLuck(Player player)
+public void ApplyBadLuck(Player player)
     {
-        if (BuffManager.Instance != null)
+        if (player == null) return;
         {
             // Use Data From EnemyData:Unique | Asset: _data.LotteryCurseDuration
             player.ApplySpeedModifier(0.5f, _data.LotteryCurseDuration);
@@ -83,6 +80,25 @@ public class LotteryMon : Enemy
         Debug.Log($"[Lottery] {player.name} got cursed: Speed reduced for {_data.LotteryCurseDuration}s!");
     }
     #endregion
+
+
+    #region Buffs
+        /// <summary>
+        /// Overrides base method to receive ChefDuck's Coin Bonus Buff.
+        /// </summary>
+        public override void ApplyCareerBuff(DuckCareerData data)
+        {
+            if (data != null)
+            {
+
+                _chefCoinBonusMin = data.ChefMonCoinMinBonusValue; 
+                _chefCoinBonusMax = data.ChefMonCoinMaxBonusValue;
+                
+                Debug.Log($"[LotteryMon] Chef Buff Applied: +{_chefCoinBonusMin}-{_chefCoinBonusMax} Bonus Coins.");
+            }
+        }
+    #endregion
+
 
     #region Death/Drop
     /// <summary>
@@ -92,7 +108,7 @@ public class LotteryMon : Enemy
     {
         base.Die();
         
-        CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
+        CollectibleSpawner spawner = _spawnerRef;
         
         if (spawner != null && _data != null)
         {
@@ -105,10 +121,24 @@ public class LotteryMon : Enemy
                 spawner.DropCollectible(CollectibleType.Coin, transform.position + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0));
             }
             Debug.Log($"[LotteryMon] Dropped {coinAmount} coins on defeat (Range: {_data.LotteryMinCoinDrop} - {_data.LotteryMaxCoinDrop}).");
+
+
+            // --- 2. ChefDuck Buff Drop Logic ---
+            // Check if the ChefDuck coin bonus buff was applied
+            if (_chefCoinBonusMax > 0)
+            {
+                int bonusAmount = Random.Range(_chefCoinBonusMin, _chefCoinBonusMax + 1);
+                for (int i = 0; i < bonusAmount; i++)
+                {
+                    // Spawn bonus coins with slight scattering
+                    spawner.DropCollectible(CollectibleType.Coin, transform.position + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0));
+                }
+                Debug.Log($"[LotteryMon] Chef Bonus Drop: +{bonusAmount} coins.");
+            }
         }
         else if (spawner == null)
         {
-            Debug.LogWarning("[LotteryMon] CollectibleSpawner not found! Cannot drop items.");
+            Debug.LogWarning("[LotteryMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
         }
     }
     #endregion

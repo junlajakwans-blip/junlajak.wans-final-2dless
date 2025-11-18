@@ -2,66 +2,115 @@ using UnityEngine;
 using System.Collections;
 
 /// <summary>
-/// Dedicated Manager for all time-based effects (Buffs, Debuffs, etc.)
-/// This centralizes all Coroutine logic for buffs to ensure scalability and stability.
+/// Centralized Buff Controller — All timed buffs, debuffs, and permanent effects.
 /// </summary>
 public class BuffManager : MonoBehaviour
 {
-    // Singleton Pattern for easy global access from CollectibleItem.cs
+    private GameManager _gameManagerRef;
     public static BuffManager Instance { get; private set; }
+    
 
     private void Awake()
     {
         if (Instance != null && Instance != this)
-            Destroy(this.gameObject);
+            Destroy(gameObject);
         else
             Instance = this;
     }
-    
-    /// <summary>
-    /// Entry point for all collectible items to delegate their time-based effects.
-    /// </summary>
-    public void ApplyCollectibleBuff(CollectibleType type, Player player, int healAmount, float duration)
+
+    public void Initialize(GameManager gm)
+    {
+        _gameManagerRef = gm;
+    }
+
+    public void ApplyCollectibleBuff(CollectibleType type, Player player, int value, float duration)
     {
         switch (type)
         {
             case CollectibleType.Coffee:
-                StartCoroutine(CoffeeBuffRoutine(player, healAmount, duration));
+                StartCoroutine(CoffeeBuffRoutine(player, value, duration));
                 break;
+
             case CollectibleType.MooKrata:
                 StartCoroutine(MooKrataBuffRoutine(duration));
                 break;
-            // Add other collectible buff logic here
+
+            case CollectibleType.Takoyaki:
+                StartCoroutine(TakoyakiRoutine(player, value, duration));
+                break;
+
+            case CollectibleType.GreenTea:
+                ApplyGreenTeaPermanent(player, value);
+                break;
         }
     }
 
+    // ───────────────────────────────────────────────
+    // COFFEE — Heal first then revert after duration
+    // ───────────────────────────────────────────────
     private IEnumerator CoffeeBuffRoutine(Player player, int healAmount, float duration)
     {
         if (player == null) yield break;
 
         int oldHP = player.CurrentHealth;
         player.Heal(healAmount);
-        Debug.Log($"[BuffManager] Coffee: Heal +{healAmount} applied to {player.PlayerName}");
-        
+        Debug.Log($"[BuffManager] Coffee heal +{healAmount}");
+
         yield return new WaitForSeconds(duration);
 
-        // Revert HP logic
         if (player != null && !player.IsDead && player.CurrentHealth > oldHP)
         {
-            player.TakeDamage(player.CurrentHealth - oldHP); 
-            Debug.Log($"[BuffManager] Coffee expired. HP reverted for {player.PlayerName}");
+            player.TakeDamage(player.CurrentHealth - oldHP);
+            Debug.Log($"[BuffManager] Coffee expired — HP reverted.");
         }
     }
 
+    // ───────────────────────────────────────────────
+    // MOO KRATA — Disable enemy behaviors
+    // ───────────────────────────────────────────────
     private IEnumerator MooKrataBuffRoutine(float duration)
     {
-        // Apply effect to all enemies in the scene
         Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
-        foreach (var enemy in enemies)
-            enemy.DisableBehavior(duration);
+        foreach (var e in enemies)
+            e.DisableBehavior(duration);
 
-        Debug.Log($"[BuffManager] MooKrata: Disabling {enemies.Length} enemies for {duration}s");
+        Debug.Log($"[BuffManager] MooKrata — disabling {enemies.Length} enemies for {duration}s");
         yield return new WaitForSeconds(duration);
-        Debug.Log("[BuffManager] MooKrata ended.");
+    }
+
+    // ───────────────────────────────────────────────
+    // TAKOYAKI — HOT then COOL
+    // HOT = damage, COOL = heal
+    // ───────────────────────────────────────────────
+    private IEnumerator TakoyakiRoutine(Player player, int amount, float duration)
+    {
+        if (player == null) yield break;
+
+        // HOT state
+        player.TakeDamage(amount);
+        Debug.Log($"[BuffManager] Takoyaki HOT — -{amount} HP!");
+
+        yield return new WaitForSeconds(duration);
+
+        // COOL state
+        player.Heal(amount);
+        Debug.Log($"[BuffManager] Takoyaki COOL — +{amount} HP!");
+    }
+
+    // ───────────────────────────────────────────────
+    // GREEN TEA — Permanent +10 Max HP
+    // ───────────────────────────────────────────────
+    private void ApplyGreenTeaPermanent(Player player, int value)
+    {
+        if (player == null) return;
+
+        // Permanent upgrade (stored in save data via GameManager)
+        _gameManagerRef.GetProgressData().PermanentHPUpgradeLevel += value / 10;
+        _gameManagerRef.SaveProgress();
+
+        // Apply instantly to runtime Player
+        player.Heal(value);
+
+        Debug.Log($"[BuffManager] Green Tea — Permanent Max HP +{value}");
     }
 }

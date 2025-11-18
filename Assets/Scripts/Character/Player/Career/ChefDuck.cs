@@ -6,7 +6,7 @@ using System.Linq;
 /// ChefDuck – AoE / Support career (ID 2, Tier A)
 /// Implements BuffMon and BuffMap logic via OOP override.
 /// </summary>
-public class ChefDuck : Player, ISkillUser, IAttackable
+public class ChefDuck : Player
 {
     #region Fields
     [Header("ChefDuck Settings")]
@@ -32,6 +32,10 @@ public class ChefDuck : Player, ISkillUser, IAttackable
     /// </summary>
     protected override void InitializeCareerBuffs()
     {
+    // Get data link (ChefDuck can access this via inherited _careerSwitcher)
+        var careerData = _careerSwitcher?.CurrentCareer; 
+        if (careerData == null) return;
+
         // GetCurrentMapType() is inherited from Player.cs
         var map = GetCurrentMapType(); 
 
@@ -51,8 +55,31 @@ public class ChefDuck : Player, ISkillUser, IAttackable
                 break;
         }
 
-        // 2. BuffMon Logic (Passive check)
-        Debug.Log("[ChefDuck] BuffMon (Doggo, MooPing, Peter, Lottery) is active when skill is used.");
+        // --- 2. BuffMon Logic (Passive check) ---
+        // ChefDuck applies a passive Coin Bonus buff to specific enemies upon switching.
+        
+        // ศัตรูเป้าหมายสำหรับ BuffMon ของ ChefDuck
+        EnemyType[] buffTargets = new EnemyType[]
+        {
+            EnemyType.DoggoMon, 
+            EnemyType.MooPingMon, 
+            EnemyType.PeterMon, 
+            EnemyType.LotteryMon 
+        };
+
+        // ค้นหาศัตรูทั้งหมดที่ Active ในฉาก
+        Enemy[] allEnemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
+        int buffsApplied = 0;
+        
+        foreach (var enemy in allEnemies)
+        {
+
+            if (buffTargets.Contains(enemy.EnemyType)) 
+            {
+                enemy.ApplyCareerBuff(careerData);
+                buffsApplied++;
+            }
+        }
     }
     #endregion
 

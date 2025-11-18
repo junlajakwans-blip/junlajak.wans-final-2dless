@@ -7,7 +7,7 @@ using System.Collections;
 /// BuffMon: None.
 /// BuffMap: +2% chance to find GoldenMon after enemy death (Stacking).
 /// </summary>
-public class SingerDuck : Player, ISkillUser, IAttackable
+public class SingerDuck : Player
 {
     #region Fields
     [Header("SingerDuck Settings")]

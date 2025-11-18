@@ -2,7 +2,17 @@ using UnityEngine;
 
 public class RandomStarterCard : MonoBehaviour
 {
+    #region Fields
+    private CardManager _cardManagerRef;
     private bool _alreadyClaimed = false; //Prevent Clicker
+    #endregion
+
+
+    // Injection Method
+    public void SetDependencies(CardManager manager)
+    {
+        _cardManagerRef = manager;
+    }   
 
     public bool TrySummonCard()
     {
@@ -27,12 +37,13 @@ public class RandomStarterCard : MonoBehaviour
             return false;
         }
 
-        var cardManager = FindFirstObjectByType<CardManager>();
+        //var cardManager = FindFirstObjectByType<CardManager>();
+        var cardManager = _cardManagerRef;  //ใช้ Reference ที่ถูก Inject
         if (cardManager == null)
-        {
-            Debug.LogError("[StarterCard] CardManager missing.");
-            return false;
-        }
+            {
+                Debug.LogError("[StarterCard] CardManager missing. (Injection Failed)");
+                return false;
+            }
 
         cardManager.AddCareerCard();
         _alreadyClaimed = true;
@@ -44,4 +55,5 @@ public class RandomStarterCard : MonoBehaviour
     {
         _alreadyClaimed = false;
     }
+
 }

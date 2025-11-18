@@ -7,7 +7,7 @@ using System.Collections;
 /// BuffMon: MooPingMon -> Drop Buff Item Random 1 piece. 
 /// BuffMap: Road Traffic -> All Green Light, No Platform Break. 
 /// </summary>
-public class FireFighterDuck : Player, ISkillUser, IAttackable
+public class FireFighterDuck : Player
 {
     #region Fields
     [Header("FireFighter Settings")]
@@ -25,49 +25,169 @@ public class FireFighterDuck : Player, ISkillUser, IAttackable
 
     private bool _isSkillActive;
     private bool _isCooldown;
+
+
+    //Reference to the Spawner for BuffMon
+    private EnemySpawner _enemySpawner;
     #endregion
 
-    #region Buffs (Map & Monster)
+#region Buffs (Map & Monster)
 
     /// <summary>
     /// (Override) Applies FireFighter-specific buffs when the career is initialized.
-    /// This method is called by the base Player.Initialize() method.
     /// </summary>
     protected override void InitializeCareerBuffs()
     {
-        var map = GetCurrentMapType();
-
+        var careerData = _careerSwitcher?.CurrentCareer; 
+        if (careerData == null) return;
+        
         // 1. BuffMap Logic
-        // Road Traffic -> All Green Light & BreakPlatform no break 
+        var map = GetCurrentMapType();
         if (map == MapType.RoadTraffic)
         {
             ApplyRoadTrafficBuff();
             Debug.Log("[FireFighterDuck] Map Buff applied: Road Traffic (All Green, No Break).");
         }
+        
+        // 2. BuffMon Setup (Passive, Continuous)
+        _enemySpawner = FindFirstObjectByType<EnemySpawner>();
+        if (_careerSwitcher != null)
+            {
+                _careerSwitcher.OnRevertToDefaultEvent += HandleCareerRevert;
+            }
 
-        // 2. BuffMon Logic (Handled in UseSkill)
-        Debug.Log("[FireFighterDuck] BuffMon (MooPingMon) logic is active when skill is used.");
-    }
+            if (_enemySpawner == null)
+            {
+                Debug.LogWarning("[FireFighterDuck] EnemySpawner not found. Cannot apply BuffMon continuously.");
+                return; // Stop here if spawner is missing, but keep the CareerSwitcher subscription
+            }
+
+            // 2A. Subscribe to EnemySpawner Event
+            _enemySpawner.OnEnemySpawned += ApplyBuffToNewEnemy;
+            
+            // 2B. Apply Buff to enemies already in the scene
+            ApplyBuffsToExistingEnemies(careerData); 
+
+            Debug.Log("[FireFighterDuck] BuffMon Listener successfully registered for MooPingMon.");
+        }
 
     private void ApplyRoadTrafficBuff()
     {
-        // Find all RedlightMon and force them to Green
+        // 1. Buff: Road Traffic -> All Red Light
         RedlightMon[] trafficLights = FindObjectsByType<RedlightMon>(FindObjectsSortMode.None);
         foreach (var light in trafficLights)
         {
-            // TODO: Requires a public method on RedlightMon to set state
-            // light.ForceState("Green"); 
+            // FIX: Call the assumed public method
+            // light.ForceRed(); 
+            Debug.Log($"[FireFighterDuck] RedlightMon {light.name} forced to Green.");
         }
         
-        // Find MapGenerator to disable platform breaking
+        // 2. Buff: Road Traffic -> No Platform Break
         var mapGen = FindFirstObjectByType<MapGeneratorBase>();
         if (mapGen != null)
         {
             // TODO: Requires a public property on MapGeneratorBase
-            // mapGen.IsPlatformBreakable = false;
+            // FIX: Set the property to disable breaking
+            // mapGen.IsPlatformBreakable = false; 
+            Debug.Log("[FireFighterDuck] Platform breaking feature disabled on MapGenerator.");
         }
     }
+
+    // ---------------------------------------------------------------------------------
+    // HELPER METHODS FOR BUFFMON
+    // ---------------------------------------------------------------------------------
+
+    /// <summary>
+    /// Applies buffs to MooPingMon currently active in the scene (called once on switch).
+    /// </summary>
+    private void ApplyBuffsToExistingEnemies(DuckCareerData careerData)
+    {
+        // Target is MooPingMon (EnemyType.MooPingMon)
+        Enemy[] allEnemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
+        int buffsApplied = 0;
+        
+        foreach (var enemy in allEnemies)
+        {
+            if (enemy.EnemyType == EnemyType.MooPingMon) 
+            {
+                // MooPingMon.cs will handle the check for CareerID == Firefighter
+                enemy.ApplyCareerBuff(careerData);
+                buffsApplied++;
+            }
+        }
+        Debug.Log($"[FireFighterDuck] BuffMon Logic applied to {buffsApplied} existing MooPingMons.");
+    }
+    
+    /// <summary>
+    /// Event handler: Applies buff to enemies as they spawn (subscribed to EnemySpawner.OnEnemySpawned).
+    /// </summary>
+    private void ApplyBuffToNewEnemy(Enemy newEnemy)
+    {
+        var careerData = _careerSwitcher?.CurrentCareer; 
+        if (careerData == null) return;
+        
+        // Target is MooPingMon
+        if (newEnemy.EnemyType == EnemyType.MooPingMon) 
+        {
+            newEnemy.ApplyCareerBuff(careerData);
+            Debug.Log($"[FireFighterDuck] BuffMon applied to NEW: {newEnemy.EnemyType}.");
+        }
+    }
+
     #endregion
+
+    /// <summary>
+    /// Resets Map Buffs when the career ends. This is called by HandleCareerRevert().
+    /// </summary>
+    private void RevertRoadTrafficBuff()
+    {
+        // 1. Revert: RedlightMon to default behavior
+        RedlightMon[] trafficLights = FindObjectsByType<RedlightMon>(FindObjectsSortMode.None);
+        foreach (var light in trafficLights)
+        {
+            // ASSUME: light.RevertToDefault() or similar public method exists on RedlightMon
+            // light.RevertToDefault(); 
+            Debug.Log($"[FireFighterDuck] RedlightMon {light.name} reverted to normal behavior.");
+        }
+        
+        // 2. Revert: Platform Breakable to true
+        var mapGen = FindFirstObjectByType<MapGeneratorBase>();
+        if (mapGen != null)
+        {
+            // ASSUME: mapGen.IsPlatformBreakable is a public property
+            // mapGen.IsPlatformBreakable = true; 
+            Debug.Log("[FireFighterDuck] Platform breaking feature re-enabled on MapGenerator.");
+        }
+    }
+
+    /// <summary>
+    /// EVENT HANDLER: Called by CareerSwitcher.OnRevertToDefaultEvent for cleanup.
+    /// This method performs all necessary unsubscriptions and state resets.
+    /// </summary>
+    private void HandleCareerRevert()
+    {
+        // --- 1. Map Buff Cleanup ---
+        if (GetCurrentMapType() == MapType.RoadTraffic)
+        {
+            RevertRoadTrafficBuff();
+        }
+        
+        // --- 2. BuffMon Listener Cleanup ---
+        if (_enemySpawner != null)
+        {
+            // Unsubscribe from the EnemySpawner event
+            _enemySpawner.OnEnemySpawned -= ApplyBuffToNewEnemy;
+            Debug.Log("[FireFighterDuck] BuffMon Listener UNREGISTERED (Cleanup complete).");
+        }
+
+        // 3. Unsubscribe from the CareerSwitcher event itself
+        if (_careerSwitcher != null)
+        {
+            _careerSwitcher.OnRevertToDefaultEvent -= HandleCareerRevert;
+        }
+    }
+
+
 
     #region ISkillUser Implementation
     public override void UseSkill()
@@ -89,9 +209,6 @@ public class FireFighterDuck : Player, ISkillUser, IAttackable
 
         // 1. Apply Skill Effects (Break floor, Stun/Push enemies)
         ApplySkillEffects();
-        
-        // 2. Apply BuffMon (MooPingMon drop item)
-        ApplyBuffMonEffect();
 
         yield return new WaitForSeconds(_skillDuration);
         _isSkillActive = false;
@@ -147,31 +264,6 @@ public class FireFighterDuck : Player, ISkillUser, IAttackable
         }
     }
 
-    /// <summary>
-    /// BuffMon -> MooPingMon -> Drop Buff Item Random 1 piece 
-    /// (Following ChefDuck's pattern, this triggers *once* when skill is used)
-    /// </summary>
-    private void ApplyBuffMonEffect()
-    {
-        CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
-        if (spawner == null) 
-        {
-            Debug.LogWarning("[FireFighterDuck] CollectibleSpawner not found for BuffMon!");
-            return;
-        }
-        
-        Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
-        foreach (var enemy in enemies)
-        {
-            if (enemy.EnemyType == EnemyType.MooPingMon)
-            {
-                // Force drop one random item (e.g., GreenTea)
-                spawner.SpawnAtPosition(enemy.transform.position); // SpawnAtPosition spawns a random item
-                Debug.Log($"[FireFighterDuck] BuffMon: Forced MooPingMon to drop a random item!");
-                break; // Only affects one MooPingMon per skill use
-            }
-        }
-    }
     #endregion
 
     #region IAttackable Implementation

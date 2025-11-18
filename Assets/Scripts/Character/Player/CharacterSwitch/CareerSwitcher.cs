@@ -55,7 +55,7 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
     #region ICareerSwitchable Implementation
     public void SwitchCareer(DuckCareerData newCareer)
     {
-        if (!_CanChangeTo(newCareer))
+        if (!CanChangeTo(newCareer))
             return;
 
         _currentCareer = newCareer;
@@ -135,7 +135,7 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
 
 
     #region Helper Methods
-    private bool _CanChangeTo(DuckCareerData newCareer)
+    public bool CanChangeTo(DuckCareerData newCareer)
     {
         if (_isOnCooldown)
         {

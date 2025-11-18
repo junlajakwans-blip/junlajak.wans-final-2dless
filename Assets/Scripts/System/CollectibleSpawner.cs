@@ -14,14 +14,19 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
     [Header("References")]
     [SerializeField] private IObjectPool _objectPool;
     [SerializeField] private DistanceCulling _cullingManager;
+    private CardManager _cardManager;
+    private BuffManager _buffManager;
     #endregion
 
     #region Initialization
 
-    public void InitializeSpawner(IObjectPool pool, DistanceCulling cullingManager)
+    public void InitializeSpawner(IObjectPool pool, DistanceCulling cullingManager, CardManager cardManager, BuffManager buffManager)
     {
         _objectPool = pool;
         _cullingManager = cullingManager;
+        _cardManager = cardManager;
+        this._buffManager = buffManager;
+        
         Debug.Log("[CollectibleSpawner] Initialized with object pool.");
     }
     #endregion
@@ -62,13 +67,23 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
         return collectible;
     }
 
-    public void Despawn(GameObject item)
+    /// <summary>
+    /// Returns an object to the pool. Called by the CollectibleItem when collected.
+    /// </summary>
+    public void Despawn(GameObject collectible)
     {
-        if (item == null) return;
+        if (_objectPool == null)
+        {
+            Destroy(collectible);
+            return;
+        }
 
-        _cullingManager?.UnregisterObject(item);
-        _activeCollectibles.Remove(item);
-        _objectPool.ReturnToPool(item.name, item);
+        // Unregister from Culling (ถ้าใช้) และ Active List
+        _activeCollectibles.Remove(collectible);
+        _cullingManager?.UnregisterObject(collectible);
+        
+        // Return to Pool โดยใช้ชื่อ Prefab เป็น Tag
+        _objectPool.ReturnToPool(collectible.name, collectible);
     }
 
     public int GetSpawnCount()
@@ -126,12 +141,22 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
             Quaternion.identity
         );
 
-        if (collectible != null)
+    if (collectible != null)
+    {
+        _activeCollectibles.Add(collectible);
+        
+        // [NEW FIX]: INJECT DEPENDENCIES
+        if (collectible.TryGetComponent<CollectibleItem>(out var collectibleItem))
         {
-            _activeCollectibles.Add(collectible);
-            Debug.Log($"[CollectibleSpawner] Dropped {type} at {position} (via Pool)");
+            // Inject CardManager (สำหรับ CardPickup) และ 'this' (สำหรับ Despawn)
+            collectibleItem.SetDependencies(_cardManager, this, _buffManager); 
         }
-        return collectible;
+        
+        Debug.Log($"[CollectibleSpawner] Dropped {type}...");
     }
-    #endregion  
+
+    return collectible;
+    }
+    #endregion
+
 }

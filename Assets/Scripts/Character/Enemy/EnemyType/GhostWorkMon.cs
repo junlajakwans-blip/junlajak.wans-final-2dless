@@ -21,13 +21,8 @@ public class GhostWorkMon : Enemy
     {
         if (_isDisabled) return;
         
-        // Ensure target is set
-        if (_target == null)
-        {
-            var player = FindFirstObjectByType<Player>();
-            if (player != null) _target = player.transform;
-        }
-
+        if (_target == null) return; 
+        
         // Standard movement (float silently)
         Move(); 
 
@@ -35,7 +30,6 @@ public class GhostWorkMon : Enemy
         if (_target != null && Time.time >= _nextTeleportTime)
         {
             TryTeleportAttack();
-            //  Use Data From EnemyData:Unique | Asset: _data.GhostWorkTeleportCooldown
             _nextTeleportTime = Time.time + _data.GhostWorkTeleportCooldown;
         }
     }
@@ -71,7 +65,7 @@ public class GhostWorkMon : Enemy
         //  Use Data From EnemyData:Unique | Asset: _data.GhostWorkFadeDuration
         Debug.Log($"{name} fading in at new position.");
         // TODO: Implement actual visual fade in
-        yield return new WaitForSeconds(_data.GhostWorkFadeDuration); 
+        yield return new WaitForSeconds(_data.GhostWorkFadeDuration);
         
         // 4. Attack Immediately
         Attack();
@@ -83,7 +77,7 @@ public class GhostWorkMon : Enemy
         if (_target != null && _target.TryGetComponent<Player>(out var player))
         {
             //  Use Data From EnemyData:Unique | Asset: _data.GhostWorkHauntDamage
-            player.TakeDamage(_data.GhostWorkHauntDamage); 
+            player.TakeDamage(_data.GhostWorkHauntDamage);
             Debug.Log($"{name} haunts the player with {_data.GhostWorkHauntDamage} damage!");
         }
     }
@@ -94,7 +88,7 @@ public class GhostWorkMon : Enemy
     {
         base.Die();
 
-        CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
+        CollectibleSpawner spawner = _spawnerRef;
         
         if (spawner != null && _data != null)
         {
@@ -118,7 +112,7 @@ public class GhostWorkMon : Enemy
         }
         else if (spawner == null)
         {
-            Debug.LogWarning("[GhostWorkMon] CollectibleSpawner not found! Cannot drop items.");
+            Debug.LogWarning("[GhostWorkMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
         }
     }
     #endregion

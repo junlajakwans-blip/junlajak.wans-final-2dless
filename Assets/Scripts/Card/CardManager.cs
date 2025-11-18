@@ -65,43 +65,75 @@ public class CardManager : MonoBehaviour
 
 
     /// <summary>
-    /// Uses a card at the specified index.
+    /// Uses the card at the specified index.
+    /// This is the CORE logic connecting the UI click to the game effect.
     /// </summary>
-    /// <param name="index"></param>
     public void UseCard(int index)
     {
-        if (!IsValidIndex(index) || _isCardLocked) return;
+        if (index < 0 || index >= _collectedCards.Count || _isCardLocked) return;
 
-        Card usedCard = _collectedCards[index];
-        if (usedCard == null) return;
+        Card card = _collectedCards[index];
+        if (card == null) return;
 
-        // เล่นเอฟเฟกต์
-        _uiEffectCharacter?.PlayEffect(usedCard.SkillName);
-        _cardSlotUI?.PlayUseAnimation(index);
+        bool cardUsedSuccessfully = false; // Flag check delete card
 
-        switch (usedCard.Type)
+        //Check card type is Career
+        if (card.Type == CardType.Career) //
         {
-            case CardType.Career:
-               
-                if (_careerSwitcher != null)
-                {
-                    var data = _careerSwitcher.GetCareerDataByName(usedCard.SkillName);
-                    if (data != null)
-                    {
-                        _careerSwitcher.SwitchCareer(data);
-                        _careerSwitcher.StartCareerTimer(10f); // duration 10 seconds
-                        LockAllCards(); // lock cards during career duration until revert
-                    }
-                }
-                break;
+            
+            if (_careerSwitcher == null)
+            {
+                Debug.LogError("[CardManager] CareerSwitcher is missing!");
+                return; 
+            }
 
-            case CardType.Berserk:
-                // call MuscleDuck
-                ExchangeForBerserk();
-                break;
+
+            DuckCareerData data = _careerSwitcher.GetCareerDataByName(card.SkillName); //
+
+            if (data != null && _careerSwitcher.CanChangeTo(data)) //
+            {
+                // A.switchcareer
+                _careerSwitcher.SwitchCareer(data); 
+                
+                // Play effect
+                if (_uiEffectCharacter != null)
+                {
+                    // เราใช้ชื่อในการ์ด (เช่น "Chef", "Singer") ไปสั่งให้ UIEffect เล่น
+                    _uiEffectCharacter.PlayEffect(card.SkillName); //
+                }
+
+                
+                cardUsedSuccessfully = true;
+            }
+            else
+            {
+                Debug.LogWarning($"[CardManager] Cannot switch to {card.SkillName} (Cooldown or Same Career). Card not used.");
+
+            }
+        }
+        else if (card.Type == CardType.Berserk) //
+        {
+     
+            Debug.LogWarning("[CardManager] Berserk card logic not yet implemented.");
+ 
+        }
+        else
+        {
+            
+            card.ActivateEffect(_player);
+            cardUsedSuccessfully = true; 
         }
 
-        RemoveCard(index);
+
+        // Check when alredy use card | delete after use this card
+        if (cardUsedSuccessfully)
+        {
+
+            _cardSlotUI?.PlayUseAnimation(index); 
+
+
+            RemoveCard(index);
+        }
     }
     
     public void RemoveCard(int index) // remove card after use
@@ -179,25 +211,40 @@ public class CardManager : MonoBehaviour
     /// Called when a GoldenMon dies.
     /// Adds exactly 1 career card based on defined PDF drop rates.
     /// </summary>
-    public void AddCareerCard()
+public void AddCareerCard()
     {
-        DuckCareer career = GetRandomCareerFromRate();
-        if (career == DuckCareer.None || career == DuckCareer.Muscle)
+        if (_isCardLocked || _collectedCards.Count >= _maxCards)
         {
-            Debug.LogWarning("[CardManager] Invalid or non-droppable career type.");
+            Debug.Log("[CardManager] Cannot add new career card. (Locked or Full)");
             return;
         }
 
-        // contructor
-        string cardID = System.Guid.NewGuid().ToString();
-        string skillName = career.ToString();
-        string description = $"Career Card: {career}";
-        Sprite icon = null; //Can call from spiteatlas
+        DuckCareer career = GetRandomCareerFromRate();
 
+        if (_careerSwitcher == null)
+        {
+            Debug.LogError("[CardManager] CareerSwitcher reference is missing!");
+            return;
+        }
+        
+        DuckCareerData careerData = _careerSwitcher.GetCareerData(career);
+        if (careerData == null)
+        {
+            Debug.LogError($"[CardManager] Cannot find CareerData for {career}");
+            return;
+        }
+
+
+        string cardID = System.Guid.NewGuid().ToString();
+        
+        string skillName = careerData.DisplayName; 
+        string description = careerData.SkillDescription;
+        Sprite icon = careerData.SkillIcon; 
+        
         Card newCard = new Card(cardID, CardType.Career, skillName, description, icon);
 
         AddCard(newCard);
-        Debug.Log($"[CardManager] Dropped career card: {career}");
+        Debug.Log($"[CardManager] Dropped career card: {careerData.DisplayName}");
     }
 
     /// <summary>

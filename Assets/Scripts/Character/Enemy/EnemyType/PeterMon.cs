@@ -12,6 +12,11 @@ public class PeterMon : Enemy // Removed IMoveable as Enemy already has Move()
     [SerializeField] private Transform _firePoint; // Fire point must remain in MonoBehaviour
 
 
+    //chef
+    private bool _isAttackDisabled = false;
+    //doctor
+    private float _doctorAttackSkipChance = 0f;
+
     private float _hoverOffsetY;
     private float _nextAttackTime;
     private Vector2 _direction = Vector2.left; // Unused for hovering, but kept if needed
@@ -63,9 +68,64 @@ public class PeterMon : Enemy // Removed IMoveable as Enemy already has Move()
     // ... (IMoveable methods omitted for brevity) ...
     #endregion
 
+#region Buffs from Career
+
+    /// <summary>
+    /// Overrides base method to receive ChefDuck's Buff (Disable Attack).
+    /// </summary>
+public override void ApplyCareerBuff(DuckCareerData data)
+    {
+        if (data == null) return;
+
+        // 1. ChefDuck Buff Logic (Full Disable Attack)
+        if (data.CareerID == DuckCareer.Chef)
+        {
+            _isAttackDisabled = true;
+            _doctorAttackSkipChance = 0f; // Reset Doctor Buff
+            Debug.Log("[PeterMon] Chef Buff Applied: Attack DISABLED (100% skip).");
+        }
+        
+        // 2. DoctorDuck Buff Logic (Chance to Skip Attack)
+        else if (data.CareerID == DuckCareer.Doctor)
+        {
+            _doctorAttackSkipChance = data.PeterMonAttackSkipChance; // Get 30% chance
+            _isAttackDisabled = false; // Reset Chef Buff
+            Debug.Log($"[PeterMon] Doctor Buff Applied: {_doctorAttackSkipChance * 100:F0}% chance to skip attack.");
+        }
+        // NOTE: PeterMon.cs จะเช็คค่า _isAttackDisabled หรือ _doctorAttackSkipChance ใน AttackPlayer()
+    }
+    #endregion
+
+
     #region Combat
+
     private void AttackPlayer()
     {
+        // 1. ChefDuck Buff Check (Full Disable - Highest Priority)
+        if (_isAttackDisabled)
+        {
+            // Reset CD to prevent instant attack if the buff ends
+            _nextAttackTime = Time.time + _data.PeterAttackCooldown; 
+            Debug.Log("[PeterMon] Attack skipped due to Chef Buff (100% Disable).");
+            return;
+        }
+        
+        // 2. DoctorDuck Buff Check (30% Chance to Skip)
+        if (_doctorAttackSkipChance > 0f)
+        {
+            float roll = Random.value;
+            // Roll: 0.0 to 1.0. If roll is less than 0.30 (30%), skip the attack.
+            if (roll < _doctorAttackSkipChance) 
+            {
+                Debug.Log($"[PeterMon] Attack skipped due to Doctor Buff! (Roll: {roll:F2} < Skip Chance: {_doctorAttackSkipChance * 100:F0}%)");
+                // Reset CD even if skipped, to prevent instant attack next frame
+                _nextAttackTime = Time.time + _data.PeterAttackCooldown; 
+                return;
+            }
+        }
+
+        // --- Original Attack Timing and Range Checks ---
+        
         // Use Data From EnemyData:Unique | Asset: _data.PeterAttackCooldown
         if (Time.time < _nextAttackTime) return;
         if (_target == null) return;
@@ -78,15 +138,22 @@ public class PeterMon : Enemy // Removed IMoveable as Enemy already has Move()
         }
     }
     
-    private void ShootProjectile()
+private void ShootProjectile()
     {
         if (_projectilePrefab == null || _firePoint == null || _target == null) return;
         
-        // NOTE: ควรใช้ Object Pooling แทน Instantiate
-        var proj = Instantiate(_projectilePrefab, _firePoint.position, Quaternion.identity);
+        // [FIX 2.1]: ตรวจสอบ Pool Reference ที่ถูก Inject
+        if (_poolRef == null) 
+        {
+            Debug.LogError("[PeterMon] Object Pool NOT INJECTED! Cannot spawn projectile.");
+            return;
+        }
 
-        // Calculate direction and set velocity (Aiming at target)
-        if (proj.TryGetComponent<Rigidbody2D>(out var rb))
+        // [FIX 2.2]: ใช้ Object Pooling แทน Instantiate
+        string poolTag = _projectilePrefab.name; // ใช้ชื่อ Prefab เป็น Tag
+        var go = _poolRef.SpawnFromPool(poolTag, _firePoint.position, Quaternion.identity);
+
+        if (go.TryGetComponent<Rigidbody2D>(out var rb))
         {
             Vector2 aim = ((Vector2)_target.position - (Vector2)_firePoint.position).normalized;
             // Use Data From EnemyData:Unique | Asset: _data.PeterProjectileSpeed
@@ -94,9 +161,14 @@ public class PeterMon : Enemy // Removed IMoveable as Enemy already has Move()
         }
         
         // Set damage value using the Projectile component
-        if (proj.TryGetComponent<Projectile>(out var projectile))
+        if (go.TryGetComponent<Projectile>(out var projectile))
+        {
             // Use Data From EnemyData:Unique | Asset: _data.PeterProjectileDamage
             projectile.SetDamage(_data.PeterProjectileDamage);
+            
+            // [FIX 2.3]: INJECT DEPENDENCY เข้าไปใน Projectile
+            projectile.SetDependencies(_poolRef, poolTag);
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -130,7 +202,7 @@ public class PeterMon : Enemy // Removed IMoveable as Enemy already has Move()
     {
         base.Die();
         
-        CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
+        CollectibleSpawner spawner = _spawnerRef;
         
         if (spawner != null && _data != null)
         {
@@ -151,7 +223,7 @@ public class PeterMon : Enemy // Removed IMoveable as Enemy already has Move()
         }
         else if (spawner == null)
         {
-            Debug.LogWarning("[PeterMon] CollectibleSpawner not found! Cannot drop items.");
+            Debug.LogWarning("[PeterMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
         }
     }
     #endregion

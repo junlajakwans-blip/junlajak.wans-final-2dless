@@ -7,28 +7,25 @@ using UnityEngine;
 /// Implements IDamageable, IAttackable, ISkillUser, ICollectable.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
-public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, ICollectable, IInteractable
+public class Player : Character, IDamageable, IAttackable, ISkillUser, ICollectable, IInteractable
 {
-    #region Fields
+#region Fields
     [Header("Core Data")]
     [SerializeField] private PlayerData _playerData;
-    [SerializeField] private CareerSwitcher _careerSwitcher;
+    [SerializeField] protected CareerSwitcher _careerSwitcher;
     [SerializeField] private CardManager _cardManager;
     [SerializeField] private Currency _currency;
 
     [Header("Components")]
-    [SerializeField] protected Rigidbody2D _rigidbody;
-    [SerializeField] private CharacterRigAnimator _animator;
+    [SerializeField] private CharacterRigAnimator _rigAnimator; 
 
     [Header("Stats")]
-    [SerializeField] private float _moveSpeed = 5f;
+
     [SerializeField] protected float _jumpForce = 5f;
-    [SerializeField] protected int _maxHealth = 100;
-    [SerializeField] protected int _currentHealth;
+
 
     [Header("Runtime State")]
     [SerializeField] private bool _isGrounded = false;
-    [SerializeField] protected bool _isDead = false;
 
     [Header("Environment Awareness")]
     [SerializeField] protected MapType _currentMapType = MapType.None;
@@ -40,10 +37,7 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
     private float _speedModifier = 1f;
     private Coroutine _speedRoutine;
     private WaitForSeconds _speedWait;
-    
-    public int CurrentHealth => _currentHealth;
-    public int MaxHealth => _maxHealth;
-    public bool IsDead => _isDead;
+
 
     public bool CanInteract => throw new System.NotImplementedException();
     public string PlayerName => _playerData != null ? _playerData.PlayerName : "Unknown";
@@ -68,8 +62,8 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
         if (_rigidbody == null)
             _rigidbody = GetComponent<Rigidbody2D>();
 
-        if (_animator == null)
-            _animator = GetComponent<CharacterRigAnimator>();
+        if (_rigAnimator == null)
+            _rigAnimator = GetComponent<CharacterRigAnimator>();
 
         // Currency setup
         if (_currency == null)
@@ -86,14 +80,16 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
     #endregion
 
 
-    #region Movement
-    public void Move(Vector2 direction)
+#region Movement
+    public override void Move(Vector2 direction)
     {
-        if (_isDead) return;
+        if (_isDead) return; 
 
-        float speed = _moveSpeed * _speedModifier;
+
+        float speed = _moveSpeed * _speedModifier; 
 
 #if UNITY_2022_3_OR_NEWER
+
         Vector2 velocity = new Vector2(direction.x * speed, _rigidbody.linearVelocity.y);
         _rigidbody.linearVelocity = velocity;
 #else
@@ -101,7 +97,7 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
         _rigidbody.velocity = velocity;
 #endif
 
-        _animator?.SetMoveAnimation(direction.x);
+        _rigAnimator?.SetMoveAnimation(direction.x); 
 
 #if UNITY_2022_3_OR_NEWER
         _isGrounded = Mathf.Abs(_rigidbody.linearVelocity.y) < 0.01f;
@@ -136,16 +132,18 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
     #endregion
 
 
-    #region Jump & Jump Attack
+#region Jump & Jump Attack
     public virtual void Jump()
     {
         if (_isDead || !_isGrounded) return;
 
-        _rigidbody.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse);
+
+        _rigidbody.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse); 
         _isGrounded = false;
 
-        if (_animator != null)
-            _animator.SetTrigger("Jump");
+
+        if (_rigAnimator != null)
+            _rigAnimator.SetTrigger("Jump");
     }
 
     // detwect jump attack on collision
@@ -159,8 +157,8 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
         {
             foreach (var contact in collision.contacts)
             {
-                // Collided from above and falling
-                if (contact.normal.y > 0.5f && _rigidbody.linearVelocity.y < 0f)
+
+                if (contact.normal.y > 0.5f && _rigidbody.linearVelocity.y < 0f) 
                 {
                     // Execute jump attack
                     HandleJumpAttack(enemy);
@@ -179,12 +177,12 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
         if (enemy is IMoveable moveableEnemy)
             moveableEnemy.Stop();
 
-        // Bounce back slightly
+
         _rigidbody.linearVelocity = new Vector2(_rigidbody.linearVelocity.x, _jumpForce * 0.8f);
 
-        // If there is a stomp animation
-        if (_animator != null)
-            _animator.SetTrigger("JumpAttack");
+
+        if (_rigAnimator != null)
+            _rigAnimator.SetTrigger("JumpAttack");
             
     }
     #endregion
@@ -223,7 +221,7 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
     /// Apply damage to the player.
     /// </summary>
     /// <param name="amount"></param>
-    public virtual void TakeDamage(int amount)
+    public override void TakeDamage(int amount)
     {
         if (_isDead) return;
 
@@ -242,7 +240,7 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
     /// Only way to Heal Player or some career must use BuffItem when Icollectable
     /// </summary>
     /// <param name="amount"></param>
-    public void Heal(int amount)
+    public override void Heal(int amount)
     {
         if (_isDead) return;
         _currentHealth = Mathf.Min(_maxHealth, _currentHealth + amount);
@@ -250,7 +248,7 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
         Debug.Log($"[Player] Healed +{amount}. HP: {_currentHealth}/{_maxHealth}");
     }
 
-    protected virtual void Die()
+    public override void Die()
     {
         _isDead = true;
         _rigidbody.linearVelocity = Vector2.zero;
@@ -258,7 +256,6 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
             _animator.SetTrigger("Die");
 
         Debug.Log("[Player] Player died.");
-        // TODO: Notify GameManager / Trigger respawn / GameOver event
     }
 
     public DuckCareer GetCurrentCareerID()
@@ -298,7 +295,7 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
 
 
     #region Combat System (IAttackable, ISkillUser)
-    public virtual void Attack()
+    public override void Attack()
     {
         Debug.Log("[Player] Basic attack triggered.");
         // TODO: integrate with weapon or animation
@@ -380,8 +377,8 @@ public class Player : MonoBehaviour, IDamageable, IAttackable, ISkillUser, IColl
         _currency.ResetAll();
         _rigidbody.linearVelocity = Vector2.zero;
 
-        if (_animator != null)
-            _animator.ResetAllTriggers();
+        if (_rigAnimator != null)
+            _rigAnimator.ResetAllTriggers();
 
         Debug.Log("[Player] Reset to initial state.");
     }

@@ -34,14 +34,9 @@ public class MamaMon : Enemy
 
         if (_isDisabled) return;
 
-        // Find target (Logic is okay here, better handled in a Manager but functional)
-        if (_target == null)
-        {
-            var player = FindFirstObjectByType<Player>();
-            if (player != null) _target = player.transform;
-        }
-
-        if (_target == null) return;
+        // [FIX 1]: ลบ Logic การค้นหา Player ใน Update() ออก
+        // _target ถูก set ใน Enemy.SetDependencies() แล้ว
+        if (_target == null) return; 
 
         // Check distance for attacks
         float distanceToPlayer = Vector2.Distance(transform.position, _target.position);
@@ -79,6 +74,7 @@ public class MamaMon : Enemy
     }
     #endregion
 
+
     #region Combat
     /// <summary>
     /// Base attack triggers the projectile throw.
@@ -97,10 +93,18 @@ public class MamaMon : Enemy
         if (_noodleProjectilePrefab == null || _firePoint == null || _target == null)
             yield break;
 
+        // [FIX 2.1]: ตรวจสอบ Pool Reference ที่ถูก Inject
+        if (_poolRef == null) 
+        {
+            Debug.LogError("[MamaMon] Object Pool NOT INJECTED! Cannot spawn projectile.");
+            yield break;
+        }
+
         // Use Data From EnemyData:Unique | Asset: _data.MamaNoodleCount
+        string poolTag = _noodleProjectilePrefab.name;
         for (int i = 0; i < _data.MamaNoodleCount; i++)
         {
-            var go = Instantiate(_noodleProjectilePrefab, _firePoint.position, Quaternion.identity);
+            var go = _poolRef.SpawnFromPool(poolTag, _firePoint.position, Quaternion.identity);
             
             if (go.TryGetComponent<Rigidbody2D>(out var rb))
             {
@@ -157,7 +161,7 @@ public class MamaMon : Enemy
     {
         base.Die(); 
         
-        CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
+        CollectibleSpawner spawner = _spawnerRef;
         
         if (spawner != null && _data != null)
         {
@@ -181,7 +185,7 @@ public class MamaMon : Enemy
         }
         else if (spawner == null)
         {
-            Debug.LogWarning("[MamaMon] CollectibleSpawner not found! Cannot drop items.");
+            Debug.LogWarning("[MamaMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
         }
     }
     #endregion

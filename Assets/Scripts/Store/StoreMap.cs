@@ -19,6 +19,11 @@ public class StoreMap : StoreBase
 
     public override StoreType StoreType => StoreType.Exchange;
 
+    private Player _playerRef;
+    private CollectibleSpawner _spawnerRef;
+    private CardManager _cardManagerRef;
+
+
     public override void Initialize(StoreManager manager)
     {
         _storeManager = manager;
