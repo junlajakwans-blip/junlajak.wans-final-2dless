@@ -4,95 +4,66 @@ using UnityEngine;
 [System.Serializable]
 public class StoreManager
 {
-    #region Fields
     [SerializeField] private Currency _currency;
     [SerializeField] private GameProgressData _progressData;
-    [SerializeField] private Dictionary<string, int> _availableItems = new Dictionary<string, int>();
-    [SerializeField] private List<string> _unlockedItems = new List<string>();
-    private CardManager _cardManager;
-    #endregion
 
-    #region Properties
+    // ดึงจาก Inspector (หรือ Resources.LoadAll ก็ได้)
+    [SerializeField] private List<StoreItem> _allItems = new List<StoreItem>();
 
-    public Currency Currency => _currency;
-    public CardManager CardManager => _cardManager;
-    public GameProgressData ProgressData => _progressData;
-    public Dictionary<string, int> AvailableItems => _availableItems;
-    public List<string> UnlockedItems => _unlockedItems;
     public List<StoreBase> Stores { get; private set; } = new List<StoreBase>();
 
-    #endregion
+    public Currency Currency => _currency;
+    public GameProgressData ProgressData => _progressData;
 
     public StoreManager(Currency currency, GameProgressData progressData)
     {
         _currency = currency;
         _progressData = progressData;
-
-        Stores = new List<StoreBase>();
     }
 
-    #region Methods
+    /// <summary>
+    /// Register shop facade (StoreExchange / StoreUpgrade / StoreMap)
+    /// and inject its item list from _allItems automatically.
+    /// </summary>
     public void RegisterStore(StoreBase store)
     {
         if (!Stores.Contains(store))
             Stores.Add(store);
+
+        List<StoreItem> itemsForThisStore = GetItemsForStore(store.StoreType);
+        store.Initialize(this, itemsForThisStore);
+
+        Debug.Log($"[StoreManager] Registered {store.StoreName} | {itemsForThisStore.Count} items");
     }
 
-
-    public bool CanAfford(string itemName)
+    /// <summary>
+    /// Filters StoreItem list by StoreType (Exchange / Upgrade / Map ...)
+    /// </summary>
+    private List<StoreItem> GetItemsForStore(StoreType type)
     {
-        if (!_availableItems.ContainsKey(itemName)) return false;
-        int price = _availableItems[itemName];
-        return _currency.Coin >= price;
+        return _allItems.FindAll(i => i != null && i.StoreType == type);
     }
 
-    public bool PurchaseItem(string itemName)
+    /// <summary>
+    /// Purchase item universally by ID (Used by UI, DevCheat, Quest, Rewards)
+    /// </summary>
+    public bool Purchase(string itemID)
     {
-        if (!CanAfford(itemName)) return false;
-        int price = _availableItems[itemName];
-        bool success = _currency.UseCoin(price);
-
-        if (success)
+        foreach (var store in Stores)
         {
-            UnlockItem(itemName);
-            Debug.Log($" Purchased: {itemName} for {price} coins");
-            return true;
+            StoreItem item = store.GetItem(itemID);
+            if (item == null)
+                continue;
+
+            bool success = store.Purchase(item);
+            Debug.Log(success
+                ? $"[StoreManager] Purchase SUCCESS → {item.DisplayName}"
+                : $"[StoreManager] Purchase FAILED → {item.DisplayName}");
+
+            return success;
         }
 
-        Debug.LogWarning($" Cannot purchase item: {itemName}");
+        Debug.LogError($"[StoreManager] Item not found in ANY store → {itemID}");
         return false;
-    }
-
-    public void UnlockItem(string itemName)
-    {
-        if (!_unlockedItems.Contains(itemName))
-        {
-            _unlockedItems.Add(itemName);
-            Debug.Log($" Item unlocked: {itemName}");
-        }
-    }
-
-    public void AddNewItem(string itemName, int price)
-    {
-        if (!_availableItems.ContainsKey(itemName))
-        {
-            _availableItems.Add(itemName, Mathf.Max(0, price));
-            Debug.Log($" Added new item: {itemName} (price {price})");
-        }
-    }
-
-    public int GetItemPrice(string itemName)
-    {
-        if (_availableItems.ContainsKey(itemName))
-            return _availableItems[itemName];
-        Debug.LogWarning($" Item not found: {itemName}");
-        return -1;
-    }
-    #endregion
-
-    public void SetCardManager(CardManager manager)
-    {
-        _cardManager = manager;
-        Debug.Log("[StoreManager] CardManager dependency set.");
     }
 }

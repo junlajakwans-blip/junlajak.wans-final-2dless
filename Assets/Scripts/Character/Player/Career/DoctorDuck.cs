@@ -5,7 +5,7 @@ using System.Collections;
 /// DoctorDuck – Support / Self-Healer Career (ID 5, Tier S)
 /// Implements passive heal, revive, and specific BuffMon/BuffMap logic.
 /// </summary>
-public class DoctorDuck : Player, ISkillUser, IAttackable
+public class DoctorDuck : Player
 {
     #region Fields
     [Header("DoctorDuck Settings")]

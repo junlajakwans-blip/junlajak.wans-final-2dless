@@ -1,89 +1,76 @@
+using UnityEngine;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
+[CreateAssetMenu(menuName = "Store/Store Map")]
 public class StoreMap : StoreBase
 {
     public override string StoreName => "Map Unlock Portal";
+    public override StoreType StoreType => StoreType.Map;
 
-    // รายการในร้าน: Key = ชื่อแมพ , Value = ราคาเป็นจำนวนกุญแจ
-    public override Dictionary<string, int> StoreItems { get; } = new Dictionary<string, int>();
+    private Currency _currency;
+    private GameProgressData _progress;
 
-    private StoreManager _storeManager;
-    private List<string> _unlockedMaps = new List<string>();
+    // Track unlocked maps during runtime
+    private HashSet<string> unlocked = new();
 
-    private const int KEY_COST = Currency.KEYS_PER_MAP; // ค่า 3 กุญแจต่อการปลดล็อก map
-
-    // ส่ง event บอก GameManager / UI
     public Action<string> OnMapUnlockedEvent;
 
-    public override StoreType StoreType => StoreType.Exchange;
-
-    private Player _playerRef;
-    private CollectibleSpawner _spawnerRef;
-    private CardManager _cardManagerRef;
-
-
-    public override void Initialize(StoreManager manager)
+    public override void Initialize(StoreManager manager, List<StoreItem> itemList)
     {
-        _storeManager = manager;
+        base.Initialize(manager, itemList);
 
-        // แมพที่เริ่มเกมมาจะไม่ต้องซื้อ
-        // School -> default unlocked
+        _manager = manager;
+        _currency = manager.Currency;
+        _progress = manager.ProgressData;
 
-        AddMap("Road Traffic");
-        AddMap("Kitchen");
+        // Load previously unlocked maps from save data
+        foreach (string id in _progress.UnlockedMaps)
+            unlocked.Add(id);
     }
 
-    public override bool Purchase(string itemName)
+    public override bool Purchase(StoreItem item)
     {
-        if (!StoreItems.ContainsKey(itemName))
+        // ถ้าปลดแล้ว
+        if (unlocked.Contains(item.ID))
         {
-            Debug.LogWarning($"[StoreMap] No such map item: {itemName}");
+            Debug.Log($"[StoreMap] {item.DisplayName} already unlocked.");
             return false;
         }
 
-        if (_unlockedMaps.Contains(itemName))
+        // ต้องใช้ Key ในการปลดแมพ
+        if (item.SpendCurrency != StoreCurrency.KeyMap)
         {
-            Debug.Log($"[StoreMap] {itemName} already unlocked.");
+            Debug.LogError($"[StoreMap] {item.DisplayName} configured wrong! Map should spend KeyMap.");
             return false;
         }
 
-        // ใช้ระบบใช้กุญแจ (3 ดอก)
-        if (!_storeManager.Currency.UnlockMap())
+        // เช็คจำนวน Key ต้องใช้ item.Price
+        if (!_currency.UseKey(item.Price))
         {
-            Debug.Log($"[StoreMap] Not enough keys → Need {KEY_COST}");
+            Debug.LogWarning($"[StoreMap] Not enough keys → Need {item.Price}");
             return false;
         }
 
-        UnlockMap(itemName);
-        Debug.Log($"[StoreMap] Map unlocked → {itemName}");
+        // ปลดล็อกสำเร็จ
+        Unlock(item.ID);
+        Debug.Log($"[StoreMap] UNLOCK SUCCESS → {item.DisplayName}");
         return true;
     }
 
-    public override void DisplayItems()
-    {
-        foreach (var map in StoreItems)
-        {
-            bool unlocked = _unlockedMaps.Contains(map.Key);
-            Debug.Log($" - {map.Key} | Cost: {KEY_COST} Keys | Status: {(unlocked ? "UNLOCKED" : "LOCKED")}");
-        }
-    }
 
-    // ---------------- HELPER ----------------
-    private void AddMap(string mapName)
-    {
-        if (!StoreItems.ContainsKey(mapName))
-            StoreItems.Add(mapName, KEY_COST);
-    }
+    public override bool IsUnlocked(StoreItem item)
+        => unlocked.Contains(item.ID);
 
-    private void UnlockMap(string mapName)
+
+    private void Unlock(string id)
     {
-        if (!_unlockedMaps.Contains(mapName))
-        {
-            _unlockedMaps.Add(mapName);
-            _storeManager.UnlockItem(mapName);
-            OnMapUnlockedEvent?.Invoke(mapName);
-        }
+        unlocked.Add(id);
+
+        // Save to Progress
+        if (!_progress.UnlockedMaps.Contains(id))
+            _progress.UnlockedMaps.Add(id);
+
+        OnMapUnlockedEvent?.Invoke(id);
     }
 }

@@ -29,6 +29,7 @@ public class MapSelectController : MonoBehaviour
     private int index = 0;
     #endregion
 
+
     #region UI References
     [Header("UI References")]
     public Image previewImage;
@@ -47,11 +48,40 @@ public class MapSelectController : MonoBehaviour
 
     [Header("Key UI")]
     public TextMeshProUGUI text_KeyCount;
+
+    //For Dependency Injection
+    private GameManager _gameManagerRef;
+    private Currency _currencyRef;
     #endregion
 
-    #region Unity Lifecycle
-    private void Start()
+
+    #region Dependencies
+    /// <summary>
+    /// Injects required runtime dependencies.
+    /// </summary>
+    public void SetDependencies(GameManager gm, Currency currency)
     {
+        _gameManagerRef = gm;
+        _currencyRef = currency;
+
+        if (_currencyRef != null)
+        {
+            Currency.OnCurrencyChanged -= RefreshKeyUI;
+            Currency.OnCurrencyChanged += RefreshKeyUI;
+        }
+        if (maps != null)  
+        RefreshUI();
+    }
+    #endregion
+
+
+
+
+    #region Unity Lifecycle
+
+    private void OnEnable()
+    {
+
         // เตรียมข้อมูลแมพจาก MapType
         maps = new MapInfo[]
         {
@@ -62,16 +92,20 @@ public class MapSelectController : MonoBehaviour
 
         // คลิกที่รูป = เล่นแมพ
         if (previewImageButton != null)
+        {
+            previewImageButton.onClick.RemoveAllListeners(); // ป้องกันซ้ำ
             previewImageButton.onClick.AddListener(TryPlaySelectedMap);
-
-        index = 0;
-
-        // ถ้าไม่ได้ลาก Text_KeyCount ใน Inspector ให้ลองหาใน Scene ให้เอง
-        text_KeyCount ??= GameObject.Find("Text_KeyCount")?.GetComponent<TextMeshProUGUI>();
-
-        // อย่ารีเฟรชทันที ให้รอ 1 เฟรมเพื่อให้ GameManager initialize เสร็จ
-        StartCoroutine(DelayedInitialRefresh());
+        }
+            
+        RefreshUI(); 
     }
+
+        private void OnDestroy()
+    {
+        if (_currencyRef != null)
+            Currency.OnCurrencyChanged -= RefreshKeyUI;
+    }
+
 
     private void Update()
     {
@@ -83,16 +117,6 @@ public class MapSelectController : MonoBehaviour
     }
     #endregion
 
-    #region Coroutines
-    /// <summary>
-    /// รอ 1 เฟรมก่อน Refresh รอบแรก เพื่อให้ GameManager.SetupStores ทำงานเสร็จ
-    /// </summary>
-    private IEnumerator DelayedInitialRefresh()
-    {
-        yield return null;
-        RefreshUI();
-    }
-    #endregion
 
     #region MapInfo Builder
     private MapInfo CreateMapInfo(MapType type)
@@ -134,7 +158,9 @@ public class MapSelectController : MonoBehaviour
     }
     #endregion
 
+
     #region Display / Refresh
+
     /// <summary>
     /// อัปเดตหน้าจอให้ตรงกับแมพ index ปัจจุบัน
     /// </summary>
@@ -191,30 +217,15 @@ public class MapSelectController : MonoBehaviour
     /// </summary>
     public void RefreshKeyUI()
     {
-        // 1) หา Text_KeyCount ถ้ายังไม่มี (กันกรณี Inspector ว่าง หรือโดนเคลียร์)
         if (text_KeyCount == null)
         {
-            text_KeyCount = GameObject.Find("Text_KeyCount")?.GetComponent<TextMeshProUGUI>();
-            if (text_KeyCount == null)
-            {
-                Debug.LogWarning("[MapSelectController] Text_KeyCount not assigned or found in scene.");
-                return;
-            }
-        }
-
-        // 2) ตรวจ GameManager
-        var gm = GameManager.Instance;
-        if (gm == null)
-        {
-            Debug.LogWarning("[MapSelectController] GameManager.Instance is null – can’t update key UI yet.");
+            Debug.LogWarning("[MapSelectController] Text_KeyCount not assigned in Inspector.");
             return;
         }
 
-        // 3) ตรวจ Currency ใน GameManager
-        var currency = gm.GetCurrency();
+        var currency = _currencyRef;
         if (currency == null)
         {
-            Debug.LogWarning("[MapSelectController] Currency is null – did GameManager.SetupStores run?");
             return;
         }
 
@@ -274,7 +285,7 @@ public class MapSelectController : MonoBehaviour
             return;
         }
 
-        var gm = GameManager.Instance;
+        var gm = _gameManagerRef;
         if (gm == null)
         {
             Debug.LogError("[MapSelectController] GameManager.Instance is null – cannot load scene.");
@@ -286,21 +297,6 @@ public class MapSelectController : MonoBehaviour
     }
 #endregion
 
-#region 
-    private void OnEnable()
-    {
-        Currency.OnCurrencyChanged += RefreshKeyUI;
-    }
-
-    private void OnDisable()
-    {
-        Currency.OnCurrencyChanged -= RefreshKeyUI;
-    }
 
 
-    private void OnDestroy()
-    {
-        GameManager.OnCurrencyReady -= RefreshUI;
-    }
-    #endregion
 }

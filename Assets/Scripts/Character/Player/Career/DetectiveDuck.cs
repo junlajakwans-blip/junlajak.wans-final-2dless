@@ -8,7 +8,7 @@ using System.Collections;
 /// BuffMon: None
 /// BuffMap: None
 /// </summary>
-public class DetectiveDuck : Player, ISkillUser, IAttackable
+public class DetectiveDuck : Player
 {
     #region Fields
     [Header("DetectiveDuck Settings")]

@@ -5,27 +5,14 @@ using System.IO;
 public class SaveSystem : MonoBehaviour
 {
     #region Fields
-    private static SaveSystem _instance;
     private string _saveFilePath;
     private string _backupFilePath;
     private GameProgressData _progressData;
     #endregion
 
-    #region Properties
-    public static SaveSystem Instance { get; private set; }
-    #endregion
-
     #region Unity Lifecycle
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
         Initialize();
     }
     #endregion

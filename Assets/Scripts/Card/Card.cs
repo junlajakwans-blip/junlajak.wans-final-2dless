@@ -1,46 +1,51 @@
 using UnityEngine;
+using System.Collections;
 
 [System.Serializable]
 public class Card
 {
     #region Fields
     [SerializeField] private string _cardID;
-    [SerializeField] private CardType _type;
-    [SerializeField] private string _skillName;
     [SerializeField] private string _rarity;
-    [SerializeField] private Sprite _icon;
+    [SerializeField] private DuckCareerData _careerData; 
+    
     #endregion
 
     #region Properties
     public string CardID => _cardID;
-    public CardType Type => _type;
-    public string SkillName => _skillName;
     public string Rarity => _rarity;
-    public Sprite Icon => _icon;
+    public CardType Type => _careerData?.CardType ?? CardType.None;
+    public string SkillName => _careerData?.DisplayName ?? "Unknown";
+    public Sprite Icon => _careerData?.CareerCard;
+    public DuckCareerData CareerData => _careerData;
+    
     #endregion
 
     #region Constructors
-    public Card(string cardID, CardType type, string skillName, string description, Sprite icon = null)
+    
+    /// <summary>
+    /// [NEW CONSTRUCTOR] สำหรับการสร้างการ์ดอาชีพโดยตรงจาก DuckCareerData.
+    /// </summary>
+    public Card(string cardID, DuckCareerData careerData)
     {
         _cardID = cardID;
-        _type = type;
-        _skillName = skillName;
-        
-        _rarity = "Career"; 
-        
-        _icon = icon;
+        _careerData = careerData; 
+        _rarity = careerData.CardType.ToString();
+
     }
     #endregion
 
-    #region Virtual Methods
+ #region Virtual Methods
      public virtual void ActivateEffect(Player player)
     {
-        Debug.Log($"Card '{_skillName}' activated! Type: {_type}");
+        Debug.Log($"Card '{SkillName}' activated! Type: {Type}");
     }
 
     public virtual string GetDescription()
     {
-        return $"{_skillName} [{_type}] — Rarity: {_rarity}";
+        // ใช้ Properties ที่ดึงมาจาก DuckCareerData
+        return $"{SkillName} [{Type}] — Rarity: {_rarity}"; 
     }
     #endregion
 }
+

@@ -7,16 +7,6 @@ using System.Collections;
 public class BuffManager : MonoBehaviour
 {
     private GameManager _gameManagerRef;
-    public static BuffManager Instance { get; private set; }
-    
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-            Destroy(gameObject);
-        else
-            Instance = this;
-    }
 
     public void Initialize(GameManager gm)
     {
@@ -104,13 +94,9 @@ public class BuffManager : MonoBehaviour
     {
         if (player == null) return;
 
-        // Permanent upgrade (stored in save data via GameManager)
-        _gameManagerRef.GetProgressData().PermanentHPUpgradeLevel += value / 10;
-        _gameManagerRef.SaveProgress();
-
-        // Apply instantly to runtime Player
+        // Heal ชั่วคราวในเกมตอนนี้
         player.Heal(value);
 
-        Debug.Log($"[BuffManager] Green Tea — Permanent Max HP +{value}");
+        Debug.Log($"[BuffManager] Green Tea : Heal +{value}");
     }
 }

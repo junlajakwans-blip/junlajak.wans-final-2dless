@@ -8,7 +8,7 @@ using System.Collections;
 /// BuffMon: (None) [cite: 3]
 /// BuffMap: (None) [cite: 3]
 /// </summary>
-public class DancerDuck : Player, ISkillUser, IAttackable
+public class DancerDuck : Player
 {
     #region Fields
     [Header("DancerDuck Settings")]

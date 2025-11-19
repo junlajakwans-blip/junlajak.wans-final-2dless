@@ -4,47 +4,6 @@ using TMPro;
 
 public class UIManager : MonoBehaviour
 {
-    #region Singleton
-    public static UIManager Instance { get; private set; }
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-
-
-    }
-    #endregion
-
-    private void OnEnable()
-        {
-            GameManager.OnCurrencyReady += HandleStoreReady;
-        }
-
-        private void OnDisable()
-        {
-            GameManager.OnCurrencyReady -= HandleStoreReady;
-        }
-
-    private void HandleStoreReady()
-    {
-        var gm = GameManager.Instance;
-        if (gm == null) return;
-
-        var stores = gm.GetStoreList();
-        var storeManager = gm.GetStoreManager();
-        
-
-        if (stores != null && storeManager != null)
-            InitializeStore(stores, storeManager);
-    }
-
-
 
     #region Fields
     [Header("Main UI References")]
@@ -53,9 +12,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private CardSlotUI _cardSlotUI;
     [SerializeField] private MenuUI _menuUI;
     [SerializeField] private StoreUI _storeUI;
+    [SerializeField] private MapSelectController _mapSelectController;
 
     [Header("System References")]
-    [SerializeField] private StoreManager _storeManager;
     [SerializeField] private TextMeshProUGUI storeTitleText;
 
     
@@ -69,6 +28,30 @@ public class UIManager : MonoBehaviour
     public GameObject panelStoreUpgrade; 
     public TopCurrencyUI currencyUI;   
     public UpgradeUI upgradeUI;     
+
+    //  References สำหรับ Dependency Injection
+    private GameManager _gameManagerRef;
+    private Currency _currencyRef;
+    private StoreManager _storeManagerRef;
+    private List<StoreBase> _storesRef;
+
+    #region Dependencies
+    
+    /// <summary>
+    /// Injects runtime dependencies from the main Initializer (GameManager).
+    /// </summary>
+    public void SetDependencies(GameManager gm, Currency currency, StoreManager storeManager, List<StoreBase> stores)
+    {
+        _gameManagerRef = gm;
+        _currencyRef = currency;
+        _storeManagerRef = storeManager;
+        _storesRef = stores;
+        
+        currencyUI?.SetDependencies(currency);
+        _storeUI?.SetDependencies(currency, stores, storeManager);
+    }
+
+    #endregion  
 
 
 
@@ -89,23 +72,14 @@ public class UIManager : MonoBehaviour
     public void ShowStoreMenu(bool isActive)
     {
         _menuUI?.ShowStoreMenu(isActive);
-
         if (!isActive) return;
 
-        var gm = GameManager.Instance;
-        if (gm == null) return;
-
-        var stores = gm.GetStoreList();
-        var storeManager = gm.GetStoreManager();
-
-        if (stores != null && storeManager != null)
-        {
-            _storeUI.InitializeStore(storeManager, stores); // <<< สำคัญ
-            _storeUI.SwitchStore(StoreType.Exchange);       // <<< เปิดร้านเริ่มต้นที่ Exchange
-        }
-
         SetPanel(panelStore);
+
+        if (_storeUI != null && _storesRef != null && _storesRef.Count > 0)
+            _storeUI.SwitchStore(StoreType.Exchange);
     }
+
 
     private void SetPanel(GameObject target)
     {
@@ -224,45 +198,47 @@ public class UIManager : MonoBehaviour
     
     public void ShowStoreExchange()
     {
-        ShowStoreBase(); 
-        
+        ShowStoreMenu(true);
+
         panelStoreExchange.SetActive(true);
         panelStoreUpgrade.SetActive(false);
 
         storeTitleText.text = "Store: Exchange";
-        _storeUI.SwitchStore(StoreType.Exchange);
+
+        // ⬇ สั่งหลัง panel เปิดแล้ว
+        if (_storeUI != null && _storesRef != null && _storesRef.Count > 0)
+            _storeUI.SwitchStore(StoreType.Exchange);
+
         currencyUI.Refresh();
     }
 
     public void ShowStoreUpgrade()
     {
-        ShowStoreBase(); 
+        ShowStoreMenu(true);
 
         panelStoreExchange.SetActive(false);
         panelStoreUpgrade.SetActive(true);
 
         storeTitleText.text = "Store: Upgrade";
-        _storeUI.SwitchStore(StoreType.Upgrade);
+
+        // ⬇ สั่งหลัง panel เปิดแล้ว
+        if (_storeUI != null && _storesRef != null && _storesRef.Count > 0)
+            _storeUI.SwitchStore(StoreType.Upgrade);
+
         currencyUI.Refresh();
     }
+
 
     public void InitializeStore(List<StoreBase> stores, StoreManager manager)
     {
             if (_storeUI != null)
-                _storeUI.InitializeStore(manager, stores);
+                _storeUI.InitializeStore(manager, stores, _currencyRef);
     }
-
-
-    public void UpdateStoreCurrency(int coins, int tokens, int keys)
-     {
-            _storeUI?.RefreshCurrency(coins, tokens, keys);
-    }
-
 
     public void RefreshStoreUI()
     {
         currencyUI?.Refresh();
-        upgradeUI?.Refresh();    
+        upgradeUI?.Refresh(); 
     }
 
     #endregion

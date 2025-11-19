@@ -58,7 +58,7 @@ public class ChefDuck : Player
         // --- 2. BuffMon Logic (Passive check) ---
         // ChefDuck applies a passive Coin Bonus buff to specific enemies upon switching.
         
-        // ศัตรูเป้าหมายสำหรับ BuffMon ของ ChefDuck
+        // ChefDuck buff this mon
         EnemyType[] buffTargets = new EnemyType[]
         {
             EnemyType.DoggoMon, 
@@ -67,7 +67,7 @@ public class ChefDuck : Player
             EnemyType.LotteryMon 
         };
 
-        // ค้นหาศัตรูทั้งหมดที่ Active ในฉาก
+        // find enemy in list 
         Enemy[] allEnemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
         int buffsApplied = 0;
         

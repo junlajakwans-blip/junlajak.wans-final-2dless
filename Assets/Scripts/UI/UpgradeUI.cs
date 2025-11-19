@@ -3,23 +3,44 @@ using System.Collections.Generic;
 
 public class UpgradeUI : MonoBehaviour
 {
-    [SerializeField] private List<GameObject> hpUpgradeIcons; // 5 icons
-    private StoreUpgrade _store;
+    [Header("Template Icon (turn OFF in hierarchy)")]
+    [SerializeField] private GameObject iconTemplate;
 
-    public void Initialize(StoreUpgrade store)
+    [Header("Parent that holds cloned icons")]
+    [SerializeField] private Transform iconContainer;
+
+    private readonly List<GameObject> spawned = new();
+    private StoreUpgrade _storeUpgrade;
+    private StoreItem _item;
+
+    public void Init(StoreUpgrade store, StoreItem item)
     {
-        _store = store;
+        _storeUpgrade = store;
+        _item = item;
         Refresh();
     }
 
     public void Refresh()
     {
-        if (_store == null) return;
+        if (_storeUpgrade == null || _item == null) return;
 
-        int level = _store.GetWheyLevelForUI();  
-        level = Mathf.Clamp(level, 0, hpUpgradeIcons.Count);
+        // Clear old icons
+        foreach (var obj in spawned)
+            Destroy(obj);
+        spawned.Clear();
 
-        for (int i = 0; i < hpUpgradeIcons.Count; i++)
-            hpUpgradeIcons[i].SetActive(i < level);
+        int max = _item.MaxLevel;
+        int level = _storeUpgrade.GetLevel(_item);
+
+        for (int i = 0; i < max; i++)
+        {
+            GameObject clone = Instantiate(iconTemplate, iconContainer);
+            clone.SetActive(true);
+
+            var image = clone.GetComponentInChildren<UnityEngine.UI.Image>();
+            image.color = (i < level) ? Color.white : new Color(1,1,1,0.25f);
+
+            spawned.Add(clone);
+        }
     }
 }

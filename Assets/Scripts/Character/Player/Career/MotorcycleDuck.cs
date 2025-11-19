@@ -1,11 +1,13 @@
 using UnityEngine;
 using System.Collections;
+using System.Linq;
+using Random = UnityEngine.Random;
 
 /// <summary>
 /// MotorcycleDuck – Movement / Evasion career (ID 7, Tier B)
 /// Skill (Street Duck): Forward Dash + 15% damage immunity.
 /// BuffMon: RedlightMon -> Jump Higher.
-/// BuffMap: Road Traffic -> Always Green Light.
+/// BuffMap: Road Traffic -> Always Red Light (Safety).
 /// </summary>
 public class MotorcycleDuck : Player, ISkillUser, IAttackable
 {
@@ -26,59 +28,202 @@ public class MotorcycleDuck : Player, ISkillUser, IAttackable
     [SerializeField] private float _slideRange = 5f;       // 5 Block
     [SerializeField] private float _slideKnockback = 8f;   // Knockback Enemy
 
-    private bool _isSkillActive; // Is the 24s skill duration active?
+    private bool _isSkillActive; 
     private bool _isCooldown;
-    private bool _isDashing;     // Is the 0.5s dash burst active?
-    private bool _hasJumpBuff;   // Is BuffMon active?
+    private bool _isDashing;     
+    private bool _hasJumpBuff;   
+    
+    // NEW/FIX: Fields for Passive BuffMon Logic
+    private EnemySpawner _enemySpawner;
+    private int _redlightMonCount = 0; 
     #endregion
 
     #region Buffs (Map & Monster)
 
     /// <summary>
-    /// (Override) Applies MotorcycleDuck-specific buffs when the career is initialized.
-    /// This method is called by the base Player.Initialize() method.
+    /// (Override) Applies MotorcycleDuck-specific buffs and registers listeners.
     /// </summary>
     protected override void InitializeCareerBuffs()
     {
-        var map = GetCurrentMapType();
-
+        var careerData = _careerSwitcher?.CurrentCareer; 
+        if (careerData == null) return;
+        
         // 1. BuffMap Logic
-        // Road Traffic -> Always Green Light
-        if (map == MapType.RoadTraffic)
+        if (GetCurrentMapType() == MapType.RoadTraffic)
         {
-            ApplyRoadTrafficBuff();
-            Debug.Log("[MotorcycleDuck] Map Buff applied: Road Traffic (All Green).");
+            ApplyRoadTrafficBuff(true); // True to force permanent Red Light
+            Debug.Log("[MotorcycleDuck] Map Buff applied: Road Traffic (Always Red).");
         }
 
-        // 2. BuffMon Logic (Passive check)
-        // RedlightMon -> Jump Higher
-        // We check if any RedlightMon are present to activate the passive jump buff
-        Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
-        foreach (var enemy in enemies)
+        // 2. BuffMon Setup (Passive, Continuous)
+        _enemySpawner = FindFirstObjectByType<EnemySpawner>();
+        
+        if (_careerSwitcher != null)
         {
-            if (enemy.EnemyType == EnemyType.RedlightMon)
-            {
-                _hasJumpBuff = true;
-                Debug.Log("[MotorcycleDuck] BuffMon applied: RedlightMon detected (Jump Higher).");
-                break; // Only need to find one
-            }
+            _careerSwitcher.OnRevertToDefaultEvent += HandleCareerRevert;
         }
+
+        if (_enemySpawner == null)
+        {
+            Debug.LogWarning("[MotorcycleDuck] EnemySpawner not found. Cannot apply BuffMon continuously.");
+            return; 
+        }
+
+        // 2A. Subscribe to Events: Handle spawning and dying of RedlightMon
+        _enemySpawner.OnEnemySpawned += ApplyBuffToNewEnemy;
+        // Need to subscribe to enemy death event. Assume EnemySpawner provides a list of active enemies
+        // and we will subscribe to their individual OnEnemyDied event (or use a cleaner global event).
+        // --- For simplicity, we assume EnemySpawner exposes the death event for all active enemies ---
+        
+        // 2B. Apply Buff to enemies already in the scene (initial check and count update)
+        _redlightMonCount = 0; // Reset count
+        ApplyBuffsToExistingEnemies(careerData); 
+
+        Debug.Log($"[MotorcycleDuck] BuffMon Listener registered. RedlightMon Count: {_redlightMonCount}");
     }
 
-    private void ApplyRoadTrafficBuff()
+    /// <summary>
+    /// FIX: Forces all RedlightMon to the specified state (Road Traffic BuffMap).
+    /// </summary>
+    private void ApplyRoadTrafficBuff(bool forceRed)
     {
-        // Find all RedlightMon and force them to Green
+        RedlightMon[] trafficLights = FindObjectsByType<RedlightMon>(FindObjectsSortMode.None);
+        string targetState = forceRed ? "Red" : "Green"; // Red is the intended buff (Safety)
+        
+        foreach (var light in trafficLights)
+        {
+            light.ForceSignalState(targetState, true); // Force state permanently
+        }
+        Debug.Log($"[MotorcycleDuck] Forcing {trafficLights.Length} traffic lights to {targetState}.");
+    }
+
+    /// <summary>
+    /// HELPER: Applies Buffs to existing enemies and updates the count.
+    /// </summary>
+    private void ApplyBuffsToExistingEnemies(DuckCareerData careerData)
+    {
+        // Target is RedlightMon
+        Enemy[] allEnemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
+        _redlightMonCount = 0;
+        
+        foreach (var enemy in allEnemies)
+        {
+            if (enemy.EnemyType == EnemyType.RedlightMon) 
+            {
+                enemy.ApplyCareerBuff(careerData); 
+                enemy.OnEnemyDied += HandleRedlightMonDeath; // Subscribe to death event
+                _redlightMonCount++;
+            }
+        }
+        UpdateJumpBuffStatus();
+    }
+    
+    /// <summary>
+    /// HELPER: Event handler: Applies buff to enemies as they spawn and updates count.
+    /// </summary>
+    private void ApplyBuffToNewEnemy(Enemy newEnemy)
+    {
+        var careerData = _careerSwitcher?.CurrentCareer; 
+        if (careerData == null) return;
+        
+        // Target is RedlightMon
+        if (newEnemy.EnemyType == EnemyType.RedlightMon) 
+        {
+            // Apply Buff (for jump status check on player side)
+            newEnemy.ApplyCareerBuff(careerData);
+            
+            // Subscribe to death event
+            newEnemy.OnEnemyDied += HandleRedlightMonDeath;
+            
+            // Update count and jump buff status
+            _redlightMonCount++;
+            UpdateJumpBuffStatus();
+            
+            Debug.Log($"[MotorcycleDuck] BuffMon applied to NEW: {newEnemy.EnemyType}. Count: {_redlightMonCount}");
+        }
+    }
+    
+    /// <summary>
+    /// HELPER: Event handler for when a RedlightMon is defeated.
+    /// </summary>
+    private void HandleRedlightMonDeath(Enemy deadEnemy)
+    {
+        if (deadEnemy.EnemyType == EnemyType.RedlightMon)
+        {
+            _redlightMonCount--;
+            UpdateJumpBuffStatus();
+            Debug.Log($"[MotorcycleDuck] RedlightMon died. Remaining Count: {_redlightMonCount}");
+
+            // Unsubscribe from its death event to prevent memory leaks/errors
+            deadEnemy.OnEnemyDied -= HandleRedlightMonDeath; 
+        }
+    }
+    
+    /// <summary>
+    /// Updates the player's jump buff status based on the RedlightMon count.
+    /// </summary>
+    private void UpdateJumpBuffStatus()
+    {
+        _hasJumpBuff = _redlightMonCount > 0;
+        Debug.Log($"[MotorcycleDuck] Jump Buff Status: {_hasJumpBuff}");
+    }
+
+    // ---------------------------------------------------------------------------------
+    // CLEANUP/REVERT LOGIC
+    // ---------------------------------------------------------------------------------
+    
+    private void RevertRoadTrafficBuff()
+    {
         RedlightMon[] trafficLights = FindObjectsByType<RedlightMon>(FindObjectsSortMode.None);
         foreach (var light in trafficLights)
         {
-            // TODO: Requires a public method on RedlightMon to set state
-            // light.ForceState("Green"); 
+            // By setting forcePermanent to false, we allow it to return to its natural cycle
+            light.ForceSignalState("Green", false); // Force a switch to Green to start natural cycle again
         }
-        Debug.Log("[MotorcycleDuck] Forcing all traffic lights to Green (TODO).");
+        Debug.Log("[MotorcycleDuck] Reverting Road Traffic Buff: Lights cycle normally.");
     }
+
+    /// <summary>
+    /// EVENT HANDLER: Called by CareerSwitcher.OnRevertToDefaultEvent for cleanup.
+    /// </summary>
+    private void HandleCareerRevert()
+    {
+        // --- 1. Map Buff Cleanup ---
+        if (GetCurrentMapType() == MapType.RoadTraffic)
+        {
+            RevertRoadTrafficBuff();
+        }
+        
+        // --- 2. BuffMon Listener Cleanup ---
+        if (_enemySpawner != null)
+        {
+            _enemySpawner.OnEnemySpawned -= ApplyBuffToNewEnemy;
+            Debug.Log("[MotorcycleDuck] BuffMon Listener UNREGISTERED (Cleanup complete).");
+        }
+        
+        // Ensure all existing RedlightMon's death events are unsubscribed
+        Enemy[] allEnemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
+        foreach (var enemy in allEnemies)
+        {
+             if (enemy.EnemyType == EnemyType.RedlightMon)
+             {
+                 enemy.OnEnemyDied -= HandleRedlightMonDeath;
+             }
+        }
+        
+        // 3. Unsubscribe from the CareerSwitcher event itself
+        if (_careerSwitcher != null)
+        {
+            _careerSwitcher.OnRevertToDefaultEvent -= HandleCareerRevert;
+        }
+        
+        _hasJumpBuff = false; // Reset BuffMon Status
+    }
+    
     #endregion
 
     #region ISkillUser Implementation
+    // ... (UseSkill, StreetDuckSkillRoutine, DashRoutine, OnSkillCooldown, CooldownRoutine remain the same) ...
     public override void UseSkill()
     {
         if (_isSkillActive || _isCooldown) return;
@@ -150,14 +295,16 @@ public class MotorcycleDuck : Player, ISkillUser, IAttackable
     }
 
     /// <summary>
-    /// BuffMon -> Jump Higher
+    /// BuffMon -> Jump Higher (if _hasJumpBuff is true)
     /// </summary>
     public override void Jump()
     {
         // Apply jump buff if active
         if (_hasJumpBuff)
         {
+            // ASSUME: _jumpForce is defined in base Player
             _rigidbody.AddForce(Vector2.up * (_jumpForce * _jumpBonus), ForceMode2D.Impulse);
+            Debug.Log($"[{PlayerName}] Jumped HIGH! ({_jumpForce * _jumpBonus})");
         }
         else
         {
@@ -167,6 +314,7 @@ public class MotorcycleDuck : Player, ISkillUser, IAttackable
     #endregion
 
     #region IAttackable Implementation
+    // ... (Attack, ChargeAttack, RangeAttack, ApplyDamage methods remain the same) ...
     public override void Attack()
     {
         // [CareerAttack] Handlebar Swing (3 Block)
@@ -203,8 +351,7 @@ public class MotorcycleDuck : Player, ISkillUser, IAttackable
 
     public override void RangeAttack(Transform target)
     {
-        // Handlebar Swing 3 Block, Power Slide 5 Block
-        // This is covered by Attack() and ChargeAttack()
+        // Covered by Attack() and ChargeAttack()
     }
 
     public override void ApplyDamage(IDamageable target, int amount)

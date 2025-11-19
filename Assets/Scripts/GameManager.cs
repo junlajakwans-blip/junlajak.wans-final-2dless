@@ -23,6 +23,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private UIManager _uiManager;
     //[SerializeField] private SceneLoader _sceneLoader; // Handles scene transitions
 
+    [SerializeField] private DevCheat _devCheat;
     #endregion
 
 
@@ -86,31 +87,71 @@ public class GameManager : MonoBehaviour
 public void InitializeGame()
 {
     
-    _saveSystem ??= FindFirstObjectByType<SaveSystem>();
 
     Debug.Log(">> OPEN MAIN MENU");
     _persistentProgress = _saveSystem != null ? _saveSystem.GetProgressData() : new GameProgressData();
 
     _currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
 
+    SetupStores(_persistentProgress); 
+
+    // ==========================================================
+    //TODO : ลบส่วนนี้และไฟล์ Devcheat.CS ในภายหลังจากเทสเสร็จสิ้น
+    // ✅ FIX 2: INJECT DEPENDENCIES INTO DEVCHEAT (ใช้ FindFirstObjectByType ภายใน GameManager)
+    // สำหรับ DevCheat เท่านั้น เนื่องจากเป็นเครื่องมือชั่วคราว
+    // ==========================================================
+    _devCheat ??= FindFirstObjectByType<DevCheat>(); 
+    if (_devCheat != null)
+    {
+
+        var mapSelect = FindFirstObjectByType<MapSelectController>();
+        var storeUI = FindFirstObjectByType<StoreUI>();
+
+        _devCheat.InitializeCheat(this, _player, _currencyData, mapSelect, storeUI, _uiManager );
+    }
+    // ==========================================================
+
+
+    if (_uiManager != null)
+    {
+        // UIManager.cs ต้องมีเมธอด SetDependencies(GameManager, Currency, StoreManager, List<StoreBase>)
+        _uiManager.SetDependencies(this, _currencyData, _storeManager, GetStoreList());
+    }
+
+    var mapSelectController = FindFirstObjectByType<MapSelectController>();
+    if (mapSelectController != null)
+    {
+        mapSelectController.SetDependencies(this, _currencyData);
+    }
+
+    // Inject ตัวเองเข้า BuffManager ก่อน
+    BuffManager buffManager = FindFirstObjectByType<BuffManager>(); // TEMP FIND FOR SINGLETON
+    if (buffManager != null)
+    {
+        // BuffManager.cs ต้องมี Initialize(GameManager gm)
+        buffManager.Initialize(this); 
+    }
 
     if (_currentScene == "MainMenu")
     {
         Debug.Log("[GameManager] Main Menu scene detected → skipping gameplay initialization.");
-        SetupStores(_persistentProgress);
         OnCurrencyReady?.Invoke();
         return;
     }
 
     
     PlayerData playerData = new PlayerData(_currencyData, _persistentProgress);
-    int hpBonus = _persistentProgress.PermanentHPUpgradeLevel * 10;
+    int hpBonus = _upgradeStore != null ? _upgradeStore.GetTotalHPBonus() : 0;
     playerData.UpgradeStat("MaxHealth", hpBonus);
 
 
-    _player ??= FindFirstObjectByType<Player>();
     if (_player != null)
         _player.Initialize(playerData);
+
+
+    CardManager cardManager = FindFirstObjectByType<CardManager>(); 
+    if (cardManager != null)
+        cardManager.SetDependencies(_player);
 
     _isPaused = false;
     _score = 0;
@@ -220,39 +261,30 @@ public void InitializeGame()
 
 #region  store
     public void SetupStores(GameProgressData progressData)
-{
+    {
         _currencyData = new Currency();
-        
-        // =============================================================
-        // *** FIX: โหลดค่าเงินจาก Save เข้าสู่ Currency Object ใหม่ ***
-        // =============================================================
         _currencyData.Coin = progressData.TotalCoins;
         _currencyData.Token = progressData.TotalTokens;
         _currencyData.KeyMap = progressData.TotalKeyMaps;
-        
-        
+
         _storeManager = new StoreManager(_currencyData, progressData);
 
-        // Exchange Store
+        // --- สร้าง instance แบบเปล่า ไม่เรียก Initialize() ---
         _exchangeStore = new StoreExchange();
-        _exchangeStore.Initialize(_storeManager);
-        _storeManager.RegisterStore(_exchangeStore);
-
-        // Upgrade Store
         _upgradeStore = new StoreUpgrade();
-        _upgradeStore.Initialize(_storeManager);
-        _storeManager.RegisterStore(_upgradeStore);
-
-        // Map Store (ถ้าต้องใช้)
         _mapStore = new StoreMap();
-        _mapStore.Initialize(_storeManager);
-        _storeManager.RegisterStore(_mapStore);
-        _mapStore.OnMapUnlockedEvent += HandleMapUnlocked;
 
+        // --- ให้ StoreManager เป็นคน Initialize + Inject items ---
+        _storeManager.RegisterStore(_exchangeStore);
+        _storeManager.RegisterStore(_upgradeStore);
+        _storeManager.RegisterStore(_mapStore);
+
+        // สำหรับ Map Store event unlock
+        _mapStore.OnMapUnlockedEvent += HandleMapUnlocked;
 
         Debug.Log("[GameManager] All store systems initialized successfully.");
     }
-    
+
     private void HandleMapUnlocked(string mapName)
     {
         _persistentProgress.AddUnlockedMap(mapName);
@@ -261,4 +293,25 @@ public void InitializeGame()
     }
     #endregion
 
+
+    public void ResetGameProgress()
+    {
+        if (_saveSystem == null)
+        {
+            Debug.LogWarning("[GameManager] SaveSystem not found! Cannot reset.");
+            return;
+        }
+        
+        // 1. สั่งให้ SaveSystem ล้างไฟล์เซฟและสร้าง GameProgressData ใหม่
+        _saveSystem.ResetData();
+        
+        // 2. โหลดข้อมูลใหม่ (0) กลับเข้าสู่ GameManager และระบบอื่นๆ
+        // (A) อัปเดต _persistentProgress ของ GameManager
+        _persistentProgress = _saveSystem.GetProgressData();
+
+        // (B) โหลดเกมใหม่เพื่อเริ่มต้นระบบทั้งหมดด้วยค่าใหม่
+        RestartGame(); // หรือ LoadScene("MainMenu") ถ้าคุณต้องการกลับไปหน้าเมนูหลัก
+        
+        Debug.Log("[GameManager] Full game progress reset and restarted.");
+    }
 }

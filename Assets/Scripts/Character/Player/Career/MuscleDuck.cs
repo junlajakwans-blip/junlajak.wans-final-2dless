@@ -9,7 +9,7 @@ using System.Collections;
 /// BuffMon: GoldenMon -> Drop Coinx2, Token -> Drop 1 Token (Handled by GoldenMon.Die()).
 /// BuffMap: Roar -> All Mon Fear.
 /// </summary>
-public class MuscleDuck : Player, ISkillUser, IAttackable
+public class MuscleDuck : Player
 {
     #region Fields
     [Header("MuscleDuck Settings")]

@@ -1,76 +1,67 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
+[CreateAssetMenu(menuName = "Store/Store Exchange")]
 public class StoreExchange : StoreBase
 {
     public override string StoreName => "Currency Exchange";
+    public override StoreType StoreType => StoreType.Exchange;
 
-    // ใช้ ID ภายใน (เพื่อป้องกันปัญหาชื่อ UI เปลี่ยนแล้วพัง)
-    private const string EXCHANGE_TOKEN = "EXCHANGE_TOKEN";
-    private const string EXCHANGE_KEY   = "EXCHANGE_KEY";
-
-    // Key = internal ID / Value = ราคาเหรียญที่ต้องใช้
-    public override Dictionary<string, int> StoreItems { get; } = new Dictionary<string, int>
-    {
-        { EXCHANGE_TOKEN, Currency.COIN_PER_TOKEN },
-        { EXCHANGE_KEY,   Currency.COIN_PER_KEY }
-    };
-
-    private StoreManager _storeManager;
     private Currency _currency;
 
-    public override void Initialize(StoreManager manager)
+    public override void Initialize(StoreManager manager, List<StoreItem> itemList)
     {
-        _storeManager = manager;
-        _currency     = manager.Currency;
+        base.Initialize(manager, itemList);
+        _currency = manager.Currency;
     }
 
-public override bool Purchase(string itemName)
+    public override bool Purchase(StoreItem item)
     {
-        if (_currency == null)
+        if (_currency == null || item == null)
         {
-            Debug.LogError("[StoreExchange] Currency is NULL");
+            Debug.LogError("[StoreExchange] Currency or item is NULL");
             return false;
         }
 
-        int currentCoin = _currency.Coin; 
-        int cost = StoreItems.ContainsKey(itemName) ? StoreItems[itemName] : -1;
-        
-        // นี่คือการตรวจสอบ Coin ที่ StoreExchange เห็น
-        if (cost > currentCoin)
+        // ราคาที่ต้องจ่าย (SpendCurrency = Token / Key / Coin?)
+        int price = item.Price;
+
+        // ใช้สกุลเงินตามที่ StoreItem กำหนด
+        bool success = item.SpendCurrency switch
         {
-            // Log นี้จะบอกคุณชัดเจนว่า StoreExchange เห็นเงินไม่พอ (แม้ UI จะเห็น)
-            Debug.LogWarning($"[StoreExchange] Purchase FAILED: Insufficient funds. Have {currentCoin} Coin, Need {cost} Coin. (Check DevCheat/Save Logic)");
+            StoreCurrency.Coin  => _currency.UseCoin(price),
+            StoreCurrency.Token => _currency.UseToken(price),
+            StoreCurrency.KeyMap => _currency.UseKey(price),
+            _ => false
+        };
+
+        if (!success)
+        {
+            Debug.LogWarning($"[StoreExchange] Not enough {item.SpendCurrency} → Need {price}");
             return false;
         }
 
-        switch (itemName)
+        // รับผลตอบแทนตาม RewardCurrency
+        switch (item.RewardCurrency)
         {
-            case EXCHANGE_TOKEN:
-                // Log นี้จะบอกผลลัพธ์สุดท้ายของการแลกเปลี่ยน
-                bool tokenSuccess = _currency.ExchangeCoinToToken(1);
-                Debug.Log($"[StoreExchange] TOKEN Exchange Result: {tokenSuccess}. Coin after attempt: {_currency.Coin}");
-                return tokenSuccess;
+            case StoreCurrency.Coin:
+                _currency.AddCoin(item.RewardAmount);
+                break;
 
-            case EXCHANGE_KEY:
-                // Log นี้จะบอกผลลัพธ์สุดท้ายของการแลกเปลี่ยน
-                bool keySuccess = _currency.ExchangeCoinToKey(1);
-                Debug.Log($"[StoreExchange] KEY Exchange Result: {keySuccess}. Coin after attempt: {_currency.Coin}");
-                return keySuccess;
+            case StoreCurrency.Token:
+                _currency.AddToken(item.RewardAmount);
+                break;
+
+            case StoreCurrency.KeyMap:
+                _currency.AddKey(item.RewardAmount);
+                break;
 
             default:
-                Debug.LogWarning($"[StoreExchange] Unknown item: {itemName}");
+                Debug.LogWarning($"[StoreExchange] Unsupported reward type: {item.RewardCurrency}");
                 return false;
         }
+
+        Debug.Log($"[StoreExchange] SUCCESS → {item.DisplayName} purchased");
+        return true;
     }
-
-
-    public override void DisplayItems()
-    {
-        Debug.Log($"--- {StoreName} ---");
-        foreach (var item in StoreItems)
-            Debug.Log($"{item.Key} → {item.Value} coins");
-    }
-
-    public override StoreType StoreType => StoreType.Exchange; 
 }

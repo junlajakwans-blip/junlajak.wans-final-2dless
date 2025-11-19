@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random; // Add for GetRandomCareerFromRate() if needed
 
 /// <summary>
 /// Manages the player's card collection, usage, and interactions with career switching.
@@ -21,10 +22,21 @@ public class CardManager : MonoBehaviour
     private Player _player;
     #endregion
 
+    #region Dependencies
+    
+    /// <summary>
+    /// Sets the Player dependency. Called by GameManager upon initialization.
+    /// </summary>
+    public void SetDependencies(Player player)
+    {
+        _player = player;
+    }
+    
+    #endregion
+
     #region Unity Lifecycle
     private void Start()
     {
-        _player = FindFirstObjectByType<Player>();
         if (_player == null)
             Debug.LogWarning("[CardManager] Player reference not found in scene!");
 
@@ -88,9 +100,9 @@ public class CardManager : MonoBehaviour
             }
 
 
-            DuckCareerData data = _careerSwitcher.GetCareerDataByName(card.SkillName); //
+            DuckCareerData data = card.CareerData;
 
-            if (data != null && _careerSwitcher.CanChangeTo(data)) //
+            if (data != null && _careerSwitcher.CanChangeTo(data))
             {
                 // A.switchcareer
                 _careerSwitcher.SwitchCareer(data); 
@@ -102,7 +114,6 @@ public class CardManager : MonoBehaviour
                     _uiEffectCharacter.PlayEffect(card.SkillName); //
                 }
 
-                
                 cardUsedSuccessfully = true;
             }
             else
@@ -111,7 +122,7 @@ public class CardManager : MonoBehaviour
 
             }
         }
-        else if (card.Type == CardType.Berserk) //
+        else if (card.Type == CardType.Berserk) 
         {
      
             Debug.LogWarning("[CardManager] Berserk card logic not yet implemented.");
@@ -130,8 +141,6 @@ public class CardManager : MonoBehaviour
         {
 
             _cardSlotUI?.PlayUseAnimation(index); 
-
-
             RemoveCard(index);
         }
     }
@@ -234,14 +243,8 @@ public void AddCareerCard()
             return;
         }
 
-
         string cardID = System.Guid.NewGuid().ToString();
-        
-        string skillName = careerData.DisplayName; 
-        string description = careerData.SkillDescription;
-        Sprite icon = careerData.SkillIcon; 
-        
-        Card newCard = new Card(cardID, CardType.Career, skillName, description, icon);
+        Card newCard = new Card(cardID, careerData);
 
         AddCard(newCard);
         Debug.Log($"[CardManager] Dropped career card: {careerData.DisplayName}");

@@ -1,144 +1,83 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
-/// <summary>
-/// StoreUpgrade – Handles permanent player stat upgrades.
-/// Handles level scaling, price scaling, saving to ProgressData,
-/// and communication with StoreUI / UpgradeUI.
-/// </summary>
+[CreateAssetMenu(menuName = "Store/Store Upgrade")]
 public class StoreUpgrade : StoreBase
 {
-    // Display name for UI
     public override string StoreName => "Permanent Upgrades";
-
-    // Tell StoreUI this store uses Upgrade panel
     public override StoreType StoreType => StoreType.Upgrade;
 
-    // Items shown in the shop UI (auto-filled by RefreshStorePrice)
-    public override Dictionary<string, int> StoreItems { get; } = new Dictionary<string, int>();
+    private Dictionary<string, int> levels = new();
 
-
-    // Internal upgrade ID (for saving and logic)
-    private const string UPGRADE_ID_WHEY = "UPGRADE_WHEY_HP";
-
-    // UI item name (visible to player + must match SlotUI purchase call)
-    private const string UI_NAME_WHEY = "Whey";
-
-    // Upgrade configuration
-    private const int BASE_PRICE = 500;
-    private const float PRICE_MULTIPLIER = 1.5f;
-    private const int HP_BONUS_PER_LEVEL = 10;
-    private const int MAX_LEVEL = 5;
-
-    private StoreManager _storeManager;
-    private Dictionary<string, int> _upgradeLevels = new Dictionary<string, int>();
-
-
-    /// <summary>
-    /// Called when the StoreManager is created.
-    /// </summary>
-    public override void Initialize(StoreManager manager)
+    public override void Initialize(StoreManager manager, List<StoreItem> injectedItems)
     {
-        _storeManager = manager;
-        RefreshStorePrice();
+        base.Initialize(manager, injectedItems);
+        _manager = manager;
+
+        levels.Clear();
+
+        foreach (var item in Items)
+        {
+            int savedLevel = _manager.ProgressData.GetUpgradeLevel(item.ID);
+            levels[item.ID] = savedLevel;
+        }
     }
 
-
-    /// <summary>
-    /// Called by StoreUI when the user presses BUY.
-    /// </summary>
-    public override bool Purchase(string itemName)
+    public override bool Purchase(StoreItem item)
     {
-        // Must match UI_NAME_WHEY from SlotUI
-        if (itemName != UI_NAME_WHEY)
+        if (_manager == null || item == null)
             return false;
 
-        int level = GetLevel();
-
-        if (level >= MAX_LEVEL)
+        int currentLevel = GetLevel(item);
+        if (currentLevel >= item.MaxLevel)
         {
-            Debug.Log("[StoreUpgrade] Already at MAX level.");
+            Debug.Log($"[StoreUpgrade] {item.DisplayName} already MAX");
             return false;
         }
 
-        int price = StoreItems[UI_NAME_WHEY];
-
-        // Try spending coins
-        if (!_storeManager.Currency.UseCoin(price))
+        int price = GetPrice(item);
+        if (!_manager.Currency.UseCoin(price))
         {
-            Debug.Log("[StoreUpgrade] Not enough coins.");
+            Debug.Log($"[StoreUpgrade] Not enough Coins → need {price}");
             return false;
         }
 
-        ApplyUpgrade();
-        RefreshStorePrice();
+        // level up
+        int newLevel = currentLevel + 1;
+        levels[item.ID] = newLevel;
+        _manager.ProgressData.UpgradeLevels[item.ID] = newLevel;
+
+        Debug.Log($"[StoreUpgrade] {item.DisplayName} → Lv {newLevel}/{item.MaxLevel}");
         return true;
     }
 
+    public override bool IsUnlocked(StoreItem item)
+        => GetLevel(item) > 0;
 
-    /// <summary>
-    /// Actually applies the stat upgrade and saves progress data.
-    /// </summary>
-    private void ApplyUpgrade()
+    public int GetLevel(StoreItem item)
+        => levels.TryGetValue(item.ID, out int lv) ? lv : 0;
+
+    public int GetPrice(StoreItem item)
     {
-        if (!_upgradeLevels.ContainsKey(UPGRADE_ID_WHEY))
-            _upgradeLevels[UPGRADE_ID_WHEY] = 0;
+        int lv = GetLevel(item);
+        if (lv >= item.MaxLevel) return int.MaxValue;
 
-        _upgradeLevels[UPGRADE_ID_WHEY]++;
-
-        int level = _upgradeLevels[UPGRADE_ID_WHEY];
-
-        // Save to progress
-        _storeManager.ProgressData.PermanentHPUpgradeLevel = level;
-
-        Debug.Log($"[UPGRADE] HP +{HP_BONUS_PER_LEVEL}  (Lv {level}/{MAX_LEVEL})");
+        return Mathf.RoundToInt(item.Price * Mathf.Pow(item.PriceMultiplier, lv));
     }
 
-
-    /// <summary>
-    /// Returns current upgrade level (0–5).
-    /// </summary>
-    private int GetLevel()
+    public int GetTotalHPBonus()
     {
-        return _upgradeLevels.ContainsKey(UPGRADE_ID_WHEY)
-            ? _upgradeLevels[UPGRADE_ID_WHEY]
-            : 0;
-    }
-
-    /// <summary>
-    /// Used by UpgradeUI to display glowing icons.
-    /// </summary>
-    public int GetWheyLevelForUI() => GetLevel();
-
-
-    /// <summary>
-    /// Rebuilds StoreItems with correct name and price.
-    /// Called after Initialize() and after every purchase.
-    /// </summary>
-    private void RefreshStorePrice()
-    {
-        StoreItems.Clear();
-        int level = GetLevel();
-
-        // Max level = price is disabled (UI should gray out)
-        if (level >= MAX_LEVEL)
+        int sum = 0;
+        foreach (var item in Items)
         {
-            StoreItems.Add(UI_NAME_WHEY, int.MaxValue);
-            return;
+            int lv = GetLevel(item);
+            if (lv > 0 && item.StoreType == StoreType.Upgrade)
+            {
+                // ตอนนี้ให้ HP ขึ้น 10 ต่อ Level
+                sum += lv * 10;
+            }
         }
-
-        int nextPrice = Mathf.RoundToInt(BASE_PRICE * Mathf.Pow(PRICE_MULTIPLIER, level));
-        StoreItems.Add(UI_NAME_WHEY, nextPrice);
+        return sum;
     }
 
-    public override void DisplayItems()
-    {
-        // This store does not rely on console-printing anymore.
-        // StoreUI handles all item display logic.
-        foreach (var item in StoreItems)
-        {
-            int level = GetWheyLevelForUI();
-            Debug.Log($"[StoreUpgrade] {item.Key} : {item.Value} coins (Lv {level}/{MAX_LEVEL})");
-        }
-    }
 }

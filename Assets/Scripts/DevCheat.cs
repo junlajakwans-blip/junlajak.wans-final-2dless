@@ -12,78 +12,119 @@ public class DevCheat : MonoBehaviour
     public KeyCode unlockAllMapsKey = KeyCode.F4;
     public KeyCode godModeKey = KeyCode.F5;
     public KeyCode addScoreKey = KeyCode.F6;
+    public KeyCode resetSaveKey = KeyCode.F7;
 
-    private Player _player;
-    private GameManager _gm;
+
+
+ // Injected Dependencies
+    private Player _playerRef;
+    private GameManager _gmRef;
+    private Currency _currencyRef;
+    private MapSelectController _mapSelectControllerRef; // For RefreshKeyUI
+    private StoreUI _storeUIRef;                        // For RefreshCurrency
+    private UIManager _uiManagerRef;                    // For RefreshHealthUI
 
     public GameObject cheatPanel;
 
     private void Awake()
     {
+        // NOTE: DontDestroyOnLoad ควรถูกจัดการโดย GameManager (ถ้า DevCheat เป็นลูก) 
+        // หรือคงไว้ถ้าเป็น Root Object อิสระ
         DontDestroyOnLoad(this.gameObject);
     }
+    
+    #region Dependencies
+    /// <summary>
+    /// Injects all necessary runtime systems. Called by GameManager.
+    /// </summary>
+    public void InitializeCheat(GameManager gm, Player player, Currency currency, MapSelectController mapSelect, StoreUI storeUI, UIManager uiManager)
+    {
+        _gmRef = gm;
+        _playerRef = player;
+        _currencyRef = currency;
+        _mapSelectControllerRef = mapSelect;
+        _storeUIRef = storeUI;
+        _uiManagerRef = uiManager;
+        
+        Debug.Log("[DevCheat] Dependencies initialized.");
+    }
+    #endregion
 
     private void Update()
     {
         if (!cheatEnabled) return;
 
-        // รอ GameManager พร้อม
-        if (_gm == null)
-            _gm = GameManager.Instance;
-        if (_gm == null) return;
+        if (_storeUIRef == null)
+        _storeUIRef = FindFirstObjectByType<StoreUI>();
 
-        // รอ Currency พร้อม
-        Currency currency = _gm.GetCurrency();
-        if (currency == null) return;
+    if (_mapSelectControllerRef == null)
+        _mapSelectControllerRef = FindFirstObjectByType<MapSelectController>();
 
-        // Player อาจยังไม่มีจนกว่าเข้าสู่เกม
-        if (_player == null)
-            _player = FindFirstObjectByType<Player>();
 
+        // FIX 1: ใช้ References ที่ถูก Inject ทันที
+        if (_gmRef == null || _currencyRef == null) return;
+        
         // ============= CHEATS =============
+        
+        // F1: Add Coin
         if (Input.GetKeyDown(addCoinKey))
         {
-            currency.Coin += 999;
+            _currencyRef.Coin += 999;
             RefreshCurrencyUI();
             Debug.Log("<color=yellow>[CHEAT]</color> +999 Coin");
         }
 
+        // F2: Add Token
         if (Input.GetKeyDown(addTokenKey))
         {
-            currency.Token += 25;
+            _currencyRef.Token += 25;
             RefreshCurrencyUI();
             Debug.Log("<color=yellow>[CHEAT]</color> +25 Token");
         }
 
+        // F3: Add Key Map
         if (Input.GetKeyDown(addKeyMapKey))
         {
-            currency.KeyMap += 5;
+            _currencyRef.KeyMap += 5;
             RefreshCurrencyUI();
-            FindAnyObjectByType<MapSelectController>()?.RefreshKeyUI();
+            // ✅ FIX 2: ใช้ _mapSelectControllerRef แทน FindAnyObjectByType
+            _mapSelectControllerRef?.RefreshKeyUI(); 
             Debug.Log("<color=yellow>[CHEAT]</color> +5 Keys");
         }
 
+        // F4: Unlock All Maps
         if (Input.GetKeyDown(unlockAllMapsKey))
         {
-            var p = _gm.GetProgressData();
+            var p = _gmRef.GetProgressData();
+            // การ AddUnlockedMap ใช้วิธีเดิม
             p.AddUnlockedMap("School Zone");
             p.AddUnlockedMap("City Road");
             p.AddUnlockedMap("Kitchen Mayhem");
-            _gm.SaveProgress();
+            _gmRef.SaveProgress();
             Debug.Log("<color=cyan>[CHEAT]</color> All Maps Unlocked");
         }
 
-        if (Input.GetKeyDown(godModeKey) && _player != null)
+        // F5: God Mode
+        if (Input.GetKeyDown(godModeKey) && _playerRef != null) // ✅ FIX 3: ใช้ _playerRef
         {
-            _player.Heal(99999);
+            _playerRef.Heal(99999);
             RefreshHealthUI();
             Debug.Log("<color=red>[CHEAT] GOD MODE — HP RESTORED</color>");
         }
 
+        // F6: Add Score
         if (Input.GetKeyDown(addScoreKey))
         {
-            _gm.AddScore(250);
+            _gmRef.AddScore(250);
             Debug.Log("<color=yellow>[CHEAT]</color> +250 Score");
+        }
+
+        // F7: Reset Save Data (New Functionality)
+        if (Input.GetKeyDown(resetSaveKey))
+        {
+            // ใช้ GameManager เพื่อเรียก SaveSystem.ResetData()
+            _gmRef.ResetGameProgress(); 
+            Debug.Log("<color=red>[CHEAT] ALL SAVE DATA HAS BEEN RESET!</color>");
         }
 
         // Toggle Cheat Panel
@@ -94,16 +135,15 @@ public class DevCheat : MonoBehaviour
     // ==================== UI Helper ====================
     private void RefreshCurrencyUI()
     {
-        // อัปเดต UI ร้านค้า
-        FindAnyObjectByType<StoreUI>()?.RefreshCurrency();
-
-        // อัปเดต UI เลือกแมพ ถ้าหน้า Select Map เปิดอยู่
-        FindAnyObjectByType<MapSelectController>()?.RefreshKeyUI();
+        // ใช้ References ที่ถูก Inject แทน FindAnyObjectByType
+        _storeUIRef?.RefreshCurrency();
+        _mapSelectControllerRef?.RefreshKeyUI();
     }
 
     private void RefreshHealthUI()
     {
-        // ถ้ามี Health UI ใน Scene
-        UIManager.Instance?.UpdateHealth(_player.CurrentHealth);
+        //ใช้ _uiManagerRef ที่ถูก Inject แทน UIManager.Instance
+        if (_uiManagerRef != null && _playerRef != null)
+            _uiManagerRef.UpdateHealth(_playerRef.CurrentHealth);
     }
 }

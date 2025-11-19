@@ -14,8 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DuckCareerData
   _careerID: 4
   _displayName: 
+  _skillName: 
   _skillIcon: {fileID: 0}
-  _baseHealth: 0
+  _baseHealth: 100
   _baseSpeed: 0
   _skillDescription: 
+  _cardType: 1
+  _careerIcon: {fileID: -4937166985262222745, guid: 205363bdb734a59449edc9bf75e5a2da, type: 3}
+  _careerCard: {fileID: -8871287333575251944, guid: 3e23fa1f9f42dc0449b91ec2e437bd9d, type: 3}
   BaseCooldown: 10
+  _chefMonCoinMinBonusValue: 3
+  _chefMonCoinMaxBonusValue: 8
+  _peterMonAttackSkipChance: 0.3
+  _peterMonBuffDuration: 5
+  _programmerMonCoinBonusValue: 10
+  _kahootMonDisableChance: 0.25

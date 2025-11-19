@@ -4,14 +4,16 @@ public class RandomStarterCard : MonoBehaviour
 {
     #region Fields
     private CardManager _cardManagerRef;
+    private GameManager _gmRef;
     private bool _alreadyClaimed = false; //Prevent Clicker
     #endregion
 
 
     // Injection Method
-    public void SetDependencies(CardManager manager)
+    public void SetDependencies(CardManager manager, GameManager gm)
     {
         _cardManagerRef = manager;
+        _gmRef = gm;
     }   
 
     public bool TrySummonCard()
@@ -22,7 +24,7 @@ public class RandomStarterCard : MonoBehaviour
             return false;
         }
 
-        var gm = GameManager.Instance;
+        var gm = _gmRef;
         var currency = gm?.GetCurrency();
         if (currency == null)
         {

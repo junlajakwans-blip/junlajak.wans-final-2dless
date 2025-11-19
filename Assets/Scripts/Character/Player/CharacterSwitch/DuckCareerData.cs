@@ -11,9 +11,9 @@ public class DuckCareerData : ScriptableObject
     [Header("Core Identity")]
     [SerializeField] private DuckCareer _careerID;
     [SerializeField] private string _displayName;
+    [SerializeField] private string _skillName;
     [SerializeField] private Sprite _skillIcon;
-    [SerializeField] private Sprite _careerIcon;
-    [SerializeField] private Sprite _careerCard;
+
 
     
     [Header("Base Stats")]
@@ -22,7 +22,10 @@ public class DuckCareerData : ScriptableObject
     [SerializeField] [TextArea(3, 5)] private string _skillDescription;
 
 
-    [Header("Card Settings")] 
+    [Header("Card Settings")]
+    [SerializeField] private CardType _cardType = CardType.Career;
+    [SerializeField] private Sprite _careerIcon;
+    [SerializeField] private Sprite _careerCard;
     public float BaseCooldown = 10f;// Card Cooldown Base
 #endregion
 
@@ -61,8 +64,10 @@ public class DuckCareerData : ScriptableObject
     public string DisplayName => _displayName;
     public int BaseHealth => _baseHealth;
     public float BaseSpeed => _baseSpeed;
+    public string SkillName => _skillName;
     public string SkillDescription => _skillDescription;
     public Sprite SkillIcon => _skillIcon;
+    public CardType CardType => _cardType;
     public Sprite CareerIcon => _careerIcon;
     public Sprite CareerCard =>  _careerCard; //All Career and Berserk have card || Duckling NO Card
 

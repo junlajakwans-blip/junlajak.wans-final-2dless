@@ -3,6 +3,8 @@ using System.Collections;
 
 public enum StoreType
 {
+    None,
     Exchange,
-    Upgrade
+    Upgrade,
+    Map
 }

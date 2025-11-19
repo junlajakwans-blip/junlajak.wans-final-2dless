@@ -7,12 +7,11 @@ public class GameProgressData
 {
     #region Fields
     
-    [SerializeField] private List<string> _unlockedMaps = new List<string>();
-    [SerializeField] private List<string> _unlockedCareers = new List<string>();
-    
-    //Upgrade Store
-    [SerializeField] private int _permanentHPUpgradeLevel = 0; // For Whey Protein (+10 HP/level)
-    //[SerializeField] private int _permanentCoinMultiplier = 1; // Future expansion
+    [SerializeField] private List<string> _unlockedMaps = new();
+    [SerializeField] private List<string> _unlockedCareers = new();
+
+    // NEW — upgrade levels per StoreItem ID
+    [SerializeField] private Dictionary<string, int> _upgradeLevels = new();
 
     [SerializeField] private int _totalCoins;
     [SerializeField] private int _totalTokens;
@@ -26,7 +25,8 @@ public class GameProgressData
     public List<string> UnlockedMaps => _unlockedMaps;
     public List<string> UnlockedCareers => _unlockedCareers;
 
-    public int PermanentHPUpgradeLevel { get => _permanentHPUpgradeLevel; set => _permanentHPUpgradeLevel = value; }
+    // Read-only for save/load by store
+    public Dictionary<string, int> UpgradeLevels => _upgradeLevels;
 
     public int TotalCoins { get => _totalCoins; set => _totalCoins = value; }
     public int TotalTokens { get => _totalTokens; set => _totalTokens = value; }
@@ -39,10 +39,9 @@ public class GameProgressData
     #region Constructor
     public GameProgressData()
     {
-        // Initialization now uses the serialized fields
-        _unlockedMaps = new List<string>();
-        _unlockedCareers = new List<string>();
-        
+        _unlockedMaps = new();
+        _unlockedCareers = new();
+        _upgradeLevels = new();
         _totalCoins = 0;
         _bestScore = 0;
         _playTime = 0f;
@@ -50,28 +49,38 @@ public class GameProgressData
     }
     #endregion
 
-    #region Methods
-    /// <summary>
-    /// Used by StoreMap.cs to permanently unlock a new map.
-    /// </summary>
-    public void AddUnlockedMap(string mapName)
+    #region Upgrade Logic (NEW)
+    public int GetUpgradeLevel(string itemID)
     {
-        if (!_unlockedMaps.Contains(mapName))
-            _unlockedMaps.Add(mapName);
+        return _upgradeLevels.TryGetValue(itemID, out int lv) ? lv : 0;
     }
 
-    public bool IsMapUnlocked(string mapName)
+    public void SetUpgradeLevel(string itemID, int level)
     {
-        return _unlockedMaps.Contains(mapName);
+        _upgradeLevels[itemID] = Mathf.Max(0, level);
+    }
+    #endregion
+
+    #region Map + Career Methods
+    public void AddUnlockedMap(string id)
+    {
+        if (!_unlockedMaps.Contains(id))
+            _unlockedMaps.Add(id);
     }
 
-
-    public void AddUnlockedCareer(string careerName)
+    public bool IsMapUnlocked(string id)
     {
-        if (!_unlockedCareers.Contains(careerName))
-            _unlockedCareers.Add(careerName);
+        return _unlockedMaps.Contains(id);
     }
 
+    public void AddUnlockedCareer(string id)
+    {
+        if (!_unlockedCareers.Contains(id))
+            _unlockedCareers.Add(id);
+    }
+    #endregion
+
+    #region Stats + Score
     public void AddCoins(int amount)
     {
         if (amount > 0)
@@ -83,18 +92,18 @@ public class GameProgressData
         if (score > BestScore)
             BestScore = score;
     }
+    #endregion
 
+    #region Reset
     public void ResetProgress()
     {
         _unlockedMaps.Clear();
         _unlockedCareers.Clear();
+        _upgradeLevels.Clear();
         _totalCoins = 0;
         _bestScore = 0;
         _playTime = 0f;
         _lastPlayDate = DateTime.Now;
-        
-        // Reset permanent upgrades on full reset
-        _permanentHPUpgradeLevel = 0;
     }
     #endregion
 }
