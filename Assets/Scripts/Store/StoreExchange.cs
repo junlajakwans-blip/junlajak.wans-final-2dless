@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-[CreateAssetMenu(menuName = "Store/Store Exchange")]
 public class StoreExchange : StoreBase
 {
     public override string StoreName => "Currency Exchange";

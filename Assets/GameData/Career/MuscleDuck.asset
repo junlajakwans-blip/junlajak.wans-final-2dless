@@ -16,7 +16,7 @@ MonoBehaviour:
   _displayName: 
   _skillName: 
   _skillIcon: {fileID: 0}
-  _baseHealth: 0
+  _baseHealth: 100
   _baseSpeed: 0
   _skillDescription: 
   _cardType: 2

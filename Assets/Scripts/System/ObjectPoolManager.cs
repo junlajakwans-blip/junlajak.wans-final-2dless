@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class ObjectPoolManager : MonoBehaviour, IObjectPool
+public class ObjectPoolManager : MonoBehaviour, IObjectPool
 {
     #region Protected Fields
     [Header("Pool Settings")]

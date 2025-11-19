@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-[CreateAssetMenu(menuName = "Store/Store Upgrade")]
+
 public class StoreUpgrade : StoreBase
 {
     public override string StoreName => "Permanent Upgrades";

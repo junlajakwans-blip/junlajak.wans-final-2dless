@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &473782692682165843
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 296079369851762562}
+  - component: {fileID: 6840726559754074103}
+  m_Layer: 0
+  m_Name: EnemySpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &296079369851762562
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 473782692682165843}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6840726559754074103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 473782692682165843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98985aa586061c14aad217ffd5886593, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
+  _mapType: 1
+  _enemyPrefabs:
+  - {fileID: 3679138491074812253, guid: 4704439c2f1fb5140a50ed91a96403cf, type: 3}
+  - {fileID: 9082714511413254100, guid: dcb3005f8fd6b674eaaee5c17024c2f5, type: 3}
+  - {fileID: 5031345842382390206, guid: 09c2806b8ab0d0846bd46b77066cc2d4, type: 3}
+  - {fileID: 9051995102211930350, guid: 9d78c839aefa0614c904094de2607997, type: 3}
+  - {fileID: 6382190799963839869, guid: 2eb6375df96e96e4c91ab3ba46d87879, type: 3}
+  - {fileID: 2325540279114266656, guid: a65a92ef880f2604ab9eadd91cbc972c, type: 3}
+  - {fileID: 3359114595578432427, guid: 61867ba28e45cc24d8e454e07ecbd645, type: 3}
+  - {fileID: 1565291614927048749, guid: 978421387daef8948be61e5d5695cde5, type: 3}
+  - {fileID: 6417080718696356904, guid: 581cf72d0a2755f44b896dd936e765c2, type: 3}
+  _spawnPoints: []
+  _spawnInterval: 2
+  _maxEnemies: 5
+  _currentWaveCount: 0
+  _activeEnemies:
+  - {fileID: 6417080718696356904, guid: 581cf72d0a2755f44b896dd936e765c2, type: 3}
+  - {fileID: 9082714511413254100, guid: dcb3005f8fd6b674eaaee5c17024c2f5, type: 3}
+  - {fileID: 1565291614927048749, guid: 978421387daef8948be61e5d5695cde5, type: 3}
+  - {fileID: 3679138491074812253, guid: 4704439c2f1fb5140a50ed91a96403cf, type: 3}
+  _goldenMonBonusChance: 0.02
+  _cullingManager: {fileID: 0}
+  _player: {fileID: 8952884402048639063, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+  _collectibleSpawner: {fileID: 0}
+  _cardManager: {fileID: 0}

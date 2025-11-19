@@ -2,7 +2,6 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-[CreateAssetMenu(menuName = "Store/Store Map")]
 public class StoreMap : StoreBase
 {
     public override string StoreName => "Map Unlock Portal";
@@ -31,14 +30,13 @@ public class StoreMap : StoreBase
 
     public override bool Purchase(StoreItem item)
     {
-        // ถ้าปลดแล้ว
         if (unlocked.Contains(item.ID))
         {
             Debug.Log($"[StoreMap] {item.DisplayName} already unlocked.");
             return false;
         }
 
-        // ต้องใช้ Key ในการปลดแมพ
+        // ต้องใช้ KeyMap
         if (item.SpendCurrency != StoreCurrency.KeyMap)
         {
             Debug.LogError($"[StoreMap] {item.DisplayName} configured wrong! Map should spend KeyMap.");
@@ -52,25 +50,32 @@ public class StoreMap : StoreBase
             return false;
         }
 
-        // ปลดล็อกสำเร็จ
-        Unlock(item.ID);
+        // ปลดแมพ
+        Unlock(item);
         Debug.Log($"[StoreMap] UNLOCK SUCCESS → {item.DisplayName}");
         return true;
     }
 
-
-    public override bool IsUnlocked(StoreItem item)
-        => unlocked.Contains(item.ID);
-
-
-    private void Unlock(string id)
+    private void Unlock(StoreItem item)
     {
-        unlocked.Add(id);
+        // 1) Runtime unlocked
+        unlocked.Add(item.ID);
 
-        // Save to Progress
-        if (!_progress.UnlockedMaps.Contains(id))
-            _progress.UnlockedMaps.Add(id);
+        // 2) Save to progress
+        if (!_progress.UnlockedMaps.Contains(item.ID))
+            _progress.UnlockedMaps.Add(item.ID);
 
-        OnMapUnlockedEvent?.Invoke(id);
+        // 3) Notify systems
+        // ส่งทั้ง ID และ MapType ออกไป
+        OnMapUnlockedEvent?.Invoke(item.mapType.ToString());
+
+        Debug.Log($"[StoreMap] UNLOCKED MAP → {item.mapType} | ID = {item.ID}");
     }
+
+    public string GetSceneName(StoreItem item)
+    {
+        return item.mapType.ToSceneName();
+    }
+
+
 }
