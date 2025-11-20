@@ -20,8 +20,8 @@ MonoBehaviour:
   _baseSpeed: 0
   _skillDescription: 
   _cardType: 1
-  _careerIcon: {fileID: -5056583278964678871, guid: ea7adb7104f722f43bff7fe07cb96061, type: 3}
-  _careerCard: {fileID: -8733485043023800034, guid: 0097f6b24561e4045b99845900ef8a04, type: 3}
+  _careerIcon: {fileID: -8733485043023800034, guid: 0097f6b24561e4045b99845900ef8a04, type: 3}
+  _careerCard: {fileID: -5056583278964678871, guid: ea7adb7104f722f43bff7fe07cb96061, type: 3}
   BaseCooldown: 10
   _chefMonCoinMinBonusValue: 3
   _chefMonCoinMaxBonusValue: 8

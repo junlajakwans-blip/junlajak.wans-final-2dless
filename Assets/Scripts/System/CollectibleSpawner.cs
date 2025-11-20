@@ -8,6 +8,10 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
     [SerializeField] private List<GameObject> _collectiblePrefabs = new();
     [SerializeField] private Rect _spawnArea = new Rect(-5f, -2f, 10f, 4f);
 
+    [Header("Spawn Timing")]
+    [SerializeField] private float _spawnInterval = 3f; // เกิดทุก 3 วินาที
+private float _timer = 0f;
+
     [Header("Runtime Data")]
     [SerializeField] private List<GameObject> _activeCollectibles = new();
 
@@ -28,8 +32,44 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
         this._buffManager = buffManager;
         
         Debug.Log("[CollectibleSpawner] Initialized with object pool.");
+
+        StartContinuousSpawning();
     }
     #endregion
+
+    #region Spawning Control
+
+    private void StartContinuousSpawning()
+    {
+        // ตรวจสอบว่ายังไม่ได้ถูกเรียกอยู่ เพื่อป้องกันการซ้ำซ้อน
+        CancelInvoke(nameof(CheckAndSpawnItem)); 
+        
+        // เริ่มเรียกเมธอด CheckAndSpawnItem ซ้ำๆ ทุก _spawnInterval วินาที
+        // 1f: ค่า Delay เริ่มต้นก่อนจะเริ่มเรียกครั้งแรก 
+        InvokeRepeating(nameof(CheckAndSpawnItem), 1f, _spawnInterval);
+    }
+
+    // เมธอดนี้จะทำหน้าที่ตรวจสอบเงื่อนไขและเรียก Spawn
+    private void CheckAndSpawnItem()
+    {
+        // ใช้เงื่อนไขเดิม: จำกัดจำนวนสูงสุดของ Collectibles ที่ active อยู่ในฉาก
+        if (_activeCollectibles.Count >= 20)
+        {
+            // หากถึงจำนวนสูงสุดแล้ว ให้หยุด Spawn ชั่วคราว (แต่ InvokeRepeating ยังรันอยู่)
+            return;
+        }
+        
+        // ถ้ายังไม่ถึง ให้เรียก Spawn
+        SpawnRandomItem();
+    }
+
+    public void StopSpawning()
+    {
+        CancelInvoke(nameof(CheckAndSpawnItem));
+    }
+
+#endregion
+
 
     #region ISpawn Implementation
     public void Spawn()
@@ -51,6 +91,11 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
 
         _activeCollectibles.Add(collectible);
         _cullingManager?.RegisterObject(collectible);
+
+        if (collectible.TryGetComponent<CollectibleItem>(out var collectibleItem))
+        {
+            collectibleItem.SetDependencies(_cardManager, this, _buffManager); 
+        }
     }
 
     public GameObject SpawnAtPosition(Vector3 position)
@@ -64,7 +109,12 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
 
         _activeCollectibles.Add(collectible);
         _cullingManager?.RegisterObject(collectible);
-        return collectible;
+        if (collectible.TryGetComponent<CollectibleItem>(out var collectibleItem))
+            {
+                collectibleItem.SetDependencies(_cardManager, this, _buffManager); 
+            }
+            
+            return collectible;
     }
 
     /// <summary>
@@ -115,7 +165,12 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
         );
 
         _activeCollectibles.Add(item);
-        return item;
+        if (item.TryGetComponent<CollectibleItem>(out var collectibleItem))
+            {
+                collectibleItem.SetDependencies(_cardManager, this, _buffManager); 
+            }
+            
+            return item;
     }
     #endregion
 
@@ -157,6 +212,7 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
 
     return collectible;
     }
+
     #endregion
 
 }

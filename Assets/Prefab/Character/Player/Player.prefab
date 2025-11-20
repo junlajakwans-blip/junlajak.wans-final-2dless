@@ -102,6 +102,7 @@ GameObject:
   - component: {fileID: -4817979446526450474}
   - component: {fileID: 8952884402048639063}
   - component: {fileID: 4658831917752918347}
+  - component: {fileID: 7978051908384033325}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -119,8 +120,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 7171168887567512006}
   m_Father: {fileID: 0}
@@ -151,7 +152,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!114 &8952884402048639063
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,30 +166,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
   _maxHealth: 100
-  _currentHealth: 0
-  _moveSpeed: 3.5
+  _currentHealth: 100
+  _moveSpeed: 5
   _rigidbody: {fileID: -4817979446526450474}
   _animator: {fileID: 0}
   _playerData:
     _playerName: 
     _selectedCareer: 
-    _maxHealth: 0
-    _speed: 0
-    _attackPower: 0
-    _defense: 0
+    _maxHealth: 100
+    _speed: 5
+    _attackPower: 10
+    _defense: 5
     _currency:
-      _coin: 0
-      _token: 0
-      _keyMap: 0
+      _coin: 2135
+      _token: 6
+      _keyMap: 8
     _progress:
-      _unlockedMaps: []
+      _unlockedMaps:
+      - School Zone
+      - City Road
+      - Kitchen Mayhem
       _unlockedCareers: []
-      _totalCoins: 0
-      _totalTokens: 0
-      _totalKeyMaps: 0
+      _totalCoins: 2135
+      _totalTokens: 6
+      _totalKeyMaps: 8
       _bestScore: 0
-      _playTime: 0
-    _isDefaultDuckling: 0
+      _playTime: 241.97243
+    _isDefaultDuckling: 1
   _careerSwitcher: {fileID: 0}
   _cardManager: {fileID: 0}
   _currency:
@@ -198,7 +202,7 @@ MonoBehaviour:
   _rigAnimator: {fileID: 0}
   _jumpForce: 5
   _isGrounded: 0
-  _currentMapType: 1
+  _currentMapType: 0
   _hasMapBuff: 0
   _buffMultiplier: 1
 --- !u!114 &4658831917752918347
@@ -214,5 +218,73 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   _moveSpeed: 3.5
-  _rigidbody: {fileID: -4817979446526450474}
-  _animator: {fileID: 0}
+--- !u!60 &7978051908384033325
+PolygonCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5999967935324284092}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Points:
+    m_Paths:
+    - - {x: 2.5758264, y: 1.7318516}
+      - {x: 1.971636, y: 1.8591588}
+      - {x: 1.5882511, y: 2.7106395}
+      - {x: -0.082904235, y: 3.887831}
+      - {x: -2.0961485, y: 2.6313004}
+      - {x: -2.526237, y: 0.8340771}
+      - {x: -2.2970533, y: -0.21661717}
+      - {x: -1.6389928, y: -0.4420962}
+      - {x: -2.1906002, y: -1.209721}
+      - {x: -1.8198302, y: -1.8658564}
+      - {x: -2.22826, y: -2.3552313}
+      - {x: -0.9233428, y: -3.143218}
+      - {x: -1.0910382, y: -3.6589656}
+      - {x: -0.13912827, y: -3.9471982}
+      - {x: 1.2474275, y: -3.9071732}
+      - {x: 1.6393061, y: -3.4587908}
+      - {x: 0.8544954, y: -3.2519207}
+      - {x: 2.0129688, y: -2.6135252}
+      - {x: 1.5416737, y: -1.8806136}
+      - {x: 2.3895752, y: -1.5383183}
+      - {x: 2.356409, y: -1.0162776}
+      - {x: 2.7990098, y: -0.12296069}
+      - {x: 2.3189764, y: 0.39192137}
+  m_UseDelaunayMesh: 0

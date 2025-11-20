@@ -288,6 +288,7 @@ public class EnemySpawner : MonoBehaviour, ISpawn
             } 
         } 
         return enemyGO;
+
     }
 
     #region Wave Control
@@ -306,4 +307,5 @@ public class EnemySpawner : MonoBehaviour, ISpawn
         }
     }
     #endregion
+
 }

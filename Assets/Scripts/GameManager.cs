@@ -269,11 +269,6 @@ public void InitializeGame()
 
         _storeManager = new StoreManager(_currencyData, progressData);
 
-        // --- สร้าง instance แบบเปล่า ไม่เรียก Initialize() ---
-        _exchangeStore = new StoreExchange();
-        _upgradeStore = new StoreUpgrade();
-        _mapStore = new StoreMap();
-
         // --- ให้ StoreManager เป็นคน Initialize + Inject items ---
         _storeManager.RegisterStore(_exchangeStore);
         _storeManager.RegisterStore(_upgradeStore);

@@ -6,129 +6,93 @@ using UnityEngine;
 /// </summary>
 public sealed class SceneManager : MonoBehaviour
 {
-    #region Fields
-    [Header("Scene References")]
-    [SerializeField] private MapGeneratorBase _mapGenerator;
-    [SerializeField] private Player _player;
+    [Header("Assigned by DI")]
+    private MapGeneratorBase _mapGenerator;
+    private Player _player;
 
     private string _sceneName = string.Empty;
     private MapType _mapType = MapType.None;
-    private bool _isInitialized;
-    #endregion
+    private bool _initialized;
 
-    #region Scene Setup
-    /// <summary>
-    /// Initializes once after all scene objects are ready.
-    /// </summary>
+    // Called by GameManager AFTER scene is loaded
+    public void Inject(MapGeneratorBase gen, Player player)
+    {
+        _mapGenerator = gen;
+        _player = player;
+    }
+
     private void Start()
     {
-        string scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-        Debug.Log($"[SceneManager] Scene detected: {scene}");
 
-        if (scene == "MainMenu")
-        {
-            Debug.Log("[SceneManager] Main Menu detected → no map generation required.");
-            return;
-        }
-
-        // ดำเนินงานเฉพาะฉาก Gameplay
-        _mapGenerator = FindFirstObjectByType<MapGeneratorBase>();
-
+        // AUTO DI fallback (สำหรับกรณีกด Play Scene ตรง ๆ)
         if (_mapGenerator == null)
+            _mapGenerator = FindAnyObjectByType<MapGeneratorBase>();
+
+        if (_player == null)
+            _player = FindAnyObjectByType<Player>();
+
+
+        // ถ้าไม่ได้ Inject → อย่าเริ่ม
+        if (_mapGenerator == null || _player == null)
         {
-            Debug.LogError("[SceneManager] MapGeneratorBase not found in scene.");
+            Debug.LogWarning("[SceneManager] Not injected yet — waiting for DI.");
             return;
         }
 
-        if (_isInitialized) return;
+        InitializeScene();
 
-        _sceneName   = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-        _mapGenerator = FindFirstObjectByType<MapGeneratorBase>();
-        _player       = FindFirstObjectByType<Player>();
+        if (_mapGenerator == null) Debug.LogError("SceneManager waiting DI: missing MapGenerator");
+        if (_player == null) Debug.LogError("SceneManager waiting DI: missing Player");
 
-        if (_mapGenerator == null)
-        {
-            Debug.Log("SceneManager searching MapGenerator in scene: " +
-            UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+    }
 
-            return;
-        }
 
-        // Derive MapType from scene name (per MapTypeExtensions)
+    private void InitializeScene()
+    {
+        if (_initialized) return;
+
+        _sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
         _mapType = MapTypeExtensions.FromSceneName(_sceneName);
 
-        InitializeFromMap();
-        _isInitialized = true;
-    }
-
-    /// <summary>
-    /// Delegates map initialization and positions the player at a spawn marker.
-    /// </summary>
-    private void InitializeFromMap()
-    {
-        // Let the map generator do its own internal setup
         _mapGenerator.InitializeGenerators();
+        _mapGenerator.GenerateMap(); 
 
-        // Place player at a spawn marker provided by the map (no direct access to protected fields)
         SpawnPlayerAtStart();
 
-        Debug.Log($"[SceneManager] Scene '{_sceneName}' ready. MapType={_mapType}");
+        _initialized = true;
+        Debug.Log($"[SceneManager] Initialized → {_sceneName}, MapType={_mapType}");
     }
-    #endregion
 
-    #region Player Placement
-    /// <summary>
-    /// Positions the player using an existing scene marker (e.g., tag 'PlayerSpawn').
-    /// </summary>
-    public void SpawnPlayerAtStart()
+    private void SpawnPlayerAtStart()
     {
-        if (_player == null) return;
-
-        // 1) Preferred: tag-based spawn point (placed by the map)
-        var spawnObj = GameObject.FindWithTag("PlayerSpawn");
-
-        // 2) Fallbacks by common names (kept minimal and non-spaghetti)
-        if (spawnObj == null) spawnObj = GameObject.Find("PlayerSpawn");
-        if (spawnObj == null) spawnObj = GameObject.Find("SpawnPoint");
+        var spawnObj = GameObject.FindWithTag("PlayerSpawn") 
+                   ?? GameObject.Find("PlayerSpawn") 
+                   ?? GameObject.Find("SpawnPoint");
 
         if (spawnObj != null)
-        {
             _player.transform.position = spawnObj.transform.position;
-            Debug.Log($"[SceneManager] Player spawned at {spawnObj.transform.position}");
-        }
-        else
-        {
-            // If no marker exists, do nothing — Map/Level should provide it.
-            Debug.LogWarning("[SceneManager] No spawn marker found (tag 'PlayerSpawn' or 'SpawnPoint').");
-        }
     }
-    #endregion
 
     #region Accessors
-    /// <summary>Returns current active scene name.</summary>
     public string GetCurrentSceneName() => _sceneName;
-
-    /// <summary>Returns current map type resolved from the scene name.</summary>
     public MapType GetCurrentMapType() => _mapType;
-
-    /// <summary>Indicates whether initialization completed successfully.</summary>
-    public bool IsInitialized => _isInitialized;
-
-    /// <summary>Returns the active MapGeneratorBase instance.</summary>
+    public bool IsInitialized => _initialized;
     public MapGeneratorBase GetMapGenerator() => _mapGenerator;
     #endregion
 
     #region Maintenance
     /// <summary>
-    /// Clears local references (no allocations, no leaks).
+    /// Clears scene bindings (used when unloading scene)
     /// </summary>
     public void ClearSceneObjects()
     {
         _mapGenerator = null;
         _player = null;
-        _isInitialized = false;
+        _initialized = false;
         _sceneName = string.Empty;
         _mapType = MapType.None;
     }
     #endregion
+
+    
 }
