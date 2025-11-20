@@ -16,38 +16,73 @@ public class CardManager : MonoBehaviour
     [SerializeField] private CardSlotUI _cardSlotUI;
     [SerializeField] private CareerSwitcher _careerSwitcher;
     [SerializeField] private UIEffectCharacter _uiEffectCharacter;
+    
 
     [Header("Runtime State")]
     private bool _isCardLocked = false;
     private Player _player;
+    public static CardManager Instance { get; private set; }
     #endregion
 
-    #region Dependencies
+
+    #region Unity Lifecycle
     
     /// <summary>
     /// Sets the Player dependency. Called by GameManager upon initialization.
     /// </summary>
+
+
+    private void Awake()
+    {
+        // 1. จัดการ Singleton Pattern
+        if (Instance == null)
+        {
+            Instance = this;
+            // 2.ให้คงอยู่เมื่อเปลี่ยน Scene
+            DontDestroyOnLoad(gameObject); 
+            Debug.Log("[CardManager] Created and set as persistent.");
+        }
+        else
+        {
+            // ทำลายตัวเองหากถูกสร้างซ้ำซ้อน
+            Destroy(gameObject);
+            Debug.LogWarning("[CardManager] Duplicate instance destroyed.");
+        }
+    }
+
+    public void Initialize(Player player) 
+    {
+        // 1. ตั้งค่า Player Dependency
+        _player = player;
+
+        if (_player == null)
+            Debug.LogWarning("[CardManager] Player reference not found in scene!");
+            
+        // 2. อัปเดต UI ทันที (หาก UI ถูกตั้งค่าใน Inspector)
+        if (_cardSlotUI != null)
+            _cardSlotUI.SetManager(this);  
+            _cardSlotUI.UpdateSlots(_collectedCards);
+            _cardSlotUI = FindAnyObjectByType<CardSlotUI>();
+            
+        // 3. Subscribe Event (ย้ายจาก Start() เดิม)
+        if (_careerSwitcher != null)
+        {
+            _careerSwitcher.OnCareerChangedEvent += HandleCareerChange;
+        }
+        else
+        {
+            // ถ้า CareerSwitcher หายไป จะเกิดปัญหาเมื่อใช้การ์ด Career
+            Debug.LogError("[CardManager] Missing CareerSwitcher reference! Card functionality will be limited.");
+        }
+    }
+
     public void SetDependencies(Player player)
     {
         _player = player;
     }
     
-    #endregion
+ 
 
-    #region Unity Lifecycle
-    private void Start()
-    {
-        if (_player == null)
-            Debug.LogWarning("[CardManager] Player reference not found in scene!");
-
-        if (_cardSlotUI != null)
-            _cardSlotUI.UpdateSlots(_collectedCards);
-
-        if (_careerSwitcher != null)
-            _careerSwitcher.OnCareerChangedEvent += HandleCareerChange;
-        else
-            Debug.LogWarning("[CardManager] Missing CareerSwitcher reference!");
-    }
 
     private void OnDestroy()
     {
@@ -73,6 +108,13 @@ public class CardManager : MonoBehaviour
 #if UNITY_EDITOR
         Debug.Log($"[CardManager] Added card: {newCard.SkillName}");
 #endif
+
+    if (HasFullDeck())
+    {
+        _cardSlotUI.HighlightFullHand();
+        MuscleButton.Instance.Show();
+    }
+
     }
 
 
@@ -142,6 +184,8 @@ public class CardManager : MonoBehaviour
 
             _cardSlotUI?.PlayUseAnimation(index); 
             RemoveCard(index);
+            _cardSlotUI.ClearHighlights();
+            MuscleButton.Instance.Hide();
         }
     }
     
@@ -167,6 +211,7 @@ public class CardManager : MonoBehaviour
         {
             _careerSwitcher.SwitchCareerByName("Muscle");
             _careerSwitcher.StartCareerTimer(10f);
+            _cardSlotUI.ClearHighlights();
             LockAllCards();
         }
     }

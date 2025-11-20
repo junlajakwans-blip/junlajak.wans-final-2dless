@@ -10,7 +10,9 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
 
     [Header("Spawn Timing")]
     [SerializeField] private float _spawnInterval = 3f; // เกิดทุก 3 วินาที
-private float _timer = 0f;
+    [SerializeField] private CoinTrailGenerator _coinTrailGenerator;
+    [SerializeField] private float collectibleGroundOffset = 0.4f;
+
 
     [Header("Runtime Data")]
     [SerializeField] private List<GameObject> _activeCollectibles = new();
@@ -20,6 +22,7 @@ private float _timer = 0f;
     [SerializeField] private DistanceCulling _cullingManager;
     private CardManager _cardManager;
     private BuffManager _buffManager;
+
     #endregion
 
     #region Initialization
@@ -80,6 +83,15 @@ private float _timer = 0f;
             return;
         }
 
+        // --- Coin Trail Mode (20%) ---
+        if (_coinTrailGenerator != null && Random.value < 0.20f)
+        {
+            Vector3 start = GetSpawnBasePosition();
+            _coinTrailGenerator.SpawnRandomTrail(start);
+            return; // ข้าม collectible เดี่ยวในรอบนี้
+        }
+
+        // --- Single collectible spawn ---
         Vector3 position = GetRandomSpawnPosition();
         int randomIndex = Random.Range(0, _collectiblePrefabs.Count);
 
@@ -94,9 +106,10 @@ private float _timer = 0f;
 
         if (collectible.TryGetComponent<CollectibleItem>(out var collectibleItem))
         {
-            collectibleItem.SetDependencies(_cardManager, this, _buffManager); 
+            collectibleItem.SetDependencies(_cardManager, this, _buffManager);
         }
     }
+
 
     public GameObject SpawnAtPosition(Vector3 position)
     {
@@ -146,20 +159,56 @@ private float _timer = 0f;
 
     private Vector3 GetRandomSpawnPosition()
     {
+        // ★ Auto follow player position
+        if (_playerTransform != null)
+        {
+            _spawnArea.x = _playerTransform.position.x - (_spawnArea.width * 0.5f);
+        }
+
         float x = Random.Range(_spawnArea.xMin, _spawnArea.xMax);
-        float y = Random.Range(_spawnArea.yMin, _spawnArea.yMax);
+        float y = _spawnArea.yMax - collectibleGroundOffset ;
+
         return new Vector3(x, y, 0f);
     }
+
+
+    /// <summary>
+    /// ใช้ตำแหน่งฐานเดียวกับ collectible ปกติ — สำหรับ Coin Trail
+    /// เกิดบริเวณเดียวกับของเก็บ แต่สูงจากพื้นเล็กน้อยเพื่ออ่านเส้นวิ่งง่าย
+    /// </summary>
+    private Vector3 GetSpawnBasePosition()
+    {
+        if (_playerTransform != null)
+        {
+            float x = _playerTransform.position.x + 6f; // อยู่ข้างหน้าผู้เล่น
+            float y = _spawnArea.yMin + 1.2f;
+            return new Vector3(x, y, 0f);
+        }
+
+        // ถ้าไม่มี player ใช้แบบสุ่ม fallback
+        float fallbackX = Random.Range(_spawnArea.xMin, _spawnArea.xMax);
+        float baseY = _spawnArea.yMin + 1.2f;
+        return new Vector3(fallbackX, baseY, 0);
+    }
+
 
     public GameObject SpawnRandomItem()
     {
         if (_collectiblePrefabs.Count == 0) return null;
 
         Vector3 position = GetRandomSpawnPosition();
-        int randomIndex = Random.Range(0, _collectiblePrefabs.Count);
+        GameObject prefab;
+        CollectibleItem itemData;
+
+        do
+        {
+            prefab = _collectiblePrefabs[Random.Range(0, _collectiblePrefabs.Count)];
+            itemData = prefab.GetComponent<CollectibleItem>();
+        }
+        while (itemData != null && !IsRandomSpawnItem(itemData.GetCollectibleType()));
 
         var item = _objectPool.SpawnFromPool(
-            _collectiblePrefabs[randomIndex].name,
+            prefab.name,
             position,
             Quaternion.identity
         );
@@ -172,7 +221,21 @@ private float _timer = 0f;
             
             return item;
     }
+
+
+    private bool IsRandomSpawnItem(CollectibleType type)
+    {
+        return type == CollectibleType.Coin ||
+            type == CollectibleType.GreenTea ||
+            type == CollectibleType.Coffee ||
+            type == CollectibleType.MooKrata ||
+            type == CollectibleType.Takoyaki;
+    }
     #endregion
+
+    [SerializeField] private Transform _playerTransform;
+    public void SetPlayer(Transform player) => _playerTransform = player;
+
 
     #region Item Drop From Mon
     /// <summary>
@@ -214,5 +277,6 @@ private float _timer = 0f;
     }
 
     #endregion
+
 
 }

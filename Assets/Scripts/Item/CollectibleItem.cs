@@ -25,14 +25,18 @@ public class CollectibleItem : MonoBehaviour, ICollectable
     [SerializeField] private int _value = 1;
     [SerializeField] private Sprite _icon;
 
+
     [Header("Buff Settings")]
     [SerializeField] private float _buffDuration = 5f; // Used for Coffee / MooKrata
     [SerializeField] private int _healAmount = 30;     // Coffee
     [SerializeField] private int _smallHeal = 10;      // GreenTea
+    
 
     private CardManager _cardManagerRef;
     private CollectibleSpawner _spawnerRef; //use for return pool cause it know tag
     private BuffManager _buffManagerRef; 
+    
+    public CollectibleType GetCollectibleType() => _type;
 
 
 #region Dependencies

@@ -7,6 +7,22 @@ using System.Collections;
 public class BuffManager : MonoBehaviour
 {
     private GameManager _gameManagerRef;
+    public static BuffManager Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject); 
+            Debug.Log("[BuffManager] Singleton/Persistence handled in Awake.");
+        }
+        else
+        {
+            // ทำลายตัวเองทันทีหากมีการสร้างซ้ำซ้อน
+            Destroy(gameObject);
+        }
+    }   
 
     public void Initialize(GameManager gm)
     {
@@ -48,11 +64,19 @@ public class BuffManager : MonoBehaviour
 
         yield return new WaitForSeconds(duration);
 
-        if (player != null && !player.IsDead && player.CurrentHealth > oldHP)
-        {
-            player.TakeDamage(player.CurrentHealth - oldHP);
-            Debug.Log($"[BuffManager] Coffee expired — HP reverted.");
-        }
+        if (player != null && player.gameObject.activeInHierarchy && !player.IsDead)
+            {
+                // คำนวณความแตกต่างเพื่อคืน HP ที่เกินมา
+                int hpToRevert = player.CurrentHealth - oldHP;
+                
+                // ถ้า HP ปัจจุบันมากกว่า HP ก่อน Buff (เช่น ไม่ได้รับ Damage มากจน HP ลดลง)
+                if (hpToRevert > 0)
+                {
+                    player.TakeDamage(hpToRevert);
+                    Debug.Log($"[BuffManager] Coffee expired — HP reverted (-{hpToRevert} HP).");
+                }
+            }
+
     }
 
     // ───────────────────────────────────────────────

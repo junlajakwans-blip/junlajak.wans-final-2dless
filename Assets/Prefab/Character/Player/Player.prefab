@@ -205,6 +205,10 @@ MonoBehaviour:
   _currentMapType: 0
   _hasMapBuff: 0
   _buffMultiplier: 1
+  _interactRadius: 1.5
+  _collectibleLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!114 &4658831917752918347
 MonoBehaviour:
   m_ObjectHideFlags: 0

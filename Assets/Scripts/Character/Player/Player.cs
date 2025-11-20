@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 
 /// <summary>
@@ -7,7 +8,7 @@ using UnityEngine;
 /// Implements IDamageable, IAttackable, ISkillUser, ICollectable.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
-public class Player : Character, IDamageable, IAttackable, ISkillUser, ICollectable, IInteractable
+public class Player : Character, IDamageable, IAttackable, ISkillUser, IInteractable
 {
 #region Fields
     [Header("Core Data")]
@@ -38,8 +39,12 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser, ICollecta
     private Coroutine _speedRoutine;
     private WaitForSeconds _speedWait;
 
+    [Header("Interaction Settings")]
+    [SerializeField] private float _interactRadius = 1.5f; // รัศมีการค้นหา
+    [SerializeField] private LayerMask _collectibleLayer;
 
-    public bool CanInteract => throw new System.NotImplementedException();
+
+    public bool CanInteract => true;
     public string PlayerName => _playerData != null ? _playerData.PlayerName : "Unknown";
 
     #endregion
@@ -385,30 +390,36 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser, ICollecta
     #endregion
 
 
-    #region ICollectable and IInteractable Implementation
-    public void Collect(Player player)
-    {
-        // Player collecting itself doesn't make sense — handled by items
-    }
-
-    public void OnCollectedEffect()
-    {
-        // For CoinItem or other ICollectable only
-    }
-
-    public string GetCollectType()
-    {
-        return "Player";
-    }
+    #region IInteractable Implementation
 
     public void Interact(Player player)
     {
-        throw new System.NotImplementedException();
+        //  Interact/Pickup ที่ทำให้เกิด Error ถูกแทนที่ด้วยการค้นหาวัตถุ
+        
+        // 1. สแกนหา Collider 2D ในรัศมีที่กำหนด
+        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(
+            transform.position, 
+            _interactRadius, 
+            _collectibleLayer
+        );
+
+        foreach (Collider2D hit in hitColliders)
+        {
+            // 2. ตรวจสอบว่าวัตถุที่เจอเป็น CollectibleItem หรือไม่
+            if (hit.TryGetComponent<CollectibleItem>(out var collectible))
+            {
+                // 3. ถ้าเจอ ให้เรียก Collect() แล้วหยุด (เก็บแค่ชิ้นเดียวต่อการกด E)
+                collectible.Collect(player);
+                Debug.Log($"[PlayerInteract] Collected {collectible.GetCollectType()} via E.");
+                return; 
+            }
+        }
+
     }
 
     public void ShowPrompt()
     {
-        throw new System.NotImplementedException();
+        Debug.Log ("Player pick up");
     }
     #endregion
 

@@ -10,10 +10,31 @@ public class ObjectPoolManager : MonoBehaviour, IObjectPool
     [SerializeField] protected Transform _parentContainer;
     #endregion
 
+    public static ObjectPoolManager Instance { get; private set; }
+    public bool IsInitialized { get; private set; } = false;
+
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            // ทำให้คงอยู่ตลอดการเปลี่ยนฉาก
+            DontDestroyOnLoad(gameObject); 
+        }
+        else
+        {
+            // ป้องกันการมีหลาย Instance
+            Destroy(gameObject);
+        }
+    }
+
     #region IObjectPool Implementation
 
     public virtual void InitializePool()
     {
+        if (IsInitialized) return;  // กันเรียกซ้ำ
+
         foreach (var prefab in _prefabs)
         {
             if (!_poolDictionary.ContainsKey(prefab.name))
@@ -24,6 +45,7 @@ public class ObjectPoolManager : MonoBehaviour, IObjectPool
             _poolDictionary[prefab.name].Enqueue(obj);
         }
 
+        IsInitialized = true;
         Debug.Log($"[Pool] Initialized {_poolDictionary.Count} object pools.");
     }
 
@@ -107,4 +129,8 @@ public class ObjectPoolManager : MonoBehaviour, IObjectPool
         return obj;
     }
     #endregion
+        public List<string> GetAllTags()
+    {
+        return new List<string>(_poolDictionary.Keys);
+    }
 }

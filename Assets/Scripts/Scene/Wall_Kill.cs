@@ -4,6 +4,9 @@ using UnityEngine;
 /// Endless Wall — pushes player forward and kills on contact.
 /// Works with Object Pool & MapGeneratorBase.
 /// </summary>
+
+namespace DuffDuck.Stage
+{
 [RequireComponent(typeof(Collider2D))]
 public class WallPushController : MonoBehaviour
 {
@@ -25,6 +28,10 @@ public class WallPushController : MonoBehaviour
 
         // Move horizontally only
         transform.Translate(Vector3.right * _pushSpeed * Time.deltaTime);
+
+        // speed คือ velocity.x หรือค่าความเร็วกำแพงปัจจุบัน
+        float currentSpeed = _pushSpeed; // เปลี่ยนเป็นชื่อฟิลด์ที่คุณใช้จริง
+        OnWallSpeedChanged?.Invoke(currentSpeed);
     }
 
     /// <summary>
@@ -44,4 +51,9 @@ public class WallPushController : MonoBehaviour
             Debug.Log("[Wall] Player touched the wall → instant death.");
         }
     }
+
+    public static event System.Action<float> OnWallSpeedChanged;
+
+
+}
 }

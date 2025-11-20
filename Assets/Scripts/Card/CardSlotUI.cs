@@ -20,6 +20,11 @@ public class CardSlotUI : MonoBehaviour
     private CardManager _manager;
     #endregion
 
+    private void Awake() //Don't Destroy When Change Scene
+    {
+        DontDestroyOnLoad(gameObject);
+    }
+
     #region Public Methods
 
     /// <summary>
@@ -59,6 +64,33 @@ public class CardSlotUI : MonoBehaviour
     /// <summary>
     /// Locks all card slots visually (during active career or cooldown).
     /// </summary>
+
+    /// <summary>
+    /// Highlight all slots when 5 cards are collected (MuscleDuck condition)
+    /// </summary>
+    public void HighlightFullHand()
+    {
+        foreach (var slot in _cardSlots)
+        {
+            if (slot.sprite != null)
+                slot.color = _highlightColor;
+        }
+    }
+
+    /// <summary>
+    /// Removes highlight after card usage or after MuscleDuck activation
+    /// </summary>
+    public void ClearHighlights()
+    {
+        foreach (var slot in _cardSlots)
+        {
+            if (slot.sprite != null)
+                slot.color = _defaultColor;
+        }
+    }
+
+
+
     public void LockAllSlots()
     {
         foreach (var slot in _cardSlots)

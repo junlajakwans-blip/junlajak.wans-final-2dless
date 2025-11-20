@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 
 /// <summary>
@@ -21,6 +22,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Player _player;
     [SerializeField] private SaveSystem _saveSystem;
     [SerializeField] private UIManager _uiManager;
+    [SerializeField] private CardManager _cardManager;
     //[SerializeField] private SceneLoader _sceneLoader; // Handles scene transitions
 
     [SerializeField] private DevCheat _devCheat;
@@ -41,12 +43,53 @@ public class GameManager : MonoBehaviour
     private StoreExchange _exchangeStore;
     private StoreUpgrade _upgradeStore;
     private StoreMap _mapStore;
+    private Player _playerInstance;
     #endregion
 
     public GameProgressData GetProgressData() => _persistentProgress;
     public Currency GetCurrency() => _currencyData;
     public StoreManager GetStoreManager() => _storeManager; 
     public List<StoreBase> GetStoreList() => _storeManager?.Stores;
+
+
+    private void OnEnable()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        Debug.Log($"[GameManager] Scene Loaded: {scene.name}");
+
+        var sceneManager = FindFirstObjectByType<SceneManager>();
+        var mapGenerator = FindFirstObjectByType<MapGeneratorBase>();
+        var player = FindFirstObjectByType<Player>();
+
+        if (sceneManager != null && mapGenerator != null && player != null)
+        {
+            sceneManager.Inject(mapGenerator, player);
+
+            PlayerData data = new PlayerData(_currencyData, _persistentProgress);
+            int hpBonus = _upgradeStore != null ? _upgradeStore.GetTotalHPBonus() : 0;
+            data.UpgradeStat("MaxHealth", hpBonus);
+            player.Initialize(data);
+
+            sceneManager.TryInitializeScene();
+        }
+
+
+        // แก้ CardManager Initialize
+        _playerInstance = player;
+        if (_cardManager != null)
+            _cardManager.Initialize(_playerInstance);
+
+        OnCurrencyReady?.Invoke();
+    }
 
 
     #region Unity Lifecycle
@@ -81,6 +124,8 @@ public class GameManager : MonoBehaviour
         }
     }
     #endregion
+
+
 
 
     #region Initialization
@@ -149,9 +194,16 @@ public void InitializeGame()
         _player.Initialize(playerData);
 
 
-    CardManager cardManager = FindFirstObjectByType<CardManager>(); 
-    if (cardManager != null)
-        cardManager.SetDependencies(_player);
+    // ตรวจสอบว่า CardManager และ Player มีอยู่จริง
+        if (_cardManager != null && _playerInstance != null)
+        {
+            //  ใช้เมธอด Initialize ที่ถูกปรับปรุงแล้ว
+            _cardManager.Initialize(_playerInstance); 
+        }
+        else
+        {
+            Debug.LogError("[GameManager] CardManager or Player instance is missing! Cannot initialize card system.");
+        }
 
     _isPaused = false;
     _score = 0;
@@ -210,8 +262,9 @@ public void InitializeGame()
 
     public void LoadScene(string sceneName) //TODO: Implement scene loading logic
     {
-        //_sceneLoader?.LoadScene(sceneName);
         _currentScene = sceneName;
+        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
+
     }
 
     public void ExitGame()

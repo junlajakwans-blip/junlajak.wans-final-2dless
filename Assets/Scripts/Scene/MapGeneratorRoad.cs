@@ -1,74 +1,67 @@
-using System.Collections.Generic;
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 public class MapGeneratorRoad : MapGeneratorBase
 {
-    [Header("Road Map Settings")]
+    [Header("Road Map Keys")]
     [SerializeField] private string _backgroundKey = "map_bg_RoadTraffic";
-    [SerializeField] private string _roadFloorKey = "map_asset_RoadTraffic_Floor";
-    [SerializeField] private string _wallVisualKey = "map_Wall_RoadTraffic";
-    
-    // Throw item
-    [SerializeField] private string _throwableAssetKey = "map_ThrowItem_RoadTraffic";
-
-    [Header("Platform Assets")]
-    [SerializeField] private string _normalPlatformKey = "map_asset_RoadTraffic_Normal_Platform";
+    [SerializeField] private string _floorKey = "map_asset_RoadTraffic_Floor";
+    [SerializeField] private string _platformKey = "map_asset_RoadTraffic_Normal_Platform";
     [SerializeField] private string _breakPlatformKey = "map_asset_RoadTraffic_Break_Platform";
+    [SerializeField] private string _wallVisualKey = "map_Wall_RoadTraffic";
 
-    protected override string NormalPlatformKey => _normalPlatformKey;
-    protected override string BreakPlatformKey => _breakPlatformKey;
+    protected override string NormalPlatformKey => _platformKey;
+    protected override string BreakPlatformKey  => _breakPlatformKey;
+    protected override string FloorKey         => _floorKey;
 
     public override void GenerateMap()
     {
-        Debug.Log("🚧 Generating RoadTraffic Map...");
+        Debug.Log("🚧 GENERATING MAP >> ROAD TRAFFIC");
 
+        // 1) เตรียม Pool + Pivot
         InitializeGenerators();
-        RegisterRoadAssets();
 
+        // 2) Background
         SetupBackground();
         SetupFloor();
 
-        _enemySpawner?.InitializeSpawner(
-            _objectPoolManager,
-            MapType.RoadTraffic,
-            FindAnyObjectByType<Player>(),
-            _collectibleSpawner,
-            FindAnyObjectByType<CardManager>()
-        );
-        SpawnEnemies();
-
-        _collectibleSpawner?.InitializeSpawner(
-            _objectPoolManager,
-            FindAnyObjectByType<DistanceCulling>(),
-            FindAnyObjectByType<CardManager>(),
-            FindAnyObjectByType<BuffManager>()
-        );
-        SpawnCollectibles();
-
+        // 3) เปิดระบบ endless (Floor + Platform)
         InitializePlatformGeneration();
-        WallPushSpeed = _baseWallPushSpeed;
-    }
 
-    public override void SpawnEnemies()
-    {
-        if (_enemySpawner == null) return;
-        StartCoroutine(_enemySpawner.StartWave());
-    }
-
-    public override void SpawnCollectibles()
-    {
-        if (_collectibleSpawner == null) return;
-        StartCoroutine(SpawnCollectiblesLoop());
-    }
-
-    private IEnumerator SpawnCollectiblesLoop()
-    {
-        while (true)
+        // 4) Enemy
+        if (_enemySpawner != null)
         {
-            _collectibleSpawner.Spawn();
-            yield return new WaitForSeconds(Random.Range(3f, 7f));
+            _enemySpawner.InitializeSpawner(
+                _objectPoolManager,
+                MapType.RoadTraffic,
+                FindFirstObjectByType<Player>(),
+                _collectibleSpawner,
+                FindFirstObjectByType<CardManager>()
+            );
+            StartCoroutine(_enemySpawner.StartWave());
         }
+
+        // 5) Collectibles
+        if (_collectibleSpawner != null)
+        {
+            _collectibleSpawner.InitializeSpawner(
+                _objectPoolManager,
+                FindFirstObjectByType<DistanceCulling>(),
+                FindFirstObjectByType<CardManager>(),
+                FindFirstObjectByType<BuffManager>()
+            );
+        }
+
+        // 6) Asset (auto spawn ตาม distance + difficulty phase)
+        _assetSpawner?.Initialize(_generationPivot);
+
+        // 7) Throwable (drop from enemy only)
+        _throwableSpawner?.Initialize(_generationPivot, _enemySpawner);
+
+        // 8) Visual Wall
+        SpawnRoadWallVisual();
+
+        WallPushSpeed = _baseWallPushSpeed;
     }
 
     public override void SetupBackground()
@@ -76,42 +69,19 @@ public class MapGeneratorRoad : MapGeneratorBase
         _backgroundLooper?.SetBackground(_backgroundKey);
     }
 
-    public override void SetupFloor()
+    private void SpawnRoadWallVisual()
     {
-        if (_objectPoolManager == null) return;
+        if (_objectPoolManager == null || string.IsNullOrEmpty(_wallVisualKey)) return;
 
-        _objectPoolManager.SpawnFromPool(
-            _roadFloorKey,
-            new Vector3(_spawnStartPosition.x, _spawnStartPosition.y - 2, 0),
+        GameObject wallGO = _objectPoolManager.SpawnFromPool(
+            _wallVisualKey,
+            new Vector3(_spawnStartPosition.x - 10f, _spawnStartPosition.y + 2f, 0f),
             Quaternion.identity
         );
 
-        GameObject wall = _objectPoolManager.SpawnFromPool(
-            _wallVisualKey,
-            new Vector3(_spawnStartPosition.x - 10, _spawnStartPosition.y + 2, 0),
-            Quaternion.identity
-        );
-
-        _endlessWall = wall.transform;
+        if (wallGO != null)
+            _endlessWall = wallGO.transform;
     }
 
-    public void RegisterRoadAssets()
-    {
-        if (_objectPoolManager == null) return;
-
-        List<string> assetKeys = new()
-        {
-            _normalPlatformKey,
-            _breakPlatformKey,
-            _roadFloorKey,
-            _wallVisualKey,
-            _throwableAssetKey
-        };
-    }
-
-    private void Update()
-    {
-        if (IsWallPushEnabled)
-            WallUpdate();
-    }
+    // ไม่ต้อง override SpawnAssets() / SpawnThrowables()
 }

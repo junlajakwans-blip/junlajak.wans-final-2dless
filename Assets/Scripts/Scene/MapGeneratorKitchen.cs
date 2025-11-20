@@ -1,125 +1,93 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class MapGeneratorKitchen : MapGeneratorBase
 {
-    [Header("Kitchen Map Settings")]
+    [Header("Kitchen Map Keys")]
     [SerializeField] private string _backgroundKey = "map_bg_Kitchen";
-    [SerializeField] private string _kitchenFloorKey = "map_asset_Kitchen_Floor";
-
-    [SerializeField] private string _throwableAssetKey = "map_ThrowItem_Kitchen";
+    [SerializeField] private string _floorKey = "map_asset_Kitchen_Floor";
+    [SerializeField] private string _platformKey = "map_asset_Kitchen_Normal_Platform";
+    [SerializeField] private string _breakPlatformKey = "map_asset_Kitchen_Break_Platform";
     [SerializeField] private string _wallVisualKey = "map_Wall_Kitchen";
 
-    [Header("Platform Assets")]
-    [SerializeField] private string _normalPlatformKey = "map_asset_Kitchen_Normal_Platform";
-    [SerializeField] private string _breakPlatformKey = "map_asset_Kitchen_Break_Platform";
-
-    protected override string NormalPlatformKey => _normalPlatformKey;
+    protected override string NormalPlatformKey => _platformKey;
     protected override string BreakPlatformKey  => _breakPlatformKey;
+    protected override string FloorKey         => _floorKey;
+
 
     public override void GenerateMap()
     {
-        Debug.Log("🍳 Generating Kitchen Map...");
+        Debug.Log("🍳 GENERATING MAP >> KITCHEN");
 
-        InitializeGenerators(); 
-        RegisterKitchenAssets();
+        // 1) เตรียม Pool + Pivot
+        InitializeGenerators();
 
+        // 2) Background
         SetupBackground();
         SetupFloor();
 
-        // Enemy Spawner DI
-        _enemySpawner?.InitializeSpawner(
-            _objectPoolManager,
-            MapType.Kitchen,
-            FindAnyObjectByType<Player>(),
-            _collectibleSpawner,
-            FindAnyObjectByType<CardManager>()
-        );
-        SpawnEnemies();
-
-        // Collectible DI
-        _collectibleSpawner?.InitializeSpawner(
-            _objectPoolManager,
-            FindAnyObjectByType<DistanceCulling>(),
-            FindAnyObjectByType<CardManager>(),
-            FindAnyObjectByType<BuffManager>()
-        );
-        SpawnCollectibles();
-
-        // Platform endless spawn loop
+        // 3) Begin endless floor + platform
         InitializePlatformGeneration();
 
-        WallPushSpeed = _baseWallPushSpeed;
-        Debug.Log("[KitchenMap] Initial WallPushSpeed set.");
-    }
-
-    public override void SpawnEnemies()
-    {
-        if (_enemySpawner == null) return;
-        StartCoroutine(_enemySpawner.StartWave());
-    }
-
-    public override void SpawnCollectibles()
-    {
-        if (_collectibleSpawner == null) return;
-        StartCoroutine(SpawnCollectiblesLoop());
-    }
-
-    private IEnumerator SpawnCollectiblesLoop()
-    {
-        while (true)
+        // 4) Enemy init & spawn wave
+        if (_enemySpawner != null)
         {
-            _collectibleSpawner.Spawn();
-            yield return new WaitForSeconds(Random.Range(3f, 7f));
+            _enemySpawner.InitializeSpawner(
+                _objectPoolManager,
+                MapType.Kitchen,
+                FindFirstObjectByType<Player>(),
+                _collectibleSpawner,
+                FindFirstObjectByType<CardManager>()
+            );
+            StartCoroutine(_enemySpawner.StartWave());
         }
+
+        // 5) Collectibles
+        if (_collectibleSpawner != null)
+        {
+            _collectibleSpawner.InitializeSpawner(
+                _objectPoolManager,
+                FindFirstObjectByType<DistanceCulling>(),
+                FindFirstObjectByType<CardManager>(),
+                FindFirstObjectByType<BuffManager>()
+            );
+        }
+
+        // 6) Asset / Throwable
+        _assetSpawner?.Initialize(_generationPivot);
+        _throwableSpawner?.Initialize(_generationPivot, _enemySpawner);
+
+        // 7) Wall Push
+        WallPushSpeed = _baseWallPushSpeed;
     }
+
 
     public override void SetupBackground()
     {
         _backgroundLooper?.SetBackground(_backgroundKey);
     }
 
+
     public override void SetupFloor()
     {
         if (_objectPoolManager == null) return;
 
-        // Floor
-        _objectPoolManager.SpawnFromPool(
-            _kitchenFloorKey,
-            new Vector3(_spawnStartPosition.x, _spawnStartPosition.y - 2, 0),
+        // Wall visual placed behind pivot
+        GameObject wallGO = _objectPoolManager.SpawnFromPool(
+            _wallVisualKey,
+            new Vector3(_spawnStartPosition.x - 10f, _spawnStartPosition.y + 2f, 0f),
             Quaternion.identity
         );
 
-        // Wall behind
-        GameObject wall = _objectPoolManager.SpawnFromPool(
-            _wallVisualKey,
-            new Vector3(_spawnStartPosition.x - 10, _spawnStartPosition.y + 2, 0),
-            Quaternion.identity
-        );
+        if (wallGO != null)
+            _endlessWall = wallGO.transform;
 
-        _endlessWall = wall.transform;
+        // Floor ใช้ logic จาก Base (SpawnInitialFloors)
+        // ❌ ไม่ต้อง Spawn manual ที่ตำแหน่ง fixed
     }
 
-    public void RegisterKitchenAssets()
-    {
-        if (_objectPoolManager == null) return;
-
-        List<string> assetKeys = new()
-        {
-            _normalPlatformKey,
-            _breakPlatformKey,
-            _kitchenFloorKey,
-            _wallVisualKey,
-            _throwableAssetKey
-        };
-    }
-
-    public override void ClearAllObjects()
-    {
-        base.ClearAllObjects();
-        Debug.Log("Clearing all kitchen map objects...");
-    }
+    // ไม่ต้อง override SpawnAssets / SpawnThrowables
+    // Base จะเรียกเองตาม Difficulty Phase
 
     private void Update()
     {

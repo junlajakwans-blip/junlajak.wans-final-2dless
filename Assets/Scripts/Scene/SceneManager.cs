@@ -1,8 +1,8 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
-/// SceneManager — pulls data from MapGeneratorBase and coordinates other systems.
-/// Clean, WebGL-friendly (no async), and follows the DUFFDUCK UML.
+/// SceneManager — ประสาน MapGeneratorBase, Player, ObjectPoolManager
 /// </summary>
 public sealed class SceneManager : MonoBehaviour
 {
@@ -14,62 +14,93 @@ public sealed class SceneManager : MonoBehaviour
     private MapType _mapType = MapType.None;
     private bool _initialized;
 
-    // Called by GameManager AFTER scene is loaded
+    public static event System.Action OnSceneInitialized;
+
+    private void OnEnable()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (_initialized) return;
+
+        AutoFindIfNeeded();
+        TryInitializeScene();
+    }
+
+    // GameManager เรียกหลังโหลด scene
     public void Inject(MapGeneratorBase gen, Player player)
     {
         _mapGenerator = gen;
         _player = player;
     }
 
-    private void Start()
+    private void AutoFindIfNeeded()
     {
-
-        // AUTO DI fallback (สำหรับกรณีกด Play Scene ตรง ๆ)
         if (_mapGenerator == null)
             _mapGenerator = FindAnyObjectByType<MapGeneratorBase>();
 
         if (_player == null)
             _player = FindAnyObjectByType<Player>();
+    }
 
+    public void TryInitializeScene()
+    {
+        if (_initialized) return;
+        if (_mapGenerator == null) return;
 
-        // ถ้าไม่ได้ Inject → อย่าเริ่ม
-        if (_mapGenerator == null || _player == null)
+        // 1) ดึง Pool กลางจาก Singleton
+        var pool = ObjectPoolManager.Instance;
+        if (pool != null)
         {
-            Debug.LogWarning("[SceneManager] Not injected yet — waiting for DI.");
+            pool.InitializePool();  // มี IsInitialized กันซ้ำแล้ว
+            Debug.Log("[SceneManager] ObjectPool Initialized");
+        }
+        else
+        {
+            Debug.LogError("[SceneManager] ObjectPoolManager.Instance not found! Make sure Pool exists in MainMenu/Bootstrap scene.");
             return;
         }
 
-        InitializeScene();
-
-        if (_mapGenerator == null) Debug.LogError("SceneManager waiting DI: missing MapGenerator");
-        if (_player == null) Debug.LogError("SceneManager waiting DI: missing Player");
-
-    }
-
-
-    private void InitializeScene()
-    {
-        if (_initialized) return;
-
+        // 2) MapType จากชื่อฉาก
         _sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
         _mapType = MapTypeExtensions.FromSceneName(_sceneName);
 
-        _mapGenerator.InitializeGenerators();
-        _mapGenerator.GenerateMap(); 
+        // 3) ให้ MapGenerator เตรียมตัว + สร้างแมพ
+        _mapGenerator.InitializeGenerators(_player != null ? _player.transform : null);
+        _mapGenerator.GenerateMap();
+        Debug.Log($"[SceneManager] GenerateMap completed → {_sceneName}");
 
-        SpawnPlayerAtStart();
+        // 4) Spawn player
+        if (_player != null)
+            SpawnPlayerAtStart();
+        else
+            Debug.LogError("[SceneManager] Player not assigned!");
 
         _initialized = true;
-        Debug.Log($"[SceneManager] Initialized → {_sceneName}, MapType={_mapType}");
+        Debug.Log($"[SceneManager] Initialized → {_sceneName}, Map={_mapType}");
+
+        OnSceneInitialized?.Invoke();
+    }
+
+    private void Start()
+    {
+        Debug.Log("[SceneManager] Waiting for GameManager DI...");
     }
 
     private void SpawnPlayerAtStart()
     {
-        var spawnObj = GameObject.FindWithTag("PlayerSpawn") 
-                   ?? GameObject.Find("PlayerSpawn") 
-                   ?? GameObject.Find("SpawnPoint");
+        var spawnObj = GameObject.FindWithTag("PlayerSpawn")
+                      ?? GameObject.Find("PlayerSpawn")
+                      ?? GameObject.Find("SpawnPoint");
 
-        if (spawnObj != null)
+        if (spawnObj != null && _player != null)
             _player.transform.position = spawnObj.transform.position;
     }
 
@@ -80,10 +111,6 @@ public sealed class SceneManager : MonoBehaviour
     public MapGeneratorBase GetMapGenerator() => _mapGenerator;
     #endregion
 
-    #region Maintenance
-    /// <summary>
-    /// Clears scene bindings (used when unloading scene)
-    /// </summary>
     public void ClearSceneObjects()
     {
         _mapGenerator = null;
@@ -92,7 +119,4 @@ public sealed class SceneManager : MonoBehaviour
         _sceneName = string.Empty;
         _mapType = MapType.None;
     }
-    #endregion
-
-    
 }
