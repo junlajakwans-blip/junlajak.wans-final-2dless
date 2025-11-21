@@ -30,6 +30,18 @@ public static class SpawnSlot
     }
 
     /// <summary>
+    /// ยกเลิกการจอง slot (ต้องเรียกเมื่อวัตถุถูก Despawn กลับเข้า Pool)
+    /// </summary>
+    public static void Unreserve(Vector3 worldPos)
+    {
+        Vector2Int key = new Vector2Int(
+            Mathf.RoundToInt(worldPos.x),
+            Mathf.RoundToInt(worldPos.y)
+        );
+        _usedSlots.Remove(key);
+    }
+
+    /// <summary>
     /// เคลียร์ช่องที่อยู่ "ไกลหลังผู้เล่น" ทิ้ง เพื่อลด memory
     /// ควรเรียกจาก MapGeneratorBase โดยอิงจากตำแหน่ง player (pivot)
     /// </summary>

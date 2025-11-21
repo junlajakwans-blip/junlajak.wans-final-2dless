@@ -13,6 +13,8 @@ public class DevCheat : MonoBehaviour
     public KeyCode godModeKey = KeyCode.F5;
     public KeyCode addScoreKey = KeyCode.F6;
     public KeyCode resetSaveKey = KeyCode.F7;
+    public KeyCode addRandomCardKey = KeyCode.F8;
+
 
 
 
@@ -86,9 +88,7 @@ public class DevCheat : MonoBehaviour
         if (Input.GetKeyDown(addKeyMapKey))
         {
             _currencyRef.KeyMap += 5;
-            RefreshCurrencyUI();
-            // ✅ FIX 2: ใช้ _mapSelectControllerRef แทน FindAnyObjectByType
-            _mapSelectControllerRef?.RefreshKeyUI(); 
+            RefreshCurrencyUI(); 
             Debug.Log("<color=yellow>[CHEAT]</color> +5 Keys");
         }
 
@@ -130,14 +130,28 @@ public class DevCheat : MonoBehaviour
         // Toggle Cheat Panel
         if (Input.GetKeyDown(KeyCode.Y) && cheatPanel != null)
             cheatPanel.SetActive(!cheatPanel.activeSelf);
+
+        
+        // F8 → Force Drop Career Card
+        if (Input.GetKeyDown(KeyCode.F8))
+        {
+            var cm = FindFirstObjectByType<CardManager>();
+            if (cm != null)
+            {
+                cm.AddCareerCard();
+                Debug.Log("<color=lime>[CHEAT]</color> Forced drop 1 Career Card");
+            }
+        }
     }
+
+
+    
 
     // ==================== UI Helper ====================
     private void RefreshCurrencyUI()
     {
         // ใช้ References ที่ถูก Inject แทน FindAnyObjectByType
         _storeUIRef?.RefreshCurrency();
-        _mapSelectControllerRef?.RefreshKeyUI();
     }
 
     private void RefreshHealthUI()

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -72,6 +73,8 @@ public class AssetSpawner : MonoBehaviour, ISpawn
         CacheAssetKeys(poolManager);
 
         ScheduleNextSpawn(); // ตั้งเวลาสปาวรอบแรก
+        if (_autoSpawn && _pivot != null)
+            StartCoroutine(StartSpawningLoop());
 
         Debug.Log($"[AssetSpawner] Initialized. Cached {_cachedAssetKeys.Count} asset keys with prefix '{_assetPrefix}'.");
     }
@@ -98,22 +101,31 @@ public class AssetSpawner : MonoBehaviour, ISpawn
 
     #endregion
 
-    private void Update()
+ private IEnumerator StartSpawningLoop()
     {
-        if (!_autoSpawn) return;
-        if (_pool == null || _pivot == null) return;
-        if (_cachedAssetKeys.Count == 0) return;
-
-        float distance = _pivot.position.x - _startX;
-        if (distance < 0f) distance = 0f;
-
-        if (Time.time >= _nextSpawnTime)
+        while (_pivot != null && _autoSpawn)
         {
-            SpawnByDistance(distance);
-            ScheduleNextSpawn(distance);
+            if (_pool == null || _cachedAssetKeys.Count == 0)
+            {
+                // ถ้ามีปัญหา ให้หยุดรอสักครู่แล้วลองใหม่
+                yield return new WaitForSeconds(1f);
+                continue; 
+            }
+
+            float distance = _pivot.position.x - _startX;
+            if (distance < 0f) distance = 0f;
+
+            if (Time.time >= _nextSpawnTime)
+            {
+                SpawnByDistance(distance);
+                ScheduleNextSpawn(distance);
+            }
+            
+            // ตรวจสอบทุก 0.1 วินาที (10 ครั้งต่อวินาที) แทนที่จะเป็นทุกเฟรม
+            // ★ Critical Fix สำหรับ WebGL Performance
+            yield return new WaitForSeconds(0.1f); 
         }
     }
-
     #region Core Spawn
 
     private void SpawnByDistance(float distance)

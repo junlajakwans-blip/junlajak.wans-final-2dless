@@ -1,271 +1,267 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Random = UnityEngine.Random; // Add for GetRandomCareerFromRate() if needed
+using Random = UnityEngine.Random;
 
-/// <summary>
-/// Manages the player's card collection, usage, and interactions with career switching.
-/// </summary>
 public class CardManager : MonoBehaviour
 {
     #region Fields
-    [Header("Card System References")]
-    [SerializeField] private List<Card> _collectedCards = new List<Card>();
+    [Header("Card System")]
+    [SerializeField] private List<Card> _collectedCards = new();
     [SerializeField] private int _maxCards = 5;
 
     [Header("Dependencies")]
     [SerializeField] private CardSlotUI _cardSlotUI;
     [SerializeField] private CareerSwitcher _careerSwitcher;
     [SerializeField] private UIEffectCharacter _uiEffectCharacter;
-    
+    [SerializeField] private MuscleButton _muscleButton;
 
-    [Header("Runtime State")]
-    private bool _isCardLocked = false;
     private Player _player;
+    private bool _isCardLocked = false;
+    private int _careerCardDropCount = 0;
+    private const int _maxCareerDropPerCycle = 2;
+
+
     public static CardManager Instance { get; private set; }
     #endregion
 
 
     #region Unity Lifecycle
-    
-    /// <summary>
-    /// Sets the Player dependency. Called by GameManager upon initialization.
-    /// </summary>
 
+    private void Start() 
+    {
+        // ลบทิ้ง / ทำอะไรไม่ได้เพราะ _careerSwitcher ยังไม่ถูกกำหนด
+    }
 
     private void Awake()
     {
-        // 1. จัดการ Singleton Pattern
         if (Instance == null)
         {
             Instance = this;
-            // 2.ให้คงอยู่เมื่อเปลี่ยน Scene
-            DontDestroyOnLoad(gameObject); 
-            Debug.Log("[CardManager] Created and set as persistent.");
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
-            // ทำลายตัวเองหากถูกสร้างซ้ำซ้อน
             Destroy(gameObject);
-            Debug.LogWarning("[CardManager] Duplicate instance destroyed.");
+            return;
         }
+        // ลบ: FindAnyObjectByType<CareerSwitcher>().OnResetCareerCycle += UnlockCards;
     }
 
-    public void Initialize(Player player) 
+    public void Initialize(Player player)
     {
-        // 1. ตั้งค่า Player Dependency
         _player = player;
+        _collectedCards.Clear();
+        _cardSlotUI?.ResetAllSlots();
+        _cardSlotUI?.SetManager(this);
 
-        if (_player == null)
-            Debug.LogWarning("[CardManager] Player reference not found in scene!");
-            
-        // 2. อัปเดต UI ทันที (หาก UI ถูกตั้งค่าใน Inspector)
-        if (_cardSlotUI != null)
-            _cardSlotUI.SetManager(this);  
-            _cardSlotUI.UpdateSlots(_collectedCards);
-            _cardSlotUI = FindAnyObjectByType<CardSlotUI>();
-            
-        // 3. Subscribe Event (ย้ายจาก Start() เดิม)
+        if (_muscleButton != null)
+            _muscleButton.Hide();
+
         if (_careerSwitcher != null)
         {
+            // 1. สมัคร Event ปกติ
+            _careerSwitcher.OnCareerChangedEvent -= HandleCareerChange; // ป้องกันการสมัครซ้ำ
             _careerSwitcher.OnCareerChangedEvent += HandleCareerChange;
+
+            // 2. ใช้ ResetCareerDropCycle แทนการใช้ Lambda ที่จัดการยาก
+            _careerSwitcher.OnResetCareerCycle -= ResetCareerDropCycle; // ป้องกันการสมัครซ้ำ
+            _careerSwitcher.OnResetCareerCycle += ResetCareerDropCycle;
         }
-        else
-        {
-            // ถ้า CareerSwitcher หายไป จะเกิดปัญหาเมื่อใช้การ์ด Career
-            Debug.LogError("[CardManager] Missing CareerSwitcher reference! Card functionality will be limited.");
-        }
+        
+        // ตั้งค่าเริ่มต้น
+        ResetCareerDropCycle(); 
     }
 
-    public void SetDependencies(Player player)
+    // แก้ไข ResetCareerDropCycle() ให้รวม UnlockCards()
+    private void ResetCareerDropCycle()
     {
-        _player = player;
+        _careerCardDropCount = 0;
+        _isCardLocked = false;          // ปลดล็อกการ์ด
+        _cardSlotUI?.UnlockAllSlots();  // ปลดล็อก UI
+        _cardSlotUI?.ClearHighlights(); // ดับ Hilight เต็ม 5 ใบ
+        _muscleButton?.Hide();          // ซ่อนปุ่ม Muscle
+        Debug.Log("[CardManager] Reset career cycle: drop counter = 0, cards unlocked.");
     }
-    
- 
-
 
     private void OnDestroy()
     {
         if (_careerSwitcher != null)
+        {
             _careerSwitcher.OnCareerChangedEvent -= HandleCareerChange;
+            _careerSwitcher.OnResetCareerCycle -= ResetCareerDropCycle; // Unsubscribe จากเมธอดที่ใช้
+        }
     }
+
     #endregion
 
-    #region Public Methods
+
+    #region Add / Remove Card
     public void AddCard(Card newCard)
     {
-        if (_collectedCards.Count >= _maxCards)
+        // 1. ตรวจสอบเงื่อนไขห้ามเพิ่ม: ถูกล็อก
+        if (_isCardLocked)
         {
-#if UNITY_EDITOR
-            Debug.LogWarning("[CardManager] Cannot add more cards — deck is full!");
-#endif
+            Debug.Log("[CardManager] Cannot add card: Card system is locked.");
             return;
         }
 
+        // 2. ตรวจสอบมือเต็ม
+        if (_collectedCards.Count >= _maxCards)
+        {
+            _cardSlotUI?.HighlightFullHand();
+            _muscleButton?.Show(); 
+            Debug.Log("[CardManager] Hand is full. Card was not added. Showing Muscle Button.");
+            return; //เพื่อบล็อกการเพิ่มเมื่อมือเต็ม
+        }
+
+        // 3. ถ้าไม่เต็มและไม่ถูกล็อก -> เพิ่มการ์ด
         _collectedCards.Add(newCard);
         _cardSlotUI?.UpdateSlots(_collectedCards);
 
-#if UNITY_EDITOR
-        Debug.Log($"[CardManager] Added card: {newCard.SkillName}");
-#endif
-
-    if (HasFullDeck())
-    {
-        _cardSlotUI.HighlightFullHand();
-        MuscleButton.Instance.Show();
-    }
-
-    }
-
-
-    /// <summary>
-    /// Uses the card at the specified index.
-    /// This is the CORE logic connecting the UI click to the game effect.
-    /// </summary>
-    public void UseCard(int index)
-    {
-        if (index < 0 || index >= _collectedCards.Count || _isCardLocked) return;
-
-        Card card = _collectedCards[index];
-        if (card == null) return;
-
-        bool cardUsedSuccessfully = false; // Flag check delete card
-
-        //Check card type is Career
-        if (card.Type == CardType.Career) //
+        // 4. ตรวจสอบว่าการเพิ่มทำให้มือเต็มหรือไม่ (Trigger MuscleDuck Mode)
+        if (_collectedCards.Count == _maxCards)
         {
-            
-            if (_careerSwitcher == null)
-            {
-                Debug.LogError("[CardManager] CareerSwitcher is missing!");
-                return; 
-            }
-
-
-            DuckCareerData data = card.CareerData;
-
-            if (data != null && _careerSwitcher.CanChangeTo(data))
-            {
-                // A.switchcareer
-                _careerSwitcher.SwitchCareer(data); 
-                
-                // Play effect
-                if (_uiEffectCharacter != null)
-                {
-                    // เราใช้ชื่อในการ์ด (เช่น "Chef", "Singer") ไปสั่งให้ UIEffect เล่น
-                    _uiEffectCharacter.PlayEffect(card.SkillName); //
-                }
-
-                cardUsedSuccessfully = true;
-            }
-            else
-            {
-                Debug.LogWarning($"[CardManager] Cannot switch to {card.SkillName} (Cooldown or Same Career). Card not used.");
-
-            }
-        }
-        else if (card.Type == CardType.Berserk) 
-        {
-     
-            Debug.LogWarning("[CardManager] Berserk card logic not yet implemented.");
- 
-        }
-        else
-        {
-            
-            card.ActivateEffect(_player);
-            cardUsedSuccessfully = true; 
-        }
-
-
-        // Check when alredy use card | delete after use this card
-        if (cardUsedSuccessfully)
-        {
-
-            _cardSlotUI?.PlayUseAnimation(index); 
-            RemoveCard(index);
-            _cardSlotUI.ClearHighlights();
-            MuscleButton.Instance.Hide();
+            _cardSlotUI?.HighlightFullHand();
+            _muscleButton?.Show();
+            Debug.Log("[CardManager] Hand is now full. Muscle Button is visible.");
         }
     }
-    
-    public void RemoveCard(int index) // remove card after use
+
+    public void RemoveCard(int index)
     {
         if (!IsValidIndex(index)) return;
 
         _collectedCards.RemoveAt(index);
         _cardSlotUI?.UpdateSlots(_collectedCards);
+        _cardSlotUI?.ClearHighlights();
     }
+    #endregion
 
-    public bool HasFullDeck() => _collectedCards.Count >= _maxCards; //check if deck is full
 
-    public void ExchangeForBerserk() //exchange 5 cards for MuscleDuck
+    #region Use Card Logic
+    public void UseCard(int index)
     {
-#if UNITY_EDITOR
-        Debug.Log("[CardManager] Exchanging cards for Berserk Mode!");
-#endif
+        if (_isCardLocked || !IsValidIndex(index)) return;
+
+        Card card = _collectedCards[index];
+        bool success = false;
+
+        if (card.Type == CardType.Career)
+        {
+            var data = card.CareerData;
+            if (_careerSwitcher != null && data != null && _careerSwitcher.CanChangeTo(data))
+            {
+                _careerSwitcher.SwitchCareer(data);
+                _uiEffectCharacter?.PlayEffect(card.SkillName);
+                success = true;
+            }
+        }
+        else if (card.Type == CardType.Berserk)
+        {
+            ActivateMuscleDuck();
+            success = true;
+        }
+        else
+        {
+            card.ActivateEffect(_player);
+            success = true;
+        }
+
+        if (success)
+        {
+            _cardSlotUI?.PlayUseAnimation(index);
+            RemoveCard(index);
+        }
+
+        if (_collectedCards.Count < _maxCards)
+        {
+            _cardSlotUI.ClearHighlights();
+            _muscleButton?.Hide();
+        }
+    }
+    #endregion
+
+
+    #region Muscle Duck
+    public void ActivateMuscleDuck()
+    {
+        if (_careerSwitcher == null) return;
+
+        // ลบการ์ดทั้ง 5 ใบออกจากเด็คก่อน
         _collectedCards.Clear();
         _cardSlotUI?.ResetAllSlots();
 
-        if (_careerSwitcher != null)
-        {
-            _careerSwitcher.SwitchCareerByName("Muscle");
-            _careerSwitcher.StartCareerTimer(10f);
-            _cardSlotUI.ClearHighlights();
-            LockAllCards();
-        }
+        // ซ่อนปุ่ม Muscle
+        _muscleButton?.Hide();
+
+        // สลับอาชีพเป็น Muscle Duck
+        _careerSwitcher.SwitchCareerByName("Muscle");
+        _careerSwitcher.StartCareerTimer(10f);
+
+        // ล็อกการ์ดระหว่างใช้ Muscle Duck
+        LockCards();
     }
+
     #endregion
 
-    #region Protected / Virtual Methods
-    protected virtual void OnCardUsed(Card usedCard)
-    {
-#if UNITY_EDITOR
-        Debug.Log($"[CardManager] OnCardUsed triggered for {usedCard.SkillName}");
-#endif
-    }
-    #endregion
 
-    #region Private Helpers
-    private bool IsValidIndex(int index) => index >= 0 && index < _collectedCards.Count;
-
-    private void LockAllCards()
+    #region Lock / Unlock
+    private void LockCards()
     {
         _isCardLocked = true;
-#if UNITY_EDITOR
-        Debug.Log("[CardManager] Cards locked during career duration.");
-#endif
+        _cardSlotUI?.LockAllSlots();
     }
 
-    private void UnlockAllCards() //unlock to use cards again
+    private void UnlockCards()
     {
         _isCardLocked = false;
-#if UNITY_EDITOR
-        Debug.Log("[CardManager] Cards unlocked — ready to use again.");
-#endif
+        _cardSlotUI?.UnlockAllSlots();
     }
 
-
-
-    private void HandleCareerChange(DuckCareerData newCareer) // when career changed back to default
+    private void HandleCareerChange(DuckCareerData newCareer)
     {
         if (newCareer == null || _careerSwitcher == null) return;
 
-
         if (newCareer == _careerSwitcher.GetCareerData(DuckCareer.Duckling))
-        {
-            UnlockAllCards();
-        }
+            UnlockCards();
     }
     #endregion
 
+    public void AddStarterCard()
+    {
+        // 1. ตรวจสอบเงื่อนไขห้ามเพิ่ม: ถูกล็อก หรือ มือเต็ม
+        if (_isCardLocked || _collectedCards.Count >= _maxCards)
+        {
+             // แสดงปุ่ม Muscle และ Highlight เมื่อมือเต็ม (ในกรณีที่ถูกเรียกตอนมือเต็ม)
+             if (_collectedCards.Count >= _maxCards)
+             {
+                _cardSlotUI?.HighlightFullHand();
+                _muscleButton?.Show();
+             }
+             Debug.Log("[CardManager] Cannot add Starter Card. (Locked or Full)");
+             return;
+        }
+        
+        // 2. สร้างการ์ดแบบสุ่ม (ใช้ Logic สุ่มเดิม)
+        DuckCareer career = GetRandomCareerFromRate();
+        DuckCareerData careerData = _careerSwitcher.GetCareerData(career);
 
-    #region Career Card Drop (GoldenMon)
-    /// <summary>
-    /// Called when a GoldenMon dies.
-    /// Adds exactly 1 career card based on defined PDF drop rates.
-    /// </summary>
-public void AddCareerCard()
+        string cardID = System.Guid.NewGuid().ToString();
+        Card newCard = new Card(cardID, careerData);
+
+        // 3. เพิ่มการ์ด (ใช้ AddCard ที่แก้ไขแล้ว)
+        // AddCard จะจัดการเรื่อง UI และ MuscleButton ต่อไป
+        AddCard(newCard); 
+        
+        // ★ ไม่ต้องเพิ่ม _careerCardDropCount
+        Debug.Log($"[CardManager] Added Starter Card: {careerData.DisplayName}");
+    }
+
+
+    #region Drop from GoldenMon
+    public void AddCareerCard()
     {
         if (_isCardLocked || _collectedCards.Count >= _maxCards)
         {
@@ -273,52 +269,52 @@ public void AddCareerCard()
             return;
         }
 
-        DuckCareer career = GetRandomCareerFromRate();
+        if (_careerCardDropCount >= _maxCareerDropPerCycle)
+        {
+            Debug.Log("[CardManager] Drop limit reached — GoldenMon will no longer give career cards this cycle.");
+            return;
+        }
 
-        if (_careerSwitcher == null)
-        {
-            Debug.LogError("[CardManager] CareerSwitcher reference is missing!");
-            return;
-        }
-        
+        DuckCareer career = GetRandomCareerFromRate();
         DuckCareerData careerData = _careerSwitcher.GetCareerData(career);
-        if (careerData == null)
-        {
-            Debug.LogError($"[CardManager] Cannot find CareerData for {career}");
-            return;
-        }
 
         string cardID = System.Guid.NewGuid().ToString();
         Card newCard = new Card(cardID, careerData);
 
         AddCard(newCard);
-        Debug.Log($"[CardManager] Dropped career card: {careerData.DisplayName}");
-    }
+        _careerCardDropCount++;
 
-    /// <summary>
-    /// Randomly selects a career based on DUFFDUCK_CAREER.pdf drop rate table.
-    /// </summary>
-    private DuckCareer GetRandomCareerFromRate()
+        Debug.Log($"[CardManager] Dropped career card: {careerData.DisplayName} ({_careerCardDropCount}/2)");
+}
+
+
+    private DuckCareer GetRandomCareerFromRate() //Random rate only career
     {
         float roll = Random.Range(0f, 100f);
         float sum = 0f;
 
-        // B-tier
-        if (roll < (sum += 13f)) return DuckCareer.Dancer;        // 13%
-        else if (roll < (sum += 12f)) return DuckCareer.Detective; // 25%
-        else if (roll < (sum += 12f)) return DuckCareer.Motorcycle; // 37%
+        // Total 100% (ปรับจาก 82% เดิม)
+        // อัตราส่วนใหม่: 16 + 15 + 15 + 12 + 11 + 12 + 12 + 7 = 100
+        
+        if (roll < (sum += 16f)) return DuckCareer.Dancer;     // 16% (เดิม 13%)
+        if (roll < (sum += 15f)) return DuckCareer.Detective;  // 15% (เดิม 12%)
+        if (roll < (sum += 15f)) return DuckCareer.Motorcycle; // 15% (เดิม 12%)
+        if (roll < (sum += 12f)) return DuckCareer.Chef;       // 12% (เดิม 10%)
+        if (roll < (sum += 11f)) return DuckCareer.Firefighter; // 11% (เดิม 9%)
+        if (roll < (sum += 12f)) return DuckCareer.Programmer;  // 12% (เดิม 10%)
+        if (roll < (sum += 12f)) return DuckCareer.Doctor;     // 12% (เดิม 10%)
+        if (roll < (sum += 7f))  return DuckCareer.Singer;      // 7% (เดิม 6%)
+        
+        // เมื่อรวมกันเป็น 100% แล้ว โค้ดจะไม่สามารถมาถึงบรรทัดนี้ได้
+        return DuckCareer.Detective; // Fallback สุดท้าย (หรือ return ค่าอื่นที่เหมาะสม)
+    }
+    #endregion
 
-        // A-tier
-        else if (roll < (sum += 10f)) return DuckCareer.Chef;       // 47%
-        else if (roll < (sum += 9f)) return DuckCareer.Firefighter; // 56%
-        else if (roll < (sum += 10f)) return DuckCareer.Programmer; // 66%
 
-        // S-tier
-        else if (roll < (sum += 10f)) return DuckCareer.Doctor;     // 76%
-        else if (roll < (sum += 6f)) return DuckCareer.Singer;      // 82%
-
-        // No Drop (should not happen for GoldenMon)
-        return DuckCareer.None;
+    #region Helpers
+    private bool IsValidIndex(int index)
+    {
+        return index >= 0 && index < _collectedCards.Count;
     }
     #endregion
 }

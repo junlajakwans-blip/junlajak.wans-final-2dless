@@ -119,19 +119,37 @@ public abstract class MapGeneratorBase : MonoBehaviour
     /// เรียกจาก GeneratePlatformsLoop()
     /// </summary>
     public virtual void WallUpdate()
-    {
-        if (!_isWallPushEnabled) return;
-        if (_endlessWall == null || _generationPivot == null) return;
-
-        // ให้กำแพงอยู่ห่าง pivot ในระยะประมาณ 8 หน่วย
-        float targetX = _generationPivot.position.x - 8f;
-
-        if (_endlessWall.position.x < targetX)
         {
-            Vector3 move = Vector3.right * _wallPushSpeed * Time.deltaTime;
-            _endlessWall.Translate(move);
+            if (_endlessWall == null || _generationPivot == null) return;
+            
+            // --- START OF FIX: ถอดโค้ดการเคลื่อนที่กำแพงออก ---
+            
+            // 1. ตรวจสอบว่ามี WallPushController ติดอยู่กับกำแพงหรือไม่
+            if (_endlessWall.TryGetComponent<DuffDuck.Stage.WallPushController>(out var wallController))
+            {
+                // 2. ส่งค่าความเร็วและสถานะที่ต้องการไปยัง WallPushController
+                //    WallPushController จะรับผิดชอบการเคลื่อนที่ใน Update() ของตัวเอง
+                wallController.ExecuteMovementAndEvent(_wallPushSpeed, _isWallPushEnabled);
+            }
+            else
+            {
+                // [Optional]: Log error ถ้าไม่เจอ controller เพื่อให้รู้ว่าโค้ดเคลื่อนที่ Wall 
+                // ถูก MapGenerator ควบคุมโดยตรง (ซึ่งเป็นโค้ดเดิมที่ซ้ำซ้อน)
+                
+                // 3. (Fallback - สำหรับกรณีที่ไม่มี WallPushController)
+                if (!_isWallPushEnabled) return;
+                
+                // ให้กำแพงอยู่ห่าง pivot ในระยะประมาณ 8 หน่วย
+                float targetX = _generationPivot.position.x - 8f;
+
+                if (_endlessWall.position.x < targetX)
+                {
+                    Vector3 move = Vector3.right * _wallPushSpeed * Time.deltaTime;
+                    _endlessWall.Translate(move);
+                }
+            }
+            
         }
-    }
 
     /// <summary>
     /// ใช้สำหรับสกิลพวกที่ทำลายแพลตฟอร์มด้านขวาสุด
@@ -293,7 +311,8 @@ public abstract class MapGeneratorBase : MonoBehaviour
             RecycleOffScreenFloors();
             WallUpdate();
 
-            yield return null;
+            // FIX: เปลี่ยนจาก yield return null; เป็นการรอตามเวลา
+            yield return new WaitForSeconds(0.05f);
         }
     }
 

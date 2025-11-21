@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class StoreExchange : StoreBase
 {
@@ -14,53 +14,51 @@ public class StoreExchange : StoreBase
         _currency = manager.Currency;
     }
 
+    public void RenderToUI(List<SlotUI> slots, Sprite iconCoin, Sprite iconToken, Sprite iconKeyMap)
+    {
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (i < Items.Count)
+            {
+                StoreItem item = Items[i];
+
+                SlotUI slot = slots[i];
+
+                // กำหนด ScriptableObject ให้ SlotUI
+                slot.SetItemObject(item);
+                slot.Init(_currency, null, null, (clickedItem) => Purchase(clickedItem));
+                slot.gameObject.SetActive(true);
+
+            }
+            else
+            {
+                slots[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
     public override bool Purchase(StoreItem item)
     {
-        if (_currency == null || item == null)
-        {
-            Debug.LogError("[StoreExchange] Currency or item is NULL");
-            return false;
-        }
+        if (item == null || _currency == null) return false;
 
-        // ราคาที่ต้องจ่าย (SpendCurrency = Token / Key / Coin?)
-        int price = item.Price;
-
-        // ใช้สกุลเงินตามที่ StoreItem กำหนด
+        // หักเงินตามชนิด
         bool success = item.SpendCurrency switch
         {
-            StoreCurrency.Coin  => _currency.UseCoin(price),
-            StoreCurrency.Token => _currency.UseToken(price),
-            StoreCurrency.KeyMap => _currency.UseKey(price),
+            StoreCurrency.Coin   => _currency.UseCoin(item.Price),
+            StoreCurrency.Token  => _currency.UseToken(item.Price),
+            StoreCurrency.KeyMap => _currency.UseKey(item.Price),
             _ => false
         };
+        if (!success) return false;
 
-        if (!success)
-        {
-            Debug.LogWarning($"[StoreExchange] Not enough {item.SpendCurrency} → Need {price}");
-            return false;
-        }
-
-        // รับผลตอบแทนตาม RewardCurrency
+        // ให้รางวัล
         switch (item.RewardCurrency)
         {
-            case StoreCurrency.Coin:
-                _currency.AddCoin(item.RewardAmount);
-                break;
-
-            case StoreCurrency.Token:
-                _currency.AddToken(item.RewardAmount);
-                break;
-
-            case StoreCurrency.KeyMap:
-                _currency.AddKey(item.RewardAmount);
-                break;
-
-            default:
-                Debug.LogWarning($"[StoreExchange] Unsupported reward type: {item.RewardCurrency}");
-                return false;
+            case StoreCurrency.Coin:  _currency.AddCoin(item.RewardAmount); break;
+            case StoreCurrency.Token: _currency.AddToken(item.RewardAmount); break;
+            case StoreCurrency.KeyMap: _currency.AddKey(item.RewardAmount); break;
         }
 
-        Debug.Log($"[StoreExchange] SUCCESS → {item.DisplayName} purchased");
         return true;
     }
 }

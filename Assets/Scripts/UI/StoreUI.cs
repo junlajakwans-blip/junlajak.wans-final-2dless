@@ -1,378 +1,222 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using TMPro;
-using System.Linq;
-using UnityEngine.UI; // For Image And Icon
 
 public class StoreUI : MonoBehaviour
 {
-#region UI References 
-
-
     [Header("Currency & Title")]
     [SerializeField] private TextMeshProUGUI _coinText;
     [SerializeField] private TextMeshProUGUI _tokenText;
     [SerializeField] private TextMeshProUGUI _keyText;
     [SerializeField] private TextMeshProUGUI _storeTitleText;
 
-    [Header("Slot Management")]
-    [SerializeField] private List<SlotUI> itemSlots;
-    
-    [Header("UI Containers")]
-    [SerializeField] private GameObject panelUpgrade;
+    [Header("Slot Lists by Store Type")]
+    [SerializeField] private List<SlotUI> exchangeSlots;
+    [SerializeField] private List<SlotUI> mapSlots;
+    [SerializeField] private List<SlotUI> upgradeSlots;
+
+    [Header("Panels")]
     [SerializeField] private GameObject panelExchange;
-    [SerializeField] private GameObject slotContainer;
-    [SerializeField] private UpgradeUI upgradeUI;
+    [SerializeField] private GameObject panelMap;
+    [SerializeField] private GameObject panelUpgrade;
 
-#endregion
-
-#region Item Icons for use inspector
-
-    [Header("Slot Components")]
-    [SerializeField] private Sprite iconWay;
+    [Header("Icons")]
+    [SerializeField] private Sprite iconCoin;
     [SerializeField] private Sprite iconToken;
     [SerializeField] private Sprite iconKeyMap;
-    [SerializeField] private Sprite iconUnknown;
 
-#endregion
-
-
-#region Internal State
-
-    private StoreManager _storeManager;
-    private List<StoreBase> _availableStoreFacades = new List<StoreBase>();
-    private StoreBase _activeStoreFacade; 
-
-    private readonly Dictionary<string, Sprite> _iconLookup = new Dictionary<string, Sprite>();
-
-    // Currency Reference ที่ถูก Inject
-    private Currency _currencyRef; 
-    private string _selectedItemName = string.Empty;
-
-    // Public Property 
-    public StoreBase ActiveStore => _activeStoreFacade; 
-
-#endregion
+    private List<StoreBase> _stores = new();
+    private StoreBase _activeStore;
+    private Currency _currency;
+    private StoreUpgrade _storeUpgrade;
+    private StoreMap _storeMap;
 
 
-#region  Dependencies
-    public void SetDependencies(Currency currency, List<StoreBase> stores, StoreManager manager)
-    {
-        // ป้องกัน event ซ้ำหรือ memory leak
-        Currency.OnCurrencyChanged -= RefreshCurrency;
-        Currency.OnCurrencyChanged += RefreshCurrency;
+    public StoreMap StoreMapRef => _storeMap;
+    public IEnumerable<SlotUI> MapSlots => mapSlots;
 
-
-        _currencyRef = currency;
-        _storeManager = manager;
-        _availableStoreFacades = stores;
-
-        if (_availableStoreFacades != null && _availableStoreFacades.Any())
-        {
-            _activeStoreFacade = _availableStoreFacades
-                .FirstOrDefault(s => s.StoreType == StoreType.Exchange)
-                ?? _availableStoreFacades[0];
-
-            // แสดงร้านแรกทันทีหลัง DI พร้อม
-            SetActiveStore(_activeStoreFacade);
-        }
-
-        RefreshCurrency(); // ไม่เป็นไรเพราะเช็ค null แล้ว
-        Debug.Log($"[DEBUG] Inject Store Count = {_availableStoreFacades?.Count}");
-
-        if (_availableStoreFacades != null)
-        {
-            foreach (var s in _availableStoreFacades)
-                Debug.Log($" → {s.StoreName} | Items = {s.Items?.Count}");
-        }
-
-    }
-
-#endregion
-
-
-#region Initialization
-
-    /// <summary>
-    /// Initializes the Store UI, sets up references, and activates the first store.
-    /// </summary>
-    public void InitializeStore(StoreManager manager, List<StoreBase> storesToDisplay, Currency currency)
-    {
-        _storeManager = manager;
-        _availableStoreFacades = storesToDisplay;
-        _currencyRef = currency;
-
-        Debug.Log($"[StoreUI] Initialized — StoreManager: {(_storeManager != null ? "READY" : "NULL")}");
-
-    }
-
-
-    /// <summary>
-    /// Sets the provided store as the currently active facade and refreshes the UI.
-    /// </summary>
-    public void SetActiveStore(StoreBase store)
-    {
-        if (store == null) return;
-
-        // Update active store reference and title text
-        _activeStoreFacade = store;
-        _storeTitleText.text = store.StoreName;
-
-        // Run the logic to fill the item slots
-        PopulateSlots(store);
-        RefreshCurrency(); 
-    }
-#endregion
-
-
-    // --- [These methods are RECOMMENDED to be placed inside the #region Core Slot Logic] ---
-
-    /// <summary>
-    /// Retrieves the correct Sprite icon based on the item's unique ID/Name.
-    /// </summary>
-
+    public static Sprite CoinIcon;
+    public static Sprite TokenIcon;
+    public static Sprite KeyMapIcon;
+    public static bool IconsInitialized;
+    
+    private System.Action _onAfterPurchase;
 
     private void Awake()
     {
-        _iconLookup["EXCHANGE_TOKEN"] = iconToken;
-        _iconLookup["EXCHANGE_KEY"] = iconKeyMap;
-        _iconLookup["Way"] = iconWay;
-        _iconLookup["Whey"] = iconWay;
-        _iconLookup["UPGRADE_WHEY_HP"] = iconWay;
-    }
 
-    private Sprite GetIconForItem(string itemName)
-    {
-        return _iconLookup.TryGetValue(itemName, out var sprite) ? sprite : iconUnknown;
+        panelExchange.SetActive(false);
+        panelMap.SetActive(false);
+        panelUpgrade.SetActive(false);
     }
 
 
-
-
-#region Core Slot Logic
-    /// <summary>
-    /// Populates the UI slots based on the active store's item list.
-    /// This method ensures item keys are mapped to fixed slot indices.
-    /// </summary>
-    private void PopulateSlots(StoreBase store)
+    public void SetDependencies(Currency currency, List<StoreBase> stores, StoreManager manager)
     {
-        for (int i = 0; i < itemSlots.Count; i++)
-            itemSlots[i].Hide();
+        _currency = currency;
+        _stores = stores;
 
-        int index = 0;
-        foreach (StoreItem item in store.Items)
+        _storeUpgrade = stores.Find(s => s is StoreUpgrade) as StoreUpgrade;
+        _storeMap = stores.Find(s => s is StoreMap) as StoreMap;
+
+        // ย้ายจาก Awake มาไว้ตรงนี้ เพื่อให้ initialize ทันก่อน SlotUI ใช้งาน
+        if (!IconsInitialized)
         {
-            if (index >= itemSlots.Count) break;
-
-            bool unlocked = store.IsUnlocked(item);
-            int price = item.UseLevelScaling
-                ? (store as StoreUpgrade)?.GetPrice(item) ?? item.Price
-                : item.Price;
-
-            Sprite icon = item.Icon;
-            Sprite currencyIcon = GetCurrencyIcon(item.SpendCurrency);
-
-            itemSlots[index].Setup(
-                item,
-                price,
-                currencyIcon,
-                unlocked,
-                OnClickPurchase
-            );
-
-            index++;
+            CoinIcon = iconCoin;
+            TokenIcon = iconToken;
+            KeyMapIcon = iconKeyMap;
+            IconsInitialized = true;
+            Debug.Log("[StoreUI] Currency Icons Initialized in SetDependencies()");
         }
+
+        panelExchange.SetActive(false);
+        panelMap.SetActive(false);
+        panelUpgrade.SetActive(false);
     }
 
 
-    /// <summary>
-    /// Executes the purchase logic for a specific item in the active store.
-    /// This is typically bound directly to the buy button listener in PopulateSlots.
-    /// </summary>
-    private void OnClickPurchase(StoreItem item)
+    public void SetActiveStore(StoreBase store)
     {
-        if (_activeStoreFacade == null) return;
+        Debug.Log($"[STORE UI] SET ACTIVE STORE: {store.StoreName} | TYPE = {store.StoreType}");
+        if (store == null) return;
 
-        bool success = _activeStoreFacade.Purchase(item);
+        _activeStore = store;
+        _storeTitleText.text = store.StoreName;
 
-        if (success)
-        {
-            PopulateSlots(_activeStoreFacade);
-            RefreshCurrency();
-            upgradeUI?.Refresh();
-        }
+        panelExchange.SetActive(store is StoreExchange);
+        panelMap.SetActive(store is StoreMap);
+        panelUpgrade.SetActive(store is StoreUpgrade);
+
+        PopulateSlots(store);
+        RefreshCurrency();
     }
 
-
-    private Sprite GetCurrencyIcon(StoreCurrency currency)
+    private void HideAllSlots()
     {
-        return currency switch
+        foreach (var s in exchangeSlots) if (s != null) s.Hide();
+        foreach (var s in mapSlots) if (s != null) s.Hide();
+        foreach (var s in upgradeSlots) if (s != null) s.Hide();
+    }
+
+    private List<SlotUI> GetSlotListByType(StoreType type)
+    {
+        return type switch
         {
-            StoreCurrency.Coin => iconWay,
-            StoreCurrency.Token => iconToken,
-            StoreCurrency.KeyMap => iconKeyMap,
-            _ => iconUnknown
+            StoreType.Exchange => exchangeSlots,
+            StoreType.Map => mapSlots,
+            StoreType.Upgrade => upgradeSlots,
+            _ => null
         };
     }
-#endregion
 
+    private void PopulateSlots(StoreBase store)
+    {
+        Debug.Log("\n\n==============================");
+        Debug.Log($"[STORE UI] >>> OPEN STORE: {store.StoreName} | TYPE = {store.StoreType}");
+        Debug.Log($"Items in store = {store.Items.Count}");
+        Debug.Log("==============================");
 
-#region Store Navigation
-    /// <summary>
-    /// Switches the active store view (Exchange or Upgrade) by finding the correct store facade
-    /// and calling the appropriate display method.
-    /// </summary>
+        HideAllSlots();
+
+        List<SlotUI> targetSlotList = GetSlotListByType(store.StoreType);
+        if (targetSlotList == null)
+        {
+            Debug.LogError($"[STORE UI] ❌ NO SLOT LIST for StoreType: {store.StoreType}");
+            return;
+        }
+
+        for (int i = 0; i < store.Items.Count && i < targetSlotList.Count; i++)
+        {
+            var item = store.Items[i];
+            var slot = targetSlotList[i];
+
+            Debug.Log($"[STORE UI] Slot '{slot.name}' ← ITEM '{item.DisplayName}' | TYPE = {item.StoreType} | PRICE = {item.Price}");
+
+            slot.SetItemObject(item);
+            Debug.Log("[STORE UI] slot.SetItemObject OK");
+
+            slot.Init(_currency, _storeUpgrade, _storeMap, OnClickPurchase);
+            Debug.Log($"[STORE UI] slot.Init OK  → currency={_currency != null} upgradeRef={_storeUpgrade != null} mapRef={_storeMap != null}");
+
+            slot.Show();
+            Debug.Log($"[STORE UI] Slot '{slot.name}' → SHOWN");
+        }
+
+        Debug.Log("============================== END POPULATE ================\n");
+    }
+
+    private void OnClickPurchase(StoreItem item)
+    {
+        Debug.Log($"\n==== PURCHASE '{item.DisplayName}' from {item.StoreType} ====");
+
+        bool success = _activeStore.Purchase(item);
+        Debug.Log($"Purchase Result = {success}");
+
+        RefreshCurrency();
+        UIManager.Instance?.RefreshStoreUI();
+
+        foreach (var slot in exchangeSlots.Concat(mapSlots).Concat(upgradeSlots))
+        {
+            if (slot.gameObject.activeSelf)
+                slot.Refresh();
+        }
+    }
+
     public void SwitchStore(StoreType type)
     {
-        if (_availableStoreFacades == null || _availableStoreFacades.Count == 0)
+        var nextStore = _stores.Find(s => s.StoreType == type);
+        if (nextStore == null)
         {
-            Debug.LogWarning($"[StoreUI] Store list is not yet initialized or is empty. Cannot switch to {type}.");
+            Debug.LogError($"[StoreUI] Store type {type} NOT FOUND");
             return;
         }
 
-        foreach (var store in _availableStoreFacades)
-        {
-            // If the target is Exchange
-            if (store is StoreExchange && type == StoreType.Exchange)
-            {
-                SetActiveStore(store);
-                DisplayStoreItems(store); // Activates the Exchange panel view
-                return;
-            }
-
-            // If the target is Upgrade
-            if (store is StoreUpgrade && type == StoreType.Upgrade)
-            {
-                SetActiveStore(store);
-                DisplayUpgrade(store); // Activates the Upgrade panel view
-                return;
-            }
-        }
-
-        Debug.LogWarning($"[StoreUI] No store found for type {type}");
-    }
-#endregion
-
-
-#region UI Interaction Handlers
-    
-    /// <summary>
-    /// Records the name of the item currently selected by the player.
-    /// Used primarily when there's a two-step selection/purchase process.
-    /// </summary>
-    public void SelectItem(string itemName) => _selectedItemName = itemName;
-
-    /// <summary>
-    /// Executes the purchase of the currently selected item.
-    /// </summary>
-    private void PurchaseSelectedItem()
-    {
-        if (string.IsNullOrEmpty(_selectedItemName) || _activeStoreFacade == null)
-            return;
-
-        StoreItem item = _activeStoreFacade.GetItem(_selectedItemName);
-        if (item == null)
-        {
-            Debug.LogError($"[StoreUI] Item not found → {_selectedItemName}");
-            return;
-        }
-
-        bool purchased = _activeStoreFacade.Purchase(item);
-
-        if (purchased)
-        {
-            Debug.Log($"[StoreUI] Purchase Success → {_selectedItemName}");
-            SetActiveStore(_activeStoreFacade); 
-            RefreshCurrency();
-            upgradeUI?.Refresh();
-        }
+        Debug.Log($"[StoreUI] SwitchStore → {nextStore.StoreName} | Items = {nextStore.Items.Count}");
+        SetActiveStore(nextStore);
     }
 
-    
-    // NOTE: GetIconForItem and PurchaseItem are moved to the #region Core Slot Logic
-    // to separate private core logic from public event handlers.
-    
-#endregion
-
-
-#region Panel Control (Private & Public)
-    
-    /// <summary>
-    /// Activates the Upgrade panel and deactivates the Exchange panel. 
-    /// Finds and sets the Upgrade store as active.
-    /// </summary>
-    public void ShowUpgrade()
-    {
-        panelUpgrade.SetActive(true);
-        panelExchange.SetActive(false);
-        SetActiveStore(_availableStoreFacades.Find(s => s is StoreUpgrade));
-    }
-
-    /// <summary>
-    /// Activates the Exchange panel and deactivates the Upgrade panel.
-    /// Finds and sets the Exchange store as active.
-    /// </summary>
-    public void ShowExchange()
-    {
-        panelUpgrade.SetActive(false);
-        panelExchange.SetActive(true);
-        SetActiveStore(_availableStoreFacades.Find(s => s is StoreExchange));
-    }
-
-    /// <summary>
-    /// Configures the UI to display Exchange items within the slot container.
-    /// </summary>
-    private void DisplayStoreItems(StoreBase store)
-    {
-        if(slotContainer) slotContainer.SetActive(true);
-        if(upgradeUI) upgradeUI.gameObject.SetActive(false);
-
-        // Populate the slots with the current store's items
-        PopulateSlots(store); 
-
-        RefreshCurrency();
-    }
-
-    /// <summary>
-    /// Configures the UI to display Upgrade items within the slot container and refreshes UpgradeUI details.
-    /// </summary>
-    private void DisplayUpgrade(StoreBase store)
-    {
-        // Panel setup: Show slots, hide the main upgrade panel component (if used elsewhere)
-        if(slotContainer) slotContainer.SetActive(true);
-        if(upgradeUI) upgradeUI.gameObject.SetActive(false); 
-
-        // Load upgrade items into the generic slots
-        PopulateSlots(store);
-
-        // Refresh specific upgrade details (if the upgradeUI component is used for stats/levels)
-        upgradeUI.Refresh(); 
-        RefreshCurrency();
-    }
-
-#endregion
-
-
-#region Currency Management
-
-    /// <summary>
-    /// Refreshes the currency display (Coin, Token, Key) by fetching the current values from GameManager.
-    /// </summary>
     public void RefreshCurrency()
     {
-        var currency = _currencyRef;
-        if (currency == null) return;
-
-        if (_coinText) _coinText.text = $"x{currency.Coin}";
-        if (_tokenText) _tokenText.text = $"x{currency.Token}";
-        if (_keyText) _keyText.text = $"x{currency.KeyMap}";
+        _coinText.text = $"x{_currency.Coin}";
+        _tokenText.text = $"x{_currency.Token}";
+        _keyText.text = $"x{_currency.KeyMap}";
     }
 
-#endregion
+    public static Sprite GetGlobalCurrencyIcon(StoreCurrency currency)
+    {
+        // Safety Init — ถ้ายังไม่ได้โหลด icon จาก Awake()
+        if (!IconsInitialized)
+        {
+            Debug.LogWarning("[StoreUI] Currency icons requested before initialization.");
+            return null;
+        }
+
+        return currency switch
+        {
+            StoreCurrency.Coin   => CoinIcon,
+            StoreCurrency.Token  => TokenIcon,
+            StoreCurrency.KeyMap => KeyMapIcon,
+            _ => null
+        };
+    }
 
 
-private void OnDestroy()
-{
-    Currency.OnCurrencyChanged -= RefreshCurrency;
-}
+    public void OpenExchange() => SwitchStore(StoreType.Exchange);
+    public void OpenUpgrade() => SwitchStore(StoreType.Upgrade);
+    public void OpenMap() => SwitchStore(StoreType.Map);
+
+
+    public void HighlightItem(string itemID)
+    {
+        foreach (var slot in mapSlots) // หรือ exchangeSlots / upgradeSlots ถ้าต้องการรองรับทุก store
+        {
+            if (slot.HasItem(itemID))   // เช็คว่า slot นี้ถือสินค้า ID นี้ไหม
+            {
+                slot.transform.SetAsLastSibling(); // หรือ scroll to view / outline effect
+                break;
+            }
+        }
+    }
+
 }

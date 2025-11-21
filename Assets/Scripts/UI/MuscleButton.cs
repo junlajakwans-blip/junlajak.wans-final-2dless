@@ -32,8 +32,10 @@ public class MuscleButton : MonoBehaviour
     private void OnClickMuscle()
     {
         // เรียกแลก 5 ใบ → MuscleDuck
-        CardManager.Instance?.ExchangeForBerserk();
-        Hide();
+        if (CardManager.Instance != null)
+            CardManager.Instance.ActivateMuscleDuck();
+
+        gameObject.SetActive(false);
     }
 
     public void Show()

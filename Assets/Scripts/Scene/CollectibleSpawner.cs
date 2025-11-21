@@ -140,7 +140,8 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
             Destroy(collectible);
             return;
         }
-
+        SpawnSlot.Unreserve(collectible.transform.position);
+        
         // Unregister from Culling (ถ้าใช้) และ Active List
         _activeCollectibles.Remove(collectible);
         _cullingManager?.UnregisterObject(collectible);

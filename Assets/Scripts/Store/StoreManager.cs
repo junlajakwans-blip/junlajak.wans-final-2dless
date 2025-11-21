@@ -19,7 +19,16 @@ public class StoreManager
     {
         _currency = currency;
         _progressData = progressData;
+
+        // โหลด StoreItem ทั้งหมดจาก Resources
+        _allItems = new List<StoreItem>();
+        _allItems.AddRange(Resources.LoadAll<StoreItem>("StoreItems/Exchange"));
+        _allItems.AddRange(Resources.LoadAll<StoreItem>("StoreItems/Upgrade"));
+        _allItems.AddRange(Resources.LoadAll<StoreItem>("StoreItems/Map"));
+
+        Debug.Log($"[StoreManager] Loaded total items = {_allItems.Count}");
     }
+
 
     /// <summary>
     /// Register shop facade (StoreExchange / StoreUpgrade / StoreMap)

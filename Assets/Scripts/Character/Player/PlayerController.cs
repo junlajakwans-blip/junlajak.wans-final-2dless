@@ -14,7 +14,9 @@ public class PlayerController : MonoBehaviour
 
 
     private Rigidbody2D _rigidbody;
-    private Animator _animator;
+    [SerializeField] private bool disableAnimation = true;
+
+    [SerializeField] private Animator _animator;
     private Player _player;
 
     private Vector2 _moveInput; // ใช้เก็บ Input ที่ต้องการใช้ในการเคลื่อนที่
@@ -24,7 +26,19 @@ public class PlayerController : MonoBehaviour
         _player = GetComponent<Player>();
         _rigidbody = GetComponent<Rigidbody2D>();
 
-        _animator = GetComponentInChildren<Animator>();
+        if (disableAnimation)
+        {
+            _animator = null;
+        }
+        else
+        {
+            _animator = GetComponentInChildren<Animator>();
+        }
+
+        if (_animator == null)
+        {
+            Debug.LogWarning("[PlayerController] Animator not found — animation disabled for now.");
+        }
         
         // ตรวจสอบความผิดพลาด (Guard Clauses)
         if (_player == null) Debug.LogError("Player script not found on the same GameObject!");
@@ -65,10 +79,13 @@ public class PlayerController : MonoBehaviour
             _moveInput.x = 1;
         }
         
+        if (_animator != null)
+        {
         // อัปเดต Animator ตาม Input ใหม่
         _animator?.SetFloat("MoveX", _moveInput.x);
         // ใช้ค่าสัมบูรณ์ (Abs) สำหรับความเร็วในการเคลื่อนไหวแนวนอน
         _animator?.SetFloat("Speed", Mathf.Abs(_moveInput.x)); 
+        }
     }
 
     private void HandleActionInput()

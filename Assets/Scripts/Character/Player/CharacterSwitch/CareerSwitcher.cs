@@ -30,6 +30,7 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
     // Events
     public event Action<DuckCareerData> OnCareerChangedEvent;
     public event Action OnRevertToDefaultEvent;
+    public event Action OnResetCareerCycle;
 
     public DuckCareerData CurrentCareer => _currentCareer;
 
@@ -100,13 +101,20 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
             return;
         }
 
+        // แจ้ง CardManager reset cycle & unlock cards
+        OnResetCareerCycle?.Invoke();
+
         _currentCareer = _defaultCareer;
         ApplyCareerAppearance();
         OnCareerChanged(_defaultCareer);
 
+        OnResetCareerCycle?.Invoke(); 
+
         StartCoroutine(CooldownRoutine());
-        OnRevertToDefaultEvent?.Invoke(); // 🔹 แจ้ง CardManager ปลดล็อกการ์ด
+        OnRevertToDefaultEvent?.Invoke(); // แจ้ง revert สำหรับ UI 
+
     }
+
 
     public void StartCareerTimer(float duration)
     {

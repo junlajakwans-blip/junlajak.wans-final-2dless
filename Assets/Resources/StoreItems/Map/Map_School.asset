@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 59631606116862a468dcebe3e48c7488, type: 3}
-  m_Name: Exchange_Token
+  m_Name: Map_School
   m_EditorClassIdentifier: Assembly-CSharp::StoreItem
-  StoreType: 1
-  ID: EXCHANGE_9654
-  DisplayName: Token
-  Icon: {fileID: 1319683674322379675, guid: 9e06dd502219b05488cac907fe40996e, type: 3}
-  SpendCurrency: 0
-  Price: 399
-  RewardCurrency: 1
-  RewardAmount: 1
-  mapType: 0
-  UnlockedByDefault: 0
+  StoreType: 3
+  ID: MAP_6696
+  DisplayName: Map_School
+  Icon: {fileID: 8872421921254429529, guid: 39d3abed94df07d4b8261259666c11ec, type: 3}
+  SpendCurrency: 2
+  Price: 0
+  RewardCurrency: 0
+  RewardAmount: 0
+  mapType: 1
+  UnlockedByDefault: 1
   UseLevelScaling: 0
   MaxLevel: 5
   PriceMultiplier: 1.5

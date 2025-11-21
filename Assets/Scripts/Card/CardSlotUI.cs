@@ -49,7 +49,7 @@ public class CardSlotUI : MonoBehaviour
             _cardSlots[i].color = _defaultColor;
         }
 
-        Debug.Log($" Updated {_cardSlots.Count} card slots.");
+        Debug.Log($" Updated {cards.Count} card slots.");
     }
 
     /// <summary>

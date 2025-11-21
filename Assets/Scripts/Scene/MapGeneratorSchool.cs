@@ -73,18 +73,10 @@ public class MapGeneratorSchool : MapGeneratorBase
 
     public override void SpawnCollectibles()
     {
-        if (_collectibleSpawner == null) return;
-        StartCoroutine(SpawnCollectiblesLoop());
+    // FIX: ลบ StartCoroutine(SpawnCollectiblesLoop()) ออก
+    // Logic การ Spawn ถูกย้ายไปควบคุมโดย InvokeRepeating ใน CollectibleSpawner.cs
     }
 
-    private IEnumerator SpawnCollectiblesLoop()
-    {
-        while (true)
-        {
-            _collectibleSpawner.Spawn();
-            yield return new WaitForSeconds(Random.Range(3f, 7f));
-        }
-    }
 
     public override void SpawnAssets() { }
     public override void SpawnThrowables() { }

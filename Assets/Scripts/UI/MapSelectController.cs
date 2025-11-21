@@ -46,12 +46,17 @@ public class MapSelectController : MonoBehaviour
     public Sprite roadSprite;
     public Sprite kitchenSprite;
 
-    [Header("Key UI")]
-    public TextMeshProUGUI text_KeyCount;
+    [Header("Map Store")]
+    [SerializeField] private StoreUI storeUI;
+
+
+
+    private StoreItem currentItem;
 
     //For Dependency Injection
     private GameManager _gameManagerRef;
     private Currency _currencyRef;
+    
     #endregion
 
 
@@ -64,11 +69,6 @@ public class MapSelectController : MonoBehaviour
         _gameManagerRef = gm;
         _currencyRef = currency;
 
-        if (_currencyRef != null)
-        {
-            Currency.OnCurrencyChanged -= RefreshKeyUI;
-            Currency.OnCurrencyChanged += RefreshKeyUI;
-        }
         if (maps != null)  
         RefreshUI();
     }
@@ -81,29 +81,7 @@ public class MapSelectController : MonoBehaviour
 
     private void OnEnable()
     {
-
-        // เตรียมข้อมูลแมพจาก MapType
-        maps = new MapInfo[]
-        {
-            CreateMapInfo(MapType.School),
-            CreateMapInfo(MapType.RoadTraffic),
-            CreateMapInfo(MapType.Kitchen)
-        };
-
-        // คลิกที่รูป = เล่นแมพ
-        if (previewImageButton != null)
-        {
-            previewImageButton.onClick.RemoveAllListeners(); // ป้องกันซ้ำ
-            previewImageButton.onClick.AddListener(TryPlaySelectedMap);
-        }
-            
-        RefreshUI(); 
-    }
-
-        private void OnDestroy()
-    {
-        if (_currencyRef != null)
-            Currency.OnCurrencyChanged -= RefreshKeyUI;
+        StartCoroutine(InitAfterStoreReady());
     }
 
 
@@ -116,6 +94,42 @@ public class MapSelectController : MonoBehaviour
         }
     }
     #endregion
+
+    private IEnumerator InitAfterStoreReady()
+    {
+        yield return null; // รอ 1 เฟรม เพื่อให้ StoreUI และ StoreManager Initialize ให้เสร็จ
+
+        InitializeMapSelect();
+    }
+
+    private void InitializeMapSelect()
+    {
+        // เตรียมข้อมูลแมพ
+        maps = new MapInfo[]
+        {
+            CreateMapInfo(MapType.School),
+            CreateMapInfo(MapType.RoadTraffic),
+            CreateMapInfo(MapType.Kitchen)
+        };
+
+        storeUI.OpenMap(); // เปิดร้านแมพ
+
+        // สมัคร event แบบปลอดภัย ไม่ซ้อน
+        if (storeUI != null && storeUI.StoreMapRef != null)
+        {
+            storeUI.StoreMapRef.OnMapUnlockedEvent -= OnMapUnlocked;
+            storeUI.StoreMapRef.OnMapUnlockedEvent += OnMapUnlocked;
+        }
+        else
+        {
+            Debug.LogWarning("[MapSelectController] ⚠ StoreMapRef ยังไม่พร้อม – Event ยังไม่เชื่อม");
+        }
+
+        previewImageButton.onClick.RemoveAllListeners();
+        previewImageButton.onClick.AddListener(TryPlaySelectedMap);
+
+        RefreshUI();
+    }
 
 
     #region MapInfo Builder
@@ -208,30 +222,8 @@ public class MapSelectController : MonoBehaviour
         if (previewImageButton != null)
             previewImageButton.interactable = map.unlocked;
 
-        // อัปเดตจำนวน Key ปัจจุบัน
-        RefreshKeyUI();
     }
 
-    /// <summary>
-    /// อัปเดต UI จำนวน Key โดยป้องกัน null ทุกกรณี
-    /// </summary>
-    public void RefreshKeyUI()
-    {
-        if (text_KeyCount == null)
-        {
-            Debug.LogWarning("[MapSelectController] Text_KeyCount not assigned in Inspector.");
-            return;
-        }
-
-        var currency = _currencyRef;
-        if (currency == null)
-        {
-            return;
-        }
-
-        // 4) อัปเดตตัวเลข
-        text_KeyCount.text = "x" + currency.KeyMap;
-    }
     #endregion
 
     #region Navigation
@@ -297,6 +289,55 @@ public class MapSelectController : MonoBehaviour
     }
 #endregion
 
+    #region  Buy Map on Lock
 
+    public void BuyCurrentMap()
+    {
+        var map = maps[index];
+        currentItem = GetStoreItemForMap(map.mapType);
+
+        if (currentItem == null)
+        {
+            Debug.LogError("[MapSelectController] ❌ Cannot find StoreItem for map: " + map.mapType);
+            return;
+        }
+
+        storeUI.OpenMap();                 
+        storeUI.HighlightItem(currentItem.ID);  // ไฮไลต์ในร้าน
+    }
+
+
+    private StoreItem GetStoreItemForMap(MapType type)
+    {
+        foreach (var slot in storeUI.MapSlots)   // หรือ storeUI.GetMapSlots()
+        {
+            if (slot == null) continue;
+            var item = slot.CurrentItem;
+            if (item == null) continue;
+
+            if (item.mapType == type)
+                return item;
+        }
+        return null;
+    }
+
+    private void OnMapUnlocked(string id)
+    {
+        foreach (var m in maps)
+        {
+            if (m.mapType.ToString() == id || m.mapType.ToSceneName() == id)
+            {
+                m.unlocked = true;
+                Debug.Log($"[MapSelectController] 🟢 Map unlocked → {m.mapType}");
+                RefreshUI();
+                return;
+            }
+        }
+
+        Debug.LogWarning($"[MapSelectController] ⚠ Map unlocked from store but not found in MapSelect list: {id}");
+    }
+
+
+    #endregion
 
 }

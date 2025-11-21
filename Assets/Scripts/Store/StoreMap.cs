@@ -28,6 +28,27 @@ public class StoreMap : StoreBase
             unlocked.Add(id);
     }
 
+    public void RenderToUI(List<SlotUI> slots)
+    {
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (i < Items.Count)
+            {
+                var item = Items[i];
+                var slot = slots[i];
+
+                slot.SetItemObject(item);
+                slot.Init(_currency, null, this, clickedItem => Purchase(clickedItem));
+                slot.gameObject.SetActive(true);
+            }
+            else
+            {
+                slots[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
+
     public override bool Purchase(StoreItem item)
     {
         if (unlocked.Contains(item.ID))
@@ -65,9 +86,10 @@ public class StoreMap : StoreBase
         if (!_progress.UnlockedMaps.Contains(item.ID))
             _progress.UnlockedMaps.Add(item.ID);
 
-        // 3) Notify systems
-        // ส่งทั้ง ID และ MapType ออกไป
-        OnMapUnlockedEvent?.Invoke(item.mapType.ToString());
+        // 3) Broadcast event - รองรับทั้ง UI เก่า / ใหม่
+        // ส่งทั้ง ID และ MapType ใน event เดียว (รูปแบบ "ID|MapType")
+        string payload = $"{item.ID}|{item.mapType}";
+        OnMapUnlockedEvent?.Invoke(payload);
 
         Debug.Log($"[StoreMap] UNLOCKED MAP → {item.mapType} | ID = {item.ID}");
     }

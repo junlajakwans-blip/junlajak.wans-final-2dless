@@ -23,6 +23,28 @@ public class StoreUpgrade : StoreBase
         }
     }
 
+    public void RenderToUI(List<SlotUI> slots)
+    {
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (i < Items.Count)
+            {
+                var item = Items[i];
+                var slot = slots[i];
+
+                slot.SetItemObject(item);
+                slot.Init(_manager.Currency, this, null, clickedItem => Purchase(clickedItem));
+                slot.gameObject.SetActive(true);
+            }
+            else
+            {
+                slots[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
+
+
     public override bool Purchase(StoreItem item)
     {
         if (_manager == null || item == null)
@@ -50,6 +72,7 @@ public class StoreUpgrade : StoreBase
         Debug.Log($"[StoreUpgrade] {item.DisplayName} → Lv {newLevel}/{item.MaxLevel}");
         return true;
     }
+
 
     public override bool IsUnlocked(StoreItem item)
         => GetLevel(item) > 0;

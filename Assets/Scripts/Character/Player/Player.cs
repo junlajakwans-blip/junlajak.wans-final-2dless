@@ -58,29 +58,25 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser, IInteract
         _currentHealth = _maxHealth;
         _moveSpeed = data.Speed;
 
-        if (_careerSwitcher == null)
-            _careerSwitcher = GetComponent<CareerSwitcher>();
-
-        if (_cardManager == null)
-            _cardManager = GetComponent<CardManager>();
-
-        if (_rigidbody == null)
-            _rigidbody = GetComponent<Rigidbody2D>();
-
-        if (_rigAnimator == null)
-            _rigAnimator = GetComponent<CharacterRigAnimator>();
+        _careerSwitcher ??= FindFirstObjectByType<CareerSwitcher>();
+        _cardManager ??= FindFirstObjectByType<CardManager>();
+        _rigidbody ??= GetComponent<Rigidbody2D>();
+        _rigAnimator ??= GetComponent<CharacterRigAnimator>();
 
         // Currency setup
-        if (_currency == null)
-            _currency = new Currency();
+        _currency ??= new Currency();
 
+        //career
         _currency.Initialize(_careerSwitcher);
+
+        if (_cardManager != null)
+        _cardManager.Initialize(this);
 
         UpdatePlayerFormState();
 
         DetectMap();
 
-        Debug.Log($"[Player] Initialized with HP: {_maxHealth}, Speed: {_moveSpeed}");
+        Debug.Log($"[Player] Initialized with HP {_maxHealth}, Speed {_moveSpeed}, Career={_careerSwitcher?.CurrentCareer?.CareerID}");
     }
     #endregion
 

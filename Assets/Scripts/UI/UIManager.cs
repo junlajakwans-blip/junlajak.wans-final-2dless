@@ -16,6 +16,8 @@ public class UIManager : MonoBehaviour
 
     [Header("System References")]
     [SerializeField] private TextMeshProUGUI storeTitleText;
+    [SerializeField] private TopCurrencyUI[] topCurrencies;
+
 
     
     #endregion
@@ -26,14 +28,17 @@ public class UIManager : MonoBehaviour
     public GameObject panelSettings;
     public GameObject panelStoreExchange;
     public GameObject panelStoreUpgrade; 
-    public TopCurrencyUI currencyUI;   
     public UpgradeUI upgradeUI;     
+    public static UIManager Instance { get; private set; }
+
+
 
     //  References สำหรับ Dependency Injection
     private GameManager _gameManagerRef;
     private Currency _currencyRef;
     private StoreManager _storeManagerRef;
     private List<StoreBase> _storesRef;
+    
 
     #region Dependencies
     
@@ -47,13 +52,31 @@ public class UIManager : MonoBehaviour
         _storeManagerRef = storeManager;
         _storesRef = stores;
         
-        currencyUI?.SetDependencies(currency);
+        // Register Currency for every TopCurrency UI
+        if (topCurrencies != null)
+        {
+            foreach (var ui in topCurrencies)
+            {
+                if (ui == null) continue;
+                ui.SetDependencies(currency);
+                Debug.Log("[UIManager] TopCurrencyUI registered");
+            }
+        }
+
+        // Register Store UI
         _storeUI?.SetDependencies(currency, stores, storeManager);
+
+        _mapSelectController?.SetDependencies(gm, currency);
+
+        RefreshStoreUI();
     }
 
     #endregion  
 
-
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     #region Main Menu
 
@@ -76,8 +99,6 @@ public class UIManager : MonoBehaviour
 
         SetPanel(panelStore);
 
-        if (_storeUI != null && _storesRef != null && _storesRef.Count > 0)
-            _storeUI.SwitchStore(StoreType.Exchange);
     }
 
 
@@ -91,6 +112,10 @@ public class UIManager : MonoBehaviour
         // หน้าจอร้านค้าย่อย
         panelStoreExchange.SetActive(target == panelStoreExchange);
         panelStoreUpgrade.SetActive(target == panelStoreUpgrade);
+
+        // รีค่าเงิน
+        foreach (var ui in topCurrencies)
+        ui?.Refresh();
     }
 
     public void SwitchStorePanel(StoreType type)
@@ -209,7 +234,6 @@ public class UIManager : MonoBehaviour
         if (_storeUI != null && _storesRef != null && _storesRef.Count > 0)
             _storeUI.SwitchStore(StoreType.Exchange);
 
-        currencyUI.Refresh();
     }
 
     public void ShowStoreUpgrade()
@@ -225,19 +249,13 @@ public class UIManager : MonoBehaviour
         if (_storeUI != null && _storesRef != null && _storesRef.Count > 0)
             _storeUI.SwitchStore(StoreType.Upgrade);
 
-        currencyUI.Refresh();
-    }
-
-
-    public void InitializeStore(List<StoreBase> stores, StoreManager manager)
-    {
-            if (_storeUI != null)
-                _storeUI.InitializeStore(manager, stores, _currencyRef);
+        
     }
 
     public void RefreshStoreUI()
     {
-        currencyUI?.Refresh();
+        foreach (var ui in topCurrencies)
+        ui?.Refresh();
         upgradeUI?.Refresh(); 
     }
 

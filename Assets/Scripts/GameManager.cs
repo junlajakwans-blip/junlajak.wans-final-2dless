@@ -40,9 +40,9 @@ public class GameManager : MonoBehaviour
     private GameProgressData _persistentProgress;
     private Currency _currencyData;
     private StoreManager _storeManager;
-    private StoreExchange _exchangeStore;
-    private StoreUpgrade _upgradeStore;
-    private StoreMap _mapStore;
+    [SerializeField] private StoreExchange _exchangeStore;
+    [SerializeField] private StoreUpgrade _upgradeStore;
+    [SerializeField] private StoreMap _mapStore;
     private Player _playerInstance;
     #endregion
 
@@ -87,6 +87,23 @@ public class GameManager : MonoBehaviour
         _playerInstance = player;
         if (_cardManager != null)
             _cardManager.Initialize(_playerInstance);
+            if (_cardManager != null)
+            {
+                _cardManager.Initialize(_playerInstance);
+
+                // FIX การเชื่อมกลับ
+                if (_cardManager.TryGetComponent<CardSlotUI>(out var slotUI))
+                {
+                    slotUI.SetManager(_cardManager);
+                }
+                else
+                {
+                    // ถ้า CardSlotUI อยู่เป็น GameObject แยกใน Canvas
+                    var ui = FindFirstObjectByType<CardSlotUI>();
+                    if (ui != null)
+                        ui.SetManager(_cardManager);
+                }
+            }
 
         OnCurrencyReady?.Invoke();
     }
@@ -323,6 +340,10 @@ public void InitializeGame()
         _storeManager = new StoreManager(_currencyData, progressData);
 
         // --- ให้ StoreManager เป็นคน Initialize + Inject items ---
+        if (_exchangeStore == null) Debug.LogError(" Missing Exchange Store");
+        if (_upgradeStore == null) Debug.LogError(" Missing Upgrade Store");
+        if (_mapStore == null) Debug.LogError("Missing Map Store");
+
         _storeManager.RegisterStore(_exchangeStore);
         _storeManager.RegisterStore(_upgradeStore);
         _storeManager.RegisterStore(_mapStore);

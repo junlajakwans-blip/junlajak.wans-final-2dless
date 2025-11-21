@@ -3,9 +3,10 @@ using TMPro;
 
 public class TopCurrencyUI : MonoBehaviour
 {
-    private TextMeshProUGUI coinText;
-    private TextMeshProUGUI tokenText;
-    private TextMeshProUGUI keyText;
+    [SerializeField] private TextMeshProUGUI coinText;
+    [SerializeField] private TextMeshProUGUI tokenText;
+    [SerializeField] private TextMeshProUGUI keyText;
+
 
     private Currency _currencyRef;
 
@@ -39,18 +40,12 @@ public class TopCurrencyUI : MonoBehaviour
     
     #endregion
 
-
-    private void Awake()
-    {
-        coinText  = transform.Find("Icon_Coin/Text_Currency").GetComponent<TextMeshProUGUI>();
-        tokenText = transform.Find("Icon_Token/Text_Token").GetComponent<TextMeshProUGUI>();
-        keyText   = transform.Find("Icon_KeyMap/Text_KeyMap").GetComponent<TextMeshProUGUI>();
-    }
-
     private void OnEnable()
     {
         if (_currencyRef != null)
         {
+            Currency.OnCurrencyChanged -= Refresh;
+            Currency.OnCurrencyChanged += Refresh;
             Refresh();
         }
         // ถ้า _currencyRef เป็น null แสดงว่ายังไม่พร้อม ก็ไม่ต้องทำอะไร (ปล่อยให้ SetDependencies จัดการ)
@@ -68,14 +63,15 @@ public class TopCurrencyUI : MonoBehaviour
     
     public void Refresh()
     {
-        var cur = _currencyRef;
-        if (cur == null) 
-        {
-            return;
-        }
+        Debug.Log($"[TopCurrencyUI] Refresh → Coin:{_currencyRef?.Coin} Token:{_currencyRef?.Token} Key:{_currencyRef?.KeyMap}");
 
-        coinText.text  = $"x{cur.Coin}";
-        tokenText.text = $"x{cur.Token}";
-        keyText.text   = $"x{cur.KeyMap}";
+        if (_currencyRef == null || coinText == null || tokenText == null || keyText == null)
+            return;
+
+        coinText.text  = $"x{_currencyRef.Coin}";
+        tokenText.text = $"x{_currencyRef.Token}";
+        keyText.text   = $"x{_currencyRef.KeyMap}";
+
+        
     }
 }

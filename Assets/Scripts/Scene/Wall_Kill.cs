@@ -22,18 +22,21 @@ public class WallPushController : MonoBehaviour
         _player = FindFirstObjectByType<Player>()?.transform;
     }
 
-    private void Update()
+    // เปลี่ยน SetPushState เป็นเมธอดที่ใช้สั่งเคลื่อนที่ (ถูกเรียก 20 ครั้ง/วินาที)
+    public void ExecuteMovementAndEvent(float speed, bool enabled)
     {
+        _pushSpeed = speed; // Sync speed
+        _isPushing = enabled; // Sync state
+
         if (!_isPushing) return;
 
-        // Move horizontally only
+        // Move horizontally only (ใช้ Time.deltaTime เพื่อให้การเคลื่อนที่ราบรื่น)
         transform.Translate(Vector3.right * _pushSpeed * Time.deltaTime);
 
-        // speed คือ velocity.x หรือค่าความเร็วกำแพงปัจจุบัน
-        float currentSpeed = _pushSpeed; // เปลี่ยนเป็นชื่อฟิลด์ที่คุณใช้จริง
-        OnWallSpeedChanged?.Invoke(currentSpeed);
+        // Invoke event
+        OnWallSpeedChanged?.Invoke(_pushSpeed);
     }
-
+    
     /// <summary>
     /// Called by MapGeneratorBase to sync speed and toggle state
     /// </summary>
