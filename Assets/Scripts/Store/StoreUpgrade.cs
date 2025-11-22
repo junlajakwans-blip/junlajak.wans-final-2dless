@@ -6,20 +6,19 @@ public class StoreUpgrade : StoreBase
 {
     public override string StoreName => "Permanent Upgrades";
     public override StoreType StoreType => StoreType.Upgrade;
-
-    private Dictionary<string, int> levels = new();
+    private Dictionary<string, int> upgradeLevels = new();
 
     public override void Initialize(StoreManager manager, List<StoreItem> injectedItems)
     {
         base.Initialize(manager, injectedItems);
         _manager = manager;
 
-        levels.Clear();
+        upgradeLevels.Clear();
 
         foreach (var item in Items)
         {
             int savedLevel = _manager.ProgressData.GetUpgradeLevel(item.ID);
-            levels[item.ID] = savedLevel;
+            upgradeLevels[item.ID] = savedLevel;
         }
     }
 
@@ -44,7 +43,6 @@ public class StoreUpgrade : StoreBase
     }
 
 
-
     public override bool Purchase(StoreItem item)
     {
         if (_manager == null || item == null)
@@ -66,7 +64,7 @@ public class StoreUpgrade : StoreBase
 
         // level up
         int newLevel = currentLevel + 1;
-        levels[item.ID] = newLevel;
+        upgradeLevels[item.ID] = newLevel;
         _manager.ProgressData.UpgradeLevels[item.ID] = newLevel;
 
         Debug.Log($"[StoreUpgrade] {item.DisplayName} → Lv {newLevel}/{item.MaxLevel}");
@@ -78,7 +76,18 @@ public class StoreUpgrade : StoreBase
         => GetLevel(item) > 0;
 
     public int GetLevel(StoreItem item)
-        => levels.TryGetValue(item.ID, out int lv) ? lv : 0;
+    {
+        if (!upgradeLevels.ContainsKey(item.ID))
+            upgradeLevels[item.ID] = 0;
+
+        return upgradeLevels[item.ID];
+    }
+
+    public void SetLevel(StoreItem item, int newLevel)
+    {
+        upgradeLevels[item.ID] = Mathf.Clamp(newLevel, 0, item.MaxLevel);
+    }
+
 
     public int GetPrice(StoreItem item)
     {
@@ -101,6 +110,15 @@ public class StoreUpgrade : StoreBase
             }
         }
         return sum;
+    }
+
+    public void SyncWithSave()
+    {
+        foreach (var item in Items)
+        {
+            int savedLevel = _manager.ProgressData.GetUpgradeLevel(item.ID);
+            upgradeLevels[item.ID] = savedLevel; // อัปเดต runtime
+        }
     }
 
 }

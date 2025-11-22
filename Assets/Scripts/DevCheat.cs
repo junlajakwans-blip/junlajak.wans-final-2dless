@@ -142,6 +142,14 @@ public class DevCheat : MonoBehaviour
                 Debug.Log("<color=lime>[CHEAT]</color> Forced drop 1 Career Card");
             }
         }
+
+        // Reset All
+        if (Input.GetKeyDown(KeyCode.F9))
+        {
+            _gmRef.DeleteSaveAndRestart();
+            Debug.Log("<color=red>[CHEAT] DELETE SAVE + Restart Game</color>");
+        }
+
     }
 
 

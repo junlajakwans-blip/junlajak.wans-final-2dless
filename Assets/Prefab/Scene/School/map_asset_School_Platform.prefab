@@ -101,7 +101,7 @@ GameObject:
   - component: {fileID: 6803946115397178951}
   - component: {fileID: -6629867076427811626}
   m_Layer: 0
-  m_Name: map_asset_School_Normal_Platform
+  m_Name: map_asset_School_Platform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

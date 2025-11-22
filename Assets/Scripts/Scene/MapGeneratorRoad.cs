@@ -83,5 +83,4 @@ public class MapGeneratorRoad : MapGeneratorBase
             _endlessWall = wallGO.transform;
     }
 
-    // ไม่ต้อง override SpawnAssets() / SpawnThrowables()
 }

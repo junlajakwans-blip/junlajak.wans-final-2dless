@@ -48,6 +48,19 @@ public class MapSelectController : MonoBehaviour
 
     [Header("Map Store")]
     [SerializeField] private StoreUI storeUI;
+    [SerializeField] private Image glowEffect;
+    [SerializeField] private float glowDuration = 0.35f;
+    [SerializeField] private Image greyOverlay;
+
+    [SerializeField] private TextMeshProUGUI keyText;
+    [SerializeField] private GameObject keyIcon;
+
+    [Header("Map Store : UnlockMap")]
+    [SerializeField] private GameObject unlockChoicePanel;
+    [SerializeField] private TMP_Text unlockChoiceText;
+    [SerializeField] private Button unlockYesButton;
+    [SerializeField] private Button unlockNoButton;
+
 
 
 
@@ -141,7 +154,8 @@ public class MapSelectController : MonoBehaviour
         switch (type)
         {
             case MapType.School:
-                info.sceneName = "Map_School";
+                info.unlocked = true;
+                info.sceneName = "MapSchool";
                 info.previewImage = schoolSprite;
                 info.mapName = "School Zone";
                 info.description = "NO DUFF NO DUCK";
@@ -149,7 +163,7 @@ public class MapSelectController : MonoBehaviour
                 break;
 
             case MapType.RoadTraffic:
-                info.sceneName = "Map_Road";
+                info.sceneName = "MapRoadTraffic";
                 info.previewImage = roadSprite;
                 info.mapName = "City Road";
                 info.description = "DUCK DUCK — HONK!!";
@@ -157,7 +171,7 @@ public class MapSelectController : MonoBehaviour
                 break;
 
             case MapType.Kitchen:
-                info.sceneName = "Map_Kitchen";
+                info.sceneName = "MapKitchen";
                 info.previewImage = kitchenSprite;
                 info.mapName = "Kitchen Mayhem";
                 info.description = "TODAY MENU IS ROAST DUCK, Yummy!";
@@ -165,11 +179,20 @@ public class MapSelectController : MonoBehaviour
                 break;
         }
 
-        // ด่านแรก (School) ปลดล็อกเสมอ
-        info.unlocked = (type == MapType.School);
+        // ช็คสถานะปลดล็อกจาก StoreMap จริง
+        if (storeUI != null && storeUI.StoreMapRef != null)
+        {
+            var storeItem = GetStoreItemForMap(type);
+            info.unlocked = storeItem == null || storeUI.StoreMapRef.IsUnlocked(storeItem);
+        }
+        else
+        {
+            //  School เริ่มปลดล็อกเสมอ
+            info.unlocked = (type == MapType.School);
+        }
 
         return info;
-    }
+        }
     #endregion
 
 
@@ -181,48 +204,70 @@ public class MapSelectController : MonoBehaviour
     public void RefreshUI()
     {
         if (maps == null || maps.Length == 0)
+            return;
+
+        if (index < 0 || index >= maps.Length)
+            index = 0;
+
+        var map = maps[index];
+
+        var storeItem = GetStoreItemForMap(map.mapType);
+        if (storeItem != null && storeUI != null && storeUI.StoreMapRef != null)
+            map.unlocked = storeUI.StoreMapRef.IsUnlocked(storeItem);
+
+        // รูปและข้อความ
+        previewImage.sprite = map.previewImage;
+        mapNameText.text = map.mapName;
+        descriptionText.text = map.description;
+
+        if (map.mapType == MapType.School)
         {
-            Debug.LogWarning("[MapSelectController] maps is empty.");
+            map.unlocked = true;
+        }
+        else if (storeItem != null && storeUI.StoreMapRef != null)
+        {
+            map.unlocked = storeUI.StoreMapRef.IsUnlocked(storeItem);
+        }
+
+
+        // ไอคอนความยาก
+        for (int i = 0; i < difficultyIcons.Length; i++)
+            difficultyIcons[i].gameObject.SetActive(i < map.difficultyLevel);
+
+        // กรณีปลดล็อคแล้ว หรือราคา = 0 → ซ่อน UI ซื้อทั้งหมด
+        if (storeItem != null && (map.unlocked || storeItem.Price == 0))
+        {
+            lockedIcon.SetActive(false);
+            greyOverlay.gameObject.SetActive(false);
+            keyText.gameObject.SetActive(false);
+            keyIcon.SetActive(false);
+            previewImageButton.interactable = true;
             return;
         }
 
-        if (index < 0 || index >= maps.Length)
+        // กรณีแมพยังล็อค → แสดงราคา Key
+        lockedIcon.SetActive(true);
+        greyOverlay.gameObject.SetActive(true);
+        previewImageButton.interactable = false;
+
+        if (storeItem != null)
         {
-            Debug.LogWarning("[MapSelectController] index out of range.");
-            index = 0;
+            int have = _currencyRef.KeyMap;
+            int need = storeItem.Price;
+
+            keyText.gameObject.SetActive(true);
+            keyIcon.SetActive(true);
+
+            keyText.text = $"{have}/{need}";
+            keyText.color = (have >= need) ? Color.green : Color.red;
         }
-
-        var map = maps[index];
-        Debug.Log($"[MapSelectController] Refresh map index = {index}, type = {map.mapType}");
-
-        // รูปและข้อความหลัก
-        if (previewImage != null)
-            previewImage.sprite = map.previewImage;
-
-        if (mapNameText != null)
-            mapNameText.text = map.mapName;
-
-        if (descriptionText != null)
-            descriptionText.text = map.description;
-
-        // ไอคอนความยาก (เปิดเฉพาะที่น้อยกว่า difficultyLevel)
-        if (difficultyIcons != null)
+        else
         {
-            for (int i = 0; i < difficultyIcons.Length; i++)
-            {
-                if (difficultyIcons[i] != null)
-                    difficultyIcons[i].gameObject.SetActive(i < map.difficultyLevel);
-            }
+            keyText.gameObject.SetActive(false);
+            keyIcon.SetActive(false);
         }
-
-        // ไอคอนล็อก และคลิกภาพได้/ไม่ได้
-        if (lockedIcon != null)
-            lockedIcon.SetActive(!map.unlocked);
-
-        if (previewImageButton != null)
-            previewImageButton.interactable = map.unlocked;
-
     }
+
 
     #endregion
 
@@ -270,23 +315,115 @@ public class MapSelectController : MonoBehaviour
         if (maps == null || maps.Length == 0) return;
 
         var map = maps[index];
+        var item = GetStoreItemForMap(maps[index].mapType);
+        if (item != null)
+            maps[index].unlocked = storeUI.StoreMapRef.IsUnlocked(item);
 
+        if (map.mapType == MapType.School)
+        {
+            map.unlocked = true;
+        }
+
+        //  ถ้าแมพยังล็อค ให้เช็คกุญแจแทนการ return เฉยๆ
         if (!map.unlocked)
         {
-            Debug.Log("[MapSelectController] Map locked – cannot play.");
+            StoreItem storeItem = GetStoreItemForMap(map.mapType);
+            if (storeItem == null)
+            {
+                Debug.LogError("[MapSelect] ❌ Cannot find StoreItem of this map.");
+                return;
+            }
+
+            int have = _currencyRef.KeyMap;
+            int need = storeItem.Price;
+
+            // ยังล็อกและกุญแจไม่พอ -> ไม่ต้องเปิด Popup
+            if (have < need)
+            {
+                Debug.Log("[MapSelect] ❌ Not enough keys to unlock.");
+                return;
+            }
+
+            // ยังล็อกแต่กุญแจพอ → เปิดหน้าต่างยืนยัน
+            unlockChoicePanel.SetActive(true);
+            unlockChoiceText.text = $"Unlock {map.mapName}?";
+
+            unlockYesButton.onClick.RemoveAllListeners();
+            unlockYesButton.onClick.AddListener(() => ConfirmUnlock(map));
+
+            unlockNoButton.onClick.RemoveAllListeners();
+            unlockNoButton.onClick.AddListener(() => unlockChoicePanel.SetActive(false));
+
             return;
         }
 
-        var gm = _gameManagerRef;
-        if (gm == null)
+        // ปลดล็อกแล้ว → เข้าเกมเลย
+        if (_gameManagerRef == null)
         {
-            Debug.LogError("[MapSelectController] GameManager.Instance is null – cannot load scene.");
+            Debug.LogError("[MapSelect] ❌ GameManager missing");
             return;
         }
 
-        Debug.Log($"[MapSelectController] Load scene: {map.sceneName}");
-        gm.LoadScene(map.sceneName);
+        Debug.Log($"[MapSelect] ▶ Load scene: {map.sceneName}");
+        _gameManagerRef.LoadScene(map.sceneName);
     }
+
+
+    private void ConfirmUnlock(MapInfo map)
+    {
+        var storeItem = GetStoreItemForMap(map.mapType);
+        if (storeItem == null) return;
+
+        // ป้องกันการเรียกซื้อซ้ำ
+        if (map.unlocked)
+        {
+            unlockChoicePanel.SetActive(false);
+            TryPlaySelectedMap(); // เข้าเกมได้เลย
+            return;
+        }
+
+        // ซื้อ (ปลดล็อก)
+        bool ok = storeUI.StoreMapRef.Purchase(storeItem);
+        if (!ok)
+        {
+            Debug.Log("❌ Unlock failed (not enough keys?)");
+            unlockChoicePanel.SetActive(false);
+            return;
+        }
+
+        // ปลดล็อกสำเร็จ
+        map.unlocked = true;
+        _gameManagerRef.SaveProgress();
+        unlockChoicePanel.SetActive(false);
+
+        // ⬇⬇ ปิดทุก UI ของ Locked ทันที (กัน RefreshUI ดึงค่าค้าง)
+        lockedIcon?.SetActive(false);
+        greyOverlay?.gameObject.SetActive(false);
+        keyText?.gameObject.SetActive(false);
+        keyIcon?.SetActive(false);
+
+        // ⬇ เปิดคลิกเพื่อเล่นได้แล้ว
+        previewImageButton.interactable = true;
+
+        // ⬇ อัปเดต UI ให้ตรงสถานะล่าสุด
+        RefreshUI();
+
+        // ⬇ เอฟเฟกต์ Glow แจ้งว่าปลดล็อกแล้ว
+        StartCoroutine(PlayUnlockGlow());
+    }
+    
+    public void OnUnlockYes()
+    {
+        ConfirmUnlock(maps[index]);
+    }
+
+    public void OnUnlockNo()
+    {
+        unlockChoicePanel.SetActive(false);
+        unlockChoiceText.text = "";
+    }
+
+
 #endregion
 
     #region  Buy Map on Lock
@@ -321,22 +458,79 @@ public class MapSelectController : MonoBehaviour
         return null;
     }
 
-    private void OnMapUnlocked(string id)
+    private void OnMapUnlocked(string payload)
     {
+        // payload ตัวอย่าง: "MAP_7042|Kitchen"
+        string[] parts = payload.Split('|');
+        if (parts.Length != 2)
+        {
+            Debug.LogWarning($"[MapSelect] ❌ Invalid unlock payload: {payload}");
+            return;
+        }
+
+        string unlockedId = parts[0];
+        string unlockedMapType = parts[1];
+
         foreach (var m in maps)
         {
-            if (m.mapType.ToString() == id || m.mapType.ToSceneName() == id)
+            // เทียบจาก mapType ตรง 100%
+            if (m.mapType.ToString() == unlockedMapType)
             {
                 m.unlocked = true;
-                Debug.Log($"[MapSelectController] 🟢 Map unlocked → {m.mapType}");
+
+                //  StoreMap sync runtime + save (กัน mismatch)
+                storeUI.StoreMapRef.ForceUnlock(m.mapType);
+
+                Debug.Log($"[MapSelect] ✔ Map unlocked: {m.mapType}");
+
+                // อัปเดต UI ทันที
                 RefreshUI();
+
+                // ปิดทุก element ที่เกี่ยวกับการล็อกทันที
+                lockedIcon?.SetActive(false);
+                greyOverlay?.gameObject.SetActive(false);
+                keyText?.gameObject.SetActive(false);
+                keyIcon?.SetActive(false);
+
+                // คลิกภาพเพื่อเข้าเล่นได้แล้ว
+                previewImageButton.interactable = true;
+
+                // เอฟเฟกต์ Glow
+                StartCoroutine(PlayUnlockGlow());
                 return;
             }
         }
 
-        Debug.LogWarning($"[MapSelectController] ⚠ Map unlocked from store but not found in MapSelect list: {id}");
+        Debug.LogWarning($"[MapSelect] ⚠ Map unlocked but not in list: {payload}");
     }
 
+
+    private IEnumerator PlayUnlockGlow()
+    {
+        if (glowEffect == null) yield break;
+
+        Color c = glowEffect.color;
+        float t = 0f;
+
+        // Fade In
+        while (t < 1f)
+        {
+            t += Time.deltaTime * (1f / glowDuration);
+            c.a = Mathf.Lerp(0f, 1f, t);
+            glowEffect.color = c;
+            yield return null;
+        }
+
+        // Fade Out
+        t = 0f;
+        while (t < 1f)
+        {
+            t += Time.deltaTime * (1f / glowDuration);
+            c.a = Mathf.Lerp(1f, 0f, t);
+            glowEffect.color = c;
+            yield return null;
+        }
+    }
 
     #endregion
 

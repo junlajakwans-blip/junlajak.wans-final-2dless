@@ -32,17 +32,26 @@ public class UpgradeUI : MonoBehaviour
         int max = _item.MaxLevel;
         int level = _storeUpgrade.GetLevel(_item);
 
+        float spacing = 40f;   // ระยะห่างแต่ละไอคอน (แก้ค่าตามต้องการ)
+
         for (int i = 0; i < max; i++)
         {
             GameObject clone = Instantiate(iconTemplate, iconContainer);
             clone.SetActive(true);
 
+            clone.transform.localScale = Vector3.one;
+
+            RectTransform rt = clone.GetComponent<RectTransform>();
+
+            // ➤ เลื่อนทีละ 40 ไปทางขวา
+            rt.anchoredPosition = new Vector2(i * spacing, 0);
+
             var image = clone.GetComponentInChildren<UnityEngine.UI.Image>();
-            image.color = (i < level) ? Color.white : new Color(1,1,1,0.25f);
+            image.color = (i < level) ? Color.white : new Color(1, 1, 1, 0.25f);
 
             spawned.Add(clone);
         }
-    }
 
+            }
 
 }

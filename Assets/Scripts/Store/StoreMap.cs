@@ -100,4 +100,25 @@ public class StoreMap : StoreBase
     }
 
 
+    public void ForceUnlock(MapType type)
+    {
+        foreach (var item in Items)
+        {
+            if (item.mapType == type)
+            {
+                if (!unlocked.Contains(item.ID))
+                    unlocked.Add(item.ID);
+
+                if (!_progress.UnlockedMaps.Contains(item.ID))
+                    _progress.UnlockedMaps.Add(item.ID);
+            }
+        }
+    }
+
+
+    public override bool IsUnlocked(StoreItem item)
+    {
+        return unlocked.Contains(item.ID);
+    }
+
 }

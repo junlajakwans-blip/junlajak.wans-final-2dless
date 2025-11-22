@@ -77,6 +77,29 @@ public class SaveSystem : MonoBehaviour
         Debug.Log("Save data reset complete.");
     }
 
+    public void DeleteSave()
+    {
+        try
+        {
+            if (File.Exists(_saveFilePath))
+            {
+                File.Delete(_saveFilePath);
+                Debug.Log("🗑️ Save file deleted");
+            }
+
+            if (File.Exists(_backupFilePath))
+            {
+                File.Delete(_backupFilePath);
+                Debug.Log("🗑️ Backup save deleted");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"❌ DeleteSave failed: {e.Message}");
+        }
+    }
+
+
     public void BackupSaveFile()
     {
         try

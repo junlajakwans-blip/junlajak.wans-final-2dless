@@ -22,6 +22,9 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
     [SerializeField] private DistanceCulling _cullingManager;
     private CardManager _cardManager;
     private BuffManager _buffManager;
+    private float _minSpawnDistanceX = 1.2f; // ห้ามเกิดห่างกันน้อยกว่านี้
+    private Vector3 _lastSpawnPos = Vector3.positiveInfinity;
+
 
     #endregion
 
@@ -160,16 +163,24 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
 
     private Vector3 GetRandomSpawnPosition()
     {
-        // ★ Auto follow player position
+        // อิงตำแหน่ง player
         if (_playerTransform != null)
-        {
             _spawnArea.x = _playerTransform.position.x - (_spawnArea.width * 0.5f);
+
+        Vector3 pos;
+        int loopSafe = 0;
+
+        do
+        {
+            float x = Random.Range(_spawnArea.xMin, _spawnArea.xMax);
+            float y = _spawnArea.yMax - collectibleGroundOffset;
+            pos = new Vector3(x, y, 0f);
+            loopSafe++;
         }
+        while (Vector3.Distance(pos, _lastSpawnPos) < _minSpawnDistanceX && loopSafe < 10);
 
-        float x = Random.Range(_spawnArea.xMin, _spawnArea.xMax);
-        float y = _spawnArea.yMax - collectibleGroundOffset ;
-
-        return new Vector3(x, y, 0f);
+        _lastSpawnPos = pos;
+        return pos;
     }
 
 

@@ -119,6 +119,10 @@ public class StoreUI : MonoBehaviour
 
         HideAllSlots();
 
+        if (store is StoreUpgrade su)
+        su.SyncWithSave();
+
+
         List<SlotUI> targetSlotList = GetSlotListByType(store.StoreType);
         if (targetSlotList == null)
         {
@@ -142,8 +146,11 @@ public class StoreUI : MonoBehaviour
             slot.Show();
             Debug.Log($"[STORE UI] Slot '{slot.name}' → SHOWN");
         }
-
+        
         Debug.Log("============================== END POPULATE ================\n");
+        if (store is StoreUpgrade)
+        StartCoroutine(RefreshUpgradeUI_NextFrame());
+
     }
 
     private void OnClickPurchase(StoreItem item)
@@ -156,11 +163,24 @@ public class StoreUI : MonoBehaviour
         RefreshCurrency();
         UIManager.Instance?.RefreshStoreUI();
 
-        foreach (var slot in exchangeSlots.Concat(mapSlots).Concat(upgradeSlots))
+        if (item.StoreType == StoreType.Upgrade)
+        {
+            UIManager.Instance?.upgradeUI?.Init(_storeUpgrade, item);
+        }
+
+        // ห้าม refresh map slots เพื่อป้องกัน Map UI คืนค่าสถานะ lock
+        foreach (var slot in exchangeSlots.Concat(mapSlots))
         {
             if (slot.gameObject.activeSelf)
                 slot.Refresh();
         }
+
+        // ⬇ UpgradeSlots ไม่ต้อง refresh เพราะจะทำให้ UI ดับลง
+        if (item.StoreType == StoreType.Upgrade)
+        {
+            UIManager.Instance?.upgradeUI?.Init(_storeUpgrade, item);
+        }
+
     }
 
     public void SwitchStore(StoreType type)
@@ -171,9 +191,13 @@ public class StoreUI : MonoBehaviour
             Debug.LogError($"[StoreUI] Store type {type} NOT FOUND");
             return;
         }
-
+        if (nextStore is StoreUpgrade su)
+        su.SyncWithSave();
         Debug.Log($"[StoreUI] SwitchStore → {nextStore.StoreName} | Items = {nextStore.Items.Count}");
         SetActiveStore(nextStore);
+        if (type == StoreType.Upgrade)
+        StartCoroutine(RefreshUpgradeUI_NextFrame());
+
     }
 
     public void RefreshCurrency()
@@ -216,6 +240,16 @@ public class StoreUI : MonoBehaviour
                 slot.transform.SetAsLastSibling(); // หรือ scroll to view / outline effect
                 break;
             }
+        }
+    }
+
+    private System.Collections.IEnumerator RefreshUpgradeUI_NextFrame()
+    {
+        yield return null; // ← รอ 1 เฟรมให้ SlotUI instantiate เสร็จ
+
+        if (UIManager.Instance?.upgradeUI != null && _storeUpgrade != null)
+        {
+            UIManager.Instance.upgradeUI.Init(_storeUpgrade, null);
         }
     }
 

@@ -8,9 +8,11 @@ public class BackgroundLooper : MonoBehaviour
     #region Serialized Fields
 
     [Header("Looping Settings")]
-    [SerializeField] private float _resetPositionX = -20f;
+    [SerializeField] private float _resetPositionX = -999f;
     [SerializeField] private float _startPositionX = 20f;
     [SerializeField] private bool _isLooping = true;
+    [SerializeField] private float _backgroundWidth = 2.26f;
+
 
     [Header("Background Type Key")]
     [SerializeField] private string _currentBackgroundKey = "default";
@@ -88,7 +90,7 @@ public class BackgroundLooper : MonoBehaviour
             var pos = layer.transform.position;
             if (pos.x <= _resetPositionX)
             {
-                pos.x = _startPositionX;
+                pos.x += _backgroundWidth * 2f;
                 layer.transform.position = pos;
             }
         }

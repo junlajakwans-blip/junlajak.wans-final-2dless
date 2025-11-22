@@ -125,6 +125,12 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+            // ถ้าเริ่ม Play โดยไม่ได้อยู่ใน MainMenu ให้บังคับกลับ MainMenu
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "MainMenu")
+        {
+            LoadScene("MainMenu");
+            return;
+        }
         InitializeGame();
     }
 
@@ -383,4 +389,19 @@ public void InitializeGame()
         
         Debug.Log("[GameManager] Full game progress reset and restarted.");
     }
+    
+    public void DeleteSaveAndRestart()
+    {
+        if (_saveSystem == null)
+        {
+            Debug.LogWarning("[GameManager] SaveSystem missing — cannot delete save.");
+            return;
+        }
+
+        _saveSystem.DeleteSave();
+        RestartGame(); // หรือ LoadScene("MainMenu")
+        Debug.Log("[GameManager] Save deleted and game restarted.");
+    }
+
 }
+
