@@ -7,13 +7,24 @@ public class SaveSystem : MonoBehaviour
     #region Fields
     private string _saveFilePath;
     private string _backupFilePath;
+    public static SaveSystem Instance;
     private GameProgressData _progressData;
     #endregion
 
     #region Unity Lifecycle
     private void Awake()
     {
-        Initialize();
+        // --- Singleton & Persist ---
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        Initialize();   // โหลดไฟล์หลังทำ Singleton
     }
     #endregion
 

@@ -90,6 +90,99 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &1526907069799846881
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6979801062742470440}
+  m_Layer: 0
+  m_Name: displayPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: -5397416234189338067, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6979801062742470440
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1526907069799846881}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 2.61, y: -1.17, z: 0}
+  m_LocalScale: {x: 5, y: 5, z: 5}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3180083276177619504}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2971531076567058291
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6413461673691137256}
+  m_Layer: 0
+  m_Name: throwPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 6519382022992737161, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6413461673691137256
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2971531076567058291}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 2.65, y: -0.17, z: 0}
+  m_LocalScale: {x: 5, y: 5, z: 5}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3180083276177619504}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5460515329973955135
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 263837660512227794}
+  m_Layer: 0
+  m_Name: InteractOrigin
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &263837660512227794
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5460515329973955135}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1.3818, y: 2.58935, z: 0}
+  m_LocalScale: {x: 5, y: 5, z: 5}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3180083276177619504}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5999967935324284092
 GameObject:
   m_ObjectHideFlags: 0
@@ -100,9 +193,10 @@ GameObject:
   m_Component:
   - component: {fileID: 3180083276177619504}
   - component: {fileID: -4817979446526450474}
+  - component: {fileID: 7978051908384033325}
   - component: {fileID: 8952884402048639063}
   - component: {fileID: 4658831917752918347}
-  - component: {fileID: 7978051908384033325}
+  - component: {fileID: 5168628728660963583}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -124,6 +218,9 @@ Transform:
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 7171168887567512006}
+  - {fileID: 6413461673691137256}
+  - {fileID: 6979801062742470440}
+  - {fileID: 263837660512227794}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!50 &-4817979446526450474
@@ -134,7 +231,7 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5999967935324284092}
-  m_BodyType: 0
+  m_BodyType: 1
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
@@ -153,75 +250,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &8952884402048639063
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5999967935324284092}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 38bd1b599073a504e94dd5bf90e1e278, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Player
-  _maxHealth: 100
-  _currentHealth: 100
-  _moveSpeed: 5
-  _rigidbody: {fileID: -4817979446526450474}
-  _animator: {fileID: 0}
-  _playerData:
-    _playerName: 
-    _selectedCareer: 
-    _maxHealth: 100
-    _speed: 5
-    _attackPower: 10
-    _defense: 5
-    _currency:
-      _coin: 2135
-      _token: 6
-      _keyMap: 8
-    _progress:
-      _unlockedMaps:
-      - School Zone
-      - City Road
-      - Kitchen Mayhem
-      _unlockedCareers: []
-      _totalCoins: 2135
-      _totalTokens: 6
-      _totalKeyMaps: 8
-      _bestScore: 0
-      _playTime: 241.97243
-    _isDefaultDuckling: 1
-  _careerSwitcher: {fileID: 0}
-  _cardManager: {fileID: 0}
-  _currency:
-    _coin: 0
-    _token: 0
-    _keyMap: 0
-  _rigAnimator: {fileID: 0}
-  _jumpForce: 5
-  _isGrounded: 0
-  _currentMapType: 0
-  _hasMapBuff: 0
-  _buffMultiplier: 1
-  _interactRadius: 1.5
-  _collectibleLayer:
-    serializedVersion: 2
-    m_Bits: 0
---- !u!114 &4658831917752918347
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5999967935324284092}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 372b090cefb348949bab66c3b7e3dd92, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  _moveSpeed: 3.5
 --- !u!60 &7978051908384033325
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -292,3 +320,95 @@ PolygonCollider2D:
       - {x: 2.7990098, y: -0.12296069}
       - {x: 2.3189764, y: 0.39192137}
   m_UseDelaunayMesh: 0
+--- !u!114 &8952884402048639063
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5999967935324284092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38bd1b599073a504e94dd5bf90e1e278, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Player
+  _maxHealth: 100
+  _currentHealth: 100
+  _moveSpeed: 5
+  _rigidbody: {fileID: -4817979446526450474}
+  _animator: {fileID: 0}
+  _playerData:
+    _playerName: 
+    _selectedCareer: 
+    _maxHealth: 100
+    _speed: 5
+    _attackPower: 10
+    _defense: 5
+    _currency:
+      _coin: 2135
+      _token: 6
+      _keyMap: 8
+    _progress:
+      _unlockedMaps:
+      - School Zone
+      - City Road
+      - Kitchen Mayhem
+      _unlockedCareers: []
+      _totalCoins: 2135
+      _totalTokens: 6
+      _totalKeyMaps: 8
+      _bestScore: 0
+      _playTime: 241.97243
+    _isDefaultDuckling: 1
+  _careerSwitcher: {fileID: 0}
+  _cardManager: {fileID: 0}
+  _currency:
+    _coin: 0
+    _token: 0
+    _keyMap: 0
+  _rigAnimator: {fileID: 0}
+  _jumpForce: 5
+  _isGrounded: 0
+  _currentMapType: 1
+  _hasMapBuff: 0
+  _buffMultiplier: 1
+  _interactRadius: 1.5
+  _collectibleLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  MaxThrowable: 1
+--- !u!114 &4658831917752918347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5999967935324284092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 372b090cefb348949bab66c3b7e3dd92, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerController
+  _moveSpeed: 3.5
+  disableAnimation: 1
+  _animator: {fileID: 0}
+--- !u!114 &5168628728660963583
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5999967935324284092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 534d06025ed558249af527de7dfc4801, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInteract
+  interactRadius: 1
+  interactOrigin: {fileID: 3180083276177619504}
+  displayPoint: {fileID: 6979801062742470440}
+  throwPoint: {fileID: 6413461673691137256}
+  throwForce: 12
+  interactLayer:
+    serializedVersion: 2
+    m_Bits: 512

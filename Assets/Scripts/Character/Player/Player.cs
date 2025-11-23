@@ -8,7 +8,7 @@ using UnityEngine.Rendering;
 /// Implements IDamageable, IAttackable, ISkillUser, ICollectable.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
-public class Player : Character, IDamageable, IAttackable, ISkillUser, IInteractable
+public class Player : Character, IDamageable, IAttackable, ISkillUser
 {
 #region Fields
     [Header("Core Data")]
@@ -46,6 +46,7 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser, IInteract
 
     public bool CanInteract => true;
     public string PlayerName => _playerData != null ? _playerData.PlayerName : "Unknown";
+    public int FaceDir { get; private set; } = 1;
 
     #endregion
 
@@ -86,7 +87,9 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser, IInteract
     {
         if (_isDead) return; 
 
-
+        // อัปเดตทิศการหันหน้า
+        if (direction.x > 0) FaceDir = 1;
+        else if (direction.x < 0) FaceDir = -1;
         float speed = _moveSpeed * _speedModifier; 
 
 #if UNITY_2022_3_OR_NEWER
@@ -251,12 +254,39 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser, IInteract
 
     public override void Die()
     {
+        if (_isDead) return;
         _isDead = true;
+
+        // 1) ตัด collider ตัวเอง → ศัตรูจะหยุดตี / หยุดชนทันที
+        var coll = GetComponent<Collider2D>();
+        if (coll != null) coll.enabled = false;
+
+        // 2) ตัด Rigidbody interaction → ไม่ให้ล้มกลิ้งแบบรับดาเมจซ้ำ
+    #if UNITY_2022_3_OR_NEWER
         _rigidbody.linearVelocity = Vector2.zero;
+    #else
+        _rigidbody.velocity = Vector2.zero;
+    #endif
+        _rigidbody.simulated = false;
+
+        // 3) ปิดระบบการโจมตี การ์ด และอินพุต
+        if (_cardManager != null)
+        _cardManager.enabled = false;
+
+        this.enabled = false; // ปิด Player.cs update ทั้งคลาส
+
         if (_animator != null)
             _animator.SetTrigger("Die");
 
         Debug.Log("[Player] Player died.");
+
+        StartCoroutine(HandleGameOver());
+    }
+
+    private IEnumerator HandleGameOver()
+    {
+        yield return new WaitForSeconds(2f);
+        GameManager.Instance.EndGame(); // หรือ LoadScene("GameOver")
     }
 
     public DuckCareer GetCurrentCareerID()
@@ -369,6 +399,24 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser, IInteract
     }
     #endregion
 
+    private GameObject _heldThrowable;
+
+    private int _throwableCount = 0;
+    public int MaxThrowable = 1;
+
+    public void PickUpThrowable()
+    {
+        if (_throwableCount >= MaxThrowable)
+        {
+            Debug.Log("[Player] Already holding a throwable!");
+            return;
+        }
+
+        _throwableCount++;
+        Debug.Log($"[Player] Picked up throwable → total: {_throwableCount}");
+    }
+
+
 
     #region Reset
     public void ResetState()
@@ -385,38 +433,5 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser, IInteract
     }
     #endregion
 
-
-    #region IInteractable Implementation
-
-    public void Interact(Player player)
-    {
-        //  Interact/Pickup ที่ทำให้เกิด Error ถูกแทนที่ด้วยการค้นหาวัตถุ
-        
-        // 1. สแกนหา Collider 2D ในรัศมีที่กำหนด
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(
-            transform.position, 
-            _interactRadius, 
-            _collectibleLayer
-        );
-
-        foreach (Collider2D hit in hitColliders)
-        {
-            // 2. ตรวจสอบว่าวัตถุที่เจอเป็น CollectibleItem หรือไม่
-            if (hit.TryGetComponent<CollectibleItem>(out var collectible))
-            {
-                // 3. ถ้าเจอ ให้เรียก Collect() แล้วหยุด (เก็บแค่ชิ้นเดียวต่อการกด E)
-                collectible.Collect(player);
-                Debug.Log($"[PlayerInteract] Collected {collectible.GetCollectType()} via E.");
-                return; 
-            }
-        }
-
-    }
-
-    public void ShowPrompt()
-    {
-        Debug.Log ("Player pick up");
-    }
-    #endregion
 
 }

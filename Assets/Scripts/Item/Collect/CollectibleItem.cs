@@ -54,13 +54,14 @@ public class CollectibleItem : MonoBehaviour, ICollectable
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (!other.CompareTag("Player")) return;
 
-        if (other.TryGetComponent<Player>(out Player player))
-        {
-            // เรียก Collect() ทันทีที่ชน
-            Collect(player);
+        var player = other.GetComponent<Player>();
+        if (player == null) return;
+        
+        // เรียก Collect() ทันทีที่ชน
+        Collect(player);
             
-        }
     }
 
     #endregion

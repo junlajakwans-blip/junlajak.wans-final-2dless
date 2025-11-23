@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2693180997949815367}
   - component: {fileID: 7138387201507201562}
   - component: {fileID: -7728188970220646687}
+  - component: {fileID: 7004047541957242172}
   m_Layer: 0
   m_Name: Enemy_DoggoMon
   m_TagString: Untagged
@@ -60,7 +61,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!114 &-7728188970220646687
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -73,8 +74,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64ec5c48b810e4d42a17d536768466b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DoggoMon
-  _maxHealth: 100
-  _currentHealth: 0
+  _maxHealth: 10
+  _currentHealth: 10
   _moveSpeed: 3.5
   _rigidbody: {fileID: 7138387201507201562}
   _animator: {fileID: 0}
@@ -83,6 +84,68 @@ MonoBehaviour:
   _enemyType: 4
   _isDisabled: 0
   CanDetectOverride: 1
+--- !u!60 &7004047541957242172
+PolygonCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3679138491074812253}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Points:
+    m_Paths:
+    - - {x: 1.5606803, y: 1.074815}
+      - {x: 1.677961, y: 1.5619968}
+      - {x: 1.4186242, y: 2.3436773}
+      - {x: 0.28966993, y: 2.412672}
+      - {x: -0.01341708, y: 1.495852}
+      - {x: -0.6301979, y: 1.3219075}
+      - {x: -1.2320547, y: 0.3652166}
+      - {x: -1.6987169, y: 0.08006489}
+      - {x: -1.8427737, y: -1.3816681}
+      - {x: -1.8803773, y: -2.3986645}
+      - {x: 1.4538615, y: -2.4021535}
+      - {x: 1.2635249, y: -1.4798603}
+      - {x: 1.9663192, y: -1.1262906}
+      - {x: 1.751921, y: -0.25504905}
+      - {x: 1.9385645, y: 0.6943861}
+  m_UseDelaunayMesh: 0
 --- !u!1 &7062524156227822750
 GameObject:
   m_ObjectHideFlags: 0

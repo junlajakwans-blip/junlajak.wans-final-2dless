@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4746845007323741382}
   - component: {fileID: -3156925987863832518}
   - component: {fileID: -8511701785679745898}
+  - component: {fileID: 5348319614881918660}
   m_Layer: 0
   m_Name: Enemy_LottryMon
   m_TagString: Untagged
@@ -60,7 +61,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!114 &-8511701785679745898
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -80,9 +81,76 @@ MonoBehaviour:
   _animator: {fileID: 0}
   _data: {fileID: 11400000, guid: 8fd6501bad8fc0242a3d3c677385bc76, type: 2}
   _target: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
-  _enemyType: 0
+  _enemyType: 1
   _isDisabled: 0
   CanDetectOverride: 1
+--- !u!60 &5348319614881918660
+PolygonCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3359114595578432427}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Points:
+    m_Paths:
+    - - {x: 1.8562018, y: 3.0650043}
+      - {x: 1.0947269, y: 4.3224154}
+      - {x: -0.6341773, y: 4.598588}
+      - {x: -1.4623871, y: 3.691799}
+      - {x: -2.4975011, y: 3.8573077}
+      - {x: -2.852427, y: 2.1987534}
+      - {x: -3.9417267, y: 1.6871779}
+      - {x: -3.5263104, y: 0.88149047}
+      - {x: -4.3791466, y: 0.0434345}
+      - {x: -3.890748, y: -2.825904}
+      - {x: -2.9420786, y: -3.245326}
+      - {x: -1.4579356, y: -3.434216}
+      - {x: -1.1345394, y: -4.234536}
+      - {x: 1.2024632, y: -4.261991}
+      - {x: 1.6448177, y: -3.8438635}
+      - {x: 3.2258985, y: -3.0639231}
+      - {x: 3.611189, y: -2.136365}
+      - {x: 3.8497393, y: 0.36563897}
+      - {x: 3.83888, y: 2.275092}
+      - {x: 3.473018, y: 3.760122}
+  m_UseDelaunayMesh: 0
 --- !u!1 &5133943285198737580
 GameObject:
   m_ObjectHideFlags: 0
@@ -109,7 +177,7 @@ Transform:
   m_GameObject: {fileID: 5133943285198737580}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.06, y: 0.09, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

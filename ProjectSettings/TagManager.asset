@@ -16,8 +16,8 @@ TagManager:
   - PlayerSpawn
   - CardUI
   - Card
-  - 
-  - 
+  - ThrowItem
+  - Collectable
   - 
   - 
   - 

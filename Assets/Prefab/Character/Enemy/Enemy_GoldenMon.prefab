@@ -101,6 +101,7 @@ GameObject:
   - component: {fileID: 2869517851058321991}
   - component: {fileID: -8582135991359644507}
   - component: {fileID: 3183577284611095677}
+  - component: {fileID: 4609644179319444559}
   m_Layer: 0
   m_Name: Enemy_GoldenMon
   m_TagString: Untagged
@@ -150,7 +151,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!114 &3183577284611095677
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -163,8 +164,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26d119aaf8c10d9498645cc47dff1736, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GoldenMon
-  _maxHealth: 100
-  _currentHealth: 0
+  _maxHealth: 10
+  _currentHealth: 10
   _moveSpeed: 3.5
   _rigidbody: {fileID: -8582135991359644507}
   _animator: {fileID: 0}
@@ -173,3 +174,75 @@ MonoBehaviour:
   _enemyType: 9
   _isDisabled: 0
   CanDetectOverride: 1
+--- !u!60 &4609644179319444559
+PolygonCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6417080718696356904}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Points:
+    m_Paths:
+    - - {x: 1.5807917, y: 1.2016431}
+      - {x: 1.2907097, y: 1.0368774}
+      - {x: 1.3210576, y: 1.6975192}
+      - {x: 0.86973923, y: 2.7128694}
+      - {x: 0.59351075, y: 3.190214}
+      - {x: -0.07732764, y: 3.0628412}
+      - {x: -0.88472193, y: 2.4494848}
+      - {x: -1.2266545, y: 2.2938223}
+      - {x: -1.3604678, y: 1.911796}
+      - {x: -1.6981931, y: 1.6476316}
+      - {x: -1.6192312, y: 1.2156}
+      - {x: -2.1065493, y: 1.2309525}
+      - {x: -2.2266304, y: 0.35518128}
+      - {x: -2.1121278, y: -0.22306159}
+      - {x: -1.6556647, y: -0.6115935}
+      - {x: -1.4824482, y: -1.4870567}
+      - {x: -1.0630059, y: -2.298166}
+      - {x: -1.1655315, y: -3.0585394}
+      - {x: 1.7555703, y: -3.0585392}
+      - {x: 1.671266, y: -2.4483223}
+      - {x: 2.2064323, y: -1.4767723}
+      - {x: 2.244644, y: -0.67395806}
+      - {x: 1.8797665, y: -0.2676516}
+      - {x: 2.1897695, y: 0.30189556}
+      - {x: 2.0573792, y: 1.1203204}
+  m_UseDelaunayMesh: 0

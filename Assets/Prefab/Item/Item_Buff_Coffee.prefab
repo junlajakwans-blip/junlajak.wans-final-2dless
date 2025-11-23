@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5565744074809594295}
   - component: {fileID: -626792042982529578}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Item_Buff_Coffee
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -98,7 +98,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7672495304348434044}
   - component: {fileID: 7309894019175943818}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Item_Buff_Coffee_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}

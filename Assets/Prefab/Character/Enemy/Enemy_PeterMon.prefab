@@ -101,6 +101,7 @@ GameObject:
   - component: {fileID: 8284287875452098646}
   - component: {fileID: 7177338774800372511}
   - component: {fileID: -1267466024926493143}
+  - component: {fileID: 4570480470003966125}
   m_Layer: 0
   m_Name: Enemy_PeterMon
   m_TagString: Untagged
@@ -150,7 +151,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!114 &-1267466024926493143
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -175,3 +176,62 @@ MonoBehaviour:
   CanDetectOverride: 1
   _projectilePrefab: {fileID: 4933796339725931637, guid: e1a8af1a3d676d744a98ca11a6f4a68d, type: 3}
   _firePoint: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+--- !u!60 &4570480470003966125
+PolygonCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9051995102211930350}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Points:
+    m_Paths:
+    - - {x: 3.3820176, y: 2.1190827}
+      - {x: 0, y: 3.8930798}
+      - {x: -1.3772252, y: 3.279498}
+      - {x: -4.49184, y: 1.496475}
+      - {x: -3.9226055, y: -0.3465511}
+      - {x: -3.2872002, y: -1.7897943}
+      - {x: -1.6098466, y: -4.120817}
+      - {x: 0.84686714, y: -4.1338997}
+      - {x: 1.874306, y: -3.2000666}
+      - {x: 3.8012896, y: -3.2034514}
+      - {x: 4.2689037, y: -0.9256968}
+      - {x: 4.016857, y: 0.568099}
+  m_UseDelaunayMesh: 0

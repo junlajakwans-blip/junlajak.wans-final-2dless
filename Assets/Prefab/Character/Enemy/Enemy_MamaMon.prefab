@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 5126316362868521404}
   - component: {fileID: -5937522036954992674}
   - component: {fileID: -4661990533614093088}
+  - component: {fileID: 9126481842832098792}
   m_Layer: 0
   m_Name: Enemy_MamaMon
   m_TagString: Untagged
@@ -60,7 +61,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!114 &-4661990533614093088
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -85,6 +86,67 @@ MonoBehaviour:
   CanDetectOverride: 1
   _noodleProjectilePrefab: {fileID: 4933796339725931637, guid: e1a8af1a3d676d744a98ca11a6f4a68d, type: 3}
   _firePoint: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+--- !u!60 &9126481842832098792
+PolygonCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2325540279114266656}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Points:
+    m_Paths:
+    - - {x: 2.1781597, y: 3.4390175}
+      - {x: 0.72868264, y: 3.2283156}
+      - {x: 0.40360966, y: 2.6477697}
+      - {x: -1.5501469, y: 2.123347}
+      - {x: -2.6596727, y: 1.4567899}
+      - {x: -2.091451, y: 0.45560026}
+      - {x: -3.3528743, y: -0.8611886}
+      - {x: -3.5879247, y: -3.0385792}
+      - {x: -2.2035956, y: -3.038099}
+      - {x: -1.4749905, y: -3.214009}
+      - {x: 2.1529305, y: -3.2219489}
+      - {x: 2.4191232, y: -1.8000363}
+      - {x: 2.2805216, y: -1.1020932}
+      - {x: 3.9378748, y: 0.93507504}
+  m_UseDelaunayMesh: 0
 --- !u!1 &9031073501640877440
 GameObject:
   m_ObjectHideFlags: 0

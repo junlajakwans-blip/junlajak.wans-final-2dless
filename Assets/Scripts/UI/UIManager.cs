@@ -14,6 +14,10 @@ public class UIManager : MonoBehaviour
     [SerializeField] private StoreUI _storeUI;
     [SerializeField] private MapSelectController _mapSelectController;
 
+    [Header("Throwable Interact")]
+    [SerializeField] private GameObject promptUI;
+    [SerializeField] private TMPro.TextMeshProUGUI promptText;
+
     [Header("System References")]
     [SerializeField] private TextMeshProUGUI storeTitleText;
     [SerializeField] private TopCurrencyUI[] topCurrencies;
@@ -132,6 +136,21 @@ public class UIManager : MonoBehaviour
     }
     #endregion
         
+    #region Throwable Interact UI
+        public void ShowPrompt(string message)
+        {
+            if (promptUI == null || promptText == null) return;
+
+            promptText.text = message;
+            promptUI.SetActive(true);
+        }
+
+        public void HidePrompt()
+        {
+            if (promptUI == null) return;
+            promptUI.SetActive(false);
+        }
+    #endregion
 
     #region Health UI
     public void InitializeHealth(int maxHP)
@@ -217,7 +236,6 @@ public class UIManager : MonoBehaviour
     }
 
     #endregion
-
 
 #region  Store UI    
     

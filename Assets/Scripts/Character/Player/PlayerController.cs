@@ -43,6 +43,8 @@ public class PlayerController : MonoBehaviour
         // ตรวจสอบความผิดพลาด (Guard Clauses)
         if (_player == null) Debug.LogError("Player script not found on the same GameObject!");
         if (_rigidbody == null) Debug.LogError("Rigidbody2D not found!");
+
+        _player = GetComponentInParent<Player>();
     }
 
     private void Update()
@@ -108,14 +110,18 @@ public class PlayerController : MonoBehaviour
 
         // --------------------------------------
         // INTERACT / PICKUP (E) - หากคุณต้องการใช้ E ในการเก็บของ
-        // (แนะนำให้ใช้ OnTriggerEnter2D อัตโนมัติเหมือนที่เราทำไปแล้ว)
         // --------------------------------------
         if (Input.GetKeyDown(KeyCode.E))
         {
-            // Only Duckling can interact for now
-            if (_player.GetCurrentCareerID() == DuckCareer.Duckling)
-                // ตรวจสอบว่า _player.Interact() มีการทำงานอย่างไร
-                _player.Interact(_player); 
+            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 1f);
+            foreach (Collider2D hit in hits)
+            {
+                if (hit.TryGetComponent<IInteractable>(out var interactObj))
+                {
+                    interactObj.Interact(_player);
+                    return;
+                }
+            }
         }
 
         // --------------------------------------

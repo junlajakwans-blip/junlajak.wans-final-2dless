@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6517438294915756732}
   - component: {fileID: 7158444104966652307}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Item_Buff_MooKrata
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -99,7 +99,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7694577977204283202}
   - component: {fileID: 4546562328600585576}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Item_Buff_MooKrata_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 
 /// <summary>
@@ -62,6 +63,7 @@ public class GameManager : MonoBehaviour
         UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         Debug.Log($"[GameManager] Scene Loaded: {scene.name}");
@@ -70,43 +72,50 @@ public class GameManager : MonoBehaviour
         var mapGenerator = FindFirstObjectByType<MapGeneratorBase>();
         var player = FindFirstObjectByType<Player>();
 
-        if (sceneManager != null && mapGenerator != null && player != null)
+        if (sceneManager == null || mapGenerator == null || player == null)
         {
-            sceneManager.Inject(mapGenerator, player);
-
-            PlayerData data = new PlayerData(_currencyData, _persistentProgress);
-            int hpBonus = _upgradeStore != null ? _upgradeStore.GetTotalHPBonus() : 0;
-            data.UpgradeStat("MaxHealth", hpBonus);
-            player.Initialize(data);
-
-            sceneManager.TryInitializeScene();
+            Debug.LogWarning("[GameManager] Waiting next frame — scene dependencies not ready yet.");
+            StartCoroutine(DelayedSceneInit());
+            return;
         }
 
+    }
 
-        // แก้ CardManager Initialize
+    private IEnumerator DelayedSceneInit()
+    {
+        SceneManager sceneManager = null;
+        MapGeneratorBase mapGenerator = null;
+        Player player = null;
+
+        while (sceneManager == null || mapGenerator == null || player == null)
+        {
+            sceneManager = FindFirstObjectByType<SceneManager>();
+            mapGenerator = FindFirstObjectByType<MapGeneratorBase>();
+            player = FindFirstObjectByType<Player>();
+            yield return null;
+        }
+
+        sceneManager.Inject(mapGenerator, player);
+        sceneManager.TryInitializeScene();
+
+        // Init Player
+        PlayerData data = new PlayerData(_currencyData, _persistentProgress);
+        int hpBonus = _upgradeStore != null ? _upgradeStore.GetTotalHPBonus() : 0;
+        data.UpgradeStat("MaxHealth", hpBonus);
+        player.Initialize(data);
+
+        // Init Card System
         _playerInstance = player;
         if (_cardManager != null)
             _cardManager.Initialize(_playerInstance);
-            if (_cardManager != null)
-            {
-                _cardManager.Initialize(_playerInstance);
 
-                // FIX การเชื่อมกลับ
-                if (_cardManager.TryGetComponent<CardSlotUI>(out var slotUI))
-                {
-                    slotUI.SetManager(_cardManager);
-                }
-                else
-                {
-                    // ถ้า CardSlotUI อยู่เป็น GameObject แยกใน Canvas
-                    var ui = FindFirstObjectByType<CardSlotUI>();
-                    if (ui != null)
-                        ui.SetManager(_cardManager);
-                }
-            }
+        var slotUI = FindFirstObjectByType<CardSlotUI>();
+        if (slotUI != null)
+            slotUI.SetManager(_cardManager);
 
         OnCurrencyReady?.Invoke();
     }
+
 
 
     #region Unity Lifecycle
@@ -213,24 +222,23 @@ public void InitializeGame()
     playerData.UpgradeStat("MaxHealth", hpBonus);
 
 
-    if (_player != null)
-        _player.Initialize(playerData);
-
-
-    // ตรวจสอบว่า CardManager และ Player มีอยู่จริง
-        if (_cardManager != null && _playerInstance != null)
-        {
-            //  ใช้เมธอด Initialize ที่ถูกปรับปรุงแล้ว
-            _cardManager.Initialize(_playerInstance); 
-        }
-        else
-        {
-            Debug.LogError("[GameManager] CardManager or Player instance is missing! Cannot initialize card system.");
-        }
+    StartCoroutine(DelayedInit(playerData));
 
     _isPaused = false;
     _score = 0;
     _playTime = 0f;
+}
+
+private IEnumerator DelayedInit(PlayerData data)
+{
+    // รอหนึ่งเฟรม เพื่อให้ทุก object บน scene spawn เสร็จ
+    yield return null;
+
+    if (_player != null)
+        _player.Initialize(data);
+
+    if (_cardManager != null && _playerInstance != null)
+        _cardManager.Initialize(_playerInstance);
 }
 
 

@@ -24,6 +24,7 @@ public class CardManager : MonoBehaviour
 
 
     public static CardManager Instance { get; private set; }
+    public RandomStarterCard starterPanel;
     #endregion
 
 
@@ -141,6 +142,13 @@ public class CardManager : MonoBehaviour
 
 
     #region Use Card Logic
+
+    public void OnClickStarterButton()
+    {
+        starterPanel.OpenPanel();
+    }
+
+
     public void UseCard(int index)
     {
         if (_isCardLocked || !IsValidIndex(index)) return;
@@ -177,7 +185,7 @@ public class CardManager : MonoBehaviour
 
         if (_collectedCards.Count < _maxCards)
         {
-            _cardSlotUI.ClearHighlights();
+            _cardSlotUI?.ClearHighlights();
             _muscleButton?.Hide();
         }
     }
@@ -254,6 +262,8 @@ public class CardManager : MonoBehaviour
         // 3. เพิ่มการ์ด (ใช้ AddCard ที่แก้ไขแล้ว)
         // AddCard จะจัดการเรื่อง UI และ MuscleButton ต่อไป
         AddCard(newCard); 
+        _cardSlotUI?.HighlightSlot(_collectedCards.Count - 1);
+
         
         // ★ ไม่ต้องเพิ่ม _careerCardDropCount
         Debug.Log($"[CardManager] Added Starter Card: {careerData.DisplayName}");

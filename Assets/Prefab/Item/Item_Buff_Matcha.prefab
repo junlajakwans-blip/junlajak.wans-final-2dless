@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7223706044570462152}
   - component: {fileID: 1798469662610581796}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Item_Buff_Matcha_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -100,7 +100,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7258591908903753899}
   - component: {fileID: -3096889474293302793}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Item_Buff_Matcha
   m_TagString: Untagged
   m_Icon: {fileID: 0}
