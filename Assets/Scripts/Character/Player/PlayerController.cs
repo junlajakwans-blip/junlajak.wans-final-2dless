@@ -12,12 +12,17 @@ public class PlayerController : MonoBehaviour
     [Header("Movement Settings")]
     [SerializeField] private float _moveSpeed = 3.5f;
 
+    [Header("Interact Settings")]
+    [SerializeField] private PlayerInteract _interact;
+
+
 
     private Rigidbody2D _rigidbody;
     [SerializeField] private bool disableAnimation = true;
 
     [SerializeField] private Animator _animator;
     private Player _player;
+    
 
     private Vector2 _moveInput; // ใช้เก็บ Input ที่ต้องการใช้ในการเคลื่อนที่
 
@@ -101,38 +106,21 @@ public class PlayerController : MonoBehaviour
         }
 
         // --------------------------------------
-        // USE CAREER SKILL (W)
+        // USE CAREER SKILL (R)
         // --------------------------------------
-        if (Input.GetKeyDown(KeyCode.W))
+        if (Input.GetKeyDown(KeyCode.R))
         {
             _player.UseSkill();
         }
 
         // --------------------------------------
-        // INTERACT / PICKUP (E) - หากคุณต้องการใช้ E ในการเก็บของ
+        // INTERACT / PICKUP (W) - หากคุณต้องการใช้ W ในการเก็บของ / ปาของ / เปลี่ยนของ
         // --------------------------------------
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.W))
         {
-            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 1f);
-            foreach (Collider2D hit in hits)
-            {
-                if (hit.TryGetComponent<IInteractable>(out var interactObj))
-                {
-                    interactObj.Interact(_player);
-                    return;
-                }
-            }
+            _player.HandleInteract();   // เรียกให้ Player ตัดสินใจ
         }
-
-        // --------------------------------------
-        // THROW ITEM (R)
-        // --------------------------------------
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            if (_player.GetCurrentCareerID() == DuckCareer.Duckling)
-                _player.ThrowItem();
-        }
-
+        
         // --------------------------------------
         // PAUSE GAME (P / ESC)
         // --------------------------------------

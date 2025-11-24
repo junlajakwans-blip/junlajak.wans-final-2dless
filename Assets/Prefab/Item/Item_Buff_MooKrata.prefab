@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6517438294915756732}
   - component: {fileID: 7158444104966652307}
+  - component: {fileID: 9010275260333859789}
   m_Layer: 10
   m_Name: Item_Buff_MooKrata
   m_TagString: Untagged
@@ -89,6 +90,25 @@ PolygonCollider2D:
       - {x: 3.1036294, y: 0.6573721}
       - {x: 2.8122807, y: 1.3061013}
   m_UseDelaunayMesh: 0
+--- !u!114 &9010275260333859789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1079607818994521509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 725c0d917c49d8f4d965f588700e61b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CollectibleItem
+  _itemID: MooKrata
+  _type: 4
+  _value: 1
+  _icon: {fileID: -1705361756567393898, guid: 77123f316476e53499cc9733b7c14c91, type: 3}
+  _buffDuration: 5
+  _healAmount: 30
+  _smallHeal: 10
 --- !u!1 &1285695983406045165
 GameObject:
   m_ObjectHideFlags: 0

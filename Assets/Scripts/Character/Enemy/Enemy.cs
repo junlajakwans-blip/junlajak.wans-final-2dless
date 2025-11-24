@@ -23,6 +23,7 @@ public abstract class Enemy : Character, IAttackable
         
     [SerializeField] protected Transform _target;
     [SerializeField] protected EnemyType _enemyType = EnemyType.None;
+    [SerializeField] public float SpawnWeight = 30f;
     [SerializeField] protected bool _isDisabled = false;
 
 

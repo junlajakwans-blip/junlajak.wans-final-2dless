@@ -13,8 +13,8 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
 #region Fields
     [Header("Core Data")]
     [SerializeField] private PlayerData _playerData;
-    [SerializeField] protected CareerSwitcher _careerSwitcher;
-    [SerializeField] private CardManager _cardManager;
+    protected CareerSwitcher _careerSwitcher;
+    private CardManager _cardManager;
     [SerializeField] private Currency _currency;
 
     [Header("Components")]
@@ -23,6 +23,8 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     [Header("Stats")]
 
     [SerializeField] protected float _jumpForce = 5f;
+    [SerializeField] protected const int JUMP_ATTACK_DAMAGE = 10; // ดาเมจจากการเหยียบ
+    [SerializeField] protected const int BASIC_ATTACK_DAMAGE = 15; // ดาเมจจากการโจมตีปกติ
 
 
     [Header("Runtime State")]
@@ -35,50 +37,102 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     [SerializeField] protected bool _hasMapBuff;
     [SerializeField] protected float _buffMultiplier = 1.0f;
 
+    [Header("UI References")]
+    [SerializeField] private HealthBarUI _healthBarUI;
+
     private float _speedModifier = 1f;
     private Coroutine _speedRoutine;
     private WaitForSeconds _speedWait;
 
-    [Header("Interaction Settings")]
-    [SerializeField] private float _interactRadius = 1.5f; // รัศมีการค้นหา
-    [SerializeField] private LayerMask _collectibleLayer;
-
-
-    public bool CanInteract => true;
     public string PlayerName => _playerData != null ? _playerData.PlayerName : "Unknown";
     public int FaceDir { get; private set; } = 1;
+    private PlayerInteract _interact;
+
 
     #endregion
 
 
     #region Initialization
-    public void Initialize(PlayerData data)
+    public void Initialize(PlayerData data, CardManager cardManager, CareerSwitcher careerSwitcher)
     {
         _playerData = data;
         _maxHealth = data.MaxHealth;
         _currentHealth = _maxHealth;
         _moveSpeed = data.Speed;
 
-        _careerSwitcher ??= FindFirstObjectByType<CareerSwitcher>();
-        _cardManager ??= FindFirstObjectByType<CardManager>();
-        _rigidbody ??= GetComponent<Rigidbody2D>();
-        _rigAnimator ??= GetComponent<CharacterRigAnimator>();
 
-        // Currency setup
+        // -----------------------------------------------------------------
+        // 1. รับค่า Dependencies และเช็คทันที
+        // -----------------------------------------------------------------
+        _careerSwitcher = careerSwitcher;
+        _cardManager = cardManager;
+
+        if (_careerSwitcher == null) 
+            Debug.LogError($"[Player] ❌ CareerSwitcher is MISSING! (Injection failed from GameManager)");
+        
+        if (_cardManager == null) 
+            Debug.LogError($"[Player] ❌ CardManager is MISSING! (Injection failed from GameManager)");
+
+
+        // -----------------------------------------------------------------
+        // 2. ดึง Component ภายในและเช็ค
+        // -----------------------------------------------------------------
+        if (_rigAnimator == null)
+        {
+            _rigAnimator = GetComponent<CharacterRigAnimator>() ?? FindFirstObjectByType<CharacterRigAnimator>();
+        }
+
+        _rigidbody ??= GetComponent<Rigidbody2D>();
+        if (_rigidbody == null) Debug.LogError("[Player] ❌ Rigidbody2D component is missing!");
+        
+        _rigAnimator ??= GetComponent<CharacterRigAnimator>();
+        if (_rigAnimator == null) Debug.LogError("[Player] ❌ CharacterRigAnimator component is missing!");
+
+        _interact = GetComponent<PlayerInteract>(); 
+        if (_interact == null) Debug.LogError("[Player] ❌ PlayerInteract component is missing on Player or children!");
+
+
+        // -----------------------------------------------------------------
+        // 3. เริ่มต้นระบบย่อย (Sub-systems)
+        // -----------------------------------------------------------------
         _currency ??= new Currency();
 
-        //career
-        _currency.Initialize(_careerSwitcher);
-
+        // ตรวจสอบก่อนเรียกใช้เพื่อป้องกัน NullReferenceException
+        if (_careerSwitcher != null)
+            _currency.Initialize(_careerSwitcher);
+        
         if (_cardManager != null)
-        _cardManager.Initialize(this);
+            _cardManager.Initialize(this);
 
         UpdatePlayerFormState();
 
         DetectMap();
 
-        Debug.Log($"[Player] Initialized with HP {_maxHealth}, Speed {_moveSpeed}, Career={_careerSwitcher?.CurrentCareer?.CareerID}");
+
+        // -----------------------------------------------------------------
+        // 4. สรุปผลการ Initialize
+        // -----------------------------------------------------------------
+        bool isSuccess = _careerSwitcher != null && _cardManager != null && _rigidbody != null;
+        string statusIcon = isSuccess ? "✅" : "⚠️";
+        
+        Debug.Log($"[Player] {statusIcon} Initialize Complete.\n" +
+                  $"   - HP: {_maxHealth}, Speed: {_moveSpeed}\n" +
+                  $"   - CareerSwitcher: {(_careerSwitcher != null ? "OK" : "NULL")}\n" +
+                  $"   - CardManager: {(_cardManager != null ? "OK" : "NULL")}\n" +
+                  $"   - Components: {(_rigidbody != null && _rigAnimator != null && _interact != null ? "OK" : "INCOMPLETE")}");
     }
+
+
+    public void SetHealthBarUI(HealthBarUI healthBarUI)
+        {
+            _healthBarUI = healthBarUI;
+            if (_healthBarUI != null)
+            {
+                // ถ้า UI เพิ่งถูกตั้งค่า ให้ Initialize ทันที
+                _healthBarUI.InitializeHealth(_maxHealth); 
+            }
+        }
+
     #endregion
 
 
@@ -136,6 +190,38 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     #endregion
 
 
+    #region Throw / PickUp Decide
+    public void HandleInteract()
+    {
+        if (_interact == null) _interact = GetComponent<PlayerInteract>();
+        if (_interact == null) return;
+
+        if (!IsDuckling)
+        {
+            Debug.Log("[Player] Only Duckling can pick up/throw items.");
+            return;
+        }
+
+        // ถือของอยู่
+        if (_interact.HasItem())
+        {
+            // ถ้าไม่ใช่ Duckling → ห้ามปา
+            if (!IsDuckling)
+            {
+                Debug.Log("[Player] Cannot throw while transformed to a career.");
+                return;
+            }
+
+            _interact.ThrowItem();   // ปาของแบบ Duckling
+            return;
+        }
+
+        // ไม่ถือของ → เก็บของ
+        _interact.TryPickUp();
+    }
+    #endregion
+
+
 #region Jump & Jump Attack
     public virtual void Jump()
     {
@@ -176,6 +262,8 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     private void HandleJumpAttack(Enemy enemy)
     {
         Debug.Log($"[{PlayerName}] stomped on {enemy.EnemyType}");
+
+        enemy.TakeDamage(JUMP_ATTACK_DAMAGE);
 
         // If enemy is moveable, stop its movement
         if (enemy is IMoveable moveableEnemy)
@@ -236,6 +324,7 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
             Die();
         }
 
+        _healthBarUI?.UpdateHealth(_currentHealth);
         Debug.Log($"[Player] Took {amount} damage. HP: {_currentHealth}/{_maxHealth}");
     }
 
@@ -248,6 +337,8 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     {
         if (_isDead) return;
         _currentHealth = Mathf.Min(_maxHealth, _currentHealth + amount);
+
+        _healthBarUI?.UpdateHealth(_currentHealth);
 
         Debug.Log($"[Player] Healed +{amount}. HP: {_currentHealth}/{_maxHealth}");
     }
@@ -296,14 +387,6 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
             : DuckCareer.Duckling;
     }
 
-    /// <summary>
-    /// Player throws an item.
-    /// </summary>
-    public virtual void ThrowItem()
-    {
-        Debug.Log("[Player] Threw an item!");
-        // TODO: projectile, animation, or effect
-    }
 
     #endregion
 
@@ -330,6 +413,11 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     {
         Debug.Log("[Player] Basic attack triggered.");
         // TODO: integrate with weapon or animation
+        if (_rigAnimator != null)
+        {
+            // สมมติว่ามี Trigger "Attack"
+            // _rigAnimator.SetTrigger("Attack"); 
+        }
     }
 
     public virtual void ChargeAttack(float power)
@@ -346,6 +434,10 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
 
     public virtual void ApplyDamage(IDamageable target, int amount)
     {
+        if (amount <= 0)
+        {
+            amount = BASIC_ATTACK_DAMAGE;
+        }
         target.TakeDamage(amount);
         Debug.Log($"[Player] Dealt {amount} damage to {target}");
     }
@@ -398,24 +490,6 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
         //Ducklng No Buff
     }
     #endregion
-
-    private GameObject _heldThrowable;
-
-    private int _throwableCount = 0;
-    public int MaxThrowable = 1;
-
-    public void PickUpThrowable()
-    {
-        if (_throwableCount >= MaxThrowable)
-        {
-            Debug.Log("[Player] Already holding a throwable!");
-            return;
-        }
-
-        _throwableCount++;
-        Debug.Log($"[Player] Picked up throwable → total: {_throwableCount}");
-    }
-
 
 
     #region Reset

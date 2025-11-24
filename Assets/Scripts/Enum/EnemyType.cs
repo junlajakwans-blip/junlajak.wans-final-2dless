@@ -37,6 +37,7 @@ public static class EnemyTypeExtensions
     {
         switch (enemyType)
         {
+            case EnemyType.KahootMon:
             case EnemyType.GhostWorkMon:
             case EnemyType.MamaMon:
             case EnemyType.MooPingMon:
@@ -59,6 +60,7 @@ public static class EnemyTypeExtensions
     {
         return enemyType switch
         {
+            EnemyType.KahootMon => new() { MapType.School },
             EnemyType.GhostWorkMon => new() { MapType.School },
             EnemyType.LotteryMon => new() { MapType.RoadTraffic },
             EnemyType.DoggoMon => new() { MapType.RoadTraffic },

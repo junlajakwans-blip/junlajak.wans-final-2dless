@@ -100,6 +100,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7258591908903753899}
   - component: {fileID: -3096889474293302793}
+  - component: {fileID: 2041876380077582583}
   m_Layer: 10
   m_Name: Item_Buff_Matcha
   m_TagString: Untagged
@@ -176,3 +177,22 @@ PolygonCollider2D:
       - {x: 1.3086067, y: -2.6942425}
       - {x: 1.8936691, y: 1.2377679}
   m_UseDelaunayMesh: 0
+--- !u!114 &2041876380077582583
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7271098682250228881}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 725c0d917c49d8f4d965f588700e61b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CollectibleItem
+  _itemID: GreenTea
+  _type: 2
+  _value: 1
+  _icon: {fileID: -8149869420688778675, guid: 03fa54421fd1a944da18d9251bf1248d, type: 3}
+  _buffDuration: 5
+  _healAmount: 30
+  _smallHeal: 10

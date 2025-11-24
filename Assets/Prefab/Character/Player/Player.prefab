@@ -199,7 +199,7 @@ GameObject:
   - component: {fileID: 5168628728660963583}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -332,8 +332,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38bd1b599073a504e94dd5bf90e1e278, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
-  _maxHealth: 100
-  _currentHealth: 100
+  _maxHealth: 1000
+  _currentHealth: 500
   _moveSpeed: 5
   _rigidbody: {fileID: -4817979446526450474}
   _animator: {fileID: 0}
@@ -360,8 +360,6 @@ MonoBehaviour:
       _bestScore: 0
       _playTime: 241.97243
     _isDefaultDuckling: 1
-  _careerSwitcher: {fileID: 0}
-  _cardManager: {fileID: 0}
   _currency:
     _coin: 0
     _token: 0
@@ -372,11 +370,7 @@ MonoBehaviour:
   _currentMapType: 1
   _hasMapBuff: 0
   _buffMultiplier: 1
-  _interactRadius: 1.5
-  _collectibleLayer:
-    serializedVersion: 2
-    m_Bits: 1024
-  MaxThrowable: 1
+  _healthBarUI: {fileID: 0}
 --- !u!114 &4658831917752918347
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -390,6 +384,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   _moveSpeed: 3.5
+  _interact: {fileID: 5168628728660963583}
   disableAnimation: 1
   _animator: {fileID: 0}
 --- !u!114 &5168628728660963583
@@ -407,7 +402,6 @@ MonoBehaviour:
   interactRadius: 1
   interactOrigin: {fileID: 3180083276177619504}
   displayPoint: {fileID: 6979801062742470440}
-  throwPoint: {fileID: 6413461673691137256}
   throwForce: 12
   interactLayer:
     serializedVersion: 2

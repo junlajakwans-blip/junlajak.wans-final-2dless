@@ -10,95 +10,91 @@ public class PlayerInteract : MonoBehaviour
     [SerializeField] private Transform displayPoint;
 
     [Header("Throw Settings")]
-    [SerializeField] private Transform throwPoint;
     [SerializeField] private float throwForce = 12f;
     [SerializeField] private LayerMask interactLayer;
 
-
     private Player player;
-    private GameObject heldItemObject = null;
+    private GameObject heldItemObject;
+
+    public bool HasItem() => heldItemObject != null;
 
     private void Awake()
     {
         player = GetComponentInParent<Player>();
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            // ถ้าถือของอยู่ → ปา
-            if (heldItemObject != null)
-            {
-                Throw();
-                return;
-            }
-
-            // ไม่ถืออะไร → พยายามเก็บ
-            TryPickUp();
-        }
-    }
-
     // ---------------- PICKUP ----------------
-    private void TryPickUp()
+    public void TryPickUp()
     {
         Collider2D[] hits = Physics2D.OverlapCircleAll(interactOrigin.position, interactRadius, interactLayer);
         foreach (Collider2D hit in hits)
         {
             if (hit.TryGetComponent<IInteractable>(out var interactObj) && interactObj.CanInteract)
             {
-                interactObj.Interact(player); // ตัว Spawner จะเรียก SetThrowable(gameObject) ให้เอง
+                interactObj.Interact(player);
                 return;
             }
         }
     }
 
-    // ---- Called by ThrowableSpawner when player picks up ----
+    // ---------------- RECEIVE ITEM FROM SPAWNER ----------------
     public void SetThrowable(GameObject itemObject)
     {
-        // ถ้าเคยถืออยู่แล้ว → เอาของเก่าทิ้งก่อน
+        // ถ้ามีของเดิมอยู่บนหัว → คืน pool ก่อน
         if (heldItemObject != null)
         {
-            Destroy(heldItemObject);
+            if (heldItemObject.TryGetComponent<ThrowableItemInfo>(out var prevInfo))
+                ObjectPoolManager.Instance.ReturnToPool(prevInfo.PoolTag, heldItemObject);
         }
 
+        // ต้องเซ็ตใหม่หลังคืน pool — ไม่ต้องอยู่ใน if
         heldItemObject = itemObject;
 
-        // ย้าย object ขึ้นหัวผู้เล่น
+        // ย้ายไปไว้บนหัว
         heldItemObject.transform.SetParent(displayPoint);
         heldItemObject.transform.localPosition = Vector3.zero;
         heldItemObject.transform.localRotation = Quaternion.identity;
-        heldItemObject.transform.localScale = Vector3.one; // ป้องกัน scale แปลก
+        heldItemObject.transform.localScale = Vector3.one;
 
-        // ปิด collider ระหว่างถือบนหัว
-        if (heldItemObject.TryGetComponent<Collider2D>(out var col))
-            col.enabled = false;
+        // คุมฟิสิกส์ตอนถือขึ้นหัว
+        if (heldItemObject.TryGetComponent<ThrowableItemInfo>(out var info))
+            info.DisablePhysicsOnHold();
     }
 
+
     // ---------------- THROW ----------------
-    private void Throw()
+    public void ThrowItem()
     {
         if (heldItemObject == null) return;
 
-        // ถ้าไม่ใช่ Duckling → ใช้เป็นท่า Attack ของอาชีพ & ของหายไป
         if (!player.IsDuckling)
         {
-            player.Attack();   // ท่าอาชีพจัดการเอง
-            Destroy(heldItemObject);
-            heldItemObject = null;
+            Debug.Log("[PlayerInteract] Cannot throw — current form is NOT Duckling.");
             return;
         }
 
-        // Duckling = ปาของตามแรง
+        // ปล่อยออกจากหัว
         heldItemObject.transform.SetParent(null);
 
-        if (heldItemObject.TryGetComponent<Collider2D>(out var col))
-            col.enabled = true;
+        // เปิดฟิสิกส์ก่อนปา
+        if (heldItemObject.TryGetComponent<ThrowableItemInfo>(out var info))
+            info.EnablePhysicsOnThrow();
 
-        var rb = heldItemObject.GetComponent<Rigidbody2D>();
-        rb.linearVelocity = new Vector2(player.FaceDir * throwForce, 0);
+        // ใส่แรงปา
+        if (heldItemObject.TryGetComponent<Rigidbody2D>(out var rb))
+            rb.linearVelocity = new Vector2(player.FaceDir * throwForce, 0);
 
+        // ล้าง state บนหัว
         heldItemObject = null;
+    }
+
+
+    // ถ้าระบบอื่นต้องการดึงของบนหัวโดยตรง
+    public GameObject ConsumeHeldItem()
+    {
+        var temp = heldItemObject;
+        heldItemObject = null;
+        return temp;
     }
 
     private void OnDrawGizmosSelected()

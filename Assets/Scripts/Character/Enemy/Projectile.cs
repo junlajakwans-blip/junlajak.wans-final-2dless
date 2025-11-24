@@ -36,7 +36,6 @@ public class Projectile : MonoBehaviour
     
     private void Awake()
     {
-        // ... (Awake Logic เดิม) ...
         if (TryGetComponent<Rigidbody2D>(out var rb))
         {
             rb.bodyType = RigidbodyType2D.Kinematic;
@@ -80,19 +79,47 @@ public class Projectile : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // Check if the projectile hits the Player
+        // ----- โดน Player → ทำดาเมจ → หาย -----
         if (other.TryGetComponent<Player>(out var player))
         {
-            player.TakeDamage(_damageAmount); 
+            player.TakeDamage(_damageAmount);
 
-            // [FIX 3]: เปลี่ยนไปเรียก ReturnToPool ทันทีที่ชน (กำจัด GC Spike)
+            Debug.Log($"[Projectile] Hit PLAYER → Damage: {_damageAmount} | PoolTag: {_poolTag}");
+
             ReturnToPool();
+            return;
         }
-        
-        // Optional: Add logic for hitting walls/obstacles here
+
+        // ----- โดน Enemy → ทำดาเมจ → หาย -----
+        if (other.TryGetComponent<Enemy>(out var enemy))
+        {
+            enemy.TakeDamage(_damageAmount);
+
+            Debug.Log($"[Projectile] Hit ENEMY → Damage: {_damageAmount} | PoolTag: {_poolTag} | Enemy: {enemy.name}");
+
+            ReturnToPool();
+            return;
+        }
+
+        // ----- อะไรอย่างอื่นที่ไม่ใช่ Player/Enemy → หาย -----
+        if (other.CompareTag("Ground") ||
+            other.CompareTag("Wall") ||
+            other.CompareTag("Obstacle") ||
+            other.CompareTag("Prop"))
+        {
+            Debug.Log($"[Projectile] Collided with MAP OBJECT ({other.tag}) → Returned to pool");
+            ReturnToPool();
+            return;
+        }
+
+        // เผื่อพลาด ยังไงไม่ใช่เป้าหมายก็คืน pool
+        Debug.Log($"[Projectile] Unexpected collision with {other.name} → Returned to pool");
+        ReturnToPool();
     }
 
-    // [FIX 4]: เปลี่ยนชื่อจาก DestroyProjectile() เป็น ReturnToPool()
+
+
+    // ReturnToPool()
     private void ReturnToPool()
     {
         if (_poolRef != null)

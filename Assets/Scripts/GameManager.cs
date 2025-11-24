@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
 {
     #region Fields
     private static GameManager _instance;
+    public static GameManager Instance => _instance;
 
     [Header("Runtime State")]
     [SerializeField] private string _currentScene;
@@ -24,45 +25,119 @@ public class GameManager : MonoBehaviour
     [SerializeField] private SaveSystem _saveSystem;
     [SerializeField] private UIManager _uiManager;
     [SerializeField] private CardManager _cardManager;
-    //[SerializeField] private SceneLoader _sceneLoader; // Handles scene transitions
 
     [SerializeField] private DevCheat _devCheat;
     #endregion
 
+    [Header("Optimization Settings")]
+    [SerializeField] private int _targetFrameRate = 90;
 
     #region Properties
     public static event System.Action OnCurrencyReady;
-
-    public static GameManager Instance => _instance;
     public bool IsPaused => _isPaused;
     public int Score => _score;
     public float PlayTime => _playTime;
-    public Player Player => _player;
     private GameProgressData _persistentProgress;
     private Currency _currencyData;
     private StoreManager _storeManager;
     [SerializeField] private StoreExchange _exchangeStore;
     [SerializeField] private StoreUpgrade _upgradeStore;
     [SerializeField] private StoreMap _mapStore;
-    private Player _playerInstance;
     #endregion
 
+    public MapType CurrentMapType;
     public GameProgressData GetProgressData() => _persistentProgress;
     public Currency GetCurrency() => _currencyData;
     public StoreManager GetStoreManager() => _storeManager; 
     public List<StoreBase> GetStoreList() => _storeManager?.Stores;
 
+    public static event Action OnGameReady;
 
-    private void OnEnable()
+
+
+    #region Unity Lifecycle
+
+        private void Awake()
+        {
+            if (_instance != null && _instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            _instance = this;
+            DontDestroyOnLoad(gameObject);
+
+            // WebGL Optimization: Force specific framerate
+            Application.targetFrameRate = _targetFrameRate;
+            
+            // Pre-cache global UI if available
+            if (_uiManager == null) _uiManager = FindFirstObjectByType<UIManager>();
+        }
+
+        private void Start()
+        {
+            // ตรวจสอบ Flow การเริ่มเกม
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "MainMenu")
+            {
+                Debug.LogWarning("[GameManager] Not in MainMenu. Reloading to ensure correct flow.");
+                LoadScene("MainMenu");
+                return;
+            }
+
+            InitializeGame();
+        }
+
+        private void Update()
+        {
+            if (!_isPaused && _currentScene != "MainMenu")
+                _playTime += Time.deltaTime;
+
+            // Shortcut Keys
+            if (Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.Escape))
+            {
+                if (_currentScene != "MainMenu") 
+                    TogglePause();
+            }
+        }
+
+        private void OnEnable()
+        {
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private void OnDisable()
+        {
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
+        #endregion
+
+
+#region Scene Management & Flow
+
+    /// <summary>
+    /// ใช้สำหรับปุ่มใน Main Menu เพื่อเลือกด่านและเริ่มเกม
+    /// </summary>
+    public void LoadGameLevel(string sceneName, MapType mapType)
     {
-        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+        CurrentMapType = mapType; // Set map type BEFORE loading scene
+        
+        // Reset Gameplay Values immediately
+        _score = 0;
+        _playTime = 0f;
+        _isPaused = false;
+        Time.timeScale = 1f;
+
+        Debug.Log($"[GameManager] Loading Map: {sceneName} with Type: {mapType}");
+        LoadScene(sceneName);
     }
 
-    private void OnDisable()
+    public void LoadScene(string sceneName)
     {
-        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+        _currentScene = sceneName;
+        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
     }
-
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
@@ -72,92 +147,108 @@ public class GameManager : MonoBehaviour
         var mapGenerator = FindFirstObjectByType<MapGeneratorBase>();
         var player = FindFirstObjectByType<Player>();
 
-        if (sceneManager == null || mapGenerator == null || player == null)
+        if (sceneManager == null || mapGenerator == null || player == null || UIManager.Instance == null)
         {
             Debug.LogWarning("[GameManager] Waiting next frame — scene dependencies not ready yet.");
-            StartCoroutine(DelayedSceneInit());
+            StartCoroutine(DelayedSceneInit(scene.name));
             return;
         }
 
-    }
+        HandleHUDVisibility(scene.name);
 
-    private IEnumerator DelayedSceneInit()
-    {
-        SceneManager sceneManager = null;
-        MapGeneratorBase mapGenerator = null;
-        Player player = null;
-
-        while (sceneManager == null || mapGenerator == null || player == null)
-        {
-            sceneManager = FindFirstObjectByType<SceneManager>();
-            mapGenerator = FindFirstObjectByType<MapGeneratorBase>();
-            player = FindFirstObjectByType<Player>();
-            yield return null;
-        }
-
-        sceneManager.Inject(mapGenerator, player);
-        sceneManager.TryInitializeScene();
-
-        // Init Player
-        PlayerData data = new PlayerData(_currencyData, _persistentProgress);
-        int hpBonus = _upgradeStore != null ? _upgradeStore.GetTotalHPBonus() : 0;
-        data.UpgradeStat("MaxHealth", hpBonus);
-        player.Initialize(data);
-
-        // Init Card System
-        _playerInstance = player;
-        if (_cardManager != null)
-            _cardManager.Initialize(_playerInstance);
-
-        var slotUI = FindFirstObjectByType<CardSlotUI>();
-        if (slotUI != null)
-            slotUI.SetManager(_cardManager);
-
-        OnCurrencyReady?.Invoke();
-    }
-
-
-
-    #region Unity Lifecycle
-    private void Awake()
-    {
-        if (_instance != null && _instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        _instance = this;
-        DontDestroyOnLoad(gameObject);
-
-    }
-
-    private void Start()
-    {
-            // ถ้าเริ่ม Play โดยไม่ได้อยู่ใน MainMenu ให้บังคับกลับ MainMenu
-        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "MainMenu")
-        {
-            LoadScene("MainMenu");
-            return;
-        }
-        InitializeGame();
-    }
-
-    private void Update()
-    {
-        if (!_isPaused)
-            _playTime += Time.deltaTime;
-
-        // Pause / Resume (shortcut key)
-        if (Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.Escape))
-        {
-            if (_isPaused) ResumeGame();
-            else PauseGame();
-        }
     }
     #endregion
 
 
+#region Corotine
+    /// <summary>
+    /// Coroutine รอให้ Dependencies (Player, Map, UI) พร้อมทำงานก่อนเริ่มเกม
+    /// </summary>
+    private IEnumerator DelayedSceneInit(string sceneName)
+    {
+        // 1. Clear Cache
+        _player = null;
+        _uiManager = null; 
+        SceneManager sceneLogic = null;
+        MapGeneratorBase mapGen = null;
+
+        // 2. Wait for critical components
+        // Optimization: Check every few frames instead of tight loop if desired, but null check is fast enough here.
+        while (_player == null || _uiManager == null || sceneLogic == null || mapGen == null)
+        {
+            if (_player == null) _player = FindFirstObjectByType<Player>();
+            if (_uiManager == null) _uiManager = FindFirstObjectByType<UIManager>();
+            if (sceneLogic == null) sceneLogic = FindFirstObjectByType<SceneManager>();
+            if (mapGen == null) mapGen = FindFirstObjectByType<MapGeneratorBase>();
+            
+            yield return null; // Wait 1 frame
+        }
+
+        // 3. Setup UI Dependencies
+        HandleHUDVisibility(sceneName);
+        if (_uiManager != null)
+        {
+            _uiManager.SetDependencies(this, _currencyData, _storeManager, GetStoreList());
+            var healthUI = _uiManager.GetHealthBarUI();
+            if (_player != null) _player.SetHealthBarUI(healthUI);
+        }
+
+        // 4. Setup Logic & Injection
+        sceneLogic.Inject(mapGen, _player);
+        sceneLogic.TryInitializeScene();
+
+        var cardManager = FindFirstObjectByType<CardManager>();
+        var careerSwitcher = FindFirstObjectByType<CareerSwitcher>();
+        var slotUI = FindFirstObjectByType<CardSlotUI>();
+        if (slotUI != null) slotUI.SetManager(cardManager);
+
+        // 5. Initialize Player Stats
+        PlayerData data = new PlayerData(_currencyData, _persistentProgress);
+        int hpBonus = _upgradeStore != null ? _upgradeStore.GetTotalHPBonus() : 0;
+        data.UpgradeStat("MaxHealth", hpBonus);
+        
+        _player.Initialize(data, cardManager, careerSwitcher);
+
+        // 6. Initialize Buffs
+        var buffManager = FindFirstObjectByType<BuffManager>();
+        if (buffManager != null) buffManager.Initialize(this);
+
+        // 7. Final Ready Call - This triggers BackgroundLooper
+        Debug.Log("[GameManager] All Systems Ready. Firing OnGameReady.");
+        OnGameReady?.Invoke(); 
+    }
+
+    private void HandleMainMenuState()
+    {
+        if (_uiManager == null) _uiManager = FindFirstObjectByType<UIManager>();
+        
+        if (_uiManager != null)
+        {
+            _uiManager.ShowMainMenu();
+            _uiManager.SetDependencies(this, _currencyData, _storeManager, GetStoreList());
+        }
+        
+        // Setup Map Selector if exists
+        var mapSelect = FindFirstObjectByType<MapSelectController>();
+        if (mapSelect != null) mapSelect.SetDependencies(this, _currencyData);
+
+        OnCurrencyReady?.Invoke();
+    }
+
+    private void HandleHUDVisibility(string sceneName)
+    {
+        if (_uiManager == null) return;
+
+        if (sceneName == "MainMenu")
+        {
+            _uiManager.ShowMainMenu();
+        }
+        else
+        {
+            _uiManager.ShowGameplayHUD();
+        }
+    }
+    #endregion
 
 
     #region Initialization
@@ -222,26 +313,12 @@ public void InitializeGame()
     playerData.UpgradeStat("MaxHealth", hpBonus);
 
 
-    StartCoroutine(DelayedInit(playerData));
-
     _isPaused = false;
     _score = 0;
     _playTime = 0f;
+
+    OnGameReady?.Invoke(); 
 }
-
-private IEnumerator DelayedInit(PlayerData data)
-{
-    // รอหนึ่งเฟรม เพื่อให้ทุก object บน scene spawn เสร็จ
-    yield return null;
-
-    if (_player != null)
-        _player.Initialize(data);
-
-    if (_cardManager != null && _playerInstance != null)
-        _cardManager.Initialize(_playerInstance);
-}
-
-
     #endregion
 
 
@@ -255,48 +332,52 @@ private IEnumerator DelayedInit(PlayerData data)
         Time.timeScale = 1f;
     }
 
-    public void PauseGame() //TODO: Implement pause logic
+    public void TogglePause()
     {
-        _isPaused = true;
-        Time.timeScale = 0f;
-        //_uiManager?.ShowPauseMenu();
-        Debug.Log("[GameManager] Game paused.");
+        if (_isPaused) ResumeGame();
+        else PauseGame();
     }
 
-    public void ResumeGame() //TODO: Implement resume logic
-    {
-        _isPaused = false;
-        Time.timeScale = 1f;
-        //_uiManager?.HidePauseMenu();
-        Debug.Log("[GameManager] Game resumed.");
-    }
+    public void PauseGame()
+        {
+            _isPaused = true;
+            Time.timeScale = 0f;
+            // _uiManager?.ShowPauseMenu(); // Uncomment when ready
+            Debug.Log("[GameManager] Game Paused.");
+        }
 
-    public void EndGame() //TODO: Implement end game logic
-    {
-        _isPaused = true;
-        Time.timeScale = 0f;
-        //_uiManager?.ShowGameOverScreen();
-        SaveProgress();
-        Debug.Log("[GameManager] Game over — progress saved.");
-    }
+        public void ResumeGame()
+        {
+            _isPaused = false;
+            Time.timeScale = 1f;
+            // _uiManager?.HidePauseMenu(); // Uncomment when ready
+            Debug.Log("[GameManager] Game Resumed.");
+        }
+
+    public void EndGame()
+        {
+            _isPaused = true;
+            Time.timeScale = 0f; // Stop game
+            SaveProgress();
+            Debug.Log("[GameManager] Game Over. Progress Saved.");
+            
+            // Trigger UI via UIManager if needed
+            // _uiManager?.ShowGameOverScreen();
+        }
 
     public void RestartGame()
-    {
-        _score = 0;
-        _playTime = 0f;
-        _isPaused = false;
-        Time.timeScale = 1f;
+        {
+            Debug.Log("[GameManager] Restarting Scene...");
+            
+            // Reset Loop Logic
+            Time.timeScale = 1f;
+            _score = 0;
+            _playTime = 0f;
+            _isPaused = false;
 
-        UnityEngine.SceneManagement.SceneManager.LoadScene(_currentScene);
-        Debug.Log("[GameManager] Restarted current scene.");
-    }
-
-    public void LoadScene(string sceneName) //TODO: Implement scene loading logic
-    {
-        _currentScene = sceneName;
-        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
-
-    }
+            // Reload current scene. CurrentMapType remains the same.
+            LoadScene(_currentScene);
+        }
 
     public void ExitGame()
     {
@@ -308,7 +389,6 @@ private IEnumerator DelayedInit(PlayerData data)
         Debug.Log("[GameManager] Quit application.");
     }
     #endregion
-
 
     #region Score & Progress
     public void AddScore(int amount)
@@ -346,10 +426,12 @@ private IEnumerator DelayedInit(PlayerData data)
 #region  store
     public void SetupStores(GameProgressData progressData)
     {
-        _currencyData = new Currency();
-        _currencyData.Coin = progressData.TotalCoins;
-        _currencyData.Token = progressData.TotalTokens;
-        _currencyData.KeyMap = progressData.TotalKeyMaps;
+        _currencyData = new Currency
+        {
+            Coin = progressData.TotalCoins,
+            Token = progressData.TotalTokens,
+            KeyMap = progressData.TotalKeyMaps
+        };
 
         _storeManager = new StoreManager(_currencyData, progressData);
 
@@ -393,7 +475,7 @@ private IEnumerator DelayedInit(PlayerData data)
         _persistentProgress = _saveSystem.GetProgressData();
 
         // (B) โหลดเกมใหม่เพื่อเริ่มต้นระบบทั้งหมดด้วยค่าใหม่
-        RestartGame(); // หรือ LoadScene("MainMenu") ถ้าคุณต้องการกลับไปหน้าเมนูหลัก
+        LoadScene("MainMenu");
         
         Debug.Log("[GameManager] Full game progress reset and restarted.");
     }
@@ -407,7 +489,7 @@ private IEnumerator DelayedInit(PlayerData data)
         }
 
         _saveSystem.DeleteSave();
-        RestartGame(); // หรือ LoadScene("MainMenu")
+        LoadScene("MainMenu");
         Debug.Log("[GameManager] Save deleted and game restarted.");
     }
 

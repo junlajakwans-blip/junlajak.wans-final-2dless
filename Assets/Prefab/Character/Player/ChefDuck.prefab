@@ -427,13 +427,10 @@ MonoBehaviour:
   _rigAnimator: {fileID: 0}
   _jumpForce: 5
   _isGrounded: 0
-  _currentMapType: 0
+  _currentMapType: 3
   _hasMapBuff: 0
   _buffMultiplier: 1
-  _interactRadius: 1.5
-  _collectibleLayer:
-    serializedVersion: 2
-    m_Bits: 0
+  _healthBarUI: {fileID: 0}
   _panEffect: {fileID: 0}
   _burnRange: 5
   _burnDamage: 25

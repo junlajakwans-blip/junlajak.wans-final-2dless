@@ -36,7 +36,8 @@ public class MapGeneratorRoad : MapGeneratorBase
                 MapType.RoadTraffic,
                 FindFirstObjectByType<Player>(),
                 _collectibleSpawner,
-                FindFirstObjectByType<CardManager>()
+                FindFirstObjectByType<CardManager>(),
+                FindFirstObjectByType<BuffManager>()
             );
             StartCoroutine(_enemySpawner.StartWave());
         }

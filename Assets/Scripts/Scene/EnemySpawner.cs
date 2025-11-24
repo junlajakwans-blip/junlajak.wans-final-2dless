@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -16,6 +15,9 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     [SerializeField] private List<Transform> _spawnPoints = new();
     [SerializeField] private float _spawnInterval = 2f;
     [SerializeField] private int _maxEnemies = 5;
+
+    
+
 
     [Header("Runtime Data")]
     [SerializeField] private int _currentWaveCount = 0;
@@ -35,7 +37,34 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     [SerializeField] private CardManager _cardManager;
     protected BuffManager _buffManagerRef;
 
+    [Header("GoldenMon Difficulty Scaling")]
+    [SerializeField] private AnimationCurve _goldenChanceCurve =
+    new AnimationCurve(
+        new Keyframe(0f, 0.25f),     // เริ่มเกม: 25%
+        new Keyframe(300f, 0.15f),   // ระยะกลาง: 15%
+        new Keyframe(1500f, 0.12f),  // คงที่ช่วงกลางเกม
+        new Keyframe(2500f, 0.18f)   // ท้ายเกมเพิ่มนิดหน่อย
+    );
+
+    #region  Enemy First
+    [SerializeField] private GameManager _gameManager;
+    [SerializeField] private float _spawnStartDistance = 100f;
+    [SerializeField] private bool _firstEnemySpawned = false;
+    [SerializeField] private EnemyType _firstEnemyType = EnemyType.MamaMon; // บังคับเจอตัวนี้ก่อน
+
+    [Header("Spawn Control")]
+    [Tooltip("ระยะห่างขั้นต่ำ (World Unit) ระหว่างศัตรูแต่ละตัวที่สปาว")]
+    [SerializeField] private float _minSpawnSpacing = 10f;     
+    private Vector3 _lastEnemySpawnPosition = Vector3.negativeInfinity; 
+    [Tooltip("Vertical lift to place the enemy on the platform/floor.")]
+    [SerializeField] private float _verticalSpawnOffset = 0.5f;
+
+
+    #endregion
+
     private List<GameObject> _validPrefabsCache = new();
+
+
 
     /// <summary>
     /// Event triggered every time a new enemy is spawned from the pool.
@@ -67,13 +96,14 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     /// <summary>
     /// Initializes the spawner with a given object pool and map context.
     /// </summary>
-    public void InitializeSpawner(IObjectPool pool, MapType mapType, Player player, CollectibleSpawner collectibleSpawner, CardManager cardManager)
+    public void InitializeSpawner(IObjectPool pool, MapType mapType, Player player, CollectibleSpawner collectibleSpawner, CardManager cardManager, BuffManager buffManager)
     {
         _objectPool = pool;
         _mapType = mapType;
         this._player = player;
         this._collectibleSpawner = collectibleSpawner;
         this._cardManager = cardManager;
+        this._buffManagerRef = buffManager;
         
         Debug.Log("[EnemySpawner] Initialized with dependencies (Player, CollectibleSpawner, CardManager).");
 
@@ -90,14 +120,16 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     /// </summary>
     private void CacheValidEnemies()
     {
-         _validPrefabsCache = _enemyPrefabs
-            .Where(prefab =>
-            {
-                var enemyComp = prefab.GetComponent<Enemy>();
-                // Assuming EnemyTypeExtensions has CanAppearInMap() method
-                return enemyComp != null && enemyComp.EnemyType.CanAppearInMap(_mapType); 
-            })
-            .ToList();
+        _validPrefabsCache.Clear();
+        foreach (var prefab in _enemyPrefabs)
+                {
+                    var enemyComp = prefab.GetComponent<Enemy>();
+                    // ต้อง assume ว่า EnemyTypeExtensions.CanAppearInMap มีอยู่
+                    if (enemyComp != null && enemyComp.EnemyType.CanAppearInMap(_mapType))
+                    {
+                        _validPrefabsCache.Add(prefab);
+                    }
+                }
         
         if (_validPrefabsCache.Count == 0)
         {
@@ -108,36 +140,41 @@ public class EnemySpawner : MonoBehaviour, ISpawn
 
 
     #region Enemy Handling & BuffMap Logic
-    
+        
     /// <summary>
     /// Event handler for enemy death, used to trigger BuffMap effects.
     /// </summary>
     private void HandleEnemyDied(Enemy enemy)
     {
         // 1. Clean up from active list and event
-        _activeEnemies.Remove(enemy.gameObject);
-        enemy.OnEnemyDied -= HandleEnemyDied; // Unsubscribe from the instance event
+        if (enemy != null)
+                {
+                    _activeEnemies.Remove(enemy.gameObject);
+                    enemy.OnEnemyDied -= HandleEnemyDied;
+                }
 
-        // 2. SingerDuck BuffMap Logic: +2% GoldenMon Chance
+        // 2. SingerDuck BuffMap Logic
         if (_player != null && _player.TryGetComponent<SingerDuck>(out var singerDuck))
         {
-            // Check the public hook on SingerDuck
             if (singerDuck.IsMapBuffActive())
             {
-                // The "Stacking" is passive, meaning the buff is always active (no decay)
-                // If we want actual stacking, we'd need to increase _goldenMonBonusChance
-                // based on the number of enemies killed or time. For now, use the base 2%.
-                
-                if (Random.value < _goldenMonBonusChance)
+                // ระยะที่ player วิ่ง → ใช้คำนวณสเกลความยาก
+                float distance = Mathf.Max(0f, _player.transform.position.x);
+
+                // ดึงค่าโอกาสจาก AnimationCurve
+                float goldenChance = _goldenChanceCurve.Evaluate(distance);
+
+                // Random roll
+                if (Random.value < goldenChance)
                 {
-                    // The bonus GoldenMon should spawn near the player or the dead enemy.
                     SpawnSpecificEnemy(EnemyType.GoldenMon, enemy.transform.position);
-                    Debug.Log("<color=yellow>[SingerDuck BuffMap]</color> SUCCESS! GoldenMon spawned from +2% passive chance.");
+                    Debug.Log(
+                        $"<color=yellow>[GoldenMon]</color> Spawned | Chance={goldenChance:P2} | Dist={distance:F0}"
+                    );
                 }
             }
         }
     }
-    
     #endregion
 
 
@@ -148,6 +185,13 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     /// </summary>
     public void Spawn()
     {
+        if (_player == null || _player.transform == null) return;
+        float distance = Mathf.Max(0f, _player.transform.position.x);
+
+        // ยังไม่ถึงระยะเริ่มต้น → ไม่สปาว
+        if (distance < _spawnStartDistance)
+            return;
+
         if (_spawnPoints.Count == 0 || _enemyPrefabs.Count == 0)
         {
             Debug.LogWarning("[EnemySpawner] Missing spawn points or enemy prefabs.");
@@ -157,40 +201,103 @@ public class EnemySpawner : MonoBehaviour, ISpawn
         if (_activeEnemies.Count >= _maxEnemies || _validPrefabsCache.Count == 0)
             return;
 
-        // 1. Select enemy and spawn from cache
-        int randomEnemy = Random.Range(0, _validPrefabsCache.Count); 
-        int randomPoint = Random.Range(0, _spawnPoints.Count);
+    // ---------------- Spawn Check & Reserve ----------------
 
-        Vector3 spawnPos = _spawnPoints[randomPoint].position;
-        Quaternion spawnRot = _spawnPoints[randomPoint].rotation;
+    int randomPoint = Random.Range(0, _spawnPoints.Count);
+    Vector3 spawnPos = _spawnPoints[randomPoint].position;
+    Quaternion spawnRot = _spawnPoints[randomPoint].rotation;
 
-        // Use the prefab's name as the tag for the object pool
-        string objectTag = _validPrefabsCache[randomEnemy].name;
+    Vector3 finalSpawnPos = spawnPos;
+    finalSpawnPos.y += _verticalSpawnOffset;
+
+    if (Vector3.Distance(spawnPos, _lastEnemySpawnPosition) < _minSpawnSpacing)
+    {
+        return; // ห่างไม่พอ ไม่สร้าง
+    }
+
+
+    if (!SpawnSlot.Reserve(spawnPos))
+    {
+        return; // Slot ถูกจองแล้ว ไม่สร้าง (ทับ Asset/Collectible/Enemy อื่น)
+    }
+    // ---------------- Reservation Complete ----------------
+
+        GameObject prefab;
+
+        // สปาว MamaMon ตัวแรกเสมอ
+        if (!_firstEnemySpawned)
+                {
+                    // FIX CS0414: ใช้ _firstEnemyType
+                    prefab = FindSpecificPrefab(_firstEnemyType); 
+
+                    if (prefab == null)
+                    {
+                        Debug.LogError($"[EnemySpawner] First Enemy Type ({_firstEnemyType}) prefab not found. Falling back to weighted spawn.");
+                        prefab = GetWeightedEnemyPrefab();
+                    }
+                    else
+                    {
+                        _firstEnemySpawned = true;
+                        Debug.Log($"🟣 FirstEnemy Forced → {prefab.name}");
+                    }
+                }
+                else
+                {
+                    // ตัวถัดไปสุ่ม WeightedSpawn ปกติ
+                    prefab = GetWeightedEnemyPrefab();
+                }
+
+                if (prefab == null)
+                {
+                    Debug.LogWarning($"[EnemySpawner] Failed to pick a prefab. Check weighted logic.");
+                    SpawnSlot.Unreserve(spawnPos); 
+                    return;
+                }
+
+        string objectTag = prefab.name;
+
+        // ---------------- Debug Weighted Details (ใช้ logic เดิมไม่ยุ่ง) ----------------
+        float currentDistance = Mathf.Max(0f, _player.transform.position.x);
+        float totalWeight = CalculateTotalWeight(currentDistance);
         
-        // 2. Spawn
-        var enemyGO = _objectPool.SpawnFromPool(objectTag, spawnPos, spawnRot); 
+        // ต้องหา Component ใหม่ เพราะ GetWeightedEnemyPrefab ใช้ Random.value แล้ว
+        float selectedWeight = GetWeightForEnemy(prefab.GetComponent<Enemy>().EnemyType, currentDistance);
+        float normalizedChance = totalWeight > 0 ? selectedWeight / totalWeight : 0f;
+
+        Debug.Log(
+            $"🟢 [WeightedSpawn]\n" +
+            $"• Picked: {prefab.name}\n" +
+            $"• Distance: {currentDistance:F0}\n" +
+            $"• Weight: {selectedWeight:F3} / Total {totalWeight:F3}\n" +
+            $"• Chance: {normalizedChance:P2}"
+        );
+        
+
+        // ---------------- Spawn ----------------
+
+        var enemyGO = _objectPool.SpawnFromPool(objectTag, spawnPos, spawnRot);
 
         if (enemyGO != null)
         {
+            _lastEnemySpawnPosition = spawnPos;
             _activeEnemies.Add(enemyGO);
             _cullingManager?.RegisterObject(enemyGO);
-            
-            // [NEW FIX] INJECT DEPENDENCIES & SUBSCRIBE
+
             if (enemyGO.TryGetComponent<Enemy>(out var enemyComponent))
             {
-                // 1. INJECT DEPENDENCIES (DI)
                 enemyComponent.SetDependencies(_player, _collectibleSpawner, _cardManager, _buffManagerRef, _objectPool);
-
-                // 2. SUBSCRIBE TO DEATH EVENT
                 enemyComponent.OnEnemyDied += HandleEnemyDied;
-                
-                // 3. INVOKE SPAWN EVENT 
                 OnEnemySpawned?.Invoke(enemyComponent);
             }
-            
             Debug.Log($"[EnemySpawner] Spawned {enemyGO.name} at {spawnPos}");
         }
+        else
+        {
+            SpawnSlot.Unreserve(spawnPos);
+        }
     }
+    #endregion
+
 
     public GameObject SpawnAtPosition(Vector3 position)
     {
@@ -199,6 +306,17 @@ public class EnemySpawner : MonoBehaviour, ISpawn
             Debug.LogWarning($"[EnemySpawner] No valid enemies for map {_mapType}.");
             return null;
         }
+
+        Vector3 finalPos = position;
+            finalPos.y += _verticalSpawnOffset; 
+            
+            // Slot Reservation (MapGenerator ไม่ได้เช็ค Slot สำหรับศัตรู)
+            if (!SpawnSlot.Reserve(finalPos))
+            {
+                // Slot ถูกจองแล้ว เช่น ทับกับ Collectible/Asset ที่เกิดบน Platform เดียวกัน
+                Debug.LogWarning($"[EnemySpawner] SpawnAtPosition skipped: Slot reserved by another object at {finalPos}.");
+                return null; 
+            }
 
         int randomEnemy = Random.Range(0, _validPrefabsCache.Count);
         var enemyGO = _objectPool.SpawnFromPool(_validPrefabsCache[randomEnemy].name, position, Quaternion.identity);
@@ -224,17 +342,132 @@ public class EnemySpawner : MonoBehaviour, ISpawn
         return enemyGO;
     }
 
+
+#region Weighted Spawn Helpers (No LINQ)
+    
+    private float CalculateTotalWeight(float distance)
+    {
+        float totalWeight = 0f;
+        // ❌ Refactored: ใช้ foreach loop แทน Linq
+        foreach (var prefab in _validPrefabsCache)
+        {
+            var enemyComp = prefab.GetComponent<Enemy>();
+            if (enemyComp != null)
+            {
+                // Note: GetWeightForEnemy handles the GoldenMon block logic internally
+                totalWeight += GetWeightForEnemy(enemyComp.EnemyType, distance);
+            }
+        }
+        return totalWeight;
+    }
+
+    private float GetWeightForEnemy(EnemyType type, float distance)
+    {
+        // Logic เดิมของ GoldenMon คือใช้ Curve และ Common คือ 1
+        return type switch
+        {
+            EnemyType.GoldenMon => _goldenChanceCurve.Evaluate(distance), // Rare scale by distance
+            _ => 1f // Common enemies weight = 1
+        };
+    }
+
+
+    private GameObject GetWeightedEnemyPrefab()
+    {
+        if (_player == null || _player.transform == null) return null;
+        
+        float distance = Mathf.Max(0f, _player.transform.position.x);
+
+        // น้ำหนักเริ่มต้นศัตรูทั่วไป
+        float commonWeight = 1f;
+        float rareWeight = _goldenChanceCurve.Evaluate(distance);
+
+        List<(GameObject prefab, float weight)> weighted = new();
+        float total = 0f;
+        
+        // Refactored: ใช้ foreach loop แทน Linq
+        foreach (var prefab in _validPrefabsCache)
+        {
+            var type = prefab.GetComponent<Enemy>().EnemyType;
+            float currentWeight = commonWeight;
+
+            if (type.IsRare())
+            {
+                float playTime = GameManager.Instance.PlayTime;
+
+                //  บล็อก GoldenMon ช่วงต้นเกม (ใช้ PlayTime)
+                if (playTime < 300f) 
+                {
+                    currentWeight = 0f;
+                }
+                else
+                {
+                    currentWeight = rareWeight;
+                }
+            }
+            
+            weighted.Add((prefab, currentWeight));
+            total += currentWeight;
+        }
+
+        // 2. Safety check and fallback
+        if (total <= 0f)
+        {
+            // Fallback: Find the first common enemy.
+            foreach (var w in weighted)
+            {
+                if (w.weight > 0f && w.prefab.GetComponent<Enemy>()?.EnemyType.IsCommon() == true)
+                {
+                    return w.prefab;
+                }
+            }
+            // Fallback สุดท้าย: คืน prefab แรกสุดใน list (กัน crash)
+            if (_validPrefabsCache.Count > 0) return _validPrefabsCache[0];
+            return null; 
+        }
+
+        // 3. Weighted Random Selection
+        float r = Random.value * total;
+        
+        foreach (var w in weighted)
+        {
+            r -= w.weight;
+            if (r <= 0f) return w.prefab;
+        }
+
+        return weighted[weighted.Count - 1].prefab;
+    }
+    
+    private GameObject FindSpecificPrefab(EnemyType type)
+    {
+        // Refactored: ใช้ foreach loop แทน FirstOrDefault
+        foreach (var prefab in _enemyPrefabs)
+        {
+            var enemyComp = prefab.GetComponent<Enemy>();
+            if (enemyComp != null && enemyComp.EnemyType == type)
+            {
+                return prefab;
+            }
+        }
+        return null;
+    }
+    #endregion
+
+
     public void Despawn(GameObject enemy)
     {
         if (enemy == null) return;
 
+        // Note: HandleEnemyDied unsubscribe event
         _cullingManager?.UnregisterObject(enemy);
         _activeEnemies.Remove(enemy);
-        _objectPool.ReturnToPool(enemy.name, enemy);
+        
+        // Note: name.Replace("(Clone)", "") ถูกลบออกจาก Despawn ของ MapGeneratorBase แล้ว
+        _objectPool.ReturnToPool(enemy.name, enemy); 
     }
 
     public int GetSpawnCount() => _activeEnemies.Count;
-    #endregion
+
 
 /// <summary>
 /// Spawns a specific enemy type at a given position.
@@ -251,20 +484,15 @@ public class EnemySpawner : MonoBehaviour, ISpawn
         }
 
         // Find the prefab that matches the requested EnemyType (LINQ is okay here as it's not frequent)
-        GameObject prefabToSpawn = _enemyPrefabs.FirstOrDefault(prefab =>
-        {
-            var enemyComp = prefab.GetComponent<Enemy>();
-            return enemyComp != null && enemyComp.EnemyType == type;
-        });
+        GameObject prefabToSpawn = FindSpecificPrefab(type); 
 
-        if (prefabToSpawn == null)
-        {
-            Debug.LogError($"[EnemySpawner] No prefab found for EnemyType: {type}");
-            return null;
-        }
+            if (prefabToSpawn == null)
+            {
+                Debug.LogError($"[EnemySpawner] No prefab found for EnemyType: {type}");
+                return null;
+            }
 
-        // Use the prefab's name as the tag for the object pool
-        string objectTag = prefabToSpawn.name;
+            string objectTag = prefabToSpawn.name;
 
         var enemyGO = _objectPool.SpawnFromPool(objectTag, position, Quaternion.identity);
         
@@ -290,6 +518,7 @@ public class EnemySpawner : MonoBehaviour, ISpawn
         return enemyGO;
 
     }
+
 
     #region Wave Control
     /// <summary>

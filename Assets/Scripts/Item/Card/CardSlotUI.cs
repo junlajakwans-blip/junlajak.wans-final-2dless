@@ -19,12 +19,6 @@ public class CardSlotUI : MonoBehaviour
 
     private CardManager _manager;
     #endregion
-
-    private void Awake() //Don't Destroy When Change Scene
-    {
-        DontDestroyOnLoad(gameObject);
-    }
-
     #region Public Methods
 
     /// <summary>

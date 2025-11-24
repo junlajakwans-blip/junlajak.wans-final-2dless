@@ -232,39 +232,47 @@ public class MapSelectController : MonoBehaviour
 
         // ไอคอนความยาก
         for (int i = 0; i < difficultyIcons.Length; i++)
+        {
+            if (difficultyIcons[i] != null) 
             difficultyIcons[i].gameObject.SetActive(i < map.difficultyLevel);
+        }
+
 
         // กรณีปลดล็อคแล้ว หรือราคา = 0 → ซ่อน UI ซื้อทั้งหมด
         if (storeItem != null && (map.unlocked || storeItem.Price == 0))
         {
-            lockedIcon.SetActive(false);
-            greyOverlay.gameObject.SetActive(false);
-            keyText.gameObject.SetActive(false);
-            keyIcon.SetActive(false);
-            previewImageButton.interactable = true;
+
+            if (lockedIcon != null) lockedIcon.SetActive(false);
+            if (greyOverlay != null) greyOverlay.gameObject.SetActive(false);
+            if (keyText != null) keyText.gameObject.SetActive(false);
+            if (keyIcon != null) keyIcon.SetActive(false);
+            if (previewImageButton != null) previewImageButton.interactable = true;
             return;
         }
 
         // กรณีแมพยังล็อค → แสดงราคา Key
-        lockedIcon.SetActive(true);
-        greyOverlay.gameObject.SetActive(true);
-        previewImageButton.interactable = false;
+            if (lockedIcon != null) lockedIcon.SetActive(true);
+            if (greyOverlay != null) greyOverlay.gameObject.SetActive(true);
+            if (previewImageButton != null) previewImageButton.interactable = false;
 
         if (storeItem != null)
         {
             int have = _currencyRef.KeyMap;
             int need = storeItem.Price;
 
+        if (keyText != null)
+        {
             keyText.gameObject.SetActive(true);
-            keyIcon.SetActive(true);
+            if (keyIcon != null) keyIcon.SetActive(true);
 
-            keyText.text = $"{have}/{need}";
+            keyText.text = $"{have}/{need}"; 
             keyText.color = (have >= need) ? Color.green : Color.red;
+        }
         }
         else
         {
-            keyText.gameObject.SetActive(false);
-            keyIcon.SetActive(false);
+            if (keyText != null) keyText.gameObject.SetActive(false); 
+            if (keyIcon != null) keyIcon.SetActive(false);
         }
     }
 

@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6584924330145214008}
   - component: {fileID: 146933982208306979}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: map_Wall_School_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -102,7 +102,7 @@ GameObject:
   - component: {fileID: 4276790099848233061}
   - component: {fileID: 1268479456869866810}
   - component: {fileID: 1109110456559917266}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: map_Wall_School
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -118,7 +118,7 @@ Transform:
   m_GameObject: {fileID: 6590643152284790479}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 122.05024, y: 0, z: 0}
+  m_LocalPosition: {x: 840.92426, y: 0, z: 0}
   m_LocalScale: {x: 0.32, y: 0.32, z: 0.32}
   m_ConstrainProportionsScale: 1
   m_Children:

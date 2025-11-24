@@ -14,7 +14,6 @@ public class MuscleButton : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -40,11 +39,21 @@ public class MuscleButton : MonoBehaviour
 
     public void Show()
     {
+        if (this == null || gameObject == null) 
+        {
+            return; 
+        }
+        
         gameObject.SetActive(true);
     }
 
     public void Hide()
     {
+    if (this == null || gameObject == null) 
+        {
+            return; 
+        }
+        
         gameObject.SetActive(false);
     }
 }

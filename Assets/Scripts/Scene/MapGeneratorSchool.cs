@@ -38,7 +38,8 @@ public class MapGeneratorSchool : MapGeneratorBase
             MapType.School,
             player,
             _collectibleSpawner,
-            cardManager
+            cardManager,
+            FindFirstObjectByType<BuffManager>()
         );
 
         _collectibleSpawner?.InitializeSpawner(

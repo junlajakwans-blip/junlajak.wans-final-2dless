@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 5297417206172577772}
   - component: {fileID: 2817665938550571944}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: map_asset_School_BreakPlatform
-  m_TagString: Untagged
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -63,7 +63,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -89,7 +89,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1933517354624185082}
   - component: {fileID: 2652989381528626680}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: map_asset_School_Break_Platform_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}

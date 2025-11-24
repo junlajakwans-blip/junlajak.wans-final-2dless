@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5638344323844423361}
   - component: {fileID: 1226805972842656432}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: map_asset_School_Normal_Platform_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -100,9 +100,9 @@ GameObject:
   m_Component:
   - component: {fileID: 6803946115397178951}
   - component: {fileID: -6629867076427811626}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: map_asset_School_Platform
-  m_TagString: Untagged
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

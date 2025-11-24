@@ -1,16 +1,20 @@
 using UnityEngine;
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
 
     #region Fields
-    [Header("Main UI References")]
+    [Header("HUD References")]
     [SerializeField] private HealthBarUI _healthBarUI;
     [SerializeField] private ScoreUI _scoreUI;
     [SerializeField] private CardSlotUI _cardSlotUI;
     [SerializeField] private MenuUI _menuUI;
+    [SerializeField] public GameObject panelHUDMain;
+
+    [Header("Main UI References")]
     [SerializeField] private StoreUI _storeUI;
     [SerializeField] private MapSelectController _mapSelectController;
 
@@ -21,6 +25,7 @@ public class UIManager : MonoBehaviour
     [Header("System References")]
     [SerializeField] private TextMeshProUGUI storeTitleText;
     [SerializeField] private TopCurrencyUI[] topCurrencies;
+
 
 
     
@@ -68,7 +73,8 @@ public class UIManager : MonoBehaviour
         }
 
         // Register Store UI
-        _storeUI?.SetDependencies(currency, stores, storeManager);
+        if (_storeUI != null)
+        _storeUI.SetDependencies(currency, stores, storeManager);
 
         _mapSelectController?.SetDependencies(gm, currency);
 
@@ -79,7 +85,13 @@ public class UIManager : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject); // ทำลายตัวเอง ถ้ามีตัวอื่นอยู่แล้ว
+            return;
+        }
         Instance = this;
+        DontDestroyOnLoad(gameObject); 
     }
 
     #region Main Menu
@@ -108,18 +120,46 @@ public class UIManager : MonoBehaviour
 
     private void SetPanel(GameObject target)
     {
-        panelMainMenu.SetActive(target == panelMainMenu);
-        panelSelectMap.SetActive(target == panelSelectMap);
-        panelStore.SetActive(target == panelStore || target == panelStoreExchange || target == panelStoreUpgrade);
-        panelSettings.SetActive(target == panelSettings);
+        // ควบคุม Panel HUD หลัก
+        if (panelHUDMain != null)
+        {
+            // เปิด HUD ถ้า target ไม่ใช่ MainMenu หรือ SelectMap (คือเป็น Gameplay)
+            bool isGameplay = target != panelMainMenu && target != panelSelectMap;
+            panelHUDMain.SetActive(isGameplay);
+        }
+
+        //ควบคุม Panel in MainMenu Scene
+        if (panelMainMenu != null)
+        if (panelMainMenu != null)
+            panelMainMenu.SetActive(target == panelMainMenu);
+            
+        if (panelSelectMap != null)
+            panelSelectMap.SetActive(target == panelSelectMap);
+            
+        if (panelStore != null)
+            panelStore.SetActive(target == panelStore || target == panelStoreExchange || target == panelStoreUpgrade);
+            
+        if (panelSettings != null)
+            panelSettings.SetActive(target == panelSettings);
         
         // หน้าจอร้านค้าย่อย
-        panelStoreExchange.SetActive(target == panelStoreExchange);
-        panelStoreUpgrade.SetActive(target == panelStoreUpgrade);
+        if (panelStoreExchange != null)
+            panelStoreExchange.SetActive(target == panelStoreExchange);
+            
+        if (panelStoreUpgrade != null)
+            panelStoreUpgrade.SetActive(target == panelStoreUpgrade);
 
         // รีค่าเงิน
         foreach (var ui in topCurrencies)
         ui?.Refresh();
+    }
+
+    public void ShowGameplayHUD()
+    {
+        // เรียก SetPanel ด้วยค่าที่ไม่ใช่ MainMenu/SelectMap เพื่อเปิด HUD
+        // และปิด Menu หลักทั้งหมด
+        SetPanel(null); // หรือใช้ Panel_Player_Attack ก็ได้ หากเป็น Panel ที่ Active เฉพาะใน Gameplay
+        CloseAllMenus(); // ปิด Pause Menu/Result Menu ที่อาจค้างอยู่
     }
 
     public void SwitchStorePanel(StoreType type)
@@ -153,6 +193,9 @@ public class UIManager : MonoBehaviour
     #endregion
 
     #region Health UI
+
+    public HealthBarUI GetHealthBarUI() => _healthBarUI;
+
     public void InitializeHealth(int maxHP)
     {
         _healthBarUI?.InitializeHealth(maxHP);
@@ -172,6 +215,7 @@ public class UIManager : MonoBehaviour
     {
         _healthBarUI?.AnimateHealEffect();
     }
+    
     #endregion
 
     #region Score UI

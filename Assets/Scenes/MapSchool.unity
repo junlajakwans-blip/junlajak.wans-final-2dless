@@ -202,6 +202,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4658831917752918347, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+      propertyPath: _interact
+      value: 
+      objectReference: {fileID: 316353513}
     - target: {fileID: 5168628728660963583, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
       propertyPath: throwPoint
       value: 
@@ -212,6 +216,10 @@ PrefabInstance:
       objectReference: {fileID: 316353512}
     - target: {fileID: 5999967935324284092, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
       propertyPath: m_Name
+      value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 5999967935324284092, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+      propertyPath: m_TagString
       value: Player
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -233,6 +241,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   m_PrefabInstance: {fileID: 316353511}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &316353513 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5168628728660963583, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+  m_PrefabInstance: {fileID: 316353511}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 534d06025ed558249af527de7dfc4801, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInteract
 --- !u!1 &610633206
 GameObject:
   m_ObjectHideFlags: 0
@@ -268,10 +287,15 @@ MonoBehaviour:
   _phase1Interval: {x: 6, y: 9}
   _phase2Interval: {x: 4, y: 7}
   _phase3Interval: {x: 3, y: 5}
-  _spawnOffsetX: 8
-  _spawnY: 0.2
-  _randomYOffset: 0.3
-  _autoSpawn: 1
+  _groundLayer:
+    serializedVersion: 2
+    m_Bits: 2048
+  _obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  _checkRadius: 0.5
+  _rayDistance: 5
+  _verticalOffset: 0
   _cachedAssetKeys: []
   _activeAssets: []
 --- !u!4 &610633208
@@ -314,7 +338,7 @@ Transform:
   m_GameObject: {fileID: 957922879}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -14.756088, y: 10.075274, z: 0}
+  m_LocalPosition: {x: 15.5, y: 10.075274, z: 0}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -330,7 +354,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1001232346}
   - component: {fileID: 1001232345}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: 'BackgroundLooper '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -349,10 +373,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4208625ebe1b04149a9348875559e7d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BackgroundLooper
-  _resetPositionX: 0
-  _startPositionX: 20
-  _isLooping: 1
-  _backgroundWidth: 30
+  _backgroundWidth: 20
+  _backgroundYOffset: 2
+  _destroyThreshold: 25
   _currentBackgroundKey: default
 --- !u!4 &1001232346
 Transform:
@@ -363,7 +386,7 @@ Transform:
   m_GameObject: {fileID: 1001232344}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 4.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -425,7 +448,7 @@ Transform:
   m_GameObject: {fileID: 1254678471}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7.09, y: 0, z: 0}
+  m_LocalPosition: {x: -2.25, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -465,22 +488,24 @@ MonoBehaviour:
   _backgroundLooper: {fileID: 1001232345}
   _assetSpawner: {fileID: 610633207}
   _throwableSpawner: {fileID: 2073505759}
-  _spawnStartPosition: {x: -5, y: 1}
+  _spawnStartPosition: {x: -9, y: 1}
   _maxPlatformCount: 10
   _generationPivot: {fileID: 1254678472}
-  _platformWidth: 10
-  _minXOffset: 2
-  _maxXOffset: 4
-  _minYOffset: -1
-  _maxYOffset: 1.5
-  _initialPlatformsCount: 5
-  _activePlatforms: []
+  _platformWidth: 5
+  _minXOffset: 1
+  _maxXOffset: 2
+  _minYOffset: 0.9
+  _maxYOffset: 1.2
+  _currentPlatformState: 0
+  _currentHeightLimit: 0
+  _stepsRemaining: 0
   _floorY: -0.8
-  _floorLength: 2
-  _initialFloorSegments: 15
-  _activeFloors: []
+  _floorLength: 2.35
+  _initialFloorSegments: 16
   _endlessWall: {fileID: 2834084880469090607, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
   _baseWallPushSpeed: 1
+  _activePlatforms: []
+  _activeFloors: []
   _floorKey: map_floor_School
   _platformKey: map_asset_School_Platform
   _breakPlatformKey: map_asset_School_BreakPlatform
@@ -560,15 +585,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 886553eceff88a746be4e7f85ca9fcc6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThrowableSpawner
-  _throwablePrefix: map_ThrowItem_School_
+  _dropTable: {fileID: 11400000, guid: d2d9d9a0968270848953eb9b5c46aa26, type: 2}
   _phase1End: 700
   _phase2End: 1600
   _phase3DropChance: 0.15
   _spawnYOffset: 0.6
-  _throwableKey: map_ThrowItem_School_
-  _displayPrefab: {fileID: 5607982103104544609, guid: 57f05282925e50145900e7929b2f5fb9, type: 3}
-  _cachedThrowableKeys: []
-  _activeThrowables: []
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 2048
+  _activeThrowables:
+  - {fileID: 5607982103104544609, guid: 57f05282925e50145900e7929b2f5fb9, type: 3}
 --- !u!4 &2073505760
 Transform:
   m_ObjectHideFlags: 0
@@ -672,7 +698,7 @@ Transform:
   m_GameObject: {fileID: 2089479466}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalPosition: {x: 0, y: -0.5, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -736,7 +762,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CameraFollow
   target: {fileID: 316353512}
   smoothSpeed: 5
-  offset: {x: 3, y: 1.5, z: -10}
+  offset: {x: 3, y: -0.17, z: -10}
 --- !u!1 &2093980295
 GameObject:
   m_ObjectHideFlags: 0
@@ -771,6 +797,11 @@ MonoBehaviour:
   _maxCoins: 30
   _xStep: 1.5
   _yStep: 1
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 2048
+  groundRayDistance: 6
+  coinYOffset: 0.6
   _pool: {fileID: 0}
 --- !u!4 &2093980297
 Transform:
@@ -879,8 +910,8 @@ MonoBehaviour:
   - {fileID: 1040190956}
   - {fileID: 39698708}
   - {fileID: 957922880}
-  _spawnInterval: 3
-  _maxEnemies: 5
+  _spawnInterval: 1
+  _maxEnemies: 3
   _currentWaveCount: 0
   _activeEnemies: []
   _goldenMonBonusChance: 0.02
@@ -888,6 +919,54 @@ MonoBehaviour:
   _player: {fileID: 8952884402048639063, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   _collectibleSpawner: {fileID: 3128689819189778724}
   _cardManager: {fileID: 0}
+  _goldenChanceCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.25
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 300
+      value: 0.15
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1500
+      value: 0.12
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 2500
+      value: 0.18
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _gameManager: {fileID: 0}
+  _spawnStartDistance: 100
+  _firstEnemySpawned: 1
+  _firstEnemyType: 7
+  _minSpawnSpacing: 10
+  _verticalSpawnOffset: 1
 --- !u!4 &939860341859728424
 Transform:
   m_ObjectHideFlags: 0
@@ -953,18 +1032,20 @@ MonoBehaviour:
   - {fileID: 1079607818994521509, guid: f78aa01edf9194945934ec27bc5d63b1, type: 3}
   - {fileID: 5561300889309933517, guid: ac4dd69d4dab6ea4d9942c8653982be3, type: 3}
   - {fileID: 2368865025861581409, guid: 3153b32703c275d47a7b980701dc5e58, type: 3}
-  _spawnArea:
+  _buffUtilityPrefabs: []
+  _takoyakiChance: 0.25
+  _buffChance: 0.05
+  _groundLayer:
     serializedVersion: 2
-    x: -5
-    y: 0.2
-    width: 10
-    height: 2
-  _spawnInterval: 1
+    m_Bits: 2048
+  _obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  _rayDistance: 5
+  _groundOffset: 0.5
   _coinTrailGenerator: {fileID: 2093980296}
-  collectibleGroundOffset: 0.1
+  _coinTrailChance: 0.2
   _activeCollectibles: []
-  _cullingManager: {fileID: 2100565030}
-  _playerTransform: {fileID: 316353512}
 --- !u!114 &5940353169928122486
 MonoBehaviour:
   m_ObjectHideFlags: 0

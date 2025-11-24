@@ -1,79 +1,48 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// ดรอปของปา (Throwable) จากศัตรูตามระยะทาง
-/// - ใช้ EnemySpawner.OnEnemySpawned → สมัคร event OnEnemyDied ของแต่ละตัว
-/// - Phase1: 0–700   → ไม่ดรอป
-/// - Phase2: 700–1600 → ยังไม่ดรอป (หรือจะเปิดบางส่วนก็ปรับได้)
-/// - Phase3: 1600+   → 15% โอกาสดรอป (H3)
-/// </summary>
-public class ThrowableSpawner : MonoBehaviour, ISpawn ,IInteractable
+public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
 {
-    [Header("Prefix Settings")]
-    [Tooltip("เช่น map_ThrowItem_School_ / map_ThrowItem_RoadTraffic_ / map_ThrowItem_Kitchen_")]
-    [SerializeField] private string _throwablePrefix = "map_ThrowItem_School_";
+    [Header("Drop Table (Per Map)")]
+    [SerializeField] private ThrowableDropTable _dropTable;
 
     [Header("Distance Phases")]
     [SerializeField] private float _phase1End = 700f;
     [SerializeField] private float _phase2End = 1600f;
 
     [Header("Drop Chance (Phase3)")]
-    [Tooltip("โอกาสดรอปใน Phase3 (0–1) เช่น 0.15 = 15%")]
+    [Tooltip("0–1 เช่น 0.15 = 15%")]
     [SerializeField] private float _phase3DropChance = 0.15f;
 
-    [Header("Placement")]
-    [Tooltip("ยกของปาจากพื้นขึ้นตามแกน Y เล็กน้อยจากตำแหน่งศัตรู")]
+    [Header("Placement Offset Y")]
     [SerializeField] private float _spawnYOffset = 0.5f;
 
-    [SerializeField] private string _throwableKey;
-    [SerializeField] private GameObject _displayPrefab;
+    [SerializeField] private LayerMask groundLayer;
 
-    [Header("Runtime Debug")]
-    [SerializeField] private List<string> _cachedThrowableKeys = new List<string>();
-    [SerializeField] private List<GameObject> _activeThrowables = new List<GameObject>();
-
-    // references
-    private IObjectPool _pool;
-    private Transform _pivot;       // ปกติ = Player
+    private Transform _pivot;        // Player
     private float _startX;
-
+    private IObjectPool _pool;
     private EnemySpawner _enemySpawner;
 
     private bool _canInteract = false;
     public bool CanInteract => _canInteract;
 
-    #region Initialization
+    // รายการของที่ spawn อยู่บนพื้น (ไม่รวมที่อยู่บนหัวผู้เล่น)
+    [SerializeField] private List<GameObject> _activeThrowables = new();
 
-    /// <summary>
-    /// เรียกจาก MapGeneratorX
-    /// </summary>
+    #region Initialization
     public void Initialize(Transform pivot, EnemySpawner enemySpawner = null)
     {
         _pivot = pivot;
-        _startX = _pivot != null ? _pivot.position.x : 0f;
+        _startX = pivot.position.x;
 
-        var poolManager = ObjectPoolManager.Instance;
-        if (poolManager == null) return;
-
-        _pool = poolManager;
-        CacheThrowableKeys(poolManager);
-
+        _pool = ObjectPoolManager.Instance;
         _enemySpawner = enemySpawner ?? FindFirstObjectByType<EnemySpawner>();
+
         if (_enemySpawner != null)
             _enemySpawner.OnEnemySpawned += HandleEnemySpawned;
 
-        // สำหรับ Interact
         _canInteract = true;
-    }
-
-
-    private void CacheThrowableKeys(ObjectPoolManager poolManager)
-    {
-        _cachedThrowableKeys.Clear();
-        foreach (var tag in poolManager.GetAllTags())
-            if (tag.StartsWith(_throwablePrefix))
-                _cachedThrowableKeys.Add(tag);
     }
 
     private void OnDisable()
@@ -81,54 +50,122 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn ,IInteractable
         if (_enemySpawner != null)
             _enemySpawner.OnEnemySpawned -= HandleEnemySpawned;
     }
-
     #endregion
 
-    #region Enemy Events
+    #region Enemy Events → Drop Logic
 
     private void HandleEnemySpawned(Enemy enemy)
     {
-        if (enemy == null) return;
-        // สมัครกับ event ตายของศัตรูแต่ละตัว
         enemy.OnEnemyDied += HandleEnemyDied;
     }
 
-
     private void HandleEnemyDied(Enemy enemy)
     {
-        if (enemy == null) return;
         enemy.OnEnemyDied -= HandleEnemyDied;
 
         float distance = Mathf.Max(0f, _pivot.position.x - _startX);
-
+        if (distance < _phase1End) return;
         if (distance < _phase2End) return;
         if (Random.value > _phase3DropChance) return;
 
-        Vector3 pos = enemy.transform.position;
-        pos.y += _spawnYOffset;
-
+        Vector3 pos = enemy.transform.position + Vector3.up * _spawnYOffset;
         GameObject obj = SpawnThrowableAt(pos);
         if (obj != null) _activeThrowables.Add(obj);
     }
+
     #endregion
 
     #region Spawn Core
-    private GameObject SpawnThrowableAt(Vector3 position)
+    private GameObject SpawnThrowableAt(Vector3 pos)
     {
-        if (_pool == null || _cachedThrowableKeys.Count == 0) return null;
+        if (_pool == null ||
+            _dropTable == null ||
+            _dropTable.dropList == null ||
+            _dropTable.dropList.Count == 0)
+            return null;
 
-        string key = _cachedThrowableKeys[Random.Range(0, _cachedThrowableKeys.Count)];
-        return _pool.SpawnFromPool(key, position, Quaternion.identity);
+        // ยิง Ray ลงหา Ground Layer เพื่อตกบนพื้นเท่านั้น
+        RaycastHit2D hit = Physics2D.Raycast(
+            pos + Vector3.up * 1f,   // เริ่มยิงจากด้านบน
+            Vector2.down,
+            5f,
+            groundLayer
+        );
+
+        Debug.DrawRay(pos + Vector3.up * 1f, Vector2.down * 5f, hit.collider != null ? Color.green : Color.red, 2f);
+
+
+        if (hit.collider != null)
+        {
+            pos = new Vector3(pos.x, hit.point.y + _spawnYOffset, pos.z);
+        }
+        else
+        {
+            // ถ้าไม่เจอพื้นก็ไม่ spawn — ป้องกันลอยกลางอากาศ
+            return null;
+        }
+
+        string poolTag = GetWeightedTag();
+        GameObject obj = _pool.SpawnFromPool(poolTag, pos, Quaternion.identity);
+        if (obj == null) return null;
+
+        var info = obj.GetComponent<ThrowableItemInfo>();
+        var sr   = obj.GetComponent<SpriteRenderer>();
+
+        if (info != null)
+        {
+            var entry = _dropTable.dropList.Find(x => x.poolTag == poolTag);
+            if (entry != null)
+            {
+                info.SetInfo(poolTag, entry.icon);   // ใช้แบบเดิม
+                if (sr != null)
+                    sr.sprite = entry.icon;
+            }
+        }
+        Debug.LogWarning("[ThrowableSpawner] Raycast did not hit the Ground Layer at position: " + (pos + Vector3.up * 1f));
+        return obj;
+    }
+
+
+
+    private string GetWeightedTag()
+    {
+        float total = 0f;
+        foreach (var e in _dropTable.dropList) total += e.weight;
+
+        float r = Random.value * total;
+        foreach (var e in _dropTable.dropList)
+        {
+            r -= e.weight;
+            if (r <= 0f) return e.poolTag;
+        }
+        return _dropTable.dropList[_dropTable.dropList.Count - 1].poolTag;
     }
     #endregion
 
+    #region IInteractable — Pick Up
+    public void Interact(Player player)
+    {
+        var interact = player.GetComponentInChildren<PlayerInteract>();
+        interact?.SetThrowable(gameObject);
 
-    #region ISpawn Implementation (not heavily used but for interface consistency)
+        if (TryGetComponent<ThrowableItemInfo>(out var info))
+            info.SetInteractable(false);
 
+        _activeThrowables.Remove(gameObject);
+    }
+
+    public void ShowPrompt()
+    {
+        UIManager.Instance.ShowPrompt("Press W to pick up");
+    }
+    #endregion
+
+    #region ISpawn Implementation
     public void Spawn()
     {
-        // normally not used (ดรอปจากศัตรูเป็นหลัก)
         if (_pivot == null) return;
+
         Vector3 pos = _pivot.position + Vector3.up * _spawnYOffset;
         GameObject obj = SpawnThrowableAt(pos);
         if (obj != null) _activeThrowables.Add(obj);
@@ -140,38 +177,16 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn ,IInteractable
         if (obj != null) _activeThrowables.Add(obj);
         return obj;
     }
-    #endregion
 
     public void Despawn(GameObject obj)
     {
         if (obj == null || _pool == null) return;
-
         _activeThrowables.Remove(obj);
-        _pool.ReturnToPool(obj.name.Replace("(Clone)", "").Trim(), obj);
+
+        string key = obj.name.Replace("(Clone)", "").Trim();
+        _pool.ReturnToPool(key, obj);
     }
 
     public int GetSpawnCount() => _activeThrowables.Count;
-
-    #region IInteractable
-    public void Interact(Player player)
-    {
-        if (!CanInteract || player == null) return;
-
-        var interact = player.GetComponentInChildren<PlayerInteract>();
-
-        Debug.Log($"[ThrowableSpawner] Player picked up {_throwableKey}");
-
-        interact.SetThrowable(gameObject); // ส่งข้อมูลให้ระบบ PlayerInteract
-        _canInteract = false;
-
-        Despawn(gameObject);
-    }
-
-    
-    public void ShowPrompt()
-    {
-        UIManager.Instance.ShowPrompt("Press E to pick up");
-    }
-
     #endregion
 }

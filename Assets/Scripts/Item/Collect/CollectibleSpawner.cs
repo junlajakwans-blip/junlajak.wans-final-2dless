@@ -5,30 +5,38 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
 {
     #region Fields
     [Header("Spawner Settings")]
+    [Tooltip("ใส่ Prefab ทุกชนิดที่ต้องการ Spawn (รวม Coin/Takoyaki)")]
     [SerializeField] private List<GameObject> _collectiblePrefabs = new();
-    [SerializeField] private Rect _spawnArea = new Rect(-5f, -2f, 10f, 4f);
 
-    [Header("Spawn Timing")]
-    [SerializeField] private float _spawnInterval = 3f; // เกิดทุก 3 วินาที
+    [Header("Item Distribution (Rarity)")]
+    [Tooltip("Prefabs ที่เป็น Buff/Utility (Coffee, GreenTea, MooKrata)")]
+    [SerializeField] private List<GameObject> _buffUtilityPrefabs = new();
+    [Tooltip("โอกาสที่ Collectible จะเป็น Takoyaki (Risk Item)")]
+    [SerializeField] private float _takoyakiChance = 0.25f;
+    [Tooltip("โอกาสที่ Collectible จะเป็น Buff/Utility (Rare Item)")]
+    [SerializeField] private float _buffChance = 0.05f;
+
+    [Header("Placement Physics")]
+    [SerializeField] private LayerMask _groundLayer;    // Platform/Ground
+    [SerializeField] private LayerMask _obstacleLayer;  // Obstacle/Enemy/Collectible
+    [SerializeField] private float _rayDistance = 5f;
+    [SerializeField] private float _groundOffset = 0.5f;
+
+    [Header("Coin Trail")]
     [SerializeField] private CoinTrailGenerator _coinTrailGenerator;
-    [SerializeField] private float collectibleGroundOffset = 0.4f;
-
+    [SerializeField] private float _coinTrailChance = 0.20f;
 
     [Header("Runtime Data")]
     [SerializeField] private List<GameObject> _activeCollectibles = new();
 
     [Header("References")]
-    [SerializeField] private IObjectPool _objectPool;
-    [SerializeField] private DistanceCulling _cullingManager;
+    private IObjectPool _objectPool;
+    private DistanceCulling _cullingManager;
     private CardManager _cardManager;
     private BuffManager _buffManager;
-    private float _minSpawnDistanceX = 1.2f; // ห้ามเกิดห่างกันน้อยกว่านี้
-    private Vector3 _lastSpawnPos = Vector3.positiveInfinity;
-
-
     #endregion
 
-    #region Initialization
+    #region Initialization & Cleanup
 
     public void InitializeSpawner(IObjectPool pool, DistanceCulling cullingManager, CardManager cardManager, BuffManager buffManager)
     {
@@ -37,101 +45,92 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
         _cardManager = cardManager;
         this._buffManager = buffManager;
         
-        Debug.Log("[CollectibleSpawner] Initialized with object pool.");
-
-        StartContinuousSpawning();
+        //ยกเลิก Loop เก่าทั้งหมด
+        CancelInvoke(); 
     }
+    
+    public void SetPlayer(Transform player) 
+    { 
+        // Unused: MapGenerator เป็นคนส่งตำแหน่งมาให้แล้ว
+    }
+
     #endregion
 
-    #region Spawning Control
-
-    private void StartContinuousSpawning()
+    #region ISpawn Implementation (Core Spawn Logic)
+    
+    /// <summary>
+    /// ถูกเรียกโดย MapGeneratorBase (สำหรับ Item ที่เกิดระหว่างทาง)
+    /// </summary>
+public GameObject SpawnAtPosition(Vector3 targetPos)
+{
+    if (_objectPool == null || _collectiblePrefabs.Count == 0) 
     {
-        // ตรวจสอบว่ายังไม่ได้ถูกเรียกอยู่ เพื่อป้องกันการซ้ำซ้อน
-        CancelInvoke(nameof(CheckAndSpawnItem)); 
-        
-        // เริ่มเรียกเมธอด CheckAndSpawnItem ซ้ำๆ ทุก _spawnInterval วินาที
-        // 1f: ค่า Delay เริ่มต้นก่อนจะเริ่มเรียกครั้งแรก 
-        InvokeRepeating(nameof(CheckAndSpawnItem), 1f, _spawnInterval);
+        Debug.LogError("[Collectible] Spawn Failed: Pool or Prefab list is empty.");
+        return null;
     }
 
-    // เมธอดนี้จะทำหน้าที่ตรวจสอบเงื่อนไขและเรียก Spawn
-    private void CheckAndSpawnItem()
+    // 1.Raycast Down: หาพื้นจริงๆ
+    if (!TryFindGround(targetPos, out Vector3 finalPos))
     {
-        // ใช้เงื่อนไขเดิม: จำกัดจำนวนสูงสุดของ Collectibles ที่ active อยู่ในฉาก
-        if (_activeCollectibles.Count >= 20)
-        {
-            // หากถึงจำนวนสูงสุดแล้ว ให้หยุด Spawn ชั่วคราว (แต่ InvokeRepeating ยังรันอยู่)
-            return;
-        }
-        
-        // ถ้ายังไม่ถึง ให้เรียก Spawn
-        SpawnRandomItem();
+        // FIX 1: เพิ่ม Debug Log เมื่อหาพื้นไม่เจอ
+        Debug.LogWarning($"[Collectible] Spawn Failed at X={targetPos.x:F1}: No Ground Found (Check _groundLayer/Raycast setup).");
+        return null; // ไม่เจอพื้น (เหว)
     }
 
-    public void StopSpawning()
+    // 2.SpawnSlot Check: ป้องกันทับซ้อน (สำคัญ)
+    if (!SpawnSlot.Reserve(finalPos))
     {
-        CancelInvoke(nameof(CheckAndSpawnItem));
+        // FIX 2: เพิ่ม Debug Log เมื่อ Slot ถูกจองแล้ว
+        Debug.LogWarning($"[Collectible] Spawn Failed at X={finalPos.x:F1}: Slot Reserved by another object (Asset/Platform).");
+        return null; // Slot ถูกจองแล้ว (ทับ Asset/Collectible อื่น)
+    }
+    
+    // 3.Coin Trail Chance
+    if (_coinTrailGenerator != null && Random.value < _coinTrailChance)
+    {
+        _coinTrailGenerator.SpawnRandomTrail(finalPos);
+        SpawnSlot.Unreserve(finalPos); // ไม่ได้วาง Item เดี่ยว เลยต้องคืน Slot
+        Debug.Log($"[Collectible] Coin Trail Spawned at X={finalPos.x:F1}."); // Debug Trail
+        return null; 
     }
 
-#endregion
-
-
-    #region ISpawn Implementation
-    public void Spawn()
+    // 4.Smart Item Selection
+    GameObject prefabToSpawn = GetSmartItemPrefab();
+    if (prefabToSpawn == null) 
     {
-        if (_collectiblePrefabs.Count == 0)
-        {
-            Debug.LogWarning("[CollectibleSpawner] No collectible prefabs assigned.");
-            return;
-        }
+        SpawnSlot.Unreserve(finalPos); // ไม่เจอ Item ที่จะ Spawn คืน Slot
+        Debug.LogError($"[Collectible] Failed: GetSmartItemPrefab returned null (Check Prefab names/list)."); // Debug Prefab Null
+        return null; 
+    }
 
-        // --- Coin Trail Mode (20%) ---
-        if (_coinTrailGenerator != null && Random.value < 0.20f)
-        {
-            Vector3 start = GetSpawnBasePosition();
-            _coinTrailGenerator.SpawnRandomTrail(start);
-            return; // ข้าม collectible เดี่ยวในรอบนี้
-        }
+    // 5. Spawn และ Inject
+    var collectible = _objectPool.SpawnFromPool(
+        GetObjectTag(prefabToSpawn), 
+        finalPos,
+        Quaternion.identity
+    );
 
-        // --- Single collectible spawn ---
-        Vector3 position = GetRandomSpawnPosition();
-        int randomIndex = Random.Range(0, _collectiblePrefabs.Count);
-
-        var collectible = _objectPool.SpawnFromPool(
-            _collectiblePrefabs[randomIndex].name,
-            position,
-            Quaternion.identity
-        );
-
+    if (collectible != null)
+    {
         _activeCollectibles.Add(collectible);
         _cullingManager?.RegisterObject(collectible);
-
-        if (collectible.TryGetComponent<CollectibleItem>(out var collectibleItem))
+        if (collectible.TryGetComponent<CollectibleItem>(out var item))
         {
-            collectibleItem.SetDependencies(_cardManager, this, _buffManager);
+            item.SetDependencies(_cardManager, this, _buffManager);
         }
+        // FIX 3: Log การ Spawn ที่สำเร็จ
+        Debug.Log($"[Collectible] Spawned SUCCESS: {prefabToSpawn.name} at X={finalPos.x:F1}.");
     }
-
-
-    public GameObject SpawnAtPosition(Vector3 position)
+    else
     {
-        int randomIndex = Random.Range(0, _collectiblePrefabs.Count);
-        var collectible = _objectPool.SpawnFromPool(
-            _collectiblePrefabs[randomIndex].name,
-            position,
-            Quaternion.identity
-        );
-
-        _activeCollectibles.Add(collectible);
-        _cullingManager?.RegisterObject(collectible);
-        if (collectible.TryGetComponent<CollectibleItem>(out var collectibleItem))
-            {
-                collectibleItem.SetDependencies(_cardManager, this, _buffManager); 
-            }
-            
-            return collectible;
+        SpawnSlot.Unreserve(finalPos); // Spawn ไม่สำเร็จ คืน Slot
+        Debug.LogError($"[Collectible] Spawn Failed: ObjectPool failed for {GetObjectTag(prefabToSpawn)}.");
     }
+
+    return collectible;
+}
+
+    public void Spawn() { /* Unused */ } 
 
     /// <summary>
     /// Returns an object to the pool. Called by the CollectibleItem when collected.
@@ -143,124 +142,39 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
             Destroy(collectible);
             return;
         }
+        
+        // สำคัญ: ต้อง Unreserve Slot เมื่อ Despawn
         SpawnSlot.Unreserve(collectible.transform.position);
         
-        // Unregister from Culling (ถ้าใช้) และ Active List
         _activeCollectibles.Remove(collectible);
         _cullingManager?.UnregisterObject(collectible);
         
-        // Return to Pool โดยใช้ชื่อ Prefab เป็น Tag
-        _objectPool.ReturnToPool(collectible.name, collectible);
+        _objectPool.ReturnToPool(GetObjectTag(collectible), collectible);
     }
-
-    public int GetSpawnCount()
-    {
-        return _activeCollectibles.Count;
-    }
+    
+    public int GetSpawnCount() => _activeCollectibles.Count;
+    
     #endregion
 
-    #region Additional Logic
-
-    private Vector3 GetRandomSpawnPosition()
-    {
-        // อิงตำแหน่ง player
-        if (_playerTransform != null)
-            _spawnArea.x = _playerTransform.position.x - (_spawnArea.width * 0.5f);
-
-        Vector3 pos;
-        int loopSafe = 0;
-
-        do
-        {
-            float x = Random.Range(_spawnArea.xMin, _spawnArea.xMax);
-            float y = _spawnArea.yMax - collectibleGroundOffset;
-            pos = new Vector3(x, y, 0f);
-            loopSafe++;
-        }
-        while (Vector3.Distance(pos, _lastSpawnPos) < _minSpawnDistanceX && loopSafe < 10);
-
-        _lastSpawnPos = pos;
-        return pos;
-    }
-
-
+    #region Monster Item Drop Logic
     /// <summary>
-    /// ใช้ตำแหน่งฐานเดียวกับ collectible ปกติ — สำหรับ Coin Trail
-    /// เกิดบริเวณเดียวกับของเก็บ แต่สูงจากพื้นเล็กน้อยเพื่ออ่านเส้นวิ่งง่าย
+    /// ถูกเรียกโดย Enemy เมื่อตาย (Monster Drop)
     /// </summary>
-    private Vector3 GetSpawnBasePosition()
-    {
-        if (_playerTransform != null)
-        {
-            float x = _playerTransform.position.x + 6f; // อยู่ข้างหน้าผู้เล่น
-            float y = _spawnArea.yMin + 1.2f;
-            return new Vector3(x, y, 0f);
-        }
-
-        // ถ้าไม่มี player ใช้แบบสุ่ม fallback
-        float fallbackX = Random.Range(_spawnArea.xMin, _spawnArea.xMax);
-        float baseY = _spawnArea.yMin + 1.2f;
-        return new Vector3(fallbackX, baseY, 0);
-    }
-
-
-    public GameObject SpawnRandomItem()
-    {
-        if (_collectiblePrefabs.Count == 0) return null;
-
-        Vector3 position = GetRandomSpawnPosition();
-        GameObject prefab;
-        CollectibleItem itemData;
-
-        do
-        {
-            prefab = _collectiblePrefabs[Random.Range(0, _collectiblePrefabs.Count)];
-            itemData = prefab.GetComponent<CollectibleItem>();
-        }
-        while (itemData != null && !IsRandomSpawnItem(itemData.GetCollectibleType()));
-
-        var item = _objectPool.SpawnFromPool(
-            prefab.name,
-            position,
-            Quaternion.identity
-        );
-
-        _activeCollectibles.Add(item);
-        if (item.TryGetComponent<CollectibleItem>(out var collectibleItem))
-            {
-                collectibleItem.SetDependencies(_cardManager, this, _buffManager); 
-            }
-            
-            return item;
-    }
-
-
-    private bool IsRandomSpawnItem(CollectibleType type)
-    {
-        return type == CollectibleType.Coin ||
-            type == CollectibleType.GreenTea ||
-            type == CollectibleType.Coffee ||
-            type == CollectibleType.MooKrata ||
-            type == CollectibleType.Takoyaki;
-    }
-    #endregion
-
-    [SerializeField] private Transform _playerTransform;
-    public void SetPlayer(Transform player) => _playerTransform = player;
-
-
-    #region Item Drop From Mon
-    /// <summary>
-    /// Spawns a specific collectible item using the Object Pool based on CollectibleType.
-    /// </summary>
-    /// <param name="type">The type of item to drop (e.g., Coin, Coffee).</param>
-    /// <param name="position">The world position to spawn the item.</param>
     public GameObject DropCollectible(CollectibleType type, Vector3 position)
     {
         if (_objectPool == null)
         {
             Debug.LogError("[CollectibleSpawner] Object Pool is not initialized!");
             return null;
+        }
+        
+    
+        // ไอเทมที่ดรอปต้องไม่เกิดทับสิ่งอื่นที่จอง Slot ไว้
+        if (!SpawnSlot.Reserve(position))
+        {
+            // Slot ถูกจองแล้ว เช่น ดรอปทับ Item ที่เพิ่งเกิด หรือ Asset ที่อยู่ตรงนั้น
+            // ปล่อยให้มันหายไป (ไม่ดรอป) เพื่อแก้ปัญหาการซ้อนทับ
+            return null; 
         }
 
         string prefabName = type.ToString();
@@ -271,24 +185,78 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
             Quaternion.identity
         );
 
-    if (collectible != null)
-    {
-        _activeCollectibles.Add(collectible);
-        
-        // [NEW FIX]: INJECT DEPENDENCIES
-        if (collectible.TryGetComponent<CollectibleItem>(out var collectibleItem))
+        if (collectible != null)
         {
-            // Inject CardManager (สำหรับ CardPickup) และ 'this' (สำหรับ Despawn)
-            collectibleItem.SetDependencies(_cardManager, this, _buffManager); 
+            _activeCollectibles.Add(collectible);
+            
+            // [NEW FIX]: INJECT DEPENDENCIES
+            if (collectible.TryGetComponent<CollectibleItem>(out var collectibleItem))
+            {
+                collectibleItem.SetDependencies(_cardManager, this, _buffManager); 
+            }
         }
-        
-        Debug.Log($"[CollectibleSpawner] Dropped {type}...");
-    }
+        else
+        {
+             // Spawn ไม่สำเร็จ (เช่น Prefab Tag ผิด) ต้อง Unreserve
+            SpawnSlot.Unreserve(position);
+        }
 
-    return collectible;
+        return collectible;
     }
 
     #endregion
 
+    #region Smart Item Logic & Helpers
+    
+    private GameObject GetSmartItemPrefab()
+    {
+        // 1. Roll สำหรับ Takoyaki (Risk Item)
+        if (Random.value < _takoyakiChance)
+        {
+            return FindPrefabOfType("Takoyaki");
+        }
+        
+        // 2. Roll สำหรับ Buff/Utility (Rare Item)
+        if (Random.value < _buffChance && _buffUtilityPrefabs.Count > 0)
+        {
+            return _buffUtilityPrefabs[Random.Range(0, _buffUtilityPrefabs.Count)];
+        }
+        
+        // 3. Default: Coin
+        return FindPrefabOfType("Coin");
+    }
+    
+    private GameObject FindPrefabOfType(string name)
+    {
+        // หาจาก Prefab List ทั้งหมด
+        return _collectiblePrefabs.Find(p => p != null && p.name.Contains(name));
+    }
+    
+    private string GetObjectTag(GameObject obj)
+    {
+        string name = obj.name;
+        int index = name.IndexOf("(Clone)");
+        if (index > 0) return name.Substring(0, index).Trim();
+        return name;
+    }
 
+    private bool TryFindGround(Vector3 origin, out Vector3 result)
+    {
+        result = Vector3.zero;
+        
+        Vector2 rayOrigin = new Vector2(origin.x, origin.y + 20f);
+        float safeRayDistance = 40f;
+        RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.down, safeRayDistance, _groundLayer);
+
+        if (hit.collider != null)
+        {
+            result = hit.point;
+            result.y += _groundOffset;
+            return true;
+        }
+        return false;
+    }
+
+    #endregion
+    
 }

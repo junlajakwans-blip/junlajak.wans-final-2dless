@@ -46,9 +46,9 @@ public class StoreUI : MonoBehaviour
     private void Awake()
     {
 
-        panelExchange.SetActive(false);
-        panelMap.SetActive(false);
-        panelUpgrade.SetActive(false);
+        if (panelExchange != null) panelExchange.SetActive(false);
+        if (panelMap != null) panelMap.SetActive(false);
+        if (panelUpgrade != null) panelUpgrade.SetActive(false);
     }
 
 
@@ -70,9 +70,9 @@ public class StoreUI : MonoBehaviour
             Debug.Log("[StoreUI] Currency Icons Initialized in SetDependencies()");
         }
 
-        panelExchange.SetActive(false);
-        panelMap.SetActive(false);
-        panelUpgrade.SetActive(false);
+        if (panelExchange != null) panelExchange.SetActive(false);
+        if (panelMap != null) panelMap.SetActive(false);
+        if (panelUpgrade != null) panelUpgrade.SetActive(false);
     }
 
 

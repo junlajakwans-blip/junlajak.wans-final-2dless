@@ -37,7 +37,8 @@ public class MapGeneratorKitchen : MapGeneratorBase
                 MapType.Kitchen,
                 FindFirstObjectByType<Player>(),
                 _collectibleSpawner,
-                FindFirstObjectByType<CardManager>()
+                FindFirstObjectByType<CardManager>(),
+                FindFirstObjectByType<BuffManager>()
             );
             StartCoroutine(_enemySpawner.StartWave());
         }
@@ -82,12 +83,10 @@ public class MapGeneratorKitchen : MapGeneratorBase
         if (wallGO != null)
             _endlessWall = wallGO.transform;
 
-        // Floor ใช้ logic จาก Base (SpawnInitialFloors)
-        // ❌ ไม่ต้อง Spawn manual ที่ตำแหน่ง fixed
+    
     }
 
-    // ไม่ต้อง override SpawnAssets / SpawnThrowables
-    // Base จะเรียกเองตาม Difficulty Phase
+
 
     private void Update()
     {
