@@ -1873,6 +1873,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreUI
   _scoreText: {fileID: 1928511794}
   _coinText: {fileID: 1526903980}
+  _highScoreText: {fileID: 1928511794}
   _currentScore: 0
   _highScore: 0
   _currentCoins: 0
@@ -6424,8 +6425,8 @@ RectTransform:
   m_GameObject: {fileID: 1000905771}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.8409101, y: 0.8409101, z: 0.8409101}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.65, y: 0.65, z: 0.65}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1798947144}
   - {fileID: 2032684624}
@@ -6433,7 +6434,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -12, y: -331.11603}
+  m_AnchoredPosition: {x: -12, y: -368.01}
   m_SizeDelta: {x: 1234.5299, y: 417.7679}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1000905774
@@ -9826,7 +9827,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1305807103
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11387,7 +11388,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 000
+  m_text: 00
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

@@ -54,6 +54,9 @@ public class CollectibleItem : MonoBehaviour, ICollectable
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        // ตรวจสอบว่า Collider นี้ยังเปิดอยู่ (ป้องกันการชนซ้ำหากมี Magnet ด้วย)
+        if (!GetComponent<Collider2D>().enabled) return; 
+
         if (!other.CompareTag("Player")) return;
 
         var player = other.GetComponent<Player>();
@@ -61,7 +64,6 @@ public class CollectibleItem : MonoBehaviour, ICollectable
         
         // เรียก Collect() ทันทีที่ชน
         Collect(player);
-            
     }
 
     #endregion
@@ -73,10 +75,30 @@ public class CollectibleItem : MonoBehaviour, ICollectable
     {
         if (player == null) return;
 
+        // ปิด Collider/Renderer ทันทีที่เก็บ
+        Collider2D myCollider = GetComponent<Collider2D>();
+        if (myCollider != null) 
+        {
+            // ปิด Collider ป้องกันการชนซ้ำ
+            myCollider.enabled = false; 
+        }
+        
+        SpriteRenderer sr = GetComponentInChildren<SpriteRenderer>(); 
+            if (sr != null)
+            {
+                sr.enabled = false; 
+            }
+                
         Debug.Log($"[Collectible] Player collected: {_type} ({_itemID})");
+        
+        // 2. Apply Effect (ซึ่งจะเรียก player.AddCoin())
         ApplyEffect(player);
+        
+        // 3. เรียก OnCollectedEffect เพื่อ Despawn
         OnCollectedEffect();
     }
+
+
 
     public void OnCollectedEffect()
     {

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -15,7 +16,7 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     [SerializeField] private PlayerData _playerData;
     protected CareerSwitcher _careerSwitcher;
     private CardManager _cardManager;
-    [SerializeField] private Currency _currency;
+     private Currency _currency;
 
     [Header("Components")]
     [SerializeField] private CharacterRigAnimator _rigAnimator; 
@@ -39,6 +40,7 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
 
     [Header("UI References")]
     [SerializeField] private HealthBarUI _healthBarUI;
+    public event System.Action<int> OnCoinCollected;
 
     private float _speedModifier = 1f;
     private Coroutine _speedRoutine;
@@ -141,15 +143,6 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
 
 
     #endregion
-
-    /// <summary>
-    /// Provides the persistent HealthBarUI component reference.
-    /// </summary>
-    public HealthBarUI GetPlayerHealthBarUI()
-    {
-        // คืนค่า HealthBarUI ที่ถูก Serialize ไว้ใน UIManager
-        return _healthBarUI; 
-    }
 
 
 #region Movement
@@ -420,6 +413,7 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     {
         if (_currency == null) return;
         _currency.AddCoin(amount);
+        OnCoinCollected?.Invoke(_currency.Coin);
     }
 
     public void AddToken(int amount)

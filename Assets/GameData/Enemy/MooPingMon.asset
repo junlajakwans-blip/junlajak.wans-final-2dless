@@ -66,8 +66,8 @@ MonoBehaviour:
   GhostWorkGreenTeaDropChance: 0.15
   MooPingFireDamage: 8
   MooPingSmokeRadius: 2.5
-  MooPingThrowCooldown: 3
-  MooPingPatternSpeed: 0.5
+  MooPingThrowCooldown: 5
+  MooPingPatternSpeed: 0.2
   MooPingPatternWidth: 1.5
   MooPingProjectileSpeed: 5
   MooPingCoinDropChance: 0.2

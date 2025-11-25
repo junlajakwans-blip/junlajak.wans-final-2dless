@@ -216,6 +216,22 @@ public class GameManager : MonoBehaviour
         _uiManager.SetDependencies(this, _currencyData, _storeManager, GetStoreList());
         _player.SetHealthBarUI(_uiManager.GetPlayerHealthBarUI());
 
+        ScoreUI scoreUI = _uiManager.GetComponentInChildren<ScoreUI>(true); // Get ScoreUI from UIManager
+        if (scoreUI != null)
+        {
+            // 1. Initial High Score (จาก Save)
+            scoreUI.DisplayHighScore(_persistentProgress.BestScore); 
+            
+            // 2. Initial Score/Coin (เริ่มจาก 0)
+            scoreUI.InitializeScore(0);
+            scoreUI.UpdateCoins(0); // Coin ในตาใหม่ต้องเริ่มจาก 0
+            
+            // 3. ผูก Event Real-Time Update
+            _player.OnCoinCollected += scoreUI.UpdateCoins; 
+            
+            Debug.Log("[GameManager] ScoreUI Initialized and linked to Player events.");
+        }
+
         // 4. Scene Logic injection
         sceneLogic.Inject(mapGen, _player);
         sceneLogic.TryInitializeScene();
