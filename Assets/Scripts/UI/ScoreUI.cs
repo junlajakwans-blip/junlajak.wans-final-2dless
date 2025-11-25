@@ -7,13 +7,17 @@ public class ScoreUI : MonoBehaviour
     [Header("UI Components")]
     [SerializeField] private TextMeshProUGUI _scoreText;
     [SerializeField] private TextMeshProUGUI _coinText; 
-    [SerializeField] private TextMeshProUGUI _highScoreText; 
+    // เปลี่ยนชื่อ Text Component สำหรับแสดงผลลัพธ์รอบสุดท้าย
+    [SerializeField] private TextMeshProUGUI _finalResultScoreText; 
 
     [Header("Runtime Values")]
     [SerializeField] private int _currentScore; // Competitive integer score (Time/Kills based)
-    [SerializeField] private int _highScore;
+    // เปลี่ยนชื่อตัวแปร Global High Score ที่บันทึกไว้
+    [SerializeField] private int _savedHighScore; 
     [SerializeField] private int _currentCoins; 
-    public int GetHighScore() => _highScore;
+    
+    // เปลี่ยนชื่อ Property สำหรับดึงค่า High Score ที่บันทึกไว้
+    public int GetSavedHighScoreValue() => _savedHighScore;
 
     #endregion
 
@@ -31,15 +35,7 @@ public class ScoreUI : MonoBehaviour
         _currentScore = newScore;
 
         if (_scoreText != null)
-            _scoreText.text = $"Score: {_currentScore:D6}";  
-
-        // ตรวจสอบและอัปเดต High Score (ภายในเท่านั้น)
-        if (_currentScore > _highScore)
-            {
-                _highScore = _currentScore;
-                // อัปเดต Text High Score ทันทีถ้ามีการทำลายสถิติใหม่
-                UpdateHighScoreDisplay(); 
-            }
+            _scoreText.text = $"Score: {_currentScore:D6}";  
     }
 
     /// <summary> Updates the coin count display. </summary>
@@ -59,45 +55,65 @@ public class ScoreUI : MonoBehaviour
     }
 
     /// <summary> 
-    /// Sets the high score value (ใช้สำหรับโหลดจาก Save System)
-    /// High Score นี้จะไม่แสดงผลใน HUD โดยตรง (เพราะ HUD แสดงคะแนนปัจจุบัน)
+    /// โหลดค่าคะแนนสูงสุดที่บันทึกไว้ (Global High Score)
     /// </summary>
-    public void DisplayHighScore(int highScore)
+    public void DisplaySavedHighScore(int highScore)
     {
-        _highScore = highScore;
-        UpdateHighScoreDisplay();
-        Debug.Log($"High Score loaded: {_highScore}");
+        _savedHighScore = highScore;
+        // ไม่ต้องเรียก UpdateFinalResultDisplay() ที่นี่ เพราะเราต้องการให้แสดงแค่ตอนจบรอบ
+        Debug.Log($"Global High Score loaded: {_savedHighScore}");
     }
     
     /// <summary>
-    /// Helper method สำหรับอัปเดต _highScoreText
+    /// Helper method สำหรับอัปเดต Text แสดงผลลัพธ์สุดท้าย (Final Score)
     /// </summary>
-    private void UpdateHighScoreDisplay()
+    private void UpdateFinalResultDisplay(int scoreToDisplay)
     {
-        if (_highScoreText != null)
-            _highScoreText.text = $"High Score: {_highScore}";
+        if (_finalResultScoreText != null)
+        {
+            // แสดงคะแนนสุดท้ายของรอบนั้น
+            _finalResultScoreText.text = $"Final Score: {scoreToDisplay:D6}"; 
+        }
     }
     
     /// <summary>
-    /// สำหรับใช้ใน UI อื่นๆ (เช่น Panel Result) เพื่อดึงค่า High Score ที่โหลดมา
+    /// สำหรับใช้ใน UI อื่นๆ (เช่น Panel Result) เพื่อดึงค่า Global High Score ที่บันทึกไว้
     /// </summary>
-    public int GetCurrentHighScore() => _highScore;
+    public int GetCurrentSavedHighScore() => _savedHighScore; // เปลี่ยนชื่อจาก GetCurrentHighScore()
 
     /// <summary>
     /// สำหรับใช้ใน UI อื่นๆ (เช่น Panel Result) เพื่อดึงค่า Coin ปัจจุบัน
     /// </summary>
     public int GetCurrentCoins() => _currentCoins;
     
-    public void SyncHighScoreFromSave(int savedValue)
+    //  เปลี่ยนชื่อเมธอด
+    public void SyncSavedHighScoreFromSave(int savedValue)
     {
-        _highScore = savedValue;
-        UpdateHighScoreDisplay();
+        _savedHighScore = savedValue;
+        Debug.Log($"Global High Score synchronized: {_savedHighScore}");
     }
 
+    /// <summary>
+    ///  เมธอดหลักที่เรียกเมื่อจบรอบ
+    /// จะแสดงคะแนนสุดท้ายใน Result Text และตรวจสอบสถิติสูงสุดใหม่
+    /// </summary>
     public void ShowFinalResult()
     {
-        if (_highScoreText != null)
-            _highScoreText.text = $"High Score: {_highScore:D6}";
+        int finalScore = _currentScore;
+        
+        // 1. แสดงคะแนนสุดท้ายของรอบนั้น
+        UpdateFinalResultDisplay(finalScore); 
+
+        // 2. ตรวจสอบสถิติสูงสุดที่บันทึกไว้ (Global High Score)
+        if (finalScore > _savedHighScore)
+        {
+            _savedHighScore = finalScore;
+            if (SaveSystem.Instance != null)
+            {
+                SaveSystem.Instance.SetGlobalHighScore(_savedHighScore);
+            }
+            Debug.Log($"NEW GLOBAL HIGH SCORE RECORD: {_savedHighScore}");
+        }
     }
 
     #endregion

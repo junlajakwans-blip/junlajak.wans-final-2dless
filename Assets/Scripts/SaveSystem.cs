@@ -81,6 +81,35 @@ public class SaveSystem : MonoBehaviour
         }
     }
 
+
+    /// <summary>
+    /// ตั้งค่า Global High Score ใหม่และบันทึกทันที
+    /// </summary>
+    public void SetGlobalHighScore(int newScore)
+    {
+        if (_progressData == null)
+        {
+            Debug.LogError("[SaveSystem] Progress Data is null! Cannot save high score.");
+            return;
+        }
+        _progressData.GlobalHighScore = newScore;
+        SaveData(); // บันทึกไฟล์ทันที
+    }
+
+    /// <summary>
+    /// ดึงค่า Global High Score ที่บันทึกไว้
+    /// </summary>
+    public int GetGlobalHighScore()
+    {
+        if (_progressData == null)
+        {
+            LoadData(); 
+            if (_progressData == null) return 0; // ป้องกัน Null
+        }
+        return _progressData.GlobalHighScore;
+    }
+
+
     public void ResetData()
     {
         _progressData = new GameProgressData();

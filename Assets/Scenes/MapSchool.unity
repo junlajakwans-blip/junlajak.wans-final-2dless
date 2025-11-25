@@ -529,8 +529,8 @@ MonoBehaviour:
   _minXOffset: 1
   _maxXOffset: 2
   _minYOffset: 0.1
-  _maxYOffset: 0.3
-  _collectibleOffset: 0.5
+  _maxYOffset: 0.1
+  _collectibleOffset: 0.2
   _currentPlatformState: 0
   _currentHeightLimit: 0
   _stepsRemaining: 0
@@ -863,7 +863,7 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 2048
-  groundRayDistance: 6
+  groundRayDistance: 10
   coinYOffset: 0.6
 --- !u!4 &2093980297
 Transform:

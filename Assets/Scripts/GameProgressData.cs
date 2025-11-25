@@ -22,6 +22,7 @@ public class GameProgressData
     #endregion
 
     #region Properties
+    public int GlobalHighScore = 0;
     public List<string> UnlockedMaps => _unlockedMaps;
     public List<string> UnlockedCareers => _unlockedCareers;
 

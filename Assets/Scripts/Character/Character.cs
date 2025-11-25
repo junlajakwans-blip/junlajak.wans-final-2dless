@@ -71,5 +71,30 @@ public abstract class Character : MonoBehaviour, IDamageable
     protected virtual void UpdateHealthBar()
     {
     }
+
+    [SerializeField] protected bool _facingRight = true;
+
+    protected void FaceTarget(Transform target)
+    {
+        if (target == null) return;
+
+        float xDir = target.position.x - transform.position.x;
+
+        // ถ้าอยู่ซ้ายและกำลังหันขวา → พลิกกลับ
+        if (xDir < 0 && _facingRight)
+            Flip();
+        // ถ้าอยู่ขวาและกำลังหันซ้าย → พลิกกลับ
+        else if (xDir > 0 && !_facingRight)
+            Flip();
+    }
+
+    protected void Flip()
+    {
+        _facingRight = !_facingRight;
+        var scale = transform.localScale;
+        scale.x *= -1;
+        transform.localScale = scale;
+    }
+
     #endregion
 }

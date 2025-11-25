@@ -1871,9 +1871,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreUI
   _scoreText: {fileID: 1928511794}
   _coinText: {fileID: 1526903980}
-  _highScoreText: {fileID: 1022423181}
+  _finalResultScoreText: {fileID: 1022423181}
   _currentScore: 0
-  _highScore: 0
+  _savedHighScore: 0
   _currentCoins: 0
 --- !u!114 &387684700
 MonoBehaviour:

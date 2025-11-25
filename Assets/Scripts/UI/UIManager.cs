@@ -237,7 +237,7 @@ public class UIManager : MonoBehaviour
 
     public void DisplayHighScore(int score)
     {
-        _scoreUI?.DisplayHighScore(score);
+        _scoreUI?.DisplaySavedHighScore(score);
     }
     #endregion
 

@@ -234,7 +234,7 @@ public class GameManager : MonoBehaviour
         _scoreUI = _uiManager.GetScoreUI();
         if (_scoreUI != null)
         {
-            _scoreUI.DisplayHighScore(_persistentProgress.BestScore); // High Score จาก Save
+            _scoreUI.DisplaySavedHighScore(_persistentProgress.BestScore); // High Score จาก Save
             _scoreUI.InitializeScore(0);                               // Score เริ่มต้น
             _scoreUI.UpdateCoins(0);                                   // Coin เริ่มต้น
             _player.HookScoreUI(_scoreUI, 0);                          // Event Real-Time

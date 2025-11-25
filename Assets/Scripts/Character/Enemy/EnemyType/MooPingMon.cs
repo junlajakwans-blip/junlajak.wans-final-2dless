@@ -21,7 +21,7 @@ public class MooPingMon : Enemy // Removed IMoveable as Enemy already has Move()
     //FireFighter Buff Flag
     private bool _isBuffItemGuaranteed = false;
 
-
+    private float _nextFanFire;
     private float _nextThrowTime;
     private Vector2 _dir = Vector2.left; // Default direction for the pattern
     private float _patternPhase;
@@ -32,9 +32,6 @@ public class MooPingMon : Enemy // Removed IMoveable as Enemy already has Move()
     protected override void Start()
     {
         base.Start();
-        
-        //  FIX: เพิ่ม _initialAttackDelay เข้าไปในการคำนวณครั้งแรก
-         _nextThrowTime = Time.time + _data.MooPingThrowCooldown + _initialAttackDelay;
     
         //ให้มีเวลารอดูนานกว่า Cooldown ปกติ 
         _nextThrowTime = Time.time + _initialAttackDelay;
@@ -124,6 +121,8 @@ private void TryAttack()
         
         if (dist > _detectionRange) return; 
 
+        FaceTarget(_target); 
+
         // Alternate between ThrowSkewer and FanFire by cooldown window
         if (Time.time >= _nextThrowTime)
         {
@@ -141,10 +140,11 @@ private void TryAttack()
             // Use Data From EnemyData:Unique | Asset: _data.MooPingThrowCooldown
             _nextThrowTime = Time.time + _data.MooPingThrowCooldown;
         }
-        else
+        else if (Time.time >= _nextFanFire)
         {
             // Light pressure cone when waiting cooldown (small chance)
-            if (Random.value < 0.15f) FanFire();
+            FanFire();
+            _nextFanFire = Time.time + 1.25f;
         }
     }
     private void ThrowSkewer()

@@ -144,35 +144,41 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
 
     #endregion
 
-
 #region Movement
-    public override void Move(Vector2 direction)
+public override void Move(Vector2 direction)
+{
+    if (_isDead) return; 
+
+    // หันตามปุ่มเดิน
+    if (direction.x > 0) 
     {
-        if (_isDead) return; 
-
-        // อัปเดตทิศการหันหน้า
-        if (direction.x > 0) FaceDir = 1;
-        else if (direction.x < 0) FaceDir = -1;
-        float speed = _moveSpeed * _speedModifier; 
-
-#if UNITY_2022_3_OR_NEWER
-
-        Vector2 velocity = new Vector2(direction.x * speed, _rigidbody.linearVelocity.y);
-        _rigidbody.linearVelocity = velocity;
-#else
-        Vector2 velocity = new Vector2(direction.x * speed, _rigidbody.velocity.y);
-        _rigidbody.velocity = velocity;
-#endif
-
-        _rigAnimator?.SetMoveAnimation(direction.x); 
-
-#if UNITY_2022_3_OR_NEWER
-        _isGrounded = Mathf.Abs(_rigidbody.linearVelocity.y) < 0.01f;
-#else
-        _isGrounded = Mathf.Abs(_rigidbody.velocity.y) < 0.01f;
-#endif
+        FaceDir = 1;
+        if (!_facingRight) Flip();  
     }
-    #endregion
+    else if (direction.x < 0)
+    {
+        FaceDir = -1;
+        if (_facingRight) Flip();    
+    }
+
+    float speed = _moveSpeed * _speedModifier; // ต้องคำนวณ speed
+
+#if UNITY_2022_3_OR_NEWER
+    _rigidbody.linearVelocity = new Vector2(direction.x * speed, _rigidbody.linearVelocity.y);
+#else
+    _rigidbody.velocity = new Vector2(direction.x * speed, _rigidbody.velocity.y);
+#endif
+
+    _rigAnimator?.SetMoveAnimation(direction.x);
+
+#if UNITY_2022_3_OR_NEWER
+    _isGrounded = Mathf.Abs(_rigidbody.linearVelocity.y) < 0.01f;
+#else
+    _isGrounded = Mathf.Abs(_rigidbody.velocity.y) < 0.01f;
+#endif
+}
+#endregion
+
 
     #region  Speed Modifier (Slow / Boost)
     /// <summary>

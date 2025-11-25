@@ -26,6 +26,8 @@ public class CardManager : MonoBehaviour
     #endregion
 
 
+    public bool IsReady { get; private set; }
+
     #region Unity Lifecycle Card Manager
 
     private void Awake()
@@ -363,5 +365,7 @@ public class CardManager : MonoBehaviour
     {
         return index >= 0 && index < _collectedCards.Count;
     }
+
+
     #endregion
 }

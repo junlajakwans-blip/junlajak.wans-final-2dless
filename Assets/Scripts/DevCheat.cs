@@ -132,16 +132,26 @@ public class DevCheat : MonoBehaviour
             cheatPanel.SetActive(!cheatPanel.activeSelf);
 
         
-        // F8 → Force Drop Career Card
+        // F8 → Force Drop Career Card (Only if CardManager & CareerDatabase are ready)
         if (Input.GetKeyDown(KeyCode.F8))
         {
             var cm = FindFirstObjectByType<CardManager>();
-            if (cm != null)
+            if (cm == null)
             {
-                cm.AddCareerCard();
-                Debug.Log("<color=lime>[CHEAT]</color> Forced drop 1 Career Card");
+                Debug.LogError("[CHEAT] ❌ CardManager not found — cannot spawn Career Card");
+                return;
             }
+
+            if (!cm.IsReady) // ต้องมี property นี้ใน CardManager
+            {
+                Debug.LogError("[CHEAT] ❌ CardManager not ready — database not initialized yet");
+                return;
+            }
+
+            cm.AddCareerCard();
+            Debug.Log("<color=lime>[CHEAT]</color> Forced drop 1 Career Card");
         }
+
 
         // Reset All
         if (Input.GetKeyDown(KeyCode.F9))
