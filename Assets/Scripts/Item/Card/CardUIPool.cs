@@ -69,7 +69,7 @@ public class CardUIPool : ScriptableObject
         GameObject obj = Instantiate(prefab, parent);
 
         if (obj.TryGetComponent<CardUI>(out var ui))
-            ui.Set(data);
+            ui.SetCareerData(data);
         else
             Debug.LogError("[CardUIPool] Prefab missing CardUI component!");
 

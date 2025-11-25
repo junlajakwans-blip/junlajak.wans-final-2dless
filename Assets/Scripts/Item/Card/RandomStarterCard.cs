@@ -1,5 +1,7 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+
 using TMPro;
 
 public class RandomStarterCard : MonoBehaviour
@@ -15,6 +17,7 @@ public class RandomStarterCard : MonoBehaviour
     [SerializeField] private Button buttonCancel;
     [SerializeField] private TextMeshProUGUI textTokenDisplay;
     [SerializeField] private GameObject panelRandomCard; // Panel ที่เปิด/ปิด
+    private bool _lockInput = false;
 
     private void Start()
     {
@@ -34,15 +37,23 @@ public class RandomStarterCard : MonoBehaviour
          Debug.Log($"[StarterCard] SetDependencies called — GM = {gm != null}, CM = {manager != null}");
 
     }
-
     private void OnEnable()
     {
+        buttonSummon.interactable = false;
         Currency.OnCurrencyChanged += UpdateTokenText;
-        UpdateTokenText();
+        GameManager.OnCurrencyReady += EnableStarterUI;
     }
+
     private void OnDisable()
     {
         Currency.OnCurrencyChanged -= UpdateTokenText;
+        GameManager.OnCurrencyReady -= EnableStarterUI;
+    }
+
+    private void EnableStarterUI()
+    {
+        UpdateTokenText();
+        buttonSummon.interactable = true;
     }
 
     /// <summary>
@@ -53,16 +64,24 @@ public class RandomStarterCard : MonoBehaviour
         if (panelRandomCard != null)
             panelRandomCard.SetActive(true);
 
+        // inject ให้ตรงนี้ทุกครั้งที่เปิด panel
+        _gmRef = GameManager.Instance;
+        _cardManagerRef = GameManager.Instance?.CardManager;
+
+        if (_cardManagerRef == null)
+            Debug.LogError("[StarterCard] CardManager NOT FOUND during OpenPanel()");
+
         Time.timeScale = 0f;
         UpdateTokenText();
     }
+
+
 
     public void ClosePanel()
     {
         if (panelRandomCard != null)
             panelRandomCard.SetActive(false);
 
-        UIManager.Instance.ShowCardSelectionPanel(false);
         Time.timeScale = 1f;
     }
 
@@ -78,14 +97,34 @@ public class RandomStarterCard : MonoBehaviour
 
     private void OnClickSummon()
     {
-        if (TrySummonCard())
-        {
-            UpdateTokenText();   // ลด Token แล้วต้อง refresh UI
-            ClosePanel();
+        if (_lockInput) return;
+        _lockInput = true;
 
-            UIManager.Instance.ShowCardSelectionPanel(false);
-            Time.timeScale = 1f;
+        // ปิด event ของปุ่มทันที กัน double click 
+        buttonSummon.enabled = false;
+
+        bool success = TrySummonCard();
+
+        if (success)
+        {
+            _alreadyClaimed = true;
+            ClosePanel();
+            UpdateTokenText();
         }
+        else
+        {
+            // restore ปุ่มเฉพาะตอน fail
+            buttonSummon.enabled = true;
+            buttonSummon.interactable = true;
+            _lockInput = false;
+        }
+    }
+
+
+    private IEnumerator CloseNextFrame()
+    {
+        yield return null; // รอ 1 frame ให้ Unity ประมวลผล onClick เสร็จ
+        ClosePanel();
     }
     
 
@@ -97,6 +136,15 @@ public class RandomStarterCard : MonoBehaviour
         if (_alreadyClaimed)
         {
             Debug.Log("<color=orange>[StarterCard]</color> Already summoned this round.");
+            return false;
+        }
+
+        if (_gmRef == null)
+            _gmRef = GameManager.Instance;
+
+        if (_gmRef == null)
+        {
+            Debug.LogError("[StarterCard] GameManager missing.");
             return false;
         }
 
@@ -113,15 +161,22 @@ public class RandomStarterCard : MonoBehaviour
             return false;
         }
 
+    
         if (_cardManagerRef == null)
         {
-            Debug.LogError("[StarterCard] CardManager missing.");
-            return false;
+            _cardManagerRef = FindFirstObjectByType<CardManager>();
+            if (_cardManagerRef == null)
+            {
+                Debug.LogError("[StarterCard] CardManager missing — even after FindFirstObjectByType.");
+                return false;
+            }
         }
+
 
         _cardManagerRef.AddStarterCard(); // สุ่มเฉพาะ Career ถูกต้อง
 
         _alreadyClaimed = true;
+
         Debug.Log("<color=yellow>[StarterCard]</color> Summon Successful!");
         return true;
     }
@@ -129,5 +184,10 @@ public class RandomStarterCard : MonoBehaviour
     public void ResetForNewGame()
     {
         _alreadyClaimed = false;
+        if (buttonSummon != null) buttonSummon.interactable = true;
+        _lockInput = false;
+
     }
+
+
 }

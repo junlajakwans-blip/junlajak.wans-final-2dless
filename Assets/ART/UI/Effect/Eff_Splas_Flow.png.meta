@@ -1,10 +1,16 @@
 fileFormatVersion: 2
-guid: 8e06da33eeb32ab44884d69315d95edb
+guid: 64f8dd246f17d6b41be0776285c23cdc
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2120975180403619657
-    second: map_asset_School_Bin_0
+      213: -4883927395792769489
+    second: Eff_Splas_Flow_0
+  - first:
+      213: -4934876815495870034
+    second: Eff_Splas_Flow_1
+  - first:
+      213: 8833641320769992418
+    second: Eff_Splas_Flow_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,23 +132,67 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: map_asset_School_Bin_0
+      name: Eff_Splas_Flow_0
       rect:
         serializedVersion: 2
-        x: 80
-        y: 90
-        width: 353
-        height: 573
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 22
+        y: 192
+        width: 14
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 7b84f929f48c092e0800000000000000
-      internalID: -2120975180403619657
+      spriteID: f2e29f0e8edc83cb0800000000000000
+      internalID: -4883927395792769489
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eff_Splas_Flow_1
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 60
+        width: 451
+        height: 392
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea9ce02beabc38bb0800000000000000
+      internalID: -4934876815495870034
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eff_Splas_Flow_2
+      rect:
+        serializedVersion: 2
+        x: 35
+        y: 131
+        width: 15
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2e635b58af5679a70800000000000000
+      internalID: 8833641320769992418
       vertices: []
       indices: 
       edges: []
@@ -151,7 +201,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 0b1d847ae50edb249afda7b6d5e140bf
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +211,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      map_asset_School_Bin_0: -2120975180403619657
+      Eff_Splas_Flow_0: -4883927395792769489
+      Eff_Splas_Flow_1: -4934876815495870034
+      Eff_Splas_Flow_2: 8833641320769992418
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   _typeID: 8
   _displayName: MooPingMon
-  _baseHealth: 40
+  _baseHealth: 10
   _baseAttackPower: 8
-  _baseMovementSpeed: 1.5
+  _baseMovementSpeed: 0.5
   _baseDetectionRange: 5
   _coinDropAmount: 1
   _enemySprite: {fileID: 5685010844166404831, guid: c31a5c9dfd76af343b223062bc617a34, type: 3}
@@ -64,10 +64,10 @@ MonoBehaviour:
   GhostWorkHauntDamage: 5
   GhostWorkCoinDropChance: 0.45
   GhostWorkGreenTeaDropChance: 0.15
-  MooPingFireDamage: 12
+  MooPingFireDamage: 8
   MooPingSmokeRadius: 2.5
-  MooPingThrowCooldown: 2.2
-  MooPingPatternSpeed: 2
+  MooPingThrowCooldown: 3
+  MooPingPatternSpeed: 0.5
   MooPingPatternWidth: 1.5
   MooPingProjectileSpeed: 5
   MooPingCoinDropChance: 0.2

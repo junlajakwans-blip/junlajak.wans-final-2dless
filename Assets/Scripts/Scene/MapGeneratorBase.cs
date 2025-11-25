@@ -41,6 +41,9 @@ public abstract class MapGeneratorBase : MonoBehaviour
     [SerializeField] protected float _minYOffset = -1f;
     [SerializeField] protected float _maxYOffset = 1.5f;
 
+    // กำหนดค่า Offset ใหม่ตรงนี้เพื่อให้ Collectible ลอยอยู่บน Platform พอดี
+    [SerializeField] protected float _collectibleOffset = 0.5f;
+
     protected float _nextSpawnX; //  Cursor สำคัญ: บอกตำแหน่งขวาสุดที่สร้าง Platform ไปแล้ว
     protected float _nextFloorX; //  Cursor สำคัญ: บอกตำแหน่งขวาสุดที่สร้างพื้นหลัง (Floor) ไปแล้ว
 
@@ -122,6 +125,38 @@ public abstract class MapGeneratorBase : MonoBehaviour
         _wallPushSpeed = _baseWallPushSpeed;
         _isPlatformBreakable = true;
         _isWallPushEnabled = true;
+
+        
+        // หา dependency อื่น ๆ ที่ CollectibleSpawner ต้องใช้
+        var culling     = FindFirstObjectByType<DistanceCulling>();
+        var cardManager = FindFirstObjectByType<CardManager>();
+        var buffManager = FindFirstObjectByType<BuffManager>();
+
+        // Inject ให้ CollectibleSpawner (สำคัญสุด)
+        if (_collectibleSpawner != null)
+        {
+            _collectibleSpawner.InitializeSpawner(
+                _objectPoolManager,
+                culling,
+                cardManager,
+                buffManager
+            );
+
+            Debug.Log("[MapGeneratorBase] CollectibleSpawner initialized.");
+        }
+
+        // ถ้าอยากให้ Enemy / Asset / Throwable ใช้ Pool ด้วย ก็ใส่เพิ่มแบบนี้ได้
+        /*
+        if (_enemySpawner != null)
+            _enemySpawner.InitializeSpawner(_objectPoolManager, culling);
+
+        if (_assetSpawner != null)
+            _assetSpawner.InitializeSpawner(_objectPoolManager, culling);
+
+        if (_throwableSpawner != null)
+            _throwableSpawner.InitializeSpawner(_objectPoolManager, culling, cardManager, buffManager);
+        */
+    
     }
 
     protected void InitializePlatformGeneration()
@@ -365,44 +400,53 @@ public abstract class MapGeneratorBase : MonoBehaviour
     }
     #endregion
 
-    // ============================================================================
-    // 7. CONTENT SPAWNING (ITEMS / ENEMIES / ASSETS)
-    // ============================================================================
-    #region Content Spawning
-    // NEW FEATURE: Spawn ของบน Platform (Asset / Item / Enemy)
-    protected virtual void TrySpawnContentOnPlatform(GameObject platform, Vector3 pos, float width)
+#region Content Spawning
+protected virtual void TrySpawnContentOnPlatform(GameObject platform, Vector3 pos, float width)
+{
+    //  NEW FIX: ตรวจสอบ Tag ของ Platform ที่ส่งมา ต้องเป็นหนึ่งใน Tag ที่อนุญาต
+    string platformTag = platform.tag;
+    if (platformTag != "Floor" && 
+        platformTag != "Platform" && 
+        platformTag != "BreakPlatform")
     {
-        // ตัวอย่าง Logic ง่ายๆ: สุ่มว่าจะเกิดอะไรบน Platform นี้
-        float chance = Random.value;
-
-        // 1. จุดเริ่มต้น Raycast (สำหรับ Collectible/Asset)
-        //    ต้องสูงกว่า Platform (pos.y) เพื่อยิง Ray ลงไปหาพื้น
-        Vector3 raycastOrigin = new Vector3(pos.x, pos.y + 5f, 0f); 
-        
-        // 2. จุด Center ของ Platform (สำหรับ Enemy)
-        //    ให้ Enemy Spawner จัดการเพิ่ม Offset เอง
-        Vector3 platformCenter = new Vector3(pos.x, pos.y, 0f); 
-
-        if (chance < 0.3f && _collectibleSpawner != null)
-        {
-            // 30% เกิด Collectible
-            // CollectibleSpawner จะทำ Raycast จากจุดที่ส่งไป (raycastOrigin)
-            _collectibleSpawner.SpawnAtPosition(raycastOrigin); 
-        }
-        else if (chance < 0.5f && _assetSpawner != null)
-        {
-            // 20% เกิด Asset (สิ่งกีดขวาง)
-            // AssetSpawner จะทำ Raycast จากจุดที่ส่งไป (raycastOrigin)
-            _assetSpawner.SpawnAtPosition(raycastOrigin);
-        }
-        else if (chance < 0.6f && _enemySpawner != null)
-        {
-            // 10% เกิด Enemy
-            // EnemySpawner จะใช้ Y ของ Platform (platformCenter.y) + offset เพื่อให้ยืนบนพื้น
-            _enemySpawner.SpawnAtPosition(platformCenter); 
-        }
+        // ถ้า Tag ไม่อยู่ในรายการที่อนุญาต ให้หยุดการสปาวน์เนื้อหา
+        Debug.Log($"[MapGen] Skipped content spawn: Invalid Platform Tag: {platformTag}");
+        return; 
     }
-    #endregion
+    
+    float chance = Random.value;
+
+    // 1. คำนวณจุด Spawn ที่ถูกต้องบน Platform
+    // (สมมติว่า Platform มีความสูง 1 หน่วย และ pos คือจุดกึ่งกลาง Y)
+    float platformTopY = pos.y + 0.5f; 
+
+    // ตำแหน่ง Collectible ที่อยู่ "บน" Platform 
+    Vector3 collectibleSpawnPos = new Vector3(
+        pos.x, 
+        platformTopY + _collectibleOffset, // ใช้ _collectibleOffset ที่กำหนดไว้ใน MapGeneratorBase
+        0f
+    );
+    
+    // 2. จุด Center ของ Platform (สำหรับ Enemy)
+    Vector3 platformCenter = new Vector3(pos.x, pos.y, 0f); 
+
+    if (chance < 0.3f && _collectibleSpawner != null)
+    {
+        // 30% เกิด Collectible
+        _collectibleSpawner.SpawnAtPosition(collectibleSpawnPos); 
+    }
+    else if (chance < 0.5f && _assetSpawner != null)
+    {
+        // 20% เกิด Asset
+        _assetSpawner.SpawnAtPosition(collectibleSpawnPos); 
+    }
+    else if (chance < 0.6f && _enemySpawner != null)
+    {
+        // 10% เกิด Enemy
+        _enemySpawner.SpawnAtPosition(platformCenter); 
+    }
+}
+#endregion
 
     // ============================================================================
     // 8. FLOOR GENERATION

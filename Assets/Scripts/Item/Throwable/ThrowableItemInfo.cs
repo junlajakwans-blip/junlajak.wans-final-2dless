@@ -9,17 +9,23 @@ public class ThrowableItemInfo : MonoBehaviour
 
     private Collider2D _col;
     private Rigidbody2D _rb;
+    private SpriteRenderer _sr; // ⬅️ NEW: เพิ่ม SpriteRenderer
 
     private void Awake()
     {
         TryGetComponent(out _col);
         TryGetComponent(out _rb);
+        TryGetComponent(out _sr); // ⬅️ NEW: Get Component
     }
 
     public void SetInfo(string poolTag, Sprite icon)
     {
         PoolTag = poolTag;
         Icon = icon;
+
+    // ⬅️ FIX: เปลี่ยน Sprite ทันทีที่ตั้งค่า
+        if (_sr != null)
+            _sr.sprite = icon; 
     }
 
     public void SetInteractable(bool active)
@@ -50,10 +56,17 @@ public class ThrowableItemInfo : MonoBehaviour
         }
     }
 
-    public void OnReturnedToPool()
+public void OnReturnedToPool()
     {
-        // reset ให้พร้อม spawn ใหม่
+        // ⬅️ FIX: ต้อง reset ให้พร้อม spawn ใหม่
         SetInteractable(true);
         if (_col != null) _col.enabled = true;
+        
+        // ⚠️ NEW: Reset Physics เป็น Dynamic/Gravity Scale 1 (ถ้าเป็น Prefab)
+        if (_rb != null)
+        {
+            _rb.bodyType = RigidbodyType2D.Dynamic;
+            _rb.gravityScale = 1;
+        }
     }
 }

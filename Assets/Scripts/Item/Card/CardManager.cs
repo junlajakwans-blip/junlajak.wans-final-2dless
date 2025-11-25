@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -20,7 +18,7 @@ public class CardManager : MonoBehaviour
     private Player _player;
     private bool _isCardLocked = false;
     private int _careerCardDropCount = 0;
-    private const int _maxCareerDropPerCycle = 2;
+    private const int _maxSameCardInHand = 2;
 
 
     public static CardManager Instance { get; private set; }
@@ -28,12 +26,7 @@ public class CardManager : MonoBehaviour
     #endregion
 
 
-    #region Unity Lifecycle
-
-    private void Start() 
-    {
-        // ลบทิ้ง / ทำอะไรไม่ได้เพราะ _careerSwitcher ยังไม่ถูกกำหนด
-    }
+    #region Unity Lifecycle Card Manager
 
     private void Awake()
     {
@@ -47,8 +40,7 @@ public class CardManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        // ลบ: FindAnyObjectByType<CareerSwitcher>().OnResetCareerCycle += UnlockCards;
-    }
+       }
 
     public void Initialize(Player player)
     {
@@ -60,7 +52,7 @@ public class CardManager : MonoBehaviour
         if (_muscleButton != null)
             _muscleButton.Hide();
 
-        if (_careerSwitcher != null)
+        if (_careerSwitcher != null) 
         {
             // 1. สมัคร Event ปกติ
             _careerSwitcher.OnCareerChangedEvent -= HandleCareerChange; // ป้องกันการสมัครซ้ำ
@@ -96,6 +88,23 @@ public class CardManager : MonoBehaviour
     }
 
     #endregion
+
+        public void SetCareerSwitcher(CareerSwitcher switcher)
+    {
+        _careerSwitcher = switcher;
+
+        if (_careerSwitcher != null)
+        {
+            // bind events
+            _careerSwitcher.OnCareerChangedEvent -= HandleCareerChange;
+            _careerSwitcher.OnCareerChangedEvent += HandleCareerChange;
+
+            _careerSwitcher.OnResetCareerCycle -= ResetCareerDropCycle;
+            _careerSwitcher.OnResetCareerCycle += ResetCareerDropCycle;
+        }
+
+        Debug.Log($"[CardManager] CareerSwitcher assigned → {switcher != null}");
+    }
 
 
     #region Add / Remove Card
@@ -254,6 +263,12 @@ public class CardManager : MonoBehaviour
         
         // 2. สร้างการ์ดแบบสุ่ม (ใช้ Logic สุ่มเดิม)
         DuckCareer career = GetRandomCareerFromRate();
+
+        if (_careerSwitcher == null) 
+        {
+            Debug.LogError("[CardManager] CareerSwitcher is not set! Cannot add starter card.");
+            return; 
+        }
         DuckCareerData careerData = _careerSwitcher.GetCareerData(career);
 
         string cardID = System.Guid.NewGuid().ToString();
@@ -264,12 +279,12 @@ public class CardManager : MonoBehaviour
         AddCard(newCard); 
         _cardSlotUI?.HighlightSlot(_collectedCards.Count - 1);
 
-        
+
         // ★ ไม่ต้องเพิ่ม _careerCardDropCount
         Debug.Log($"[CardManager] Added Starter Card: {careerData.DisplayName}");
     }
 
-
+    
     #region Drop from GoldenMon
     public void AddCareerCard()
     {
@@ -279,13 +294,18 @@ public class CardManager : MonoBehaviour
             return;
         }
 
-        if (_careerCardDropCount >= _maxCareerDropPerCycle)
+        if (_careerSwitcher == null)
         {
-            Debug.Log("[CardManager] Drop limit reached — GoldenMon will no longer give career cards this cycle.");
-            return;
+             Debug.LogError("[CardManager] CareerSwitcher dependency is missing. Cannot add career card.");
+             return;
         }
 
-        DuckCareer career = GetRandomCareerFromRate();
+        DuckCareer career;
+        
+        do
+        {
+            career = GetRandomCareerFromRate();
+        } while (CheckCareerCountInHand(career) >= _maxSameCardInHand);
         DuckCareerData careerData = _careerSwitcher.GetCareerData(career);
 
         string cardID = System.Guid.NewGuid().ToString();
@@ -294,9 +314,26 @@ public class CardManager : MonoBehaviour
         AddCard(newCard);
         _careerCardDropCount++;
 
-        Debug.Log($"[CardManager] Dropped career card: {careerData.DisplayName} ({_careerCardDropCount}/2)");
+        Debug.Log($"[CardManager] Dropped career card: {careerData.DisplayName} ({_careerCardDropCount}/5)");
 }
 
+
+    /// <summary>
+    /// NEW: นับจำนวนการ์ดอาชีพที่ระบุที่มีอยู่ในมือผู้เล่น
+    /// </summary>
+    private int CheckCareerCountInHand(DuckCareer careerType)
+    {
+        int count = 0;
+        foreach (var card in _collectedCards)
+        {
+            // ต้องมั่นใจว่า Card มี property Type และ CareerData ที่ใช้ได้
+            if (card.Type == CardType.Career && card.CareerData != null && card.CareerData.CareerID == careerType)
+            {
+                count++;
+            }
+        }
+        return count;
+    }
 
     private DuckCareer GetRandomCareerFromRate() //Random rate only career
     {

@@ -210,7 +210,7 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     Vector3 finalSpawnPos = spawnPos;
     finalSpawnPos.y += _verticalSpawnOffset;
 
-    if (!SpawnSlot.Reserve(finalSpawnPos))
+    if (Vector3.Distance(finalSpawnPos, _lastEnemySpawnPosition) < _minSpawnSpacing)
     {
         return; // ห่างไม่พอ ไม่สร้าง
     }
@@ -338,6 +338,11 @@ public class EnemySpawner : MonoBehaviour, ISpawn
                 // 3. INVOKE SPAWN EVENT
                 OnEnemySpawned?.Invoke(enemyComponent);
             }
+            else
+            {
+                // ถ้า Spawn ไม่สำเร็จ ต้อง Unreserve
+                SpawnSlot.Unreserve(finalPos);
+            }
         }
         return enemyGO;
     }
@@ -348,7 +353,7 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     private float CalculateTotalWeight(float distance)
     {
         float totalWeight = 0f;
-        // ❌ Refactored: ใช้ foreach loop แทน Linq
+        // Refactored: ใช้ foreach loop แทน Linq
         foreach (var prefab in _validPrefabsCache)
         {
             var enemyComp = prefab.GetComponent<Enemy>();

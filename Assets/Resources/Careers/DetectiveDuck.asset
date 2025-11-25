@@ -15,7 +15,7 @@ MonoBehaviour:
   _careerID: 4
   _displayName: 
   _skillName: 
-  _skillIcon: {fileID: 0}
+  _skillIcon: {fileID: 1441909081748423113, guid: 6144331500f4adf4da24e164529735ad, type: 3}
   _baseHealth: 100
   _baseSpeed: 0
   _skillDescription: 

@@ -2,21 +2,22 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// AssetSpawner (Hybrid):
-/// - รอ MapGenerator สั่ง (Passive)
-/// - แต่ตัดสินใจวางโดยอิงจาก "ระยะทาง (Phase)" และ "เวลา (Interval)"
-/// - มีระบบ Raycast หาพื้น และ Overlap ป้องกันซ้อน
+/// AssetSpawner (Passive/Time-Gated):
+/// - รับคำสั่งจาก MapGenerator (Passive)
+/// - มีหน้าที่หลักในการตัดสินใจวางโดยอิงจาก "ระยะทาง (Phase)" และ "เวลา (Cooldown)" เท่านั้น
+/// - **ไม่มีระบบ Raycast หาพื้น และ Overlap ป้องกันซ้อน (MapGenerator จัดการแล้ว)**
+/// - **ใช้ SpawnSlot เพื่อจองตำแหน่งและป้องกันการซ้อนทับ**
 /// </summary>
 public class AssetSpawner : MonoBehaviour, ISpawn
 {
-    #region 1. Phase & Prefix Settings (นำกลับมาแล้ว ✅)
+    #region 1. Phase & Prefix Settings
     [Header("Prefix Settings")]
     [Tooltip("เช่น map_asset_School_ / map_asset_RoadTraffic_ / map_asset_Kitchen_")]
     [SerializeField] private string _assetPrefix = "map_asset_School_";
 
     [Header("Distance Phases (x-axis distance from start)")]
-    [SerializeField] private float _phase1End = 700f;   // 0–700
-    [SerializeField] private float _phase2End = 1600f;  // 700–1600, หลังจากนั้นคือ Phase3
+    [SerializeField] private float _phase1End = 700f;   // 0–700
+    [SerializeField] private float _phase2End = 1600f;  // 700–1600, หลังจากนั้นคือ Phase3
 
     [Header("Spawn Interval (Cooldown Control)")]
     [Tooltip("ช่วงเวลา spawn สำหรับ Phase1 (ยิ่งเลขเยอะ ยิ่งเกิดน้อย)")]
@@ -29,13 +30,10 @@ public class AssetSpawner : MonoBehaviour, ISpawn
     [SerializeField] private Vector2 _phase3Interval = new Vector2(3f, 5f);
     #endregion
 
-    #region 2. Placement Settings (Physics)
-    [Header("Placement Settings (Physics)")]
-    [SerializeField] private LayerMask _groundLayer;    // ⚠️ ต้องตั้งค่าใน Inspector
-    [SerializeField] private LayerMask _obstacleLayer;  // ⚠️ ต้องตั้งค่า (Obstacle, Collectible, Enemy)
-    [SerializeField] private float _checkRadius = 0.5f; 
-    [SerializeField] private float _rayDistance = 5f;   
-    [SerializeField] private float _verticalOffset = 0f;
+    #region 2. Placement Settings
+    [Header("Placement Settings")]
+    [Tooltip("Offset แนวตั้งสุดท้าย (แนะนำให้ MapGenerator จัดการให้หมด)")]
+    [SerializeField] private float _verticalOffset = 0f; 
     #endregion
 
     #region 3. Runtime Data
@@ -44,34 +42,34 @@ public class AssetSpawner : MonoBehaviour, ISpawn
     [SerializeField] private List<GameObject> _activeAssets = new List<GameObject>();
 
     private IObjectPool _pool;
-    private Transform _pivot;     // ใช้คำนวณระยะทาง (Player)
+    private Transform _pivot;     // ใช้คำนวณระยะทาง (Player)
     private float _startX;
     private float _nextSpawnAllowedTime = 0f; // ตัวคุมเวลา (Cooldown)
     #endregion
 
     #region Initialization
 
-    public void Initialize(Transform pivot)
+    public void Initialize(Transform pivot, IObjectPool pool = null)
     {
         _pivot = pivot;
         if (_pivot != null) _startX = _pivot.position.x;
 
-        var poolManager = ObjectPoolManager.Instance;
-        if (poolManager == null)
+        _pool = pool ?? ObjectPoolManager.Instance; 
+        
+        if (_pool == null)
         {
-            Debug.LogError("[AssetSpawner] ObjectPoolManager.Instance is null!");
+            Debug.LogError("[AssetSpawner] ObjectPool is null after initialization!");
             return;
         }
 
-        _pool = poolManager;
-        CacheAssetKeys(poolManager);
-
-        // ตั้งเวลา Spawn ครั้งแรก
+        CacheAssetKeys(_pool as ObjectPoolManager);
+        
         CalculateNextSpawnTime(0f);
 
         Debug.Log($"[AssetSpawner] Initialized with Prefix: '{_assetPrefix}'");
     }
-
+    
+    // Helper เดิม
     private void CacheAssetKeys(ObjectPoolManager poolManager)
     {
         _cachedAssetKeys.Clear();
@@ -81,7 +79,6 @@ public class AssetSpawner : MonoBehaviour, ISpawn
         for (int i = 0; i < allTags.Count; i++)
         {
             string tag = allTags[i];
-            // ✅ Logic เดิม: เลือกเฉพาะ Tag ที่ขึ้นต้นด้วย Prefix ของด่านนั้นๆ
             if (!string.IsNullOrEmpty(tag) && tag.StartsWith(_assetPrefix))
                 _cachedAssetKeys.Add(tag);
         }
@@ -92,42 +89,36 @@ public class AssetSpawner : MonoBehaviour, ISpawn
 
     #endregion
 
-    #region Core Spawn Logic (Hybrid)
-
+    #region Core Spawn Logic
+    
     /// <summary>
     /// ฟังก์ชันนี้ MapGenerator จะเป็นคนเรียก
-    /// แต่ AssetSpawner มีสิทธิ์ปฏิเสธถ้ายังไม่ถึงเวลา (Cooldown)
+    /// AssetSpawner มีสิทธิ์ปฏิเสธถ้ายังไม่ถึงเวลา (Cooldown) และ/หรือ Slot ถูกจองแล้ว
     /// </summary>
     private GameObject SpawnAssetAt(Vector3 targetPos)
     {
         if (_pool == null || _cachedAssetKeys.Count == 0) return null;
         if (_pivot == null) return null;
 
-        // 1. ✅ เช็ค Phase & Cooldown
-        // ถ้าเวลายังไม่ถึงกำหนด ให้ปฏิเสธการสร้าง (MapGenerator เสนอมา แต่เราไม่เอา)
+        // 1. เช็ค Phase & Cooldown
         if (Time.time < _nextSpawnAllowedTime) 
         {
             return null; 
         }
 
-        // 2. ✅ Check Overlap (ฟิสิกส์)
-        if (Physics2D.OverlapCircle(targetPos, _checkRadius, _obstacleLayer))
+        // 2. กำหนดตำแหน่งสุดท้าย
+        Vector3 finalPos = targetPos;
+        finalPos.y += _verticalOffset; 
+        
+        // 3. ✅ Spawn Slot Check (จองตำแหน่ง)
+        if (!SpawnSlot.Reserve(finalPos))
         {
-            return null; // มีของขวาง
+            // Slot ถูกจองโดย Asset/Collectible/Enemy อื่นแล้ว
+            Debug.LogWarning($"[AssetSpawner] Spawn Failed at X={finalPos.x:F1}: Slot Reserved.");
+            return null;
         }
-
-        // 3. ✅ Raycast Down (หาพื้น)
-        // MapGeneratorBase ถูกแก้ไขให้ส่งจุดเริ่มต้น Raycast ที่สูงมาแล้ว (pos.y + 5f)
-        // โค้ดเก่า: Vector2 rayOrigin = new Vector2(targetPos.x, targetPos.y + 2f);
-        Vector2 rayOrigin = targetPos; // ✅ โค้ดใหม่: ใช้ targetPos เป็นจุดเริ่ม Raycast โดยตรง
-        RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.down, _rayDistance, _groundLayer);
-
-        if (hit.collider == null) return null; // ไม่เจอพื้น (เหว)
-
-        Vector3 finalPos = hit.point;
-        finalPos.y += _verticalOffset;
-
-        // 4. ✅ Spawn Object
+        
+        // 4. Spawn Object
         int index = Random.Range(0, _cachedAssetKeys.Count);
         string key = _cachedAssetKeys[index];
 
@@ -144,10 +135,17 @@ public class AssetSpawner : MonoBehaviour, ISpawn
             }
 
             _activeAssets.Add(obj);
-
-            // 5. ✅ คำนวณ Cooldown รอบถัดไป (ตาม Phase)
+            // 5. คำนวณ Cooldown รอบถัดไป
             float currentDist = Mathf.Max(0, _pivot.position.x - _startX);
             CalculateNextSpawnTime(currentDist);
+            
+            Debug.Log($"[AssetSpawner] Spawned Asset: {key} at X={finalPos.x:F1}");
+        }
+        else
+        {
+            // หาก Spawn ล้มเหลว (เช่น ObjectPool ผิดพลาด) ต้องยกเลิกการจอง Slot
+            SpawnSlot.Unreserve(finalPos);
+            Debug.LogError($"[AssetSpawner] Spawn Failed: ObjectPool failed for {key}.");
         }
 
         return obj;
@@ -155,9 +153,9 @@ public class AssetSpawner : MonoBehaviour, ISpawn
 
     private void CalculateNextSpawnTime(float distance)
     {
+        // Logic เดิม (Phase-based Cooldown)
         Vector2 interval;
 
-        // เลือกช่วงเวลาตามระยะทาง (Phase)
         if (distance < _phase1End)
             interval = _phase1Interval;
         else if (distance < _phase2End)
@@ -171,7 +169,7 @@ public class AssetSpawner : MonoBehaviour, ISpawn
 
     #endregion
 
-    #region ISpawn Implementation
+    #region ISpawn Implementation (Core)
 
     // Hook ให้ MapGenerator เรียก
     public GameObject SpawnAtPosition(Vector3 position)
@@ -182,7 +180,12 @@ public class AssetSpawner : MonoBehaviour, ISpawn
     public void Despawn(GameObject obj)
     {
         if (obj == null || _pool == null) return;
+        
+        // ต้อง Unreserve Slot เมื่อ Despawn
+        SpawnSlot.Unreserve(obj.transform.position); 
+        
         _activeAssets.Remove(obj);
+        string objectTag = GetObjectTag(obj);
         _pool.ReturnToPool(obj.name.Replace("(Clone)", "").Trim(), obj);
     }
 
@@ -191,11 +194,24 @@ public class AssetSpawner : MonoBehaviour, ISpawn
 
     #endregion
 
-    #region Editor Debug
-    private void OnDrawGizmosSelected()
+    #region Helper Methods
+
+    /// <summary>
+    /// ดึงชื่อ Prefab/Tag ที่ถูกต้องจากชื่อ GameObject ที่มี "(Clone)" ต่อท้าย
+    /// </summary>
+    protected string GetObjectTag(GameObject obj)
     {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, _checkRadius);
+        if (obj == null) return string.Empty;
+        string name = obj.name;
+        int index = name.IndexOf("(Clone)");
+        
+        // ถ้าเจอ (Clone) ให้ตัดส่วนนั้นออก
+        if (index > 0) 
+            return name.Substring(0, index).Trim();
+        
+        // ถ้าไม่เจอ อาจจะเป็น Prefab/Tag ที่ถูกต้องอยู่แล้ว หรือเป็นแค่ชื่อ
+        return name;
     }
+    
     #endregion
 }

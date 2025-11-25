@@ -152,20 +152,28 @@ public class CollectibleItem : MonoBehaviour, ICollectable
         }
     }
 
+    private DuckCareerData _careerToDisplay;
+
+    public void AssignCareer(DuckCareerData data)
+    {
+        _careerToDisplay = data;
+        GetComponent<CardUI>()?.SetCareerData(data);
+    }
+
     // Card Pickup 
     private void DropCareerCard()
     {
-        // OLD: CardManager manager = FindFirstObjectByType<CardManager>();
-        CardManager manager = _cardManagerRef; // << ใช้ Reference ที่ถูก Inject
+        CardManager manager = _cardManagerRef;
         if (manager == null)
         {
-            Debug.LogWarning("[CardPickup] CardManager not found! (Injection Failed)");
+            Debug.LogWarning("[CardPickup] CardManager not found!");
             return;
         }
 
-        manager.AddCareerCard(); // Call fuction in CardManager
-        Debug.Log("[CardPickup] Career Card Added.");
+        manager.AddCareerCard();
+        Debug.Log("[CardPickup] Added card to hand: " + _careerToDisplay?.DisplayName);
     }
+
 
 #endregion
 }

@@ -15,11 +15,13 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
     [SerializeField] private float _phase3DropChance = 0.15f;
 
     [Header("Placement Offset Y")]
+    [Tooltip("Offset แนวตั้งสุดท้าย (ควรตั้งค่าใน MapGenerator)")]
     [SerializeField] private float _spawnYOffset = 0.5f;
 
-    [SerializeField] private LayerMask groundLayer;
+    // ⬅️ REMOVED: ไม่ใช้ Raycast แล้ว
+    // [SerializeField] private LayerMask groundLayer; 
 
-    private Transform _pivot;        // Player
+    private Transform _pivot;        // Player
     private float _startX;
     private IObjectPool _pool;
     private EnemySpawner _enemySpawner;
@@ -34,7 +36,9 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
     public void Initialize(Transform pivot, EnemySpawner enemySpawner = null)
     {
         _pivot = pivot;
-        _startX = pivot.position.x;
+        // ⚠️ FIX: ตรวจสอบ _pivot ก่อนเข้าถึง .position
+        if (_pivot != null)
+             _startX = _pivot.position.x; 
 
         _pool = ObjectPoolManager.Instance;
         _enemySpawner = enemySpawner ?? FindFirstObjectByType<EnemySpawner>();
@@ -63,20 +67,31 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
     {
         enemy.OnEnemyDied -= HandleEnemyDied;
 
+        if (_pivot == null) return; // Guard
+        
         float distance = Mathf.Max(0f, _pivot.position.x - _startX);
+        
         if (distance < _phase1End) return;
         if (distance < _phase2End) return;
         if (Random.value > _phase3DropChance) return;
 
-        Vector3 pos = enemy.transform.position + Vector3.up * _spawnYOffset;
+        // ⚠️ FIX: ตำแหน่ง Drop ต้องเชื่อถือว่า EnemySpawner ส่งมาเป็นตำแหน่งที่ถูกต้อง
+        // แต่ในกรณีนี้เป็นการ Drop หลัง Enemy ตาย เราต้องคำนวณตำแหน่งเอง
+        // เราจะส่งตำแหน่งที่ Enemy ตาย (+ Offset) ไปให้ SpawnThrowableAt(pos)
+        
+        // ⚠️ NOTE: การ drop จาก Enemy ตาย ควรใช้ SpawnSlot.Reserve 
+        // แต่เราจะให้ SpawnThrowableAt จัดการ Reserve
+        
+        Vector3 pos = enemy.transform.position;
         GameObject obj = SpawnThrowableAt(pos);
-        if (obj != null) _activeThrowables.Add(obj);
+        
+        // ⚠️ REMOVED: การเพิ่ม obj เข้า _activeThrowables ถูกย้ายไปที่ SpawnThrowableAt
     }
 
     #endregion
 
     #region Spawn Core
-    private GameObject SpawnThrowableAt(Vector3 pos)
+    private GameObject SpawnThrowableAt(Vector3 receivedPos)
     {
         if (_pool == null ||
             _dropTable == null ||
@@ -84,49 +99,52 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
             _dropTable.dropList.Count == 0)
             return null;
 
-        // ยิง Ray ลงหา Ground Layer เพื่อตกบนพื้นเท่านั้น
-        RaycastHit2D hit = Physics2D.Raycast(
-            pos + Vector3.up * 1f,   // เริ่มยิงจากด้านบน
-            Vector2.down,
-            15f,
-            groundLayer
-        );
+        // 1. กำหนดตำแหน่งสุดท้าย (เชื่อถือตำแหน่งที่ส่งมา)
+        // ⚠️ NOTE: การใช้ Raycast ถูกลบออกแล้ว
+        Vector3 finalPos = receivedPos;
+        finalPos.y += _spawnYOffset; // เพิ่ม Offset ให้ลอยเหนือจุดเกิด Enemy
 
-        Debug.DrawRay(pos + Vector3.up * 1f, Vector2.down * 5f, hit.collider != null ? Color.green : Color.red, 2f);
-
-
-        if (hit.collider != null)
+        // 2. Spawn Slot Check (Asset/Collectible/Throwable ต้องไม่ทับกัน)
+        if (!SpawnSlot.Reserve(finalPos))
         {
-            pos = new Vector3(pos.x, hit.point.y + _spawnYOffset, pos.z);
-        }
-        else
-        {
-            // ถ้าไม่เจอพื้นก็ไม่ spawn — ป้องกันลอยกลางอากาศ
+            Debug.LogWarning($"[ThrowableSpawner] Spawn Failed: Slot Reserved at X={finalPos.x:F1}.");
             return null;
         }
 
         string poolTag = GetWeightedTag();
-        GameObject obj = _pool.SpawnFromPool(poolTag, pos, Quaternion.identity);
-        if (obj == null) return null;
-
+        GameObject obj = _pool.SpawnFromPool(poolTag, finalPos, Quaternion.identity);
+        
+        if (obj == null) 
+        {
+            SpawnSlot.Unreserve(finalPos);
+            return null;
+        }
+        
+        // 3. Inject Info and Sprite
         var info = obj.GetComponent<ThrowableItemInfo>();
-        var sr   = obj.GetComponent<SpriteRenderer>();
+        var sr   = obj.GetComponent<SpriteRenderer>();
 
         if (info != null)
         {
             var entry = _dropTable.dropList.Find(x => x.poolTag == poolTag);
             if (entry != null)
             {
-                info.SetInfo(poolTag, entry.icon);   // ใช้แบบเดิม
+                // [FIX]: SetInfo จะกำหนด PoolTag และ Icon ให้ ThrowableItemInfo
+                info.SetInfo(poolTag, entry.icon); 
+                
+                // [FIX]: ต้องใช้ SetSprite ของ ThrowableItemInfo เพื่อเปลี่ยน Sprite
                 if (sr != null)
                     sr.sprite = entry.icon;
             }
         }
-        Debug.LogWarning("[ThrowableSpawner] Raycast did not hit the Ground Layer at position: " + (pos + Vector3.up * 1f));
+        
+        // [FIX]: เพิ่มการลงทะเบียนวัตถุที่เกิดสำเร็จ
+        _activeThrowables.Add(obj);
+        
+        // ⚠️ REMOVED: Debug.LogWarning Raycast ที่ไม่จำเป็น
+        
         return obj;
     }
-
-
 
     private string GetWeightedTag()
     {
@@ -147,12 +165,21 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
     public void Interact(Player player)
     {
         var interact = player.GetComponentInChildren<PlayerInteract>();
+        
+        // ⚠️ FIX: ใช้ SetThrowable บน interact และ Despawn ตัวเอง
+        
+        // 1. ให้ Player เก็บของชิ้นนี้
         interact?.SetThrowable(gameObject);
-
+        
+        // 2. บอก ThrowableItemInfo ว่าถูกเก็บแล้ว
         if (TryGetComponent<ThrowableItemInfo>(out var info))
-            info.SetInteractable(false);
+            info.DisablePhysicsOnHold(); // ใช้ DisablePhysicsOnHold เพื่อจัดการ physics และ interactable
 
-        _activeThrowables.Remove(gameObject);
+        // 3. ❌ REMOVED: ไม่ควร Despawn ตัวเองทันทีที่ Interact เพราะ Player ยังถืออยู่
+        // _activeThrowables.Remove(gameObject); // ถูกจัดการเมื่อ Despawn (ตอนโยน/คัดทิ้ง)
+        
+        // 4. ยกเลิกการจอง Slot เมื่อถูกเก็บ (ถือว่าไม่อยู่บนพื้นแล้ว)
+        SpawnSlot.Unreserve(transform.position); 
     }
 
     public void ShowPrompt()
@@ -165,25 +192,36 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
     public void Spawn()
     {
         if (_pivot == null) return;
-
-        Vector3 pos = _pivot.position + Vector3.up * _spawnYOffset;
-        GameObject obj = SpawnThrowableAt(pos);
-        if (obj != null) _activeThrowables.Add(obj);
+        
+        // ⚠️ FIX: ต้องส่งตำแหน่งที่ถูกต้อง (บนพื้น) ให้ SpawnThrowableAt
+        // แต่เนื่องจาก Spawn ถูกใช้สำหรับสุ่มบน Pivot จึงควรใช้ SpawnAtPosition
+        Vector3 pos = _pivot.position;
+        SpawnAtPosition(pos);
     }
 
     public GameObject SpawnAtPosition(Vector3 position)
     {
-        GameObject obj = SpawnThrowableAt(position);
-        if (obj != null) _activeThrowables.Add(obj);
-        return obj;
+        // ⚠️ FIX: เราไม่ควรเพิ่ม obj ใน _activeThrowables ซ้ำซ้อน 
+        // SpawnThrowableAt จัดการแล้ว
+        return SpawnThrowableAt(position); 
     }
 
     public void Despawn(GameObject obj)
     {
         if (obj == null || _pool == null) return;
+        
+        // 1. Unreserve Slot (ถ้ายังมีการจองอยู่)
+        SpawnSlot.Unreserve(obj.transform.position);
+
+        // 2. เรียก OnReturnedToPool ก่อนคืน
+        if (obj.TryGetComponent<ThrowableItemInfo>(out var info))
+            info.OnReturnedToPool();
+        
+        // 3. Remove จาก List และ Return
         _activeThrowables.Remove(obj);
 
-        string key = obj.name.Replace("(Clone)", "").Trim();
+        // [FIX]: ใช้ GetObjectTag Helper (ตามที่ทำใน AssetSpawner) หรือใช้ name.Replace
+        string key = obj.name.Replace("(Clone)", "").Trim(); 
         _pool.ReturnToPool(key, obj);
     }
 

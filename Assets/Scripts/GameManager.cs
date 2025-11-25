@@ -25,6 +25,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private SaveSystem _saveSystem;
     [SerializeField] private UIManager _uiManager;
     [SerializeField] private CardManager _cardManager;
+    public CardManager CardManager => _cardManager;
 
     [SerializeField] private DevCheat _devCheat;
     #endregion
@@ -50,6 +51,8 @@ public class GameManager : MonoBehaviour
     public Currency GetCurrency() => _currencyData;
     public StoreManager GetStoreManager() => _storeManager; 
     public List<StoreBase> GetStoreList() => _storeManager?.Stores;
+
+    private bool _storesInitialized = false;
 
     public static event Action OnGameReady;
 
@@ -86,6 +89,7 @@ public class GameManager : MonoBehaviour
             }
 
             InitializeGame();
+            
         }
 
         private void Update()
@@ -190,71 +194,73 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// Coroutine รอให้ Dependencies (Player, Map, UI) พร้อมทำงานก่อนเริ่มเกม
     /// </summary>
-private IEnumerator DelayedSceneInit(string sceneName)
-{
-    // ⬇ Ensure Currency already initialized
-    if (_currencyData == null)
-        SetupStores(_persistentProgress);
-
-    // 1. Clear Cache
-    _player = null;
-    _uiManager = null;
-    SceneManager sceneLogic = null;
-    MapGeneratorBase mapGen = null;
-
-    // 2. Wait dependencies
-    while (_player == null || _uiManager == null || sceneLogic == null || mapGen == null)
+    private IEnumerator DelayedSceneInit(string sceneName)
     {
-        if (_player == null) _player = FindFirstObjectByType<Player>();
-        if (_uiManager == null) _uiManager = FindFirstObjectByType<UIManager>();
-        if (sceneLogic == null) sceneLogic = FindFirstObjectByType<SceneManager>();
-        if (mapGen == null) mapGen = FindFirstObjectByType<MapGeneratorBase>();
-        yield return null;
+        // 1. Clear Cache
+        _player = null;
+        _uiManager = null;
+        SceneManager sceneLogic = null;
+        MapGeneratorBase mapGen = null;
+
+        // 2. Wait dependencies
+        while (_player == null || _uiManager == null || sceneLogic == null || mapGen == null)
+        {
+            if (_player == null) _player = FindFirstObjectByType<Player>();
+            if (_uiManager == null) _uiManager = FindFirstObjectByType<UIManager>();
+            if (sceneLogic == null) sceneLogic = FindFirstObjectByType<SceneManager>();
+            if (mapGen == null) mapGen = FindFirstObjectByType<MapGeneratorBase>();
+            yield return null;
+        }
+
+        // 3. UI Dependencies
+        _uiManager.SetDependencies(this, _currencyData, _storeManager, GetStoreList());
+        _player.SetHealthBarUI(_uiManager.GetPlayerHealthBarUI());
+
+        // 4. Scene Logic injection
+        sceneLogic.Inject(mapGen, _player);
+        sceneLogic.TryInitializeScene();
+
+        var cardManager = FindFirstObjectByType<CardManager>();
+        var careerSwitcher = FindFirstObjectByType<CareerSwitcher>();
+        FindFirstObjectByType<CardSlotUI>()?.SetManager(cardManager);
+
+        // ผูก CareerSwitcher ให้ CardManager ก่อนเริ่มใช้การ์ด
+        if (cardManager != null && careerSwitcher != null)
+            cardManager.SetCareerSwitcher(careerSwitcher);
+
+        // 5. StarterCard dependency
+        var randomStarter = FindFirstObjectByType<RandomStarterCard>();
+        if (randomStarter != null)
+            randomStarter.SetDependencies(cardManager, this);
+
+        // 6. Player stats
+        PlayerData data = new PlayerData(_currencyData, _persistentProgress);
+        int hpBonus = _upgradeStore != null ? _upgradeStore.GetTotalHPBonus() : 0;
+        data.UpgradeStat("MaxHealth", hpBonus);
+        _player.Initialize(data, cardManager, careerSwitcher);
+
+        // 7. Buffs
+        FindFirstObjectByType<BuffManager>()?.Initialize(this);
+
+        Debug.Log("[GameManager] All Systems Ready. Firing OnGameReady.");
+
+        // 8. Reset starter card
+        randomStarter?.ResetForNewGame();
+
+        // 9. HUD & Panel
+        _uiManager.ShowGameplayHUD();
+        _uiManager.ShowCardSelectionPanel(true);
+        randomStarter?.OpenPanel();
+
+        // 10. Freeze during selection
+        Time.timeScale = 0f;
+
+        // 11. Trigger event
+        OnGameReady?.Invoke();
     }
 
-    // 3. UI Dependencies
-    _uiManager.SetDependencies(this, _currencyData, _storeManager, GetStoreList());
-    _player.SetHealthBarUI(_uiManager.GetPlayerHealthBarUI());
 
-    // 4. Scene Logic injection
-    sceneLogic.Inject(mapGen, _player);
-    sceneLogic.TryInitializeScene();
-
-    var cardManager = FindFirstObjectByType<CardManager>();
-    var careerSwitcher = FindFirstObjectByType<CareerSwitcher>();
-    FindFirstObjectByType<CardSlotUI>()?.SetManager(cardManager);
-
-    // 5. StarterCard dependency MUST happen BEFORE UI opens
-    var randomStarter = FindFirstObjectByType<RandomStarterCard>();
-    if (randomStarter != null)
-        randomStarter.SetDependencies(cardManager, this);
-
-    // 6. Player stats
-    PlayerData data = new PlayerData(_currencyData, _persistentProgress);
-    int hpBonus = _upgradeStore != null ? _upgradeStore.GetTotalHPBonus() : 0;
-    data.UpgradeStat("MaxHealth", hpBonus);
-    _player.Initialize(data, cardManager, careerSwitcher);
-
-    // 7. Buffs
-    FindFirstObjectByType<BuffManager>()?.Initialize(this);
-
-    Debug.Log("[GameManager] All Systems Ready. Firing OnGameReady.");
-
-    // 8. RESET StarterCard — must do BEFORE panel opens
-    randomStarter?.ResetForNewGame();
-
-    // 9. HUD & Panel flow
-    _uiManager.ShowGameplayHUD();            // เปิด HUD
-    _uiManager.ShowCardSelectionPanel(true); // เปิด container ของ Panel
-    randomStarter?.OpenPanel();              // เปิด panel สุ่มการ์ดจริง
-
-    // 10. Pause game while selecting
-    Time.timeScale = 0f;
-
-    // 11. Trigger Gameplay Ready Event
-    OnGameReady?.Invoke();
-}
-
+    public Player PlayerRef => _player;
 
     private IEnumerator ShowStarterPanelNextFrame()
     {
@@ -312,6 +318,7 @@ public void InitializeGame()
     _currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
 
     SetupStores(_persistentProgress); 
+    OnCurrencyReady?.Invoke();
 
     // ==========================================================
     //TODO : ลบส่วนนี้และไฟล์ Devcheat.CS ในภายหลังจากเทสเสร็จสิ้น
@@ -522,6 +529,9 @@ public void InitializeGame()
 #region  store
     public void SetupStores(GameProgressData progressData)
     {
+        if (_storesInitialized)
+        return; 
+
         _currencyData = new Currency
         {
             Coin = progressData.TotalCoins,
@@ -548,6 +558,7 @@ public void InitializeGame()
         _mapStore.OnMapUnlockedEvent += HandleMapUnlocked;
 
         Debug.Log("[GameManager] All store systems initialized successfully.");
+        _storesInitialized = true; 
     }
 
     private void HandleMapUnlocked(string mapName)

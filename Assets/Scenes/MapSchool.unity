@@ -287,15 +287,7 @@ MonoBehaviour:
   _phase1Interval: {x: 6, y: 9}
   _phase2Interval: {x: 4, y: 7}
   _phase3Interval: {x: 3, y: 5}
-  _groundLayer:
-    serializedVersion: 2
-    m_Bits: 2048
-  _obstacleLayer:
-    serializedVersion: 2
-    m_Bits: 1024
-  _checkRadius: 0.5
-  _rayDistance: 5
-  _verticalOffset: 0
+  _verticalOffset: -0.16
   _cachedAssetKeys: []
   _activeAssets: []
 --- !u!4 &610633208
@@ -313,6 +305,79 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &631295879
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1109110456559917266, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
+      propertyPath: _pushSpeed
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2834084880469090607, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2834084880469090607, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2834084880469090607, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2834084880469090607, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -7.91
+      objectReference: {fileID: 0}
+    - target: {fileID: 2834084880469090607, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.08
+      objectReference: {fileID: 0}
+    - target: {fileID: 2834084880469090607, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2834084880469090607, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2834084880469090607, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2834084880469090607, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2834084880469090607, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2834084880469090607, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2834084880469090607, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2834084880469090607, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6590643152284790479, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
+      propertyPath: m_Name
+      value: map_Wall_School
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
 --- !u!1 &957922879
 GameObject:
   m_ObjectHideFlags: 0
@@ -463,8 +528,9 @@ MonoBehaviour:
   _platformWidth: 5
   _minXOffset: 1
   _maxXOffset: 2
-  _minYOffset: 0.8
-  _maxYOffset: 1
+  _minYOffset: 0.3
+  _maxYOffset: 0.8
+  _collectibleOffset: 0.5
   _currentPlatformState: 0
   _currentHeightLimit: 0
   _stepsRemaining: 0
@@ -802,7 +868,6 @@ MonoBehaviour:
     m_Bits: 2048
   groundRayDistance: 6
   coinYOffset: 0.6
-  _pool: {fileID: 0}
 --- !u!4 &2093980297
 Transform:
   m_ObjectHideFlags: 0
@@ -944,7 +1009,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   _gameManager: {fileID: 0}
-  _spawnStartDistance: 100
+  _spawnStartDistance: 60
   _firstEnemySpawned: 1
   _firstEnemyType: 7
   _minSpawnSpacing: 12
@@ -1018,16 +1083,12 @@ MonoBehaviour:
   - {fileID: 1079607818994521509, guid: f78aa01edf9194945934ec27bc5d63b1, type: 3}
   _takoyakiChance: 0.25
   _buffChance: 0.05
-  _groundLayer:
-    serializedVersion: 2
-    m_Bits: 2048
   _obstacleLayer:
     serializedVersion: 2
     m_Bits: 8704
-  _rayDistance: 5
   _groundOffset: 0.5
   _coinTrailGenerator: {fileID: 2093980296}
-  _coinTrailChance: 0.2
+  _coinTrailChance: 0.8
   _activeCollectibles: []
 --- !u!114 &5940353169928122486
 MonoBehaviour:
@@ -1090,3 +1151,4 @@ SceneRoots:
   - {fileID: 2093980297}
   - {fileID: 316353511}
   - {fileID: 2062886183}
+  - {fileID: 631295879}

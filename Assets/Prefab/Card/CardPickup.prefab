@@ -9,11 +9,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 147956779951617984}
+  - component: {fileID: 6183936771559073498}
   - component: {fileID: 7497026368189380220}
   - component: {fileID: 4305665783825287449}
   - component: {fileID: -5683792938515920145}
   m_Layer: 0
-  m_Name: CardUI_Career
+  m_Name: CardPickup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -38,6 +39,25 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &6183936771559073498
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4288398954455821371}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 725c0d917c49d8f4d965f588700e61b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CollectibleItem
+  _itemID: CardPickup
+  _type: 6
+  _value: 1
+  _icon: {fileID: 0}
+  _buffDuration: 5
+  _healAmount: 30
+  _smallHeal: 10
 --- !u!222 &7497026368189380220
 CanvasRenderer:
   m_ObjectHideFlags: 0

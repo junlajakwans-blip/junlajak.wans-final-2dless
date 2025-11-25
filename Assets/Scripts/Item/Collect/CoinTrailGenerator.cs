@@ -21,13 +21,29 @@ public class CoinTrailGenerator : MonoBehaviour
     [SerializeField] private float coinYOffset = 0.6f;
 
 
-    [Header("Runtime")]
-    [SerializeField] private ObjectPoolManager _pool;
+    [Header("Runtime Dependencies")]
+    private IObjectPool _pool; 
+    private CardManager _cardManager;
+    private CollectibleSpawner _collectibleSpawner; // ใช้ CollectibleSpawner โดยตรงเพื่อ Despawn
+    private BuffManager _buffManager; 
 
-    private void Start() // เปลี่ยนจาก Awake เป็น Start (เพื่อให้ Pool พร้อม)
+
+    // ⬅️ NEW: Method สำหรับการส่ง Dependencies ทั้งหมดเข้ามา
+    public void InitializeDependencies(
+        IObjectPool pool, 
+        CardManager cardManager, 
+        CollectibleSpawner collectibleSpawner, 
+        BuffManager buffManager)
     {
-        if (_pool == null)
-            _pool = FindFirstObjectByType<ObjectPoolManager>();
+        _pool = pool;
+        _cardManager = cardManager;
+        _collectibleSpawner = collectibleSpawner;
+        _buffManager = buffManager;
+    }
+
+    private void Start() 
+    {
+        // ลบการค้นหา ObjectPoolManager ใน Start() ออก
     }
 
     /// <summary>
@@ -35,17 +51,24 @@ public class CoinTrailGenerator : MonoBehaviour
     /// </summary>
     public void SpawnRandomTrail(Vector3 startPosition)
     {
+        // ใช้ _pool ที่ถูก inject เข้ามา
         if (_pool == null)
         {
-            Debug.LogError("[CoinTrailGenerator] ObjectPoolManager not found.");
+            Debug.LogError("[CoinTrailGenerator] ObjectPool (IObjectPool) not initialized via CollectibleSpawner.");
             return;
+        }
+        
+        // ตรวจสอบ Dependencies อื่นๆ เพื่อ Inject ให้ CollectibleItem
+        if (_cardManager == null || _collectibleSpawner == null || _buffManager == null)
+        {
+             Debug.LogError("[CoinTrailGenerator] Missing Dependencies for CollectibleItem injection.");
+             return;
         }
 
         int coinCount = Random.Range(_minCoins, _maxCoins + 1);
         int pattern = Random.Range(0, 4); // 0..3
 
         // ก่อนเริ่มสร้าง Coin Trail ต้องเคลียร์ Slot ที่ CollectibleSpawner จองไว้ก่อน
-        // (เพราะ Coin Trail จะมาใช้ Slot นี้ต่อ)
         SpawnSlot.Unreserve(startPosition); 
         
         switch (pattern)
@@ -66,8 +89,7 @@ public class CoinTrailGenerator : MonoBehaviour
     }
 
     #region Pattern Implementations
-    // ... (ฟังก์ชัน SpawnStraightTrail, SpawnStepUpTrail, SpawnStepDownTrail, SpawnZigZagTrail เหมือนเดิม) ...
-    
+
     private void SpawnStraightTrail(Vector3 start, int count)
     {
         Vector3 pos = start;
@@ -122,7 +144,6 @@ public class CoinTrailGenerator : MonoBehaviour
             }
         }
     }
-
     #endregion
 
     /// <summary>
@@ -149,9 +170,9 @@ public class CoinTrailGenerator : MonoBehaviour
         }
 
         // 2. กันทับของอื่น (ต้องจอง Slot ที่ตำแหน่งวางเหรียญจริงๆ)
-        if (!SpawnSlot.Reserve(finalPos)) // ใช้ finalPos ที่ปรับ Y แล้ว
+        if (!SpawnSlot.Reserve(finalPos)) 
         {
-             return;
+            return;
         }
 
         // 3. Spawn
@@ -168,8 +189,11 @@ public class CoinTrailGenerator : MonoBehaviour
         coin.transform.SetParent(transform);
         coin.SetActive(true);
         
-        // Note: ถ้า Coin Prefab มี CollectibleItem Script ติดอยู่
-        // และต้อง Inject Dependency (CardManager/Spawner) เหมือน Item อื่น
-        // ต้องเรียก CollectibleItem.SetDependencies() ที่นี่ด้วย
+        //  NEW FIX: Inject Dependencies ให้ CollectibleItem บนเหรียญ
+        if (coin.TryGetComponent<CollectibleItem>(out var item))
+        {
+            // ใช้ Dependencies ที่ถูก Inject เข้ามา
+            item.SetDependencies(_cardManager, _collectibleSpawner, _buffManager);
+        }
     }
 }

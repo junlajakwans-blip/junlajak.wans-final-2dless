@@ -11,14 +11,15 @@ public class CardUI : MonoBehaviour
     private string _careerID;
     private CardType _type;
 
-    public void Set(DuckCareerData data)
+    public void SetCareerData(DuckCareerData data)
     {
+        if (data == null) return;
+
         _careerID = data.CareerID.ToString();
         _type = data.CardType;
-
-        // เติมรูปให้อัตโนมัติ
         cardImage.sprite = data.CareerCard;
     }
+
 
     public string GetID() => _careerID;
     public CardType GetCardType() => _type;

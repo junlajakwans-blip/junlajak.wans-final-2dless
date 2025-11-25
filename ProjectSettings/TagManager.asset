@@ -8,6 +8,10 @@ TagManager:
   - Career
   - Ground
   - Coin
+  - Floor
+  - Platform
+  - BreakPlatform
+  - ThrowItem
   layers:
   - Default
   - TransparentFX

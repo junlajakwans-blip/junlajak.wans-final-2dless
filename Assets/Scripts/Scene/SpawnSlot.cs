@@ -40,6 +40,19 @@ public static class SpawnSlot
         );
         _usedSlots.Remove(key);
     }
+    
+    /// <summary>
+    /// ตรวจสอบว่า slot นี้ถูกจองไปแล้วหรือไม่
+    /// </summary>
+    public static bool IsReserved(Vector3 worldPos)
+    {
+        Vector2Int key = new Vector2Int(
+            Mathf.RoundToInt(worldPos.x),
+            Mathf.RoundToInt(worldPos.y)
+        );
+
+        return _usedSlots.Contains(key);
+    }
 
     /// <summary>
     /// เคลียร์ช่องที่อยู่ "ไกลหลังผู้เล่น" ทิ้ง เพื่อลด memory

@@ -11,6 +11,10 @@ public class MooPingMon : Enemy // Removed IMoveable as Enemy already has Move()
     [SerializeField] private GameObject _skewerProjectile; // Prefab (ใช้ชื่อเป็น Tag)
     [SerializeField] private Transform _throwPoint;       // Spawn point
 
+    [Header("Attack Delay")]
+    [Tooltip("เวลาหน่วงก่อนการโจมตีครั้งแรก (วินาที)")]
+    [SerializeField] private float _initialAttackDelay = 5.0f;
+
 
     // ChefDuck Buff Flag
     private bool _isThrowingDisabled = false;
@@ -29,8 +33,11 @@ public class MooPingMon : Enemy // Removed IMoveable as Enemy already has Move()
     {
         base.Start();
         
-        // 2. Initialize custom timers using loaded data
-        _nextThrowTime = Time.time + _data.MooPingThrowCooldown;
+        //  FIX: เพิ่ม _initialAttackDelay เข้าไปในการคำนวณครั้งแรก
+         _nextThrowTime = Time.time + _data.MooPingThrowCooldown + _initialAttackDelay;
+    
+        //ให้มีเวลารอดูนานกว่า Cooldown ปกติ 
+        _nextThrowTime = Time.time + _initialAttackDelay;
     }
     
     protected override void Update()
