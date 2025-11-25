@@ -17,35 +17,35 @@ MonoBehaviour:
   - id: map_ThrowItem_School_Book_0
     assetName: Book
     poolTag: map_ThrowItem_School_Book
-    weight: 0
+    weight: 60
     icon: {fileID: -4977833094053055245, guid: 19169ed29a22f8e4fbffd0b805ebb750, type: 3}
   - id: map_ThrowItem_School_Bottle_1
     assetName: Bottle
     poolTag: map_ThrowItem_School_Bottle
-    weight: 0
+    weight: 40
     icon: {fileID: 149248761289054404, guid: e6b8815cc5f0e504883d0785cbeadd60, type: 3}
   - id: map_ThrowItem_School_Clock_2
     assetName: Clock
     poolTag: map_ThrowItem_School_Clock
-    weight: 0
+    weight: 10
     icon: {fileID: 2780355898179003121, guid: 1ab9de51e2c379d4b9bcd238eda1b419, type: 3}
   - id: map_ThrowItem_School_Folder_3
     assetName: Folder
     poolTag: map_ThrowItem_School_Folder
-    weight: 0
+    weight: 20
     icon: {fileID: -5034056946187329892, guid: a4de686df74ea724499357a806539c05, type: 3}
   - id: map_ThrowItem_School_Mug_4
     assetName: Mug
     poolTag: map_ThrowItem_School_Mug
-    weight: 0
+    weight: 5
     icon: {fileID: 5695924539099090374, guid: 220adf71c18367948b3331079730634d, type: 3}
   - id: map_ThrowItem_School_Notebook_5
     assetName: Notebook
     poolTag: map_ThrowItem_School_Notebook
-    weight: 0
+    weight: 10
     icon: {fileID: -3069591491519139557, guid: e58f4eae652d9d64e9399b1d2e53ca5f, type: 3}
   - id: map_ThrowItem_School_Pen_6
     assetName: Pen
     poolTag: map_ThrowItem_School_Pen
-    weight: 0
+    weight: 5
     icon: {fileID: 93245684810914057, guid: aec2803b019f1df48826d155b9a3ddaa, type: 3}

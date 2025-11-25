@@ -36,6 +36,8 @@ public class GameManager : MonoBehaviour
     #region Properties
     public static event System.Action OnCurrencyReady;
     public bool IsPaused => _isPaused;
+    private bool _isGameOver = false;
+    private bool _isSelectingStarterCard = false;
     public int Score => _score;
     private ScoreUI _scoreUI;
 
@@ -96,18 +98,26 @@ public class GameManager : MonoBehaviour
 
         private void Update()
         {
-            if (!_isPaused && _currentScene != "MainMenu")
-                _playTime += Time.deltaTime;
+            // ไม่ต้องทำงานระหว่างเมนู หรือไม่มี Player ยังไม่พร้อม
+            if (_currentScene == "MainMenu" || _player == null)
+                return;
+
+            // ถ้า UI ยังไม่พร้อมหรือ ScoreUI ยังไม่มี → ไม่รันเพื่อตัด Null
+            if (_scoreUI == null)
+                return;
+
+            // หยุดเวลาระหว่าง Pause / เลือกการ์ด / GameOver
+            if (_isPaused || _isGameOver || _isSelectingStarterCard)
+                return;
+
+            // เกมกำลังเล่น → กลไก Playtime Score
+            _playTime += Time.deltaTime;
 
             int score = Mathf.FloorToInt(_playTime);
-
-            if (_scoreUI == null)
-            {
-                Debug.LogError("[GM] ❌ ScoreUI is NULL in Update()");
-                return;
-            }
-
             _scoreUI.UpdateScore(score);
+
+            // อัปเดตค่า Debug ใน Inspector (เพื่อให้แท็บดูได้)
+            _score = score;
         }
 
         private void OnEnable()
@@ -257,6 +267,17 @@ public class GameManager : MonoBehaviour
         int hpBonus = _upgradeStore != null ? _upgradeStore.GetTotalHPBonus() : 0;
         data.UpgradeStat("MaxHealth", hpBonus);
         _player.Initialize(data, cardManager, careerSwitcher);
+
+        // ================= TEST THROWABLE SPAWN HERE =================
+        var throwableSpawner = FindFirstObjectByType<ThrowableSpawner>();
+        if (throwableSpawner != null && _player != null)
+        {
+            Vector3 pos = _player.transform.position;
+            pos.x += 1.8f;  // ขยับไปด้านหน้า ไม่ทับตัวผู้เล่น
+            throwableSpawner.SpawnAtPosition(pos);
+            Debug.Log("[GM] 🔥 TEST THROWABLE SPAWNED AT START");
+        }
+
 
         // 9. Buffs
         FindFirstObjectByType<BuffManager>()?.Initialize(this);

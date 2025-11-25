@@ -141,19 +141,22 @@ public class EnemySpawner : MonoBehaviour, ISpawn
 
     #region Enemy Handling & BuffMap Logic
         
-    /// <summary>
-    /// Event handler for enemy death, used to trigger BuffMap effects.
+/// <summary>
+    /// Event handler for enemy death, used to trigger BuffMap effects and Despawn.
     /// </summary>
     private void HandleEnemyDied(Enemy enemy)
     {
+        if (enemy == null) return;
+        
+        // 1: เก็บตำแหน่งไว้ในตัวแปรท้องถิ่นก่อน
+        // ป้องกัน MissingReferenceException เมื่อ Spawn GoldenMon
+        Vector3 deathPosition = enemy.transform.position; 
+        
         // 1. Clean up from active list and event
-        if (enemy != null)
-                {
-                    _activeEnemies.Remove(enemy.gameObject);
-                    enemy.OnEnemyDied -= HandleEnemyDied;
-                }
-
-        // 2. SingerDuck BuffMap Logic
+        _activeEnemies.Remove(enemy.gameObject);
+        enemy.OnEnemyDied -= HandleEnemyDied;
+        
+        // 2. SingerDuck BuffMap Logic (ใช้ deathPosition แทน enemy.transform.position)
         if (_player != null && _player.TryGetComponent<SingerDuck>(out var singerDuck))
         {
             if (singerDuck.IsMapBuffActive())
@@ -167,13 +170,18 @@ public class EnemySpawner : MonoBehaviour, ISpawn
                 // Random roll
                 if (Random.value < goldenChance)
                 {
-                    SpawnSpecificEnemy(EnemyType.GoldenMon, enemy.transform.position);
+                    // 2: ใช้ deathPosition ที่เก็บไว้
+                    SpawnSpecificEnemy(EnemyType.GoldenMon, deathPosition);
                     Debug.Log(
                         $"<color=yellow>[GoldenMon]</color> Spawned | Chance={goldenChance:P2} | Dist={distance:F0}"
                     );
                 }
             }
         }
+        
+        // 3: สั่ง Despawn/ReturnToPool ทันทีหลังจบ Logic ทั้งหมด
+        // นี่คือส่วนที่ขาดหายไปซึ่งทำให้มอนสเตอร์ค้างอยู่ในฉาก
+        Despawn(enemy.gameObject); 
     }
     #endregion
 

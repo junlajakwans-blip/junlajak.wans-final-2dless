@@ -287,7 +287,7 @@ MonoBehaviour:
   _phase1Interval: {x: 6, y: 9}
   _phase2Interval: {x: 4, y: 7}
   _phase3Interval: {x: 3, y: 5}
-  _verticalOffset: -0.2
+  _verticalOffset: -0.8
   _cachedAssetKeys: []
   _activeAssets: []
 --- !u!4 &610633208
@@ -655,7 +655,7 @@ MonoBehaviour:
   _phase1End: 700
   _phase2End: 1600
   _phase3DropChance: 0.15
-  _spawnYOffset: 0.6
+  _spawnYOffset: 0.2
   _activeThrowables:
   - {fileID: 5607982103104544609, guid: 57f05282925e50145900e7929b2f5fb9, type: 3}
 --- !u!4 &2073505760
@@ -858,7 +858,7 @@ MonoBehaviour:
   _coinKey: Coin
   _minCoins: 6
   _maxCoins: 30
-  _xStep: 1.5
+  _xStep: 3
   _yStep: 1
   groundLayer:
     serializedVersion: 2
@@ -1078,8 +1078,8 @@ MonoBehaviour:
   - {fileID: 1204049181334368868, guid: 5013f70113cc70941818204312ae6462, type: 3}
   - {fileID: 7271098682250228881, guid: e3ce9920ebd823d4e821d9767854c208, type: 3}
   - {fileID: 1079607818994521509, guid: f78aa01edf9194945934ec27bc5d63b1, type: 3}
-  _takoyakiChance: 0.25
-  _buffChance: 0.05
+  _takoyakiChance: 0.4
+  _buffChance: 0.1
   _obstacleLayer:
     serializedVersion: 2
     m_Bits: 8704

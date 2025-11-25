@@ -86,5 +86,10 @@ public class ScoreUI : MonoBehaviour
     /// </summary>
     public int GetCurrentCoins() => _currentCoins;
     
+    public void SyncHighScoreFromSave(int savedValue)
+    {
+        _highScore = savedValue;
+        UpdateHighScoreDisplay();
+    }
     #endregion
 }
