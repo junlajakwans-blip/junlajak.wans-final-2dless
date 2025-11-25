@@ -226,6 +226,10 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 8952884402048639063, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+      propertyPath: _jumpForce
+      value: 6
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -291,7 +295,7 @@ MonoBehaviour:
   _phase1Interval: {x: 6, y: 9}
   _phase2Interval: {x: 4, y: 7}
   _phase3Interval: {x: 3, y: 5}
-  _verticalOffset: -0.8
+  _verticalOffset: -0.7
   _cachedAssetKeys: []
   _activeAssets: []
 --- !u!4 &610633208
@@ -442,8 +446,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4208625ebe1b04149a9348875559e7d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BackgroundLooper
-  _backgroundWidth: 20
-  _backgroundYOffset: 2
+  _backgroundWidth: 30
+  _backgroundYOffset: 3.5
   _destroyThreshold: 25
   _currentBackgroundKey: default
 --- !u!4 &1001232346
@@ -529,11 +533,11 @@ MonoBehaviour:
   _spawnStartPosition: {x: -10, y: 1}
   _maxPlatformCount: 10
   _generationPivot: {fileID: 2062886183}
-  _platformWidth: 3
-  _minXOffset: 1
-  _maxXOffset: 2
-  _minYOffset: 0.1
-  _maxYOffset: 0.1
+  _platformWidth: 11.77
+  _minXOffset: 0.5
+  _maxXOffset: 1
+  _minYOffset: -0.05
+  _maxYOffset: 0.05
   _collectibleOffset: 0.2
   _currentPlatformState: 0
   _currentHeightLimit: 0
@@ -862,12 +866,12 @@ MonoBehaviour:
   _coinKey: Coin
   _minCoins: 6
   _maxCoins: 30
-  _xStep: 3
+  _xStep: 5
   _yStep: 1
   groundLayer:
     serializedVersion: 2
     m_Bits: 2048
-  groundRayDistance: 10
+  groundRayDistance: 20
   coinYOffset: 0.6
 --- !u!4 &2093980297
 Transform:

@@ -211,7 +211,7 @@ MonoBehaviour:
   CanDetectOverride: 1
   _skewerProjectile: {fileID: 1215084544576207270, guid: 88183c2be6002a745b2e92c3a1faeff9, type: 3}
   _throwPoint: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
-  _initialAttackDelay: 10
+  _initialAttackDelay: 13
 --- !u!60 &2879529503101965966
 PolygonCollider2D:
   m_ObjectHideFlags: 0

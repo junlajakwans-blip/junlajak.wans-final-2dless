@@ -257,7 +257,7 @@ public abstract class MapGeneratorBase : MonoBehaviour
         {
             // สุ่มระยะห่างจากอันเก่า
             float xOffset = Random.Range(_minXOffset, _maxXOffset);
-            float yOffset = 0f; // 🔥 เปลี่ยนเป็น 0f และให้ Logic ใหม่คำนวณแทน
+            float yOffset = 0f; // เปลี่ยนเป็น 0f และให้ Logic ใหม่คำนวณแทน
 
             _nextSpawnX += xOffset; // ขยับ Cursor (ช่องว่าง)
 
@@ -270,7 +270,7 @@ public abstract class MapGeneratorBase : MonoBehaviour
             }
             
             // =======================================================
-            // 🔥 FIX: ใช้ State Machine คำนวณ Y-Offset
+            // State Machine คำนวณ Y-Offset
             yOffset = CalculateYOffsetByState(baseY);
             // =======================================================
 
@@ -290,73 +290,76 @@ public abstract class MapGeneratorBase : MonoBehaviour
         }
     }
 
-    protected float CalculateYOffsetByState(float currentBaseY)
+protected float CalculateYOffsetByState(float currentBaseY)
+{
+    float yOffset = 0f;
+    float maxDeltaY = 0.45f; // การขึ้นลงสูงสุดต่อแพลตฟอร์ม
+
+    float minY = _floorY + 0.25f; // ระดับต่ำสุดที่ยอมให้แพลตฟอร์มอยู่ (กันมุด)
+    float maxY = _floorY + 2.8f;  // ระดับสูงสุด (ให้ผู้เล่นกระโดดถึง)
+
+    // -------------------------
+    // เปลี่ยน Pattern เมื่อจบ Step
+    // -------------------------
+    if (_stepsRemaining <= 0)
     {
-        float yOffset = 0f;
-        float maxDeltaY = 0.5f; // จำกัดการขึ้นลงสูงสุดต่อ Platform
+        float r = Random.value;
+        if (r < 0.70f) _currentPlatformState = PlatformState.Normal;
+        else if (r < 0.80f) _currentPlatformState = PlatformState.AscendingSteps;
+        else if (r < 0.90f) _currentPlatformState = PlatformState.DescendingSteps;
+        else if (r < 0.95f) _currentPlatformState = PlatformState.HillUp;
+        else _currentPlatformState = PlatformState.HillDown;
 
-        // 1. ตรวจสอบและเปลี่ยน State เมื่อ Pattern ปัจจุบันจบลง
-        if (_currentPlatformState == PlatformState.Normal || _stepsRemaining <= 0)
-        {
-            // สุ่มเลือกระหว่างการรักษาความสูง (Normal) หรือเริ่ม Pattern ใหม่
-            if (Random.value < 0.8f) // 80% เป็น Normal ต่อ
-            {
-                _currentPlatformState = PlatformState.Normal;
-            }
-            else
-            {
-                // เริ่ม Pattern ใหม่ (20% โอกาส)
-                int pattern = Random.Range(1, 5); // 1..4 (Ascending, Descending, HillUp, HillDown)
-                _currentPlatformState = (PlatformState)pattern;
-                _stepsRemaining = Random.Range(3, 8); // Pattern จะอยู่ 3-7 Platform
-                _currentHeightLimit = currentBaseY;
-            }
-        }
-
-        // 2. คำนวณ Y-Offset ตาม State
-        switch (_currentPlatformState)
-        {
-            case PlatformState.Normal:
-                // อยู่ในระดับ Y เดิม (เพิ่ม/ลดแบบสุ่มเล็กน้อยเพื่อไม่ให้แบนเกินไป)
-                yOffset = Random.Range(-0.1f, 0.1f);
-                break;
-                
-            case PlatformState.AscendingSteps:
-                // ขึ้นบันไดทีละ 0.5f
-                yOffset = maxDeltaY;
-                _stepsRemaining--;
-                break;
-
-            case PlatformState.DescendingSteps:
-                // ลงบันไดทีละ -0.5f
-                yOffset = -maxDeltaY;
-                _stepsRemaining--;
-                break;
-
-            case PlatformState.HillUp:
-                // ค่อยๆ ขึ้น (maxDeltaY ลดลงตามความชัน)
-                yOffset = Random.Range(0.1f, maxDeltaY * 0.7f); 
-                _stepsRemaining--;
-                break;
-
-            case PlatformState.HillDown:
-                // ค่อยๆ ลง
-                yOffset = Random.Range(-maxDeltaY * 0.7f, -0.1f);
-                _stepsRemaining--;
-                break;
-        }
-        
-        // 3. จำกัดความสูงรวม (ป้องกันเหินฟ้า)
-        // ตรวจสอบว่า Platform ใหม่ไม่สูงเกินไปจากจุดเริ่มต้น Map
-        float globalMaxY = 4f; // จำกัดความสูงสูงสุดที่รับได้ (ปรับค่านี้ใน Inspector ได้)
-        if (currentBaseY + yOffset > _spawnStartPosition.y + globalMaxY)
-        {
-            yOffset = 0f; // บังคับให้หยุดขึ้น
-            _currentPlatformState = PlatformState.DescendingSteps; // บังคับให้เริ่มลง
-        }
-        
-        return yOffset;
+        _stepsRemaining = Random.Range(3, 6);
     }
+
+    // -------------------------
+    // คำนวณ Offset ตาม Pattern
+    // -------------------------
+    switch (_currentPlatformState)
+    {
+        case PlatformState.Normal:
+            yOffset = Random.Range(-0.05f, 0.05f);
+            break;
+
+        case PlatformState.AscendingSteps:
+            yOffset = maxDeltaY;
+            break;
+
+        case PlatformState.DescendingSteps:
+            yOffset = -maxDeltaY;
+            break;
+
+        case PlatformState.HillUp:
+            yOffset = Random.Range(0.1f, maxDeltaY);
+            break;
+
+        case PlatformState.HillDown:
+            yOffset = Random.Range(-maxDeltaY, -0.1f);
+            break;
+    }
+
+    _stepsRemaining--;
+
+    float candidateY = currentBaseY + yOffset;
+
+    // -------------------------
+    //  Anti-Clipping Logic
+    // -------------------------
+    if (candidateY < minY)
+    {
+        candidateY = minY;
+        _currentPlatformState = PlatformState.AscendingSteps; // บังคับให้ขึ้นต่อ
+    }
+    else if (candidateY > maxY)
+    {
+        candidateY = maxY;
+        _currentPlatformState = PlatformState.DescendingSteps; // บังคับให้ลงต่อ
+    }
+
+    return candidateY - currentBaseY;
+}
+
 
     protected void RecycleOffScreenPlatforms()
     {
@@ -473,6 +476,7 @@ protected virtual void TrySpawnContentOnPlatform(GameObject platform, Vector3 po
 
         _activeFloors.Add(floor);
         _nextFloorX += _floorLength; // ขยับ Cursor พื้น
+        TrySpawnContentOnPlatform(floor, pos, _floorLength);
     }
 
     protected void RecycleOffScreenFloors()
