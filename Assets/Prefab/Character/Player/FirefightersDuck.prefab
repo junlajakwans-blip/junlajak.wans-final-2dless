@@ -98,6 +98,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 452335919761276993, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+      propertyPath: _careerBodyMaps.Array.data[5].bodyPrefab
+      value: 
+      objectReference: {fileID: 4476471426711794181}
+    - target: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -384,22 +400,13 @@ MonoBehaviour:
       _bestScore: 0
       _playTime: 0
     _isDefaultDuckling: 0
-  _careerSwitcher: {fileID: 0}
-  _cardManager: {fileID: 0}
-  _currency:
-    _coin: 0
-    _token: 0
-    _keyMap: 0
   _rigAnimator: {fileID: 0}
   _jumpForce: 5
   _isGrounded: 0
   _currentMapType: 0
   _hasMapBuff: 0
   _buffMultiplier: 1
-  _interactRadius: 1.5
-  _collectibleLayer:
-    serializedVersion: 2
-    m_Bits: 0
+  _healthBarUI: {fileID: 0}
   _waterBallPrefab: {fileID: 0}
   _splashEffect: {fileID: 0}
   _waterSplashSkillEffect: {fileID: 0}

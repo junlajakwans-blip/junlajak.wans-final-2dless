@@ -488,19 +488,15 @@ public void InitializeGame()
     public void PlayerDieHandler()
     {
         _isPaused = true;
-        Time.timeScale = 0f; // หยุดเกม
-        
-        SaveProgress(); // บันทึกความคืบหน้า
+        Time.timeScale = 0f;
 
-        int finalScore = _score;
-        int finalCoins = _currencyData?.Coin ?? 0; // ต้องมี _currencyData
+        SaveProgress();
 
-        Debug.Log($"[GameManager] Game Over. Final Score: {finalScore}");
-        
-        // เปิด Panel_Result
-        _uiManager?.ShowResultMenu(finalScore, finalCoins);
+        // ไม่ต้องส่งคะแนน ให้ UIManager ใช้ ScoreUI จาก prefab เอง
+        _uiManager.ShowResultMenu();
     }
-    
+
+
     /// <summary>
     /// NEW: เมธอดสำหรับปุ่ม 'ตกลง' จาก Panel_Result (กลับ MainMenu)
     /// </summary>

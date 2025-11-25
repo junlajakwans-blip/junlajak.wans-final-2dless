@@ -38,15 +38,12 @@ public class MenuUI : MonoBehaviour
         }
     }
 
-    public void ShowResultMenu(int finalScore, int coins)
+    public void ShowResultMenu()
     {
-        if (_resultPanel != null)
-        {
-            _resultPanel.SetActive(true);
-            _currentActivePanel = _resultPanel;
-            Debug.Log($" Result Menu: Score={finalScore}, Coins={coins}");
-        }
+        _resultPanel.SetActive(true);
+        _currentActivePanel = _resultPanel;
     }
+
 
     /// <summary>
     /// Controls the visibility of the Store Menu panel.

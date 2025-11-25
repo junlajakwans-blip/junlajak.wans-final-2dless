@@ -361,10 +361,6 @@ MonoBehaviour:
       _bestScore: 0
       _playTime: 241.97243
     _isDefaultDuckling: 1
-  _currency:
-    _coin: 0
-    _token: 0
-    _keyMap: 0
   _rigAnimator: {fileID: 0}
   _jumpForce: 5
   _isGrounded: 0
@@ -430,6 +426,8 @@ MonoBehaviour:
     bodyPrefab: {fileID: 2169988701595503114, guid: f747fc1aecddd1748bc0fba42e12ca8f, type: 3}
   - careerID: 5
     bodyPrefab: {fileID: 201241482764077957, guid: 2deee37fea07673408cbec81da5fe145, type: 3}
+  - careerID: 1
+    bodyPrefab: {fileID: 5999967935324284092}
   - careerID: 6
     bodyPrefab: {fileID: 4476471426711794181, guid: b9bba95c46768244fa37c058969868a5, type: 3}
   - careerID: 7
@@ -445,9 +443,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4a4dd6561955f644c95b755fd721b6fd, type: 2}
   - {fileID: 11400000, guid: 8795c5ba63c53ce4c915a400cb722d69, type: 2}
   - {fileID: 11400000, guid: 944b69a5a97e8d5498c144d4f6ec8f07, type: 2}
+  - {fileID: 11400000, guid: 1be6ef9e22e54104e958d9396fca3c22, type: 2}
   - {fileID: 11400000, guid: b3b883abb48bbc442ad95d82b0261b3d, type: 2}
   - {fileID: 11400000, guid: 803f3742addf0a5458a0b069af954c2d, type: 2}
   - {fileID: 11400000, guid: 6c4b73441b09c6a4e9dc301362f46151, type: 2}
   - {fileID: 11400000, guid: 39bdd569591888f4bb76748b7bd76eaf, type: 2}
   - {fileID: 11400000, guid: 6feaeea2c564bfc40ac568b3acb4c2d2, type: 2}
+  _ducklingRenderer: {fileID: 4980727429312497355}
+  _ducklingAnimator: {fileID: 0}
   _careerCooldown: 3

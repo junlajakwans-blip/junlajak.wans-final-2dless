@@ -13,6 +13,8 @@ public class ScoreUI : MonoBehaviour
     [SerializeField] private int _currentScore; // Competitive integer score (Time/Kills based)
     [SerializeField] private int _highScore;
     [SerializeField] private int _currentCoins; 
+    public int GetHighScore() => _highScore;
+
     #endregion
 
     #region Public Methods
@@ -91,5 +93,12 @@ public class ScoreUI : MonoBehaviour
         _highScore = savedValue;
         UpdateHighScoreDisplay();
     }
+
+    public void ShowFinalResult()
+    {
+        if (_highScoreText != null)
+            _highScoreText.text = $"High Score: {_highScore:D6}";
+    }
+
     #endregion
 }

@@ -525,11 +525,11 @@ MonoBehaviour:
   _spawnStartPosition: {x: -10, y: 1}
   _maxPlatformCount: 10
   _generationPivot: {fileID: 2062886183}
-  _platformWidth: 5
+  _platformWidth: 3
   _minXOffset: 1
   _maxXOffset: 2
-  _minYOffset: 0.3
-  _maxYOffset: 0.8
+  _minYOffset: 0.1
+  _maxYOffset: 0.3
   _collectibleOffset: 0.5
   _currentPlatformState: 0
   _currentHeightLimit: 0

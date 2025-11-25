@@ -277,10 +277,12 @@ public class UIManager : MonoBehaviour
         _menuUI?.ShowPauseMenu(isActive);
     }
 
-    public void ShowResultMenu(int score, int coins)
+    public void ShowResultMenu()
     {
-        _menuUI?.ShowResultMenu(score, coins);
+        _scoreUI.ShowFinalResult();  //  ใช้ text จาก prefab ScoreUI
+        _menuUI.ShowResultMenu();    // เปิด Panel หน้า Result
     }
+
 
     public void CloseAllMenus()
     {
