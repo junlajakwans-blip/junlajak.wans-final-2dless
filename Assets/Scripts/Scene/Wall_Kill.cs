@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 /// <summary>
 /// Endless Wall — pushes player forward and kills on contact.
@@ -19,24 +20,21 @@ public class WallPushController : MonoBehaviour
 
     private void Start()
     {
-        _player = FindFirstObjectByType<Player>()?.transform;
-    }
-
-    // เปลี่ยน SetPushState เป็นเมธอดที่ใช้สั่งเคลื่อนที่ (ถูกเรียก 20 ครั้ง/วินาที)
-    public void ExecuteMovementAndEvent(float speed, bool enabled)
-    {
-        _pushSpeed = speed; // Sync speed
-        _isPushing = enabled; // Sync state
-
-        if (!_isPushing) return;
-
-        // Move horizontally only (ใช้ Time.deltaTime เพื่อให้การเคลื่อนที่ราบรื่น)
-        transform.Translate(Vector3.right * _pushSpeed * Time.deltaTime);
-
-        // Invoke event
-        OnWallSpeedChanged?.Invoke(_pushSpeed);
+        // ใช้ FindFirstObjectByType<Player>()? เพื่อหา Player
+        _player = FindFirstObjectByType<Player>()?.transform; 
     }
     
+    // **NEW**: ย้ายการเคลื่อนที่มาที่ Update() เพื่อให้เคลื่อนที่ราบรื่น (ใช้ Time.deltaTime)
+    private void Update()
+    {
+        // เช็คสถานะก่อนเคลื่อนที่
+        if (!_isPushing) return; 
+
+        // Move horizontally only (ใช้ Time.deltaTime ใน Update() เพื่อให้การเคลื่อนที่ราบรื่น)
+        transform.Translate(Vector3.right * _pushSpeed * Time.deltaTime);
+    }
+    
+
     /// <summary>
     /// Called by MapGeneratorBase to sync speed and toggle state
     /// </summary>
@@ -44,6 +42,9 @@ public class WallPushController : MonoBehaviour
     {
         _pushSpeed = speed;
         _isPushing = enabled;
+        
+        // Invoke event ทันทีที่ความเร็วเปลี่ยน
+        OnWallSpeedChanged?.Invoke(_pushSpeed);
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -55,8 +56,6 @@ public class WallPushController : MonoBehaviour
         }
     }
 
-    public static event System.Action<float> OnWallSpeedChanged;
-
-
+    public static event Action<float> OnWallSpeedChanged;
 }
 }

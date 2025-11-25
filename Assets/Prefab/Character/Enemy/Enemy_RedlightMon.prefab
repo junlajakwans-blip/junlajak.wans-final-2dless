@@ -74,7 +74,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c42e64cbac232946bbd7cb2d1e2413e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedlightMon
-  _maxHealth: 100
+  _maxHealth: 50
   _currentHealth: 0
   _moveSpeed: 3.5
   _rigidbody: {fileID: 504585275588700058}
@@ -82,6 +82,7 @@ MonoBehaviour:
   _data: {fileID: 11400000, guid: be4cd86dff53273408c1b95b28599a77, type: 2}
   _target: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   _enemyType: 5
+  SpawnWeight: 30
   _isDisabled: 0
   CanDetectOverride: 1
   _signalState: Green

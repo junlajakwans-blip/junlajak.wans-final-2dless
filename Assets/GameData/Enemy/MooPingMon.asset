@@ -14,9 +14,74 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   _typeID: 8
   _displayName: MooPingMon
-  _baseHealth: 100
-  _baseAttackPower: 10
+  _baseHealth: 40
+  _baseAttackPower: 8
   _baseMovementSpeed: 1.5
   _baseDetectionRange: 5
   _coinDropAmount: 1
   _enemySprite: {fileID: 5685010844166404831, guid: c31a5c9dfd76af343b223062bc617a34, type: 3}
+  MamaNoodleCount: 3
+  MamaAttackCooldown: 2
+  MamaBoilRange: 4
+  MamaBoilDamage: 10
+  MamaProjectileSpeed: 5
+  MamaProjectileDamage: 15
+  MamaHealChance: 0.1
+  MamaHealCooldown: 8
+  MamaCoinDropChance: 0.35
+  MamaGreenTeaDropChance: 0.1
+  KahootAttackInterval: 3
+  KahootBlockSpeed: 6
+  KahootBlockDamage: 5
+  KahootSpeedDuration: 3
+  KahootSlowModifier: 0.4
+  KahootSlowDuration: 2.5
+  KahootSmallDamage: 1
+  KahootCoinDropChance: 0.4
+  LotteryLuckFactor: 0.15
+  LotteryCurseDuration: 4
+  LotteryAttackCooldown: 5
+  LotteryMinCoinDrop: 1
+  LotteryMaxCoinDrop: 40
+  LotteryGoodLuckMinCoin: 1
+  LotteryGoodLuckMaxCoin: 10
+  RedlightCarCooldown: 3
+  RedlightSwitchInterval: 5
+  RedlightSpawnCarCount: 2
+  RedlightMaxCarTypes: 3
+  RedlightCoinDropChance: 0.3
+  RedlightCoffeeDropChance: 0.05
+  GoldenMonBreakPlatformCount: 2
+  GoldenMonCoinDropMultiplier: 5
+  GoldenMonBaseMinCoin: 10
+  GoldenMonBaseMaxCoin: 20
+  GoldenGuaranteedCardType: 1
+  GoldenCardDropChance: 1
+  GhostWorkFadeDuration: 1.5
+  GhostWorkHauntRange: 6
+  GhostWorkTeleportCooldown: 5
+  GhostWorkBaseTeleportDistance: 2
+  GhostWorkHauntDamage: 5
+  GhostWorkCoinDropChance: 0.45
+  GhostWorkGreenTeaDropChance: 0.15
+  MooPingFireDamage: 12
+  MooPingSmokeRadius: 2.5
+  MooPingThrowCooldown: 2.2
+  MooPingPatternSpeed: 2
+  MooPingPatternWidth: 1.5
+  MooPingProjectileSpeed: 5
+  MooPingCoinDropChance: 0.2
+  MooPingCoffeeDropChance: 0.05
+  PeterHoverAmplitude: 0.25
+  PeterHoverSpeed: 2
+  PeterAttackRange: 4.5
+  PeterAttackCooldown: 2.5
+  PeterProjectileDamage: 10
+  PeterProjectileSpeed: 4
+  PeterCoinDropChance: 0.25
+  PeterGreenTeaDropChance: 0.05
+  DoggoChaseSpeed: 2.5
+  DoggoBarkRange: 1.25
+  DoggoDamage: 15
+  DoggoHauntRange: 5
+  DoggoCoinDropChance: 0.3

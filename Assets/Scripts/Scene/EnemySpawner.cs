@@ -210,7 +210,7 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     Vector3 finalSpawnPos = spawnPos;
     finalSpawnPos.y += _verticalSpawnOffset;
 
-    if (Vector3.Distance(spawnPos, _lastEnemySpawnPosition) < _minSpawnSpacing)
+    if (!SpawnSlot.Reserve(finalSpawnPos))
     {
         return; // ห่างไม่พอ ไม่สร้าง
     }
@@ -275,11 +275,11 @@ public class EnemySpawner : MonoBehaviour, ISpawn
 
         // ---------------- Spawn ----------------
 
-        var enemyGO = _objectPool.SpawnFromPool(objectTag, spawnPos, spawnRot);
+        var enemyGO = _objectPool.SpawnFromPool(objectTag, finalSpawnPos, spawnRot);
 
         if (enemyGO != null)
         {
-            _lastEnemySpawnPosition = spawnPos;
+            _lastEnemySpawnPosition = finalSpawnPos;
             _activeEnemies.Add(enemyGO);
             _cullingManager?.RegisterObject(enemyGO);
 
@@ -308,10 +308,10 @@ public class EnemySpawner : MonoBehaviour, ISpawn
         }
 
         Vector3 finalPos = position;
-            finalPos.y += _verticalSpawnOffset; 
+        finalPos.y += _verticalSpawnOffset; 
             
             // Slot Reservation (MapGenerator ไม่ได้เช็ค Slot สำหรับศัตรู)
-            if (!SpawnSlot.Reserve(finalPos))
+        if (!SpawnSlot.Reserve(finalPos)) 
             {
                 // Slot ถูกจองแล้ว เช่น ทับกับ Collectible/Asset ที่เกิดบน Platform เดียวกัน
                 Debug.LogWarning($"[EnemySpawner] SpawnAtPosition skipped: Slot reserved by another object at {finalPos}.");
@@ -319,7 +319,7 @@ public class EnemySpawner : MonoBehaviour, ISpawn
             }
 
         int randomEnemy = Random.Range(0, _validPrefabsCache.Count);
-        var enemyGO = _objectPool.SpawnFromPool(_validPrefabsCache[randomEnemy].name, position, Quaternion.identity);
+        var enemyGO = _objectPool.SpawnFromPool(_validPrefabsCache[randomEnemy].name, finalPos, Quaternion.identity);
         
         if (enemyGO != null)
         {

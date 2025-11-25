@@ -110,7 +110,7 @@ public class StoreUI : MonoBehaviour
         };
     }
 
-    private void PopulateSlots(StoreBase store)
+    public void PopulateSlots(StoreBase store)
     {
         Debug.Log("\n\n==============================");
         Debug.Log($"[STORE UI] >>> OPEN STORE: {store.StoreName} | TYPE = {store.StoreType}");
@@ -223,6 +223,27 @@ public class StoreUI : MonoBehaviour
             StoreCurrency.KeyMap => KeyMapIcon,
             _ => null
         };
+    }
+
+    public void RefreshActiveSlots()
+    {
+        if (_activeStore == null) return;
+
+        List<SlotUI> targetSlots = _activeStore.StoreType switch
+        {
+            StoreType.Exchange => exchangeSlots,
+            StoreType.Map => mapSlots,
+            StoreType.Upgrade => upgradeSlots,
+            _ => null
+        };
+
+        if (targetSlots == null) return;
+
+        foreach (var slot in targetSlots)
+        {
+            if (slot.gameObject.activeSelf)
+                slot.Refresh();
+        }
     }
 
 

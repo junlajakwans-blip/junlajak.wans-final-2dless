@@ -74,7 +74,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc44c2a75f235b248abdc89c0e940626, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MamaMon
-  _maxHealth: 100
+  _maxHealth: 30
   _currentHealth: 0
   _moveSpeed: 3.5
   _rigidbody: {fileID: -5937522036954992674}
@@ -82,6 +82,7 @@ MonoBehaviour:
   _data: {fileID: 11400000, guid: c4c0f712ab92b8f4ab2d39307a04b809, type: 2}
   _target: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   _enemyType: 7
+  SpawnWeight: 30
   _isDisabled: 0
   CanDetectOverride: 1
   _noodleProjectilePrefab: {fileID: 4933796339725931637, guid: e1a8af1a3d676d744a98ca11a6f4a68d, type: 3}

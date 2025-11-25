@@ -74,14 +74,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49dae77697187ba4b86c21c608ff30fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LotteryMon
-  _maxHealth: 100
-  _currentHealth: 0
+  _maxHealth: 20
+  _currentHealth: 20
   _moveSpeed: 3.5
   _rigidbody: {fileID: -3156925987863832518}
   _animator: {fileID: 0}
   _data: {fileID: 11400000, guid: 8fd6501bad8fc0242a3d3c677385bc76, type: 2}
   _target: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   _enemyType: 1
+  SpawnWeight: 30
   _isDisabled: 0
   CanDetectOverride: 1
 --- !u!60 &5348319614881918660

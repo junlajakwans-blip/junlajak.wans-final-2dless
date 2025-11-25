@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5842814189520999620}
   - component: {fileID: 8229956574603110301}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: map_asset_School_Bin_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -100,7 +100,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7161677787027725404}
   - component: {fileID: 7313516827355384867}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: map_asset_School_Bin
   m_TagString: Untagged
   m_Icon: {fileID: 0}

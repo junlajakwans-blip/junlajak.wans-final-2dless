@@ -70,7 +70,8 @@ public GameObject SpawnAtPosition(Vector3 targetPos)
     }
 
     // 1.Raycast Down: หาพื้นจริงๆ
-    if (!TryFindGround(targetPos, out Vector3 finalPos))
+    // targetPos ที่รับมาตอนนี้คือจุดเริ่มต้น Raycast ที่สูงพอ
+    if (!TryFindGround(targetPos, out Vector3 finalPos)) 
     {
         // FIX 1: เพิ่ม Debug Log เมื่อหาพื้นไม่เจอ
         Debug.LogWarning($"[Collectible] Spawn Failed at X={targetPos.x:F1}: No Ground Found (Check _groundLayer/Raycast setup).");
@@ -244,8 +245,10 @@ public GameObject SpawnAtPosition(Vector3 targetPos)
     {
         result = Vector3.zero;
         
-        Vector2 rayOrigin = new Vector2(origin.x, origin.y + 20f);
-        float safeRayDistance = 40f;
+        // โค้ดเก่า: Vector2 rayOrigin = new Vector2(origin.x, origin.y + 20f); 
+        // โค้ดใหม่: ใช้ origin ที่ MapGeneratorBase ส่งมา (pos.y + 5f) เป็นจุดเริ่มโดยตรง
+        Vector2 rayOrigin = origin; 
+        float safeRayDistance = 40f; // ระยะยิงยังคงเพียงพอ (จาก Y ที่สูง)
         RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.down, safeRayDistance, _groundLayer);
 
         if (hit.collider != null)

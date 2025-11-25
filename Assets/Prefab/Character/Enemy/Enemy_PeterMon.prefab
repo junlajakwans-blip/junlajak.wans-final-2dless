@@ -164,7 +164,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd776a3588f690848bc7ad464a40ffba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PeterMon
-  _maxHealth: 100
+  _maxHealth: 50
   _currentHealth: 0
   _moveSpeed: 3.5
   _rigidbody: {fileID: 7177338774800372511}
@@ -172,6 +172,7 @@ MonoBehaviour:
   _data: {fileID: 11400000, guid: 92187e286513e2a46b380012f7348e6a, type: 2}
   _target: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   _enemyType: 6
+  SpawnWeight: 30
   _isDisabled: 0
   CanDetectOverride: 1
   _projectilePrefab: {fileID: 4933796339725931637, guid: e1a8af1a3d676d744a98ca11a6f4a68d, type: 3}

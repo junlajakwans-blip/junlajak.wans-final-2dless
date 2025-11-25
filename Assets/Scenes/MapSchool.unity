@@ -423,37 +423,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 316353512}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1254678471
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1254678472}
-  m_Layer: 0
-  m_Name: Generator Pivot
-  m_TagString: Untagged
-  m_Icon: {fileID: 419385456094870383, guid: 0000000000000000d000000000000000, type: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1254678472
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1254678471}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.25, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1598673754
 GameObject:
   m_ObjectHideFlags: 0
@@ -488,14 +457,14 @@ MonoBehaviour:
   _backgroundLooper: {fileID: 1001232345}
   _assetSpawner: {fileID: 610633207}
   _throwableSpawner: {fileID: 2073505759}
-  _spawnStartPosition: {x: -9, y: 1}
+  _spawnStartPosition: {x: -10, y: 1}
   _maxPlatformCount: 10
-  _generationPivot: {fileID: 1254678472}
+  _generationPivot: {fileID: 2062886183}
   _platformWidth: 5
   _minXOffset: 1
   _maxXOffset: 2
-  _minYOffset: 0.9
-  _maxYOffset: 1.2
+  _minYOffset: 0.8
+  _maxYOffset: 1
   _currentPlatformState: 0
   _currentHeightLimit: 0
   _stepsRemaining: 0
@@ -551,6 +520,37 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -8.71, y: -0.57407, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2062886182
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2062886183}
+  m_Layer: 0
+  m_Name: GeneratorPivot
+  m_TagString: Untagged
+  m_Icon: {fileID: 419385456094870383, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2062886183
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2062886182}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -848,7 +848,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DistanceCulling
   _cameraTransform: {fileID: 2089479469}
-  _cullingDistance: 30
+  _cullingDistance: 20
   _enableCulling: 1
   _targetObjects: []
 --- !u!4 &2100565031
@@ -924,7 +924,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.25
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -932,28 +932,10 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 300
-      value: 0.15
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1500
-      value: 0.12
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 2500
-      value: 0.18
-      inSlope: 0
-      outSlope: 0
+      time: 1
+      value: 1
+      inSlope: 2
+      outSlope: 2
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -965,7 +947,7 @@ MonoBehaviour:
   _spawnStartDistance: 100
   _firstEnemySpawned: 1
   _firstEnemyType: 7
-  _minSpawnSpacing: 10
+  _minSpawnSpacing: 12
   _verticalSpawnOffset: 1
 --- !u!4 &939860341859728424
 Transform:
@@ -1027,12 +1009,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleSpawner
   _collectiblePrefabs:
+  - {fileID: 5561300889309933517, guid: ac4dd69d4dab6ea4d9942c8653982be3, type: 3}
+  - {fileID: 2368865025861581409, guid: 3153b32703c275d47a7b980701dc5e58, type: 3}
+  - {fileID: 4288398954455821371, guid: 95f05d628306dd546a3b854037883e20, type: 3}
+  _buffUtilityPrefabs:
   - {fileID: 1204049181334368868, guid: 5013f70113cc70941818204312ae6462, type: 3}
   - {fileID: 7271098682250228881, guid: e3ce9920ebd823d4e821d9767854c208, type: 3}
   - {fileID: 1079607818994521509, guid: f78aa01edf9194945934ec27bc5d63b1, type: 3}
-  - {fileID: 5561300889309933517, guid: ac4dd69d4dab6ea4d9942c8653982be3, type: 3}
-  - {fileID: 2368865025861581409, guid: 3153b32703c275d47a7b980701dc5e58, type: 3}
-  _buffUtilityPrefabs: []
   _takoyakiChance: 0.25
   _buffChance: 0.05
   _groundLayer:
@@ -1040,7 +1023,7 @@ MonoBehaviour:
     m_Bits: 2048
   _obstacleLayer:
     serializedVersion: 2
-    m_Bits: 1024
+    m_Bits: 8704
   _rayDistance: 5
   _groundOffset: 0.5
   _coinTrailGenerator: {fileID: 2093980296}
@@ -1106,4 +1089,4 @@ SceneRoots:
   - {fileID: 2073505760}
   - {fileID: 2093980297}
   - {fileID: 316353511}
-  - {fileID: 1254678472}
+  - {fileID: 2062886183}

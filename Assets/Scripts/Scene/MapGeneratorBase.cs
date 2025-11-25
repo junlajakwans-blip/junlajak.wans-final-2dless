@@ -375,26 +375,31 @@ public abstract class MapGeneratorBase : MonoBehaviour
         // ตัวอย่าง Logic ง่ายๆ: สุ่มว่าจะเกิดอะไรบน Platform นี้
         float chance = Random.value;
 
-        // FIX: ใช้ตำแหน่ง Y ของพื้นหลัก (_floorY) เป็นจุดเริ่มต้นของการยิง Raycast
-        //         เพื่อให้ CollectibleSpawner ใช้ Raycast หาพื้น (Platform/Floor) จากจุดที่ปลอดภัยที่สุด
-        Vector3 spawnPoint = new Vector3(pos.x, _floorY, 0f); 
+        // 1. จุดเริ่มต้น Raycast (สำหรับ Collectible/Asset)
+        //    ต้องสูงกว่า Platform (pos.y) เพื่อยิง Ray ลงไปหาพื้น
+        Vector3 raycastOrigin = new Vector3(pos.x, pos.y + 5f, 0f); 
+        
+        // 2. จุด Center ของ Platform (สำหรับ Enemy)
+        //    ให้ Enemy Spawner จัดการเพิ่ม Offset เอง
+        Vector3 platformCenter = new Vector3(pos.x, pos.y, 0f); 
 
         if (chance < 0.3f && _collectibleSpawner != null)
         {
             // 30% เกิด Collectible
-            _collectibleSpawner.SpawnAtPosition(spawnPoint); // ใช้ spawnPoint ที่ปรับ Y แล้ว
+            // CollectibleSpawner จะทำ Raycast จากจุดที่ส่งไป (raycastOrigin)
+            _collectibleSpawner.SpawnAtPosition(raycastOrigin); 
         }
         else if (chance < 0.5f && _assetSpawner != null)
         {
             // 20% เกิด Asset (สิ่งกีดขวาง)
-            // AssetSpawner จะมี Raycast ของตัวเอง (AssetSpawner.cs: Raycast Down)
-            _assetSpawner.SpawnAtPosition(spawnPoint);
+            // AssetSpawner จะทำ Raycast จากจุดที่ส่งไป (raycastOrigin)
+            _assetSpawner.SpawnAtPosition(raycastOrigin);
         }
         else if (chance < 0.6f && _enemySpawner != null)
         {
             // 10% เกิด Enemy
-            // EnemySpawner จะใช้ SpawnPoint ที่กำหนดไว้ (EnemySpawner.cs)
-            _enemySpawner.SpawnAtPosition(spawnPoint); 
+            // EnemySpawner จะใช้ Y ของ Platform (platformCenter.y) + offset เพื่อให้ยืนบนพื้น
+            _enemySpawner.SpawnAtPosition(platformCenter); 
         }
     }
     #endregion
@@ -456,7 +461,7 @@ public abstract class MapGeneratorBase : MonoBehaviour
         
         if (_endlessWall.TryGetComponent<DuffDuck.Stage.WallPushController>(out var wallController))
         {
-            wallController.ExecuteMovementAndEvent(_wallPushSpeed, _isWallPushEnabled);
+            wallController.SetPushState(_wallPushSpeed, _isWallPushEnabled);
         }
     }
     #endregion

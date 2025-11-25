@@ -98,6 +98,14 @@ public class PlayerController : MonoBehaviour
     private void HandleActionInput()
     {
         // --------------------------------------
+        // Attack (w)
+        // --------------------------------------
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            _player.Attack();
+        }
+
+        // --------------------------------------
         // JUMP (space) - ใช้ GetKeyDown เพื่อให้กระโดดแค่ครั้งเดียวเมื่อกดปุ่ม
         // --------------------------------------
         if (Input.GetKeyDown(KeyCode.Space))
@@ -114,9 +122,9 @@ public class PlayerController : MonoBehaviour
         }
 
         // --------------------------------------
-        // INTERACT / PICKUP (W) - หากคุณต้องการใช้ W ในการเก็บของ / ปาของ / เปลี่ยนของ
+        // INTERACT / PICKUP (Q) - หากคุณต้องการใช้ W ในการเก็บของ / ปาของ / เปลี่ยนของ
         // --------------------------------------
-        if (Input.GetKeyDown(KeyCode.W))
+        if (Input.GetKeyDown(KeyCode.Q))
         {
             _player.HandleInteract();   // เรียกให้ Player ตัดสินใจ
         }

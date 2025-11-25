@@ -104,6 +104,23 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
         if (_cardManager != null)
             _cardManager.Initialize(this);
 
+        
+        if (UIManager.Instance != null)
+        {
+            // UIManager.Instance คือ DDoL Singleton ที่ถือ HealthBarUI
+            HealthBarUI healthBar = UIManager.Instance.GetPlayerHealthBarUI();
+            
+            // ใช้เมธอด SetHealthBarUI ที่มีอยู่เพื่อ Inject Reference และ Initialize ค่า Max HP
+            if (healthBar != null)
+            {
+                SetHealthBarUI(healthBar);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[Player] ❌ UIManager Instance not found (DDoL not ready). Cannot set HealthBarUI.");
+        }
+
         UpdatePlayerFormState();
 
         DetectMap();
@@ -123,17 +140,16 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     }
 
 
-    public void SetHealthBarUI(HealthBarUI healthBarUI)
-        {
-            _healthBarUI = healthBarUI;
-            if (_healthBarUI != null)
-            {
-                // ถ้า UI เพิ่งถูกตั้งค่า ให้ Initialize ทันที
-                _healthBarUI.InitializeHealth(_maxHealth); 
-            }
-        }
-
     #endregion
+
+    /// <summary>
+    /// Provides the persistent HealthBarUI component reference.
+    /// </summary>
+    public HealthBarUI GetPlayerHealthBarUI()
+    {
+        // คืนค่า HealthBarUI ที่ถูก Serialize ไว้ใน UIManager
+        return _healthBarUI; 
+    }
 
 
 #region Movement
@@ -387,7 +403,15 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
             : DuckCareer.Duckling;
     }
 
-
+    public void SetHealthBarUI(HealthBarUI healthBarUI)
+        {
+            _healthBarUI = healthBarUI;
+            if (_healthBarUI != null)
+            {
+                // ถ้า UI เพิ่งถูกตั้งค่า ให้ Initialize ทันที
+                _healthBarUI.InitializeHealth(_maxHealth); 
+            }
+        }
     #endregion
 
 
@@ -412,6 +436,7 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     public override void Attack()
     {
         Debug.Log("[Player] Basic attack triggered.");
+        
         // TODO: integrate with weapon or animation
         if (_rigAnimator != null)
         {

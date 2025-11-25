@@ -8,14 +8,21 @@ using UnityEngine;
 /// </summary>
 public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
 {
+    [System.Serializable]
+    public class CareerBodyMap
+    {
+        public DuckCareer careerID;
+        public GameObject bodyPrefab;
+    }
+
     #region Fields
     [Header("Runtime State")]
     [SerializeField] private DuckCareerData _currentCareer;
     [SerializeField] private DuckCareerData _defaultCareer;
 
     [Header("Appearance Settings")]
-    [SerializeField] private Dictionary<string, Sprite> _careerSprites = new(); 
-    [SerializeField] private CharacterRigAnimator _playerAnimator;
+    [SerializeField] private List<CareerBodyMap> _careerBodyMaps = new();
+    //[SerializeField] private CharacterRigAnimator _playerAnimator;
 
     [Header("Career Catalog")]
     [SerializeField] private List<DuckCareerData> _allCareers = new();
@@ -24,6 +31,7 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
     [SerializeField, Tooltip("Cooldown (seconds) after reverting to default before switching again")]
     private float _careerCooldown = 3f;
 
+    private GameObject _activeBody;
     private bool _isOnCooldown = false;
     private Coroutine _careerTimerRoutine;
 
@@ -60,7 +68,7 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
             return;
 
         _currentCareer = newCareer;
-        ApplyCareerAppearance();
+
         OnCareerChanged(newCareer);
     }
 
@@ -75,6 +83,7 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
     public void OnCareerChanged(DuckCareerData newCareer)
     {
         Debug.Log($"[CareerSwitcher] Changed to career: {newCareer.DisplayName}");
+        ApplyCareerAppearance();
         OnCareerChangedEvent?.Invoke(newCareer);
         // TODO: Add animation, SFX, or buff logic here
     }
@@ -83,13 +92,45 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
 
     #region Logic Methods
     public void ApplyCareerAppearance()
-    {
-        if (_playerAnimator == null || _currentCareer == null)
-            return;
+        {
+            if (_currentCareer == null)
+                return;
 
-        Debug.Log($"Applying appearance for {_currentCareer.DisplayName}");
-        // TODO: Replace animator state or sprite
-    }
+            Debug.Log($"Applying appearance for {_currentCareer.DisplayName}");
+
+            // 1. หา Prefab ของอาชีพปัจจุบันจาก Map โดยใช้ CareerID
+            var mapEntry = _careerBodyMaps.Find(m => m.careerID == _currentCareer.CareerID);
+
+            if (mapEntry == null || mapEntry.bodyPrefab == null)
+            {
+                Debug.LogError($"[CareerSwitcher] Prefab for career {_currentCareer.DisplayName} (ID: {_currentCareer.CareerID}) not found in map!");
+                return;
+            }
+
+            // 2. ทำลาย/Despawn ร่างเก่า
+            if (_activeBody != null)
+            {
+                // ทำลายร่างเก่าที่แสดงผลอยู่
+                Destroy(_activeBody); 
+                _activeBody = null; 
+            }
+            
+            // 3. สร้างร่างใหม่ (Prefab) และผูกติดกับ Player (this.transform)
+            GameObject newBody = Instantiate(mapEntry.bodyPrefab, this.transform);
+            newBody.transform.localPosition = Vector3.zero; 
+            newBody.name = mapEntry.bodyPrefab.name; // ตั้งชื่อเพื่อความสะอาด
+
+            _activeBody = newBody;
+
+            // 4. ตั้งค่า Component ที่จำเป็นบนร่างใหม่ (ถ้ามี)
+            // ต้องตรวจสอบ Rigidbody2D เพื่อไม่ให้ Physics Engine ควบคุม (เนื่องจาก Player หลักมี Rigidbody2D อยู่แล้ว)
+            if (newBody.TryGetComponent<Rigidbody2D>(out var rb))
+            {
+                rb.bodyType = RigidbodyType2D.Kinematic; 
+            }
+
+            Debug.Log($"[CareerSwitcher] Swapped body to {mapEntry.bodyPrefab.name}.");
+        }
 
     public DuckCareerData GetCurrentCareer() => _currentCareer;
 
@@ -107,8 +148,6 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
         _currentCareer = _defaultCareer;
         ApplyCareerAppearance();
         OnCareerChanged(_defaultCareer);
-
-        OnResetCareerCycle?.Invoke(); 
 
         StartCoroutine(CooldownRoutine());
         OnRevertToDefaultEvent?.Invoke(); // แจ้ง revert สำหรับ UI 

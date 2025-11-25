@@ -164,7 +164,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f87021a03f046a141b573c191da8b599, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GhostWorkMon
-  _maxHealth: 10
+  _maxHealth: 30
   _currentHealth: 10
   _moveSpeed: 3.5
   _rigidbody: {fileID: 3992523274498974418}
@@ -172,6 +172,7 @@ MonoBehaviour:
   _data: {fileID: 11400000, guid: 2c270d7020cd119439fd2e4e5d8ccf5a, type: 2}
   _target: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   _enemyType: 2
+  SpawnWeight: 30
   _isDisabled: 0
   CanDetectOverride: 1
 --- !u!60 &2464658489238969913

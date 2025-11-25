@@ -88,7 +88,7 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
         RaycastHit2D hit = Physics2D.Raycast(
             pos + Vector3.up * 1f,   // เริ่มยิงจากด้านบน
             Vector2.down,
-            5f,
+            15f,
             groundLayer
         );
 

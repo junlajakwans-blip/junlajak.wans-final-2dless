@@ -66,10 +66,9 @@ public class Currency
     public bool UseToken(int amount)
     {
         if (Token < amount) return false;
-        Token -= amount;
+        Token = Mathf.Max(0, Token - amount);
         return true;
     }
-
     public void AddKey(int amount)
     {
         if (amount <= 0) return;

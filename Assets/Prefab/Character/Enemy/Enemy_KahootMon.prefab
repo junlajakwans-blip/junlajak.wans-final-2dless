@@ -74,14 +74,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66f38d6c2e9247949bb4be216a085bc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KahootMon
-  _maxHealth: 100
-  _currentHealth: 0
+  _maxHealth: 30
+  _currentHealth: 30
   _moveSpeed: 3.5
   _rigidbody: {fileID: 7515110630794668540}
   _animator: {fileID: 0}
   _data: {fileID: 11400000, guid: 7de92281b9f4fec41a39a4ed0734ca1f, type: 2}
   _target: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   _enemyType: 1
+  SpawnWeight: 30
   _isDisabled: 0
   CanDetectOverride: 1
   _questionList:

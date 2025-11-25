@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine;
 
 public class MenuUI : MonoBehaviour
@@ -11,8 +12,21 @@ public class MenuUI : MonoBehaviour
     [Header("Runtime State")]
     [SerializeField] private GameObject _currentActivePanel;
     [SerializeField] private StoreUI _storeUI;
+
+    public static MenuUI Instance { get; private set; }
     #endregion
 
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject); // ทำลายตัวเอง ถ้ามีตัวอื่นอยู่แล้ว
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject); 
+    }
     #region Public Methods
 
     public void ShowPauseMenu(bool isActive)
@@ -40,11 +54,14 @@ public class MenuUI : MonoBehaviour
     /// </summary>
     public void ShowStoreMenu(bool isActive)
     {
-        if (_storePanel != null)
-        {
-            _storePanel.SetActive(isActive);
-            _currentActivePanel = isActive ? _storePanel : null;
-        }
+        if (_storePanel == null) return;
+
+        _storePanel.SetActive(isActive);
+        _currentActivePanel = isActive ? _storePanel : null;
+
+        // เรียก Refresh ผ่าน UIManager ทุกครั้งที่เปิดร้าน
+        if (isActive && UIManager.Instance != null)
+            UIManager.Instance.RefreshStoreUI();
     }
 
     public void CloseAllPanels()

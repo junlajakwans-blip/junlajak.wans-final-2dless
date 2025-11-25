@@ -31,11 +31,18 @@ public class RandomStarterCard : MonoBehaviour
     {
         _cardManagerRef = manager;
         _gmRef = gm;
+         Debug.Log($"[StarterCard] SetDependencies called — GM = {gm != null}, CM = {manager != null}");
+
     }
 
     private void OnEnable()
     {
+        Currency.OnCurrencyChanged += UpdateTokenText;
         UpdateTokenText();
+    }
+    private void OnDisable()
+    {
+        Currency.OnCurrencyChanged -= UpdateTokenText;
     }
 
     /// <summary>
@@ -46,6 +53,7 @@ public class RandomStarterCard : MonoBehaviour
         if (panelRandomCard != null)
             panelRandomCard.SetActive(true);
 
+        Time.timeScale = 0f;
         UpdateTokenText();
     }
 
@@ -53,6 +61,9 @@ public class RandomStarterCard : MonoBehaviour
     {
         if (panelRandomCard != null)
             panelRandomCard.SetActive(false);
+
+        UIManager.Instance.ShowCardSelectionPanel(false);
+        Time.timeScale = 1f;
     }
 
     private void UpdateTokenText()
@@ -71,6 +82,9 @@ public class RandomStarterCard : MonoBehaviour
         {
             UpdateTokenText();   // ลด Token แล้วต้อง refresh UI
             ClosePanel();
+
+            UIManager.Instance.ShowCardSelectionPanel(false);
+            Time.timeScale = 1f;
         }
     }
     

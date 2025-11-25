@@ -143,6 +143,32 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log($"[GameManager] Scene Loaded: {scene.name}");
 
+        // Auto detect map type
+        switch (scene.name)
+        {
+            case "MainMenu":
+                CurrentMapType = MapType.None;
+                break;
+
+            case "MapSchool":
+                CurrentMapType = MapType.School;
+                break;
+
+            case "MapRoadTraffic":
+                CurrentMapType = MapType.RoadTraffic;
+                break;
+
+            case "MapKitchen":
+                CurrentMapType = MapType.Kitchen;
+                break;
+
+            default:
+                CurrentMapType = MapType.None;
+                break;
+        }
+
+        Debug.Log($"[GameManager] Current Map = {CurrentMapType}");
+
         var sceneManager = FindFirstObjectByType<SceneManager>();
         var mapGenerator = FindFirstObjectByType<MapGeneratorBase>();
         var player = FindFirstObjectByType<Player>();
@@ -160,62 +186,85 @@ public class GameManager : MonoBehaviour
     #endregion
 
 
-#region Corotine
+#region Corotine GM
     /// <summary>
     /// Coroutine รอให้ Dependencies (Player, Map, UI) พร้อมทำงานก่อนเริ่มเกม
     /// </summary>
-    private IEnumerator DelayedSceneInit(string sceneName)
+private IEnumerator DelayedSceneInit(string sceneName)
+{
+    // ⬇ Ensure Currency already initialized
+    if (_currencyData == null)
+        SetupStores(_persistentProgress);
+
+    // 1. Clear Cache
+    _player = null;
+    _uiManager = null;
+    SceneManager sceneLogic = null;
+    MapGeneratorBase mapGen = null;
+
+    // 2. Wait dependencies
+    while (_player == null || _uiManager == null || sceneLogic == null || mapGen == null)
     {
-        // 1. Clear Cache
-        _player = null;
-        _uiManager = null; 
-        SceneManager sceneLogic = null;
-        MapGeneratorBase mapGen = null;
+        if (_player == null) _player = FindFirstObjectByType<Player>();
+        if (_uiManager == null) _uiManager = FindFirstObjectByType<UIManager>();
+        if (sceneLogic == null) sceneLogic = FindFirstObjectByType<SceneManager>();
+        if (mapGen == null) mapGen = FindFirstObjectByType<MapGeneratorBase>();
+        yield return null;
+    }
 
-        // 2. Wait for critical components
-        // Optimization: Check every few frames instead of tight loop if desired, but null check is fast enough here.
-        while (_player == null || _uiManager == null || sceneLogic == null || mapGen == null)
-        {
-            if (_player == null) _player = FindFirstObjectByType<Player>();
-            if (_uiManager == null) _uiManager = FindFirstObjectByType<UIManager>();
-            if (sceneLogic == null) sceneLogic = FindFirstObjectByType<SceneManager>();
-            if (mapGen == null) mapGen = FindFirstObjectByType<MapGeneratorBase>();
-            
-            yield return null; // Wait 1 frame
-        }
+    // 3. UI Dependencies
+    _uiManager.SetDependencies(this, _currencyData, _storeManager, GetStoreList());
+    _player.SetHealthBarUI(_uiManager.GetPlayerHealthBarUI());
 
-        // 3. Setup UI Dependencies
-        HandleHUDVisibility(sceneName);
-        if (_uiManager != null)
-        {
-            _uiManager.SetDependencies(this, _currencyData, _storeManager, GetStoreList());
-            var healthUI = _uiManager.GetHealthBarUI();
-            if (_player != null) _player.SetHealthBarUI(healthUI);
-        }
+    // 4. Scene Logic injection
+    sceneLogic.Inject(mapGen, _player);
+    sceneLogic.TryInitializeScene();
 
-        // 4. Setup Logic & Injection
-        sceneLogic.Inject(mapGen, _player);
-        sceneLogic.TryInitializeScene();
+    var cardManager = FindFirstObjectByType<CardManager>();
+    var careerSwitcher = FindFirstObjectByType<CareerSwitcher>();
+    FindFirstObjectByType<CardSlotUI>()?.SetManager(cardManager);
 
-        var cardManager = FindFirstObjectByType<CardManager>();
-        var careerSwitcher = FindFirstObjectByType<CareerSwitcher>();
-        var slotUI = FindFirstObjectByType<CardSlotUI>();
-        if (slotUI != null) slotUI.SetManager(cardManager);
+    // 5. StarterCard dependency MUST happen BEFORE UI opens
+    var randomStarter = FindFirstObjectByType<RandomStarterCard>();
+    if (randomStarter != null)
+        randomStarter.SetDependencies(cardManager, this);
 
-        // 5. Initialize Player Stats
-        PlayerData data = new PlayerData(_currencyData, _persistentProgress);
-        int hpBonus = _upgradeStore != null ? _upgradeStore.GetTotalHPBonus() : 0;
-        data.UpgradeStat("MaxHealth", hpBonus);
-        
-        _player.Initialize(data, cardManager, careerSwitcher);
+    // 6. Player stats
+    PlayerData data = new PlayerData(_currencyData, _persistentProgress);
+    int hpBonus = _upgradeStore != null ? _upgradeStore.GetTotalHPBonus() : 0;
+    data.UpgradeStat("MaxHealth", hpBonus);
+    _player.Initialize(data, cardManager, careerSwitcher);
 
-        // 6. Initialize Buffs
-        var buffManager = FindFirstObjectByType<BuffManager>();
-        if (buffManager != null) buffManager.Initialize(this);
+    // 7. Buffs
+    FindFirstObjectByType<BuffManager>()?.Initialize(this);
 
-        // 7. Final Ready Call - This triggers BackgroundLooper
-        Debug.Log("[GameManager] All Systems Ready. Firing OnGameReady.");
-        OnGameReady?.Invoke(); 
+    Debug.Log("[GameManager] All Systems Ready. Firing OnGameReady.");
+
+    // 8. RESET StarterCard — must do BEFORE panel opens
+    randomStarter?.ResetForNewGame();
+
+    // 9. HUD & Panel flow
+    _uiManager.ShowGameplayHUD();            // เปิด HUD
+    _uiManager.ShowCardSelectionPanel(true); // เปิด container ของ Panel
+    randomStarter?.OpenPanel();              // เปิด panel สุ่มการ์ดจริง
+
+    // 10. Pause game while selecting
+    Time.timeScale = 0f;
+
+    // 11. Trigger Gameplay Ready Event
+    OnGameReady?.Invoke();
+}
+
+
+    private IEnumerator ShowStarterPanelNextFrame()
+    {
+        yield return null; // รอ 1 เฟรมให้ UI และ currency refresh ก่อน
+        var starterPanel = FindFirstObjectByType<RandomStarterCard>();
+        starterPanel?.ResetForNewGame();
+        starterPanel?.OpenPanel();
+
+        UIManager.Instance.ShowCardSelectionPanel(true);
+        Time.timeScale = 0f;
     }
 
     private void HandleMainMenuState()
@@ -246,6 +295,7 @@ public class GameManager : MonoBehaviour
         else
         {
             _uiManager.ShowGameplayHUD();
+            
         }
     }
     #endregion
@@ -325,59 +375,105 @@ public void InitializeGame()
     #region Game Flow
     public void StartGame() //TODO: Implement start game logic
     {
-        //_uiManager?.ShowGameplayUI();
         _isPaused = false;
         _playTime = 0f;
         _score = 0;
         Time.timeScale = 1f;
+        _uiManager?.panelHUDMain.SetActive(true);
     }
 
     public void TogglePause()
     {
-        if (_isPaused) ResumeGame();
-        else PauseGame();
+        if (IsPaused && _uiManager != null && _uiManager.IsAnyMenuOpen()) 
+                {
+                    return;
+                }
+
+                if (_isPaused) ResumeGame();
+                else PauseGame();
     }
 
     public void PauseGame()
-        {
-            _isPaused = true;
-            Time.timeScale = 0f;
-            // _uiManager?.ShowPauseMenu(); // Uncomment when ready
-            Debug.Log("[GameManager] Game Paused.");
-        }
+    {
+        _isPaused = true;
+        Time.timeScale = 0f;
+        _uiManager?.ShowPauseMenu(true);
+         Debug.Log("[GameManager] Game Paused.");
+    }
 
-        public void ResumeGame()
-        {
-            _isPaused = false;
-            Time.timeScale = 1f;
-            // _uiManager?.HidePauseMenu(); // Uncomment when ready
-            Debug.Log("[GameManager] Game Resumed.");
-        }
+    public void ResumeGame()
+    {
+        _isPaused = false;
+        Time.timeScale = 1f;
+        _uiManager?.ShowPauseMenu(false);
+        Debug.Log("[GameManager] Game Resumed.");
+    }
+
+
+    /// <summary>
+    /// NEW: เมธอดสำหรับปุ่ม Resume ใน Pause Menu
+    /// </summary>
+    public void ResumeGameFromPauseButton()
+    {
+        ResumeGame();
+    }
+    
+    /// <summary>
+    /// NEW: เมธอดสำหรับปุ่ม Restart ใน Pause Menu (สั่ง Player Die)
+    /// </summary>
+    public void RestartGameFromPause()
+    {
+        Debug.Log("[GameManager] Restart via Pause Menu → Forcing Player Die.");
+        PlayerDieHandler(); // สั่งให้ Game Over ทันที
+    }
 
     public void EndGame()
-        {
-            _isPaused = true;
-            Time.timeScale = 0f; // Stop game
-            SaveProgress();
-            Debug.Log("[GameManager] Game Over. Progress Saved.");
-            
-            // Trigger UI via UIManager if needed
-            // _uiManager?.ShowGameOverScreen();
-        }
+    {
+        // EndGame ถูกเรียกเมื่อ Player ตาย (จาก Player.cs/Wall_Kill.cs)
+        // FIX: โยนไปให้ PlayerDieHandler จัดการ UI/Save/TimeScale
+        PlayerDieHandler();
+    }
+
+    /// <summary>
+    /// NEW: เมธอดจัดการ Game Over (Player Die) และเปิด Result Panel
+    /// </summary>
+    public void PlayerDieHandler()
+    {
+        _isPaused = true;
+        Time.timeScale = 0f; // หยุดเกม
+        
+        SaveProgress(); // บันทึกความคืบหน้า
+
+        int finalScore = _score;
+        int finalCoins = _currencyData?.Coin ?? 0; // ต้องมี _currencyData
+
+        Debug.Log($"[GameManager] Game Over. Final Score: {finalScore}");
+        
+        // เปิด Panel_Result
+        _uiManager?.ShowResultMenu(finalScore, finalCoins);
+    }
+    
+    /// <summary>
+    /// NEW: เมธอดสำหรับปุ่ม 'ตกลง' จาก Panel_Result (กลับ MainMenu)
+    /// </summary>
+    public void ExitToMainMenuFromResults()
+    {
+        Debug.Log("[GameManager] Exiting to Main Menu from Result Screen.");
+        _uiManager?.CloseAllMenus(); // ปิด Panel Result และ Menu อื่นๆ
+        Time.timeScale = 1f; // คืนค่าเวลา
+        LoadScene("MainMenu"); 
+    }
+
 
     public void RestartGame()
-        {
-            Debug.Log("[GameManager] Restarting Scene...");
-            
-            // Reset Loop Logic
-            Time.timeScale = 1f;
-            _score = 0;
-            _playTime = 0f;
-            _isPaused = false;
-
-            // Reload current scene. CurrentMapType remains the same.
-            LoadScene(_currentScene);
-        }
+    {
+        Debug.Log("[GameManager] Reloading current Scene...");
+        Time.timeScale = 1f;
+        _score = 0;
+        _playTime = 0f;
+        _isPaused = false;
+        LoadScene(_currentScene);
+    }
 
     public void ExitGame()
     {
@@ -436,13 +532,17 @@ public void InitializeGame()
         _storeManager = new StoreManager(_currencyData, progressData);
 
         // --- ให้ StoreManager เป็นคน Initialize + Inject items ---
-        if (_exchangeStore == null) Debug.LogError(" Missing Exchange Store");
-        if (_upgradeStore == null) Debug.LogError(" Missing Upgrade Store");
-        if (_mapStore == null) Debug.LogError("Missing Map Store");
-
-        _storeManager.RegisterStore(_exchangeStore);
-        _storeManager.RegisterStore(_upgradeStore);
-        _storeManager.RegisterStore(_mapStore);
+        if (_exchangeStore != null)
+            _storeManager.RegisterStore(_exchangeStore);
+        
+        if (_upgradeStore != null)
+            _storeManager.RegisterStore(_upgradeStore);
+        
+        if (_mapStore != null)
+        {
+            _storeManager.RegisterStore(_mapStore);
+            _mapStore.OnMapUnlockedEvent += HandleMapUnlocked;
+        }
 
         // สำหรับ Map Store event unlock
         _mapStore.OnMapUnlockedEvent += HandleMapUnlocked;

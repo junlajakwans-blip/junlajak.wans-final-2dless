@@ -70,7 +70,6 @@ public abstract class Character : MonoBehaviour, IDamageable
 
     protected virtual void UpdateHealthBar()
     {
-        throw new System.NotImplementedException("UpdateHealthBar method must be implemented in derived classes.");
     }
     #endregion
 }

@@ -164,7 +164,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26d119aaf8c10d9498645cc47dff1736, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GoldenMon
-  _maxHealth: 10
+  _maxHealth: 20
   _currentHealth: 10
   _moveSpeed: 3.5
   _rigidbody: {fileID: -8582135991359644507}
@@ -172,6 +172,7 @@ MonoBehaviour:
   _data: {fileID: 11400000, guid: 53acab1df90b9514188ac9d76bc892b2, type: 2}
   _target: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   _enemyType: 9
+  SpawnWeight: 30
   _isDisabled: 0
   CanDetectOverride: 1
 --- !u!60 &4609644179319444559

@@ -164,7 +164,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d417cb61b017adf409feae8edb99bd39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MooPingMon
-  _maxHealth: 100
+  _maxHealth: 40
   _currentHealth: 0
   _moveSpeed: 3.5
   _rigidbody: {fileID: 5723300370534533067}
@@ -172,6 +172,7 @@ MonoBehaviour:
   _data: {fileID: 11400000, guid: 41f9fdd7b562df742959c8025f4e2278, type: 2}
   _target: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   _enemyType: 8
+  SpawnWeight: 30
   _isDisabled: 0
   CanDetectOverride: 1
   _skewerProjectile: {fileID: 1215084544576207270, guid: 88183c2be6002a745b2e92c3a1faeff9, type: 3}

@@ -117,7 +117,9 @@ public class AssetSpawner : MonoBehaviour, ISpawn
         }
 
         // 3. ✅ Raycast Down (หาพื้น)
-        Vector2 rayOrigin = new Vector2(targetPos.x, targetPos.y + 2f);
+        // MapGeneratorBase ถูกแก้ไขให้ส่งจุดเริ่มต้น Raycast ที่สูงมาแล้ว (pos.y + 5f)
+        // โค้ดเก่า: Vector2 rayOrigin = new Vector2(targetPos.x, targetPos.y + 2f);
+        Vector2 rayOrigin = targetPos; // ✅ โค้ดใหม่: ใช้ targetPos เป็นจุดเริ่ม Raycast โดยตรง
         RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.down, _rayDistance, _groundLayer);
 
         if (hit.collider == null) return null; // ไม่เจอพื้น (เหว)

@@ -14,6 +14,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private MenuUI _menuUI;
     [SerializeField] public GameObject panelHUDMain;
 
+    [Header("Card Selection")]
+    [SerializeField] private GameObject _cardSelectionPanel;
+
     [Header("Main UI References")]
     [SerializeField] private StoreUI _storeUI;
     [SerializeField] private MapSelectController _mapSelectController;
@@ -99,6 +102,10 @@ public class UIManager : MonoBehaviour
     public void ShowMainMenu()
     {
         Debug.Log(">> OPEN MAIN MENU");
+        if (panelHUDMain != null)
+        {
+            panelHUDMain.SetActive(false);
+        }
         SetPanel(panelMainMenu);
     }
 
@@ -113,21 +120,13 @@ public class UIManager : MonoBehaviour
         _menuUI?.ShowStoreMenu(isActive);
         if (!isActive) return;
 
-        SetPanel(panelStore);
-
+        SetPanel(panelStore); // เปิด panel จริง
+        RefreshStoreUI();     // <— REFRESH ทุกครั้ง
     }
 
 
     private void SetPanel(GameObject target)
     {
-        // ควบคุม Panel HUD หลัก
-        if (panelHUDMain != null)
-        {
-            // เปิด HUD ถ้า target ไม่ใช่ MainMenu หรือ SelectMap (คือเป็น Gameplay)
-            bool isGameplay = target != panelMainMenu && target != panelSelectMap;
-            panelHUDMain.SetActive(isGameplay);
-        }
-
         //ควบคุม Panel in MainMenu Scene
         if (panelMainMenu != null)
         if (panelMainMenu != null)
@@ -152,14 +151,6 @@ public class UIManager : MonoBehaviour
         // รีค่าเงิน
         foreach (var ui in topCurrencies)
         ui?.Refresh();
-    }
-
-    public void ShowGameplayHUD()
-    {
-        // เรียก SetPanel ด้วยค่าที่ไม่ใช่ MainMenu/SelectMap เพื่อเปิด HUD
-        // และปิด Menu หลักทั้งหมด
-        SetPanel(null); // หรือใช้ Panel_Player_Attack ก็ได้ หากเป็น Panel ที่ Active เฉพาะใน Gameplay
-        CloseAllMenus(); // ปิด Pause Menu/Result Menu ที่อาจค้างอยู่
     }
 
     public void SwitchStorePanel(StoreType type)
@@ -194,7 +185,14 @@ public class UIManager : MonoBehaviour
 
     #region Health UI
 
-    public HealthBarUI GetHealthBarUI() => _healthBarUI;
+    /// <summary>
+    /// Provides the persistent HealthBarUI component reference.
+    /// </summary>
+    public HealthBarUI GetPlayerHealthBarUI()
+    {
+        // คืนค่า HealthBarUI ที่ถูก Serialize ไว้ใน UIManager
+        return _healthBarUI; 
+    }
 
     public void InitializeHealth(int maxHP)
     {
@@ -255,6 +253,18 @@ public class UIManager : MonoBehaviour
     {
         _cardSlotUI?.ResetAllSlots();
     }
+
+    /// <summary> Shows/Hides the Card Selection/Starter Panel. </summary>
+    public void ShowCardSelectionPanel(bool isActive)
+    {
+        //  เพิ่มเมธอดควบคุม Panel_Card
+        if (_cardSelectionPanel != null)
+        {
+            _cardSelectionPanel.SetActive(isActive);
+            Debug.Log($"[UIManager] Card Selection Panel set to: {isActive}");
+        }
+        Time.timeScale = isActive ? 0f : 1f;
+    }
     #endregion
 
 
@@ -279,47 +289,82 @@ public class UIManager : MonoBehaviour
         return _menuUI != null && _menuUI.IsAnyPanelActive();
     }
 
+    public void ShowGameplayHUD()
+    {
+        // 1. เปิด HUD หลัก
+        if (panelHUDMain != null)
+            panelHUDMain.SetActive(true);
+        
+        // 2. ปิด Menu ที่อาจค้างอยู่ (Pause/Result)
+        CloseAllMenus(); 
+
+        // FIX 1: ปิด Panels ทั้งหมดของ Main Menu ที่เป็น Persistent/DDoL
+        if (panelMainMenu != null) panelMainMenu.SetActive(false);
+        if (panelSelectMap != null) panelSelectMap.SetActive(false);
+        
+        // FIX 2: ปิด STORE CONTAINERS ทั้งหมด (นี่คือตัวที่บังหน้าจอ)
+        if (panelStore != null) panelStore.SetActive(false);
+        if (panelSettings != null) panelSettings.SetActive(false);
+        if (panelStoreExchange != null) panelStoreExchange.SetActive(false);
+        if (panelStoreUpgrade != null) panelStoreUpgrade.SetActive(false);
+        
+        if (_cardSelectionPanel != null) _cardSelectionPanel.SetActive(true);
+        var cardPanel = GameObject.Find("Panel_Card");
+        if (cardPanel != null)
+            cardPanel.SetActive(true);
+    }
     #endregion
 
-#region  Store UI    
-    
+    #region Store UI
+    public void OpenStore()
+    {
+        // เปิดหน้าร้านรวม (ไม่ใช่ Exchange / Upgrade โดยตรง)
+        MenuUI.Instance.ShowStoreMenu(true);
+
+        if (_storeUI != null && _storesRef != null)
+        {
+            // ร้านแรกที่จะแสดงค่าเริ่มต้น (Exchange)
+            var firstStore = _storesRef.Find(s => s.StoreType == StoreType.Exchange);
+            _storeUI.SetActiveStore(firstStore);
+        }
+
+        RefreshStoreUI();
+    }
+
     public void ShowStoreExchange()
     {
-        ShowStoreMenu(true);
+        MenuUI.Instance.ShowStoreMenu(true);
 
-        panelStoreExchange.SetActive(true);
-        panelStoreUpgrade.SetActive(false);
-
-        storeTitleText.text = "Store: Exchange";
-
-        // ⬇ สั่งหลัง panel เปิดแล้ว
-        if (_storeUI != null && _storesRef != null && _storesRef.Count > 0)
+        if (_storeUI != null)
             _storeUI.SwitchStore(StoreType.Exchange);
-
     }
 
     public void ShowStoreUpgrade()
     {
-        ShowStoreMenu(true);
+        MenuUI.Instance.ShowStoreMenu(true);
 
-        panelStoreExchange.SetActive(false);
-        panelStoreUpgrade.SetActive(true);
-
-        storeTitleText.text = "Store: Upgrade";
-
-        // ⬇ สั่งหลัง panel เปิดแล้ว
-        if (_storeUI != null && _storesRef != null && _storesRef.Count > 0)
+        if (_storeUI != null)
             _storeUI.SwitchStore(StoreType.Upgrade);
+    }
 
-        
+    public void ShowStoreMap()
+    {
+        MenuUI.Instance.ShowStoreMenu(true);
+
+        if (_storeUI != null)
+            _storeUI.SwitchStore(StoreType.Map);
     }
 
     public void RefreshStoreUI()
     {
         foreach (var ui in topCurrencies)
-        ui?.Refresh();
-        upgradeUI?.Refresh(); 
-    }
+            ui?.Refresh();          // เงินด้านบน
 
+        upgradeUI?.Refresh();       // ค่า LV / MAX Upgrade
+
+        if (_storeUI != null)
+        _storeUI.RefreshActiveSlots();
+    }
     #endregion
+
 }
