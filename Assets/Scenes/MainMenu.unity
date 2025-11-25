@@ -14394,6 +14394,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ObjectPoolManager
   _prefabs:
   - {fileID: 4288398954455821371, guid: 95f05d628306dd546a3b854037883e20, type: 3}
+  - {fileID: 5561300889309933517, guid: f25e120885313fb4488d87779a38d8ed, type: 3}
   - {fileID: 5561300889309933517, guid: ac4dd69d4dab6ea4d9942c8653982be3, type: 3}
   - {fileID: 1204049181334368868, guid: 5013f70113cc70941818204312ae6462, type: 3}
   - {fileID: 7271098682250228881, guid: e3ce9920ebd823d4e821d9767854c208, type: 3}

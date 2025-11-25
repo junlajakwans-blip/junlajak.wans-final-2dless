@@ -158,9 +158,11 @@ public class RedlightMon : Enemy
     /// </summary>
     public override void Die()
     {
-        base.Die(); 
+        if (_isDead) return;
+        _isDead = true;
         
         CollectibleSpawner spawner = _spawnerRef;
+        Vector3 enemyDeathPosition = transform.position;
         
         if (spawner != null && _data != null)
         {
@@ -176,13 +178,13 @@ public class RedlightMon : Enemy
             // Drop Coin: (roll < 30%)
             if (roll < coinChance)
             {
-                spawner.DropCollectible(CollectibleType.Coin, transform.position);
+                spawner.DropCollectible(CollectibleType.Coin, enemyDeathPosition);
                 Debug.Log($"[RedlightMon] Dropped: Coin (Chance: {coinChance * 100:F0}%)");
             }
             // Drop Coffee: (e.g., 30% <= roll < 35%)
             else if (roll < totalCoffeeChance)
             {
-                spawner.DropCollectible(CollectibleType.Coffee, transform.position); 
+                spawner.DropCollectible(CollectibleType.Coffee, enemyDeathPosition); 
                 Debug.Log($"[RedlightMon] Dropped: Coffee (Chance: {coffeeChance * 100:F0}%)");
             }
         }
@@ -190,6 +192,7 @@ public class RedlightMon : Enemy
         {
             Debug.LogWarning("[RedlightMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
         }
+        OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
     }
     #endregion
 }

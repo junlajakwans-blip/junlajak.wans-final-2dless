@@ -407,13 +407,36 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
         }
     #endregion
 
+    public void HookScoreUI(ScoreUI scoreUI, int initialCoin)
+    {
+        Debug.Log("[Player] HookScoreUI CALLED");
+
+        if (scoreUI == null)
+        {
+            Debug.Log("[Player] ❌ HookScoreUI FAILED — scoreUI NULL");
+            return;
+        }
+
+        Debug.Log("[Player] BEFORE HOOK delegate = " + OnCoinCollected);
+
+        OnCoinCollected -= scoreUI.UpdateCoins;
+        OnCoinCollected += scoreUI.UpdateCoins;
+
+        Debug.Log("[Player] AFTER HOOK delegate = " + OnCoinCollected);
+
+        scoreUI.UpdateCoins(initialCoin);
+    }
+
+
 
     #region Currency System
     public void AddCoin(int amount)
     {
         if (_currency == null) return;
         _currency.AddCoin(amount);
+        Debug.Log($"Coin Added → {_currency.Coin}");
         OnCoinCollected?.Invoke(_currency.Coin);
+
     }
 
     public void AddToken(int amount)
@@ -423,6 +446,7 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     }
 
     public Currency GetCurrency() => _currency;
+
     #endregion
 
 

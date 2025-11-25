@@ -287,7 +287,7 @@ MonoBehaviour:
   _phase1Interval: {x: 6, y: 9}
   _phase2Interval: {x: 4, y: 7}
   _phase3Interval: {x: 3, y: 5}
-  _verticalOffset: -0.16
+  _verticalOffset: -0.2
   _cachedAssetKeys: []
   _activeAssets: []
 --- !u!4 &610633208
@@ -656,9 +656,6 @@ MonoBehaviour:
   _phase2End: 1600
   _phase3DropChance: 0.15
   _spawnYOffset: 0.6
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 2048
   _activeThrowables:
   - {fileID: 5607982103104544609, guid: 57f05282925e50145900e7929b2f5fb9, type: 3}
 --- !u!4 &2073505760

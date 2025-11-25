@@ -29,6 +29,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI storeTitleText;
     [SerializeField] private TopCurrencyUI[] topCurrencies;
 
+    
+
 
 
     
@@ -50,6 +52,7 @@ public class UIManager : MonoBehaviour
     private Currency _currencyRef;
     private StoreManager _storeManagerRef;
     private List<StoreBase> _storesRef;
+    public ScoreUI GetScoreUI() => _scoreUI;
     
 
     #region Dependencies

@@ -217,7 +217,6 @@ public abstract class Enemy : Character, IAttackable
         // [FIX 1]: เรียก Event เพื่อให้ EnemySpawner จัดการ Despawn
         OnEnemyDied?.Invoke(this); 
 
-        Destroy(gameObject) ;
     }
     #endregion
 

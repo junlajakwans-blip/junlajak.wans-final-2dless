@@ -181,9 +181,11 @@ public class KahootMon : Enemy
     /// </summary>
     public override void Die()
     {
-        base.Die();
+        if (_isDead) return;
+        _isDead = true;
         
         CollectibleSpawner spawner = _spawnerRef;
+        Vector3 enemyDeathPosition = transform.position;
         
         if (spawner != null && _data != null)
         {
@@ -193,7 +195,7 @@ public class KahootMon : Enemy
             //  Drop Coin 
             if (roll < coinChance)
             {
-                spawner.DropCollectible(CollectibleType.Coin, transform.position);
+                spawner.DropCollectible(CollectibleType.Coin,enemyDeathPosition);
                 Debug.Log($"[KahootMon] Dropped: Coin (Chance: {coinChance * 100:F0}%)");
             }
         }
@@ -201,6 +203,7 @@ public class KahootMon : Enemy
         {
             Debug.LogWarning("[KahootMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
         }
+        OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
     }
     #endregion
 }

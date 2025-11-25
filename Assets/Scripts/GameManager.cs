@@ -37,6 +37,8 @@ public class GameManager : MonoBehaviour
     public static event System.Action OnCurrencyReady;
     public bool IsPaused => _isPaused;
     public int Score => _score;
+    private ScoreUI _scoreUI;
+
     public float PlayTime => _playTime;
     private GameProgressData _persistentProgress;
     private Currency _currencyData;
@@ -97,12 +99,15 @@ public class GameManager : MonoBehaviour
             if (!_isPaused && _currentScene != "MainMenu")
                 _playTime += Time.deltaTime;
 
-            // Shortcut Keys
-            if (Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.Escape))
+            int score = Mathf.FloorToInt(_playTime);
+
+            if (_scoreUI == null)
             {
-                if (_currentScene != "MainMenu") 
-                    TogglePause();
+                Debug.LogError("[GM] ❌ ScoreUI is NULL in Update()");
+                return;
             }
+
+            _scoreUI.UpdateScore(score);
         }
 
         private void OnEnable()
@@ -189,14 +194,13 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
-
-#region Corotine GM
-    /// <summary>
-    /// Coroutine รอให้ Dependencies (Player, Map, UI) พร้อมทำงานก่อนเริ่มเกม
-    /// </summary>
+#region Coroutine GM
+/// <summary>
+/// Coroutine รอให้ Dependencies (Player, Map, UI) พร้อมทำงานก่อนเริ่มเกม
+/// </summary>
     private IEnumerator DelayedSceneInit(string sceneName)
     {
-        // 1. Clear Cache
+        // 1. Clear Cache (ป้องกันค่าค้างจาก Scene ก่อนหน้า)
         _player = null;
         _uiManager = null;
         SceneManager sceneLogic = null;
@@ -216,64 +220,64 @@ public class GameManager : MonoBehaviour
         _uiManager.SetDependencies(this, _currencyData, _storeManager, GetStoreList());
         _player.SetHealthBarUI(_uiManager.GetPlayerHealthBarUI());
 
-        ScoreUI scoreUI = _uiManager.GetComponentInChildren<ScoreUI>(true); // Get ScoreUI from UIManager
-        if (scoreUI != null)
+        // 4. ScoreUI — Hook ให้เสร็จตั้งแต่ตรงนี้
+        _scoreUI = _uiManager.GetScoreUI();
+        if (_scoreUI != null)
         {
-            // 1. Initial High Score (จาก Save)
-            scoreUI.DisplayHighScore(_persistentProgress.BestScore); 
-            
-            // 2. Initial Score/Coin (เริ่มจาก 0)
-            scoreUI.InitializeScore(0);
-            scoreUI.UpdateCoins(0); // Coin ในตาใหม่ต้องเริ่มจาก 0
-            
-            // 3. ผูก Event Real-Time Update
-            _player.OnCoinCollected += scoreUI.UpdateCoins; 
-            
-            Debug.Log("[GameManager] ScoreUI Initialized and linked to Player events.");
+            _scoreUI.DisplayHighScore(_persistentProgress.BestScore); // High Score จาก Save
+            _scoreUI.InitializeScore(0);                               // Score เริ่มต้น
+            _scoreUI.UpdateCoins(0);                                   // Coin เริ่มต้น
+            _player.HookScoreUI(_scoreUI, 0);                          // Event Real-Time
+            Debug.Log("[GM] ScoreUI initialized and linked.");
+        }
+        else
+        {
+            Debug.LogError("[GM] ❌ ScoreUI NOT FOUND");
         }
 
-        // 4. Scene Logic injection
+        // 5. Scene Logic injection
         sceneLogic.Inject(mapGen, _player);
         sceneLogic.TryInitializeScene();
 
+        // 6. Card & Career
         var cardManager = FindFirstObjectByType<CardManager>();
         var careerSwitcher = FindFirstObjectByType<CareerSwitcher>();
         FindFirstObjectByType<CardSlotUI>()?.SetManager(cardManager);
 
-        // ผูก CareerSwitcher ให้ CardManager ก่อนเริ่มใช้การ์ด
         if (cardManager != null && careerSwitcher != null)
             cardManager.SetCareerSwitcher(careerSwitcher);
 
-        // 5. StarterCard dependency
+        // 7. StarterCard dependency
         var randomStarter = FindFirstObjectByType<RandomStarterCard>();
         if (randomStarter != null)
             randomStarter.SetDependencies(cardManager, this);
 
-        // 6. Player stats
+        // 8. Player stats apply and Init
         PlayerData data = new PlayerData(_currencyData, _persistentProgress);
         int hpBonus = _upgradeStore != null ? _upgradeStore.GetTotalHPBonus() : 0;
         data.UpgradeStat("MaxHealth", hpBonus);
         _player.Initialize(data, cardManager, careerSwitcher);
 
-        // 7. Buffs
+        // 9. Buffs
         FindFirstObjectByType<BuffManager>()?.Initialize(this);
 
         Debug.Log("[GameManager] All Systems Ready. Firing OnGameReady.");
 
-        // 8. Reset starter card
+        // 10. Reset starter card
         randomStarter?.ResetForNewGame();
 
-        // 9. HUD & Panel
+        // 11. HUD & Selection Panel
         _uiManager.ShowGameplayHUD();
         _uiManager.ShowCardSelectionPanel(true);
         randomStarter?.OpenPanel();
 
-        // 10. Freeze during selection
+        // 12. Freeze gameplay ระหว่างเลือกรากก์แรก
         Time.timeScale = 0f;
 
-        // 11. Trigger event
+        // 13. Notify
         OnGameReady?.Invoke();
     }
+
 
 
     public Player PlayerRef => _player;

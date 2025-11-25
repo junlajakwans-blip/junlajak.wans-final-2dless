@@ -86,9 +86,11 @@ public class GhostWorkMon : Enemy
     #region Death/Drop
     public override void Die()
     {
-        base.Die();
+        if (_isDead) return;
+        _isDead = true;
 
         CollectibleSpawner spawner = _spawnerRef;
+         Vector3 enemyDeathPosition = transform.position;
         
         if (spawner != null && _data != null)
         {
@@ -102,18 +104,19 @@ public class GhostWorkMon : Enemy
             // Drop Coin: (roll < 45%)
             if (roll < coinChance)
             {
-                spawner.DropCollectible(CollectibleType.Coin, transform.position);
+                spawner.DropCollectible(CollectibleType.Coin, enemyDeathPosition);
             }
             // Drop GreenTea: (45% <= roll < 60%)
             else if (roll < totalGreenTeaChance) 
             {
-                spawner.DropCollectible(CollectibleType.GreenTea, transform.position);
+                spawner.DropCollectible(CollectibleType.GreenTea, enemyDeathPosition);
             }
         }
         else if (spawner == null)
         {
             Debug.LogWarning("[GhostWorkMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
         }
+        OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
     }
     #endregion
 }

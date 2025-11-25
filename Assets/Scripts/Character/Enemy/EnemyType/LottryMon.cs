@@ -106,9 +106,11 @@ public void ApplyBadLuck(Player player)
     /// </summary>
     public override void Die()
     {
-        base.Die();
+        if (_isDead) return;
+        _isDead = true;
         
         CollectibleSpawner spawner = _spawnerRef;
+        Vector3 enemyDeathPosition = transform.position;
         
         if (spawner != null && _data != null)
         {
@@ -118,7 +120,7 @@ public void ApplyBadLuck(Player player)
             for (int i = 0; i < coinAmount; i++)
             {
                 // Spawn individual coins (scattered position)
-                spawner.DropCollectible(CollectibleType.Coin, transform.position + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0));
+                spawner.DropCollectible(CollectibleType.Coin, enemyDeathPosition + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0));
             }
             Debug.Log($"[LotteryMon] Dropped {coinAmount} coins on defeat (Range: {_data.LotteryMinCoinDrop} - {_data.LotteryMaxCoinDrop}).");
 
@@ -131,7 +133,7 @@ public void ApplyBadLuck(Player player)
                 for (int i = 0; i < bonusAmount; i++)
                 {
                     // Spawn bonus coins with slight scattering
-                    spawner.DropCollectible(CollectibleType.Coin, transform.position + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0));
+                    spawner.DropCollectible(CollectibleType.Coin, enemyDeathPosition + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0));
                 }
                 Debug.Log($"[LotteryMon] Chef Bonus Drop: +{bonusAmount} coins.");
             }
@@ -140,6 +142,7 @@ public void ApplyBadLuck(Player player)
         {
             Debug.LogWarning("[LotteryMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
         }
+        OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
     }
     #endregion
 }

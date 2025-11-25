@@ -159,9 +159,11 @@ public class MamaMon : Enemy
     /// </summary>
     public override void Die()
     {
-        base.Die(); 
+        if (_isDead) return;
+        _isDead = true;
         
         CollectibleSpawner spawner = _spawnerRef;
+        Vector3 enemyDeathPosition = transform.position;
         
         if (spawner != null && _data != null)
         {
@@ -173,13 +175,13 @@ public class MamaMon : Enemy
             // Drop Coin: (roll < 35%)
             if (roll < _data.MamaCoinDropChance)
             {
-                spawner.DropCollectible(CollectibleType.Coin, transform.position);
+                spawner.DropCollectible(CollectibleType.Coin, enemyDeathPosition);
                 Debug.Log($"[MamaMon] Dropped: Coin (Chance: {_data.MamaCoinDropChance * 100:F0}%)");
             }
             // Drop GreenTea: (35% <= roll < 45%)
             else if (roll < totalChanceForGreenTea)
             {
-                spawner.DropCollectible(CollectibleType.GreenTea, transform.position);
+                spawner.DropCollectible(CollectibleType.GreenTea, enemyDeathPosition);
                 Debug.Log($"[MamaMon] Dropped: GreenTea (Chance: {_data.MamaGreenTeaDropChance * 100:F0}%)");
             }
         }
@@ -187,6 +189,7 @@ public class MamaMon : Enemy
         {
             Debug.LogWarning("[MamaMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
         }
+        OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
     }
     #endregion
 }

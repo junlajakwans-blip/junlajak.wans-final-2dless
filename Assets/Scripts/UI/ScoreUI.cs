@@ -29,8 +29,7 @@ public class ScoreUI : MonoBehaviour
         _currentScore = newScore;
 
         if (_scoreText != null)
-            // Show Player only int
-            _scoreText.text = $"Score: {_currentScore}"; 
+            _scoreText.text = $"Score: {_currentScore:D6}";  
 
         // ตรวจสอบและอัปเดต High Score (ภายในเท่านั้น)
         if (_currentScore > _highScore)
@@ -47,7 +46,8 @@ public class ScoreUI : MonoBehaviour
         _currentCoins = newCoins;
         if (_coinText != null)
             _coinText.text = $"Coins: {_currentCoins}";
-        Debug.Log($" Coin Remain : {_currentCoins}");
+        Debug.Log($" Coin Remain : {_currentCoins} ");
+        Debug.Log("SCORE UI RECEIVED COIN UPDATE");
     }
 
     public void ShowComboEffect(int comboValue)

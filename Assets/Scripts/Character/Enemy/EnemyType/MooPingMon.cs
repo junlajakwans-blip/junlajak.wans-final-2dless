@@ -230,9 +230,11 @@ private void TryAttack()
     #region Death/Drop
     public override void Die()
     {
-        base.Die();
+        if (_isDead) return;
+        _isDead = true;
         
         CollectibleSpawner spawner = _spawnerRef;
+        Vector3 enemyDeathPosition = transform.position;
         
         if (spawner != null && _data != null)
         {
@@ -253,13 +255,13 @@ private void TryAttack()
             // Drop Coin: (roll < 20%)
             if (roll < _data.MooPingCoinDropChance)
             {
-                spawner.DropCollectible(CollectibleType.Coin, transform.position);
+                spawner.DropCollectible(CollectibleType.Coin,enemyDeathPosition);
                 Debug.Log($"[MooPingMon] Dropped: Coin ({roll:F2})");
             }
             // Drop Coffee: (20% <= roll < 25%)
             else if (roll < totalChanceForCoffee)
             {
-                spawner.DropCollectible(CollectibleType.Coffee, transform.position);
+                spawner.DropCollectible(CollectibleType.Coffee, enemyDeathPosition);
                 Debug.Log($"[MooPingMon] Dropped: Coffee ({roll:F2})");
             }
         }
@@ -267,6 +269,7 @@ private void TryAttack()
         {
             Debug.LogWarning("[MooPingMon] Cannot drop item: CollectibleSpawner not found or EnemyData missing!");
         }
+        OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
     }
     #endregion
 }

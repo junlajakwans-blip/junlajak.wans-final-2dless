@@ -59,12 +59,14 @@ public class GoldenMon : Enemy
     /// </summary>
     public override void Die()
     {
-        base.Die(); 
+        if (_isDead) return;
+        _isDead = true;
 
         CardManager cardManager = _cardManagerRef;
         Player player = _playerRef;
         CollectibleSpawner spawner = _spawnerRef;
-
+        Vector3 enemyDeathPosition = transform.position;
+        
         // --- 2. Guaranteed Career Card Drop (Data-Linked) ---
         if (cardManager != null && _data != null)
         {
@@ -90,7 +92,7 @@ public class GoldenMon : Enemy
         {
              if (spawner != null)
              {
-                 spawner.DropCollectible(CollectibleType.Token, transform.position);
+                 spawner.DropCollectible(CollectibleType.Token, enemyDeathPosition);
                  Debug.Log("[GoldenMon] MuscleDuck Bonus: Dropped 1 Token!");
              }
              else
@@ -101,6 +103,7 @@ public class GoldenMon : Enemy
         
         // --- 4. Massive Coin Drop ---
         DropGoldenCoins(); 
+        OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
     }
     #endregion
 }
