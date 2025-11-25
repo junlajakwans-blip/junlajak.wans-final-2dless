@@ -30,7 +30,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 702851851599553096}
+  m_Father: {fileID: 8117914224652298508}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &5510717376064306333
 SpriteRenderer:
@@ -98,6 +98,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 452335919761276993, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+      propertyPath: _ducklingRenderer
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 452335919761276993, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
       propertyPath: _careerBodyMaps.Array.data[1].bodyPrefab
       value: 
@@ -350,7 +354,7 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: 640431155813347788, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
     m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 6145297030757921140, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8472821907786116671}
     m_AddedComponents:
@@ -358,14 +362,14 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: -5587767580713276185}
   m_SourcePrefab: {fileID: 100100000, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
---- !u!4 &702851851599553096 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
-  m_PrefabInstance: {fileID: 2729433081028745336}
-  m_PrefabAsset: {fileID: 0}
 --- !u!50 &1784548969884646574 stripped
 Rigidbody2D:
   m_CorrespondingSourceObject: {fileID: -4817979446526450474, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+  m_PrefabInstance: {fileID: 2729433081028745336}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8117914224652298508 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6145297030757921140, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   m_PrefabInstance: {fileID: 2729433081028745336}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &8549186559412796612 stripped
@@ -390,6 +394,8 @@ MonoBehaviour:
   _moveSpeed: 3.5
   _rigidbody: {fileID: 1784548969884646574}
   _animator: {fileID: 0}
+  _visualRoot: {fileID: 0}
+  _facingRight: 1
   _playerData:
     _playerName: 
     _selectedCareer: 
@@ -409,6 +415,7 @@ MonoBehaviour:
       _totalKeyMaps: 0
       _bestScore: 0
       _playTime: 0
+      GlobalHighScore: 0
     _isDefaultDuckling: 0
   _rigAnimator: {fileID: 0}
   _jumpForce: 5

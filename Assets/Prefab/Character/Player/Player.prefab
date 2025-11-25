@@ -30,7 +30,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3180083276177619504}
+  m_Father: {fileID: 6145297030757921140}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &4980727429312497355
 SpriteRenderer:
@@ -102,7 +102,7 @@ GameObject:
   m_Layer: 0
   m_Name: displayPoint
   m_TagString: Untagged
-  m_Icon: {fileID: -5397416234189338067, guid: 0000000000000000d000000000000000, type: 0}
+  m_Icon: {fileID: 3936346786652291628, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -115,7 +115,7 @@ Transform:
   m_GameObject: {fileID: 1526907069799846881}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.61, y: -1.17, z: 0}
+  m_LocalPosition: {x: 0.07, y: 4.11, z: 0}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -133,7 +133,7 @@ GameObject:
   m_Layer: 0
   m_Name: throwPoint
   m_TagString: Untagged
-  m_Icon: {fileID: 6519382022992737161, guid: 0000000000000000d000000000000000, type: 0}
+  m_Icon: {fileID: 5721338939258241955, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -146,7 +146,7 @@ Transform:
   m_GameObject: {fileID: 2971531076567058291}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.65, y: -0.17, z: 0}
+  m_LocalPosition: {x: 2.09, y: -0.85, z: 0}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -164,7 +164,7 @@ GameObject:
   m_Layer: 0
   m_Name: InteractOrigin
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: -964228994112308473, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -177,10 +177,42 @@ Transform:
   m_GameObject: {fileID: 5460515329973955135}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.3818, y: 2.58935, z: 0}
+  m_LocalPosition: {x: 1.3818, y: 0.1, z: 0}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
+  m_Father: {fileID: 3180083276177619504}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5677681866667569507
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6145297030757921140}
+  m_Layer: 0
+  m_Name: Visual
+  m_TagString: Untagged
+  m_Icon: {fileID: 8418204508859773708, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6145297030757921140
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5677681866667569507}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 7171168887567512006}
   m_Father: {fileID: 3180083276177619504}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5999967935324284092
@@ -218,10 +250,10 @@ Transform:
   m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
   m_ConstrainProportionsScale: 1
   m_Children:
-  - {fileID: 7171168887567512006}
   - {fileID: 6413461673691137256}
   - {fileID: 6979801062742470440}
   - {fileID: 263837660512227794}
+  - {fileID: 6145297030757921140}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!50 &-4817979446526450474
@@ -338,6 +370,8 @@ MonoBehaviour:
   _moveSpeed: 5
   _rigidbody: {fileID: -4817979446526450474}
   _animator: {fileID: 0}
+  _visualRoot: {fileID: 6145297030757921140}
+  _facingRight: 1
   _playerData:
     _playerName: 
     _selectedCareer: 
@@ -360,6 +394,7 @@ MonoBehaviour:
       _totalKeyMaps: 8
       _bestScore: 0
       _playTime: 241.97243
+      GlobalHighScore: 0
     _isDefaultDuckling: 1
   _rigAnimator: {fileID: 0}
   _jumpForce: 5
@@ -380,8 +415,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 372b090cefb348949bab66c3b7e3dd92, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  _moveSpeed: 3.5
-  _interact: {fileID: 5168628728660963583}
   disableAnimation: 1
   _animator: {fileID: 0}
 --- !u!114 &5168628728660963583

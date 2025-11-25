@@ -9,13 +9,6 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
 
-    [Header("Movement Settings")]
-    [SerializeField] private float _moveSpeed = 3.5f;
-
-    [Header("Interact Settings")]
-    [SerializeField] private PlayerInteract _interact;
-
-
 
     private Rigidbody2D _rigidbody;
     [SerializeField] private bool disableAnimation = true;
@@ -122,9 +115,9 @@ public class PlayerController : MonoBehaviour
         }
 
         // --------------------------------------
-        // INTERACT / PICKUP (Q) - หากคุณต้องการใช้ W ในการเก็บของ / ปาของ / เปลี่ยนของ
+        // INTERACT / PICKUP (E) - หากคุณต้องการใช้ W ในการเก็บของ / ปาของ / เปลี่ยนของ
         // --------------------------------------
-        if (Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetKeyDown(KeyCode.E))
         {
             _player.HandleInteract();   // เรียกให้ Player ตัดสินใจ
         }
@@ -145,16 +138,12 @@ public class PlayerController : MonoBehaviour
 
     private void MovePlayer()
     {
-        if (_rigidbody == null) return;
-        
-        // การคงค่า Y เดิมทำให้ Rigidbody ยังคงได้รับผลกระทบจากแรงโน้มถ่วง (Gravity) และการกระโดด
-        float targetSpeedX = _moveInput.x * _moveSpeed;
+        if (_player == null) return;
 
-        // ใช้ Lerp หรือ Slerp เพื่อให้การเคลื่อนไหวดูนุ่มนวลขึ้นเล็กน้อย
-        float newVelocityX = Mathf.Lerp(_rigidbody.linearVelocity.x, targetSpeedX, Time.fixedDeltaTime * 10f); // 10f คือค่า Acceleration/Responsiveness
-
-        _rigidbody.linearVelocity = new Vector2(newVelocityX, _rigidbody.linearVelocity.y);
+        // ส่ง direction → ให้ Player.Move() ไปจัดการแรง, speed, flip, animation
+        _player.Move(new Vector2(_moveInput.x, 0));
     }
+
 
     #endregion
 

@@ -10,7 +10,7 @@ public abstract class Character : MonoBehaviour, IDamageable
     [Header("Components")]
     [SerializeField] protected Rigidbody2D _rigidbody;
     [SerializeField] protected Animator _animator;
-
+    [SerializeField] private Transform _visualRoot;
     protected bool _isDead = false;
 
 
@@ -91,10 +91,17 @@ public abstract class Character : MonoBehaviour, IDamageable
     protected void Flip()
     {
         _facingRight = !_facingRight;
-        var scale = transform.localScale;
-        scale.x *= -1;
-        transform.localScale = scale;
+
+        if (_visualRoot == null) return;  
+
+        Vector3 s = _visualRoot.localScale;
+
+        
+        s.x = Mathf.Abs(s.x) * (_facingRight ? 1 : -1);
+        _visualRoot.localScale = s;
     }
+
+
 
     #endregion
 }

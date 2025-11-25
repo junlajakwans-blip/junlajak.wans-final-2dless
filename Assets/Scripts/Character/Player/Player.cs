@@ -149,17 +149,10 @@ public override void Move(Vector2 direction)
 {
     if (_isDead) return; 
 
-    // หันตามปุ่มเดิน
-    if (direction.x > 0) 
-    {
-        FaceDir = 1;
-        if (!_facingRight) Flip();  
-    }
-    else if (direction.x < 0)
-    {
-        FaceDir = -1;
-        if (_facingRight) Flip();    
-    }
+    float x = direction.x;
+
+    if (direction.x > 0.01f && !_facingRight) Flip();
+    else if (direction.x < -0.01f && _facingRight) Flip();
 
     float speed = _moveSpeed * _speedModifier; // ต้องคำนวณ speed
 

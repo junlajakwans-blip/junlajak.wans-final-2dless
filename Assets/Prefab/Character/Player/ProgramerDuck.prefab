@@ -30,7 +30,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1234456051277185849}
+  m_Father: {fileID: 7514322842152454269}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &44383235538159417
 SpriteRenderer:
@@ -99,6 +99,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 452335919761276993, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+      propertyPath: _ducklingRenderer
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 452335919761276993, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
       propertyPath: _careerBodyMaps.Array.data[7].bodyPrefab
       value: 
       objectReference: {fileID: 7945595303115333045}
@@ -163,7 +167,7 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: 640431155813347788, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
     m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 6145297030757921140, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6026012207119453407}
     m_AddedComponents:
@@ -179,9 +183,9 @@ Rigidbody2D:
   m_CorrespondingSourceObject: {fileID: -4817979446526450474, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   m_PrefabInstance: {fileID: 4395592233304160521}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &1234456051277185849 stripped
+--- !u!4 &7514322842152454269 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+  m_CorrespondingSourceObject: {fileID: 6145297030757921140, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   m_PrefabInstance: {fileID: 4395592233304160521}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &7945595303115333045 stripped
@@ -267,6 +271,8 @@ MonoBehaviour:
   _moveSpeed: 3.5
   _rigidbody: {fileID: 9955943322688991}
   _animator: {fileID: 0}
+  _visualRoot: {fileID: 0}
+  _facingRight: 1
   _playerData:
     _playerName: 
     _selectedCareer: 
@@ -286,6 +292,7 @@ MonoBehaviour:
       _totalKeyMaps: 0
       _bestScore: 0
       _playTime: 0
+      GlobalHighScore: 0
     _isDefaultDuckling: 0
   _rigAnimator: {fileID: 0}
   _jumpForce: 5
