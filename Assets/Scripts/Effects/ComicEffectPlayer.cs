@@ -86,4 +86,18 @@ public class ComicEffectPlayer : MonoBehaviour
     {
         _profile = profile;
     }
+
+    public void StopAllEffects()
+    {
+        // ปิด GameObject ลูกทั้งหมดที่เกิดจาก FX
+        foreach (Transform child in transform)
+        {
+            // เว้นตัว player ไว้ (ห้ามปิด)
+            if (child == this.transform) continue;
+
+            // ถ้าเป็น object เอฟเฟคที่ spawn มาติด player
+            child.gameObject.SetActive(false);
+        }
+    }
+
 }

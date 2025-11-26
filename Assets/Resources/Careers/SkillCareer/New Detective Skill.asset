@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2986a3d589a57ea4084d04916328a871, type: 3}
   m_Name: New Detective Skill
   m_EditorClassIdentifier: Assembly-CSharp::DetectiveSkill
+  FXProfile: {fileID: 11400000, guid: f2c6be68b8727954e9987ed7eda2ed09, type: 2}
   _scanEffect: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
   _magnifyLightPrefab: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
   _magnifyRange: 2

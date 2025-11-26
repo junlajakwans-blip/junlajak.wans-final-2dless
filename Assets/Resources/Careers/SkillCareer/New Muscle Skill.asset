@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d48339af085fe54eb7240e4b77717a0, type: 3}
   m_Name: New Muscle Skill
   m_EditorClassIdentifier: Assembly-CSharp::MuscleSkill
+  FXProfile: {fileID: 11400000, guid: 1b77f96e2271122428ef868e4d029a40, type: 2}
   _rageEffect: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
   _smashEffect: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
   _roarEffect: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}

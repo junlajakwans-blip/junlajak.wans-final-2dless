@@ -12,3 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efcb4fb669703f749908de22fc9def8c, type: 3}
   m_Name: New Duckling Skill
   m_EditorClassIdentifier: Assembly-CSharp::DucklingSkill
+  FXProfile: {fileID: 11400000, guid: 87fe319dd875b4443804c983cc645cb9, type: 2}

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cf8f4e7a016ed84995733d198acf9e8, type: 3}
   m_Name: SingerDuck
   m_EditorClassIdentifier: Assembly-CSharp::DuckCareerData
-  _careerID: 8
+  _careerID: 9
   _displayName: 
   _careerDuration: 32
   _careerCooldownAfterUse: 28

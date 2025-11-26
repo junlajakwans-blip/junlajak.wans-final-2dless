@@ -2,6 +2,8 @@ using UnityEngine;
 
 public abstract class CareerSkillBase : ScriptableObject
 {
+    [Header("FX Profile")]
+    public CareerEffectProfile FXProfile;
     /// <summary>
     /// เรียกเมื่อเริ่มอาชีพ
     /// </summary>

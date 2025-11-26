@@ -16,7 +16,7 @@ MonoBehaviour:
   sprite: {fileID: 1441909081748423113, guid: 6144331500f4adf4da24e164529735ad, type: 3}
   color: {r: 1, g: 1, b: 1, a: 1}
   duration: 0.6
-  baseScale: 1
+  baseScale: 0.3
   randomScaleRange: 0.2
   randomRotation: 1
   rotationMin: -20

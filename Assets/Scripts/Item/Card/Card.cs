@@ -32,6 +32,8 @@ public class Card
         _careerData = careerData; 
         _rarity = careerData.CardType.ToString();
 
+        if (careerData == null)
+        Debug.LogError("[Card] ❌ Created a card with NULL CareerData");
     }
     #endregion
 

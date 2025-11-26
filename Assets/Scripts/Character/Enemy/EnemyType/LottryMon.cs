@@ -5,6 +5,12 @@ using Random = UnityEngine.Random;
 public class LotteryMon : Enemy
 {
     // NOTE: _data field (EnemyData) is inherited from Enemy.cs
+    [Header("LotteryMon Throwable")]
+    [SerializeField] private GameObject _goodLuckThrowable; // ไอเทมดีที่ปา
+    [SerializeField] private GameObject _badLuckThrowable;  // ไอเทมร้ายที่ปา
+
+    [SerializeField] private float _throwForce = 6f; // ความแรงตอนปา
+
 
     #region Fields
     [Header("LotteryMon State")]
@@ -62,21 +68,39 @@ protected override void Update()
         }
     }
 
+    private void ThrowItem(GameObject prefab, Player player)
+    {
+        if (prefab == null) return;
+
+        // สร้าง object
+        GameObject item = Instantiate(prefab, transform.position, Quaternion.identity);
+
+        // ปาเข้าหาผู้เล่น
+        if (item.TryGetComponent<Rigidbody2D>(out var rb))
+        {
+            Vector2 dir = (player.transform.position - transform.position).normalized;
+            rb.AddForce(dir * _throwForce, ForceMode2D.Impulse);
+        }
+    }
+
+
     public void ApplyGoodLuck(Player player)
     {
         // Use Data From EnemyData:Unique | Asset: LotteryGoodLuckMinCoin และ LotteryGoodLuckMaxCoin
         int coinAmount = Random.Range(_data.LotteryGoodLuckMinCoin, _data.LotteryGoodLuckMaxCoin + 1);
         player.AddCoin(coinAmount);
+
+         ThrowItem(_goodLuckThrowable, player);
         Debug.Log($"[Lottery] {player.name} got lucky: +{coinAmount} Coin! (Roll chance: {_data.LotteryLuckFactor * 100:F0}%)");
     }
 
 public void ApplyBadLuck(Player player)
     {
         if (player == null) return;
-        {
+        ThrowItem(_badLuckThrowable, player); 
             // Use Data From EnemyData:Unique | Asset: _data.LotteryCurseDuration
-            player.ApplySpeedModifier(0.5f, _data.LotteryCurseDuration);
-        }
+        player.ApplySpeedModifier(0.5f, _data.LotteryCurseDuration);
+        
         Debug.Log($"[Lottery] {player.name} got cursed: Speed reduced for {_data.LotteryCurseDuration}s!");
     }
     #endregion

@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6029e209fe97abb4a8b334a7664c1a17, type: 3}
   m_Name: New Doctor Skill
   m_EditorClassIdentifier: Assembly-CSharp::DoctorSkill
+  FXProfile: {fileID: 11400000, guid: 3abc33b82e4bc3c48a8fd5a7a9a9b092, type: 2}
   _medicBagPrefab: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
   _healEffect: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
   _healRadius: 3

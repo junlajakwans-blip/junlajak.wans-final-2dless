@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16e38eecd9957ae49b1ca7206d01740c, type: 3}
   m_Name: New Singer Skill
   m_EditorClassIdentifier: Assembly-CSharp::SingerSkill
+  FXProfile: {fileID: 11400000, guid: 046522cb5c7e259489103b2eb7801bc6, type: 2}
   _micFx: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
   _highNoteFx: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
   _stunDuration: 3

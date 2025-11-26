@@ -296,9 +296,9 @@ MonoBehaviour:
   _assetPrefix: map_asset_School_
   _phase1End: 700
   _phase2End: 1600
-  _phase1Interval: {x: 6, y: 9}
-  _phase2Interval: {x: 4, y: 7}
-  _phase3Interval: {x: 3, y: 5}
+  _phase1Interval: {x: 2.4, y: 3.4}
+  _phase2Interval: {x: 1.7, y: 2.7}
+  _phase3Interval: {x: 1.1, y: 1.9}
   _verticalOffset: -0.3
   _cachedAssetKeys: []
   _activeAssets: []
@@ -540,7 +540,7 @@ MonoBehaviour:
   _platformWidth: 11.77
   _minXOffset: 0.5
   _maxXOffset: 1
-  _minYOffset: -0.05
+  _minYOffset: -0.01
   _maxYOffset: 0.05
   _collectibleOffset: 0.2
   _currentPlatformState: 0
@@ -664,8 +664,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThrowableSpawner
   _dropTable: {fileID: 11400000, guid: d2d9d9a0968270848953eb9b5c46aa26, type: 2}
   _spawnYOffset: 0.2
-  _activeThrowables:
-  - {fileID: 5607982103104544609, guid: 57f05282925e50145900e7929b2f5fb9, type: 3}
+  _activeThrowables: []
 --- !u!4 &2073505760
 Transform:
   m_ObjectHideFlags: 0

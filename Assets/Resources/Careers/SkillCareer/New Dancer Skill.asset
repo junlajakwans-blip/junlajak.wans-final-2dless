@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46d71bfed9899d14898a388625cd60e4, type: 3}
   m_Name: New Dancer Skill
   m_EditorClassIdentifier: Assembly-CSharp::DancerSkill
+  FXProfile: {fileID: 11400000, guid: 54a4a555d0db8804ea2bde4f563b3cc3, type: 2}
   _danceEffect: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
   _speedBoost: 1.75
   _hideDuration: 2

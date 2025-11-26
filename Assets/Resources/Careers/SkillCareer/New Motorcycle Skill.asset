@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc7ddcf6cdf40a1428b23d21b9c987e8, type: 3}
   m_Name: New Motorcycle Skill
   m_EditorClassIdentifier: Assembly-CSharp::MotorcycleSkill
+  FXProfile: {fileID: 11400000, guid: b2e4049cbe00ab5419f70ee0c471bf7a, type: 2}
   _dashEffect: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
   _dashMultiplier: 3
   _dashDuration: 0.5
   _immunityChance: 0.15
-  _jumpBonus: 1.2
   _skillDuration: 24
   _skillCooldown: 18
   _handlebarRange: 3

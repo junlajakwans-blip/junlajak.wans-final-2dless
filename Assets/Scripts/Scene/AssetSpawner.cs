@@ -49,6 +49,28 @@ public class AssetSpawner : MonoBehaviour, ISpawn
 
     #region Initialization
 
+    private void LateUpdate()
+    {
+        if (_pivot == null) return;
+
+        for (int i = _activeAssets.Count - 1; i >= 0; i--)
+        {
+            var obj = _activeAssets[i];
+            if (obj == null)
+            {
+                _activeAssets.RemoveAt(i);
+                continue;
+            }
+
+            // ถ้า Asset อยู่ด้านหลังผู้เล่นเกินระยะ 30 หน่วย → Despawn
+            if (obj.transform.position.x < _pivot.position.x - 30f)
+            {
+                Despawn(obj);
+            }
+        }
+    }
+
+
     public void Initialize(Transform pivot, IObjectPool pool = null)
     {
         _pivot = pivot;
@@ -100,56 +122,67 @@ public class AssetSpawner : MonoBehaviour, ISpawn
         if (_pool == null || _cachedAssetKeys.Count == 0) return null;
         if (_pivot == null) return null;
 
-        // 1. เช็ค Phase & Cooldown
-        if (Time.time < _nextSpawnAllowedTime) 
+        // ยังไม่ถึงเวลา → ไม่ spawn
+        if (Time.time < _nextSpawnAllowedTime)
+            return null;
+
+        // ถึงเวลาแล้ว → ส่งไปให้ SpawnNow ทำงานทั้งหมด
+        return SpawnNow(targetPos);
+    }
+
+
+    private GameObject SpawnNow(Vector3 targetPos)
+    {
+        Vector3 pos = targetPos;
+        pos.y += _verticalOffset;
+
+        // Cache Check
+        if (_cachedAssetKeys == null || _cachedAssetKeys.Count == 0)
         {
-            return null; 
+            Debug.LogWarning("[AssetSpawner] No cached keys found — reloading...");
+            CacheAssetKeys(_pool as ObjectPoolManager);
+            if (_cachedAssetKeys.Count == 0) return null;
         }
 
-        // 2. กำหนดตำแหน่งสุดท้าย
-        Vector3 finalPos = targetPos;
-        finalPos.y += _verticalOffset; 
-        
-        // 3. ✅ Spawn Slot Check (จองตำแหน่ง)
-        if (!SpawnSlot.Reserve(finalPos))
+        // Slot Check
+        if (!SpawnSlot.Reserve(pos))
+            return null;
+
+        // Random key
+        string key = _cachedAssetKeys[Random.Range(0, _cachedAssetKeys.Count)];
+        GameObject obj = _pool.SpawnFromPool(key, pos, Quaternion.identity);
+
+        if (obj == null)
         {
-            // Slot ถูกจองโดย Asset/Collectible/Enemy อื่นแล้ว
-            Debug.LogWarning($"[AssetSpawner] Spawn Failed at X={finalPos.x:F1}: Slot Reserved.");
+            SpawnSlot.Unreserve(pos);
             return null;
         }
-        
-        // 4. Spawn Object
-        int index = Random.Range(0, _cachedAssetKeys.Count);
-        string key = _cachedAssetKeys[index];
 
-        GameObject obj = _pool.SpawnFromPool(key, finalPos, Quaternion.identity);
-        
-        if (obj != null)
+        // Optional flip
+        if (Random.value > 0.5f)
         {
-            // Optional: Flip
-            if (Random.value > 0.5f)
-            {
-                Vector3 s = obj.transform.localScale;
-                s.x = -Mathf.Abs(s.x);
-                obj.transform.localScale = s;
-            }
+            Vector3 s = obj.transform.localScale;
+            s.x = -Mathf.Abs(s.x);
+            obj.transform.localScale = s;
+        }
 
-            _activeAssets.Add(obj);
-            // 5. คำนวณ Cooldown รอบถัดไป
-            float currentDist = Mathf.Max(0, _pivot.position.x - _startX);
-            CalculateNextSpawnTime(currentDist);
-            
-            Debug.Log($"[AssetSpawner] Spawned Asset: {key} at X={finalPos.x:F1}");
-        }
-        else
+        // Track pooled obj
+        _activeAssets.Add(obj);
+
+        if (Random.value < 0.25f) // 25% chance
         {
-            // หาก Spawn ล้มเหลว (เช่น ObjectPool ผิดพลาด) ต้องยกเลิกการจอง Slot
-            SpawnSlot.Unreserve(finalPos);
-            Debug.LogError($"[AssetSpawner] Spawn Failed: ObjectPool failed for {key}.");
+            Vector3 offset = Vector3.right * Random.Range(1f, 3f);
+            SpawnNow(targetPos + offset);
         }
+
+        // Cooldown next spawn
+        float dist = Mathf.Max(0, _pivot.position.x - _startX);
+        CalculateNextSpawnTime(dist);
 
         return obj;
     }
+
+
 
     private void CalculateNextSpawnTime(float distance)
     {
@@ -213,5 +246,6 @@ public class AssetSpawner : MonoBehaviour, ISpawn
         return name;
     }
     
+
     #endregion
 }

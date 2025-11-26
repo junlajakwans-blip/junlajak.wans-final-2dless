@@ -21,10 +21,6 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
     [SerializeField] private DuckCareerData _currentCareer;
     [SerializeField] private DuckCareerData _defaultCareer;
 
-
-    [SerializeField] private CareerEffectProfile _effectProfile;
-    public CareerEffectProfile EffectProfile => _effectProfile;
-
     [Header("Appearance Settings")]
     [SerializeField] private List<CareerBodyMap> _careerBodyMaps = new();
     public IReadOnlyList<CareerBodyMap> CareerBodyMaps => _careerBodyMaps;
@@ -89,10 +85,30 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
         if (!CanChangeTo(newCareer))
             return;
 
+        Player player = GetComponent<Player>(); // 🔥 ต้องดึง player มาก่อน
+
+        // 1) Cleanup skill อาชีพเก่า
+        if (_currentCareer != null && _currentCareer.CareerSkill != null)
+            _currentCareer.CareerSkill.Cleanup(player);
+
+        // 2) เปลี่ยนอาชีพ
         _currentCareer = newCareer;
 
+        // 3) Assign FX Profile จาก Body Map
+        var mapEntry = _careerBodyMaps.Find(m => m.careerID == newCareer.CareerID);
+        if (mapEntry != null && mapEntry.fxProfile != null)
+            player.SetFXProfile(mapEntry.fxProfile);
+        else
+            player.SetFXProfile(null);
+
+        // 4) Initialize Skill
+        _currentCareer.CareerSkill?.Initialize(player);
+
+        // 5) Callback อื่น
         OnCareerChanged(newCareer);
     }
+   
+
 
     public List<DuckCareer> GetAvailableCareers()
     {
@@ -106,13 +122,7 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
     {
         var player = GetComponent<Player>();
 
-        // cleanup ของอาชีพก่อนหน้า
-        _currentCareer?.CareerSkill?.Cleanup(player);
-
         _currentCareer = newCareer;
-
-        // init อาชีพใหม่
-        newCareer?.CareerSkill?.Initialize(player);
 
         Debug.Log($"[CareerSwitcher] Changed to career: {newCareer.DisplayName}");
         ApplyCareerAppearance();
@@ -123,6 +133,7 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
 
 
     #region Logic Methods
+#region Logic Methods
     public void ApplyCareerAppearance()
     {
         if (_currentCareer == null)
@@ -130,85 +141,91 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
 
         Debug.Log($"Applying appearance for {_currentCareer.DisplayName}");
 
-        // 1. หา Prefab ของอาชีพปัจจุบันจาก Map โดยใช้ CareerID
         var mapEntry = _careerBodyMaps.Find(m => m.careerID == _currentCareer.CareerID);
 
-        if (mapEntry == null || mapEntry.bodyPrefab == null)
+        // Auto assign duckling renderer / animator
+        if (_ducklingRenderer == null)
         {
-            Debug.LogError($"[CareerSwitcher] Prefab for career {_currentCareer.DisplayName} (ID: {_currentCareer.CareerID}) not found in map!");
-            return;
+            _ducklingRenderer = GetComponentInChildren<SpriteRenderer>();
+            Debug.LogWarning("[CareerSwitcher] Auto-assigned Duckling SpriteRenderer");
         }
-
-        // ปรับปรุง: การทำลาย/Despawn ร่างเก่า (ป้องกันการซ้อนทับ) ---
-        if (_activeBody != null)
+        if (_ducklingAnimator == null)
         {
-            // ปิดการทำงานทันทีเพื่อป้องกันการแสดงผลและการชนซ้ำซ้อน
-            _activeBody.SetActive(false); //
-            
-            // ทำลายร่างเก่าที่แสดงผลอยู่
-            Destroy(_activeBody); 
-            _activeBody = null; 
+            _ducklingAnimator = GetComponentInChildren<Animator>();
+            Debug.LogWarning("[CareerSwitcher] Auto-assigned Duckling Animator");
         }
-
-        //Player FX
-        if (_fxPlayer == null)
-            _fxPlayer = GetComponentInChildren<ComicEffectPlayer>();
-
-        if (_fxPlayer != null && mapEntry.fxProfile != null)
-            _fxPlayer.SetFXProfile(mapEntry.fxProfile);
 
         bool isDefault = _currentCareer.CareerID == DuckCareer.Duckling;
 
+        // 🢂 กลับร่าง Duckling (ไม่ต้อง continue logic ใด ๆ)
         if (isDefault)
         {
-            // ถ้าเป็น Duckling: เปิดการแสดงผลของ Duckling ดั้งเดิม (Parent)
+            if (_activeBody != null)
+            {
+                Destroy(_activeBody);
+                _activeBody = null;
+            }
+
             if (_ducklingRenderer != null) _ducklingRenderer.enabled = true;
             if (_ducklingAnimator != null) _ducklingAnimator.enabled = true;
-            
-            Debug.Log($"[CareerSwitcher] Reverted to default Duckling appearance.");
-            return; // หยุดการทำงาน: Duckling ไม่ใช่ Prefab ที่ถูก Instantiate
+
+            Debug.Log("[CareerSwitcher] Reverted to default Duckling appearance.");
+            return;
         }
-        
-        // 3. ถ้าเป็นอาชีพอื่น: ซ่อน Duckling ดั้งเดิม (Parent) และสร้างร่างใหม่ (Child)
+
+        // 🢂 ถ้าไม่ใช่ Duckling ต้องมี mapEntry
+        if (mapEntry == null || mapEntry.bodyPrefab == null)
+        {
+            Debug.LogError($"[CareerSwitcher] ❌ bodyPrefab missing for {_currentCareer.CareerID}");
+            return;
+        }
+
+        // ซ่อน Duckling
         if (_ducklingRenderer != null) _ducklingRenderer.enabled = false;
         if (_ducklingAnimator != null) _ducklingAnimator.enabled = false;
-        
-        // 4. สร้างร่างใหม่ (Prefab) และผูกติดกับ Player (this.transform)
-        GameObject newBody = Instantiate(mapEntry.bodyPrefab, this.transform);
-        newBody.transform.localPosition = Vector3.zero; 
-        newBody.name = mapEntry.bodyPrefab.name; // ตั้งชื่อเพื่อความสะอาด
 
+        // ลบร่างเก่า (ถ้ามี)
+        if (_activeBody != null)
+        {
+            Destroy(_activeBody);
+            _activeBody = null;
+        }
+
+        // สร้างร่างใหม่
+        GameObject newBody = Instantiate(mapEntry.bodyPrefab, this.transform);
+        newBody.transform.localPosition = Vector3.zero;
+        newBody.name = mapEntry.bodyPrefab.name;
         _activeBody = newBody;
 
-        //  5. ปรับปรุง: ตั้งค่า Component (ควบคุมฟิสิกส์/การชน) ---
-        
-        // 5a. ปิด Collider 2D ทั้งหมดในร่างใหม่ทันที เพื่อป้องกันการชนกับ Player หลัก
-        // (Player หลักมี Collider และ Rigidbody2D ที่ใช้ควบคุมอยู่แล้ว)
+        // ปิด Collider / Physics
         foreach (var coll in newBody.GetComponentsInChildren<Collider2D>())
-        {
-            // เว้น Collider ของ PlayerInteract (ถ้ามีการย้าย Collider สำหรับ Interact ไปไว้บน Child) 
-            // แต่เพื่อความปลอดภัย ให้ปิดทั้งหมดก่อน หาก Collider สำหรับ Interact อยู่บน Parent (Player.cs)
-            coll.enabled = false; 
-        }
-
-        // 5b. ตรวจสอบ Rigidbody2D เพื่อไม่ให้ Physics Engine ควบคุม
+            coll.enabled = false;
         if (newBody.TryGetComponent<Rigidbody2D>(out var rb))
-        {
-            // ตั้งเป็น Kinematic เพื่อให้รับรู้การชน (ถ้าจำเป็น) แต่ไม่ถูกควบคุมโดยแรงภายนอก 
-            // หรือตั้งเป็น None ถ้าไม่ต้องการให้รับรู้การชนเลย
-            rb.bodyType = RigidbodyType2D.Kinematic; 
-        }
+            rb.bodyType = RigidbodyType2D.Kinematic;
+
+        // Assign FX Profile (ไม่บังคับว่าต้องมี)
+        if (_fxPlayer == null)
+            _fxPlayer = GetComponentInChildren<ComicEffectPlayer>();
+        if (_fxPlayer != null)
+            _fxPlayer.SetFXProfile(mapEntry.fxProfile);
+
+        // เล่น FX แบบปลอดภัย
+        TryPlayCareerFX();
 
         Debug.Log($"[CareerSwitcher] Swapped body to {mapEntry.bodyPrefab.name}.");
-
-         if (_fxPlayer != null && _fxPlayer.Profile != null)
-        {
-            ComicEffectData entry = _fxPlayer.Profile.switchFX;
-            if (entry != null)
-                ComicEffectManager.Instance.Play(entry, transform.position);
-        }
-        StartCoroutine(PlaySwitchFXNextFrame());
     }
+
+    private void TryPlayCareerFX()
+    {
+        if (_fxPlayer == null || _fxPlayer.Profile == null || _fxPlayer.Profile.switchFX == null)
+        {
+            Debug.Log($"[CareerSwitcher] ⚠ ไม่มี FX สำหรับอาชีพ {_currentCareer.DisplayName}");
+            return;
+        }
+        ComicEffectManager.Instance.Play(_fxPlayer.Profile.switchFX, transform.position);
+    }
+#endregion
+
 
     private IEnumerator PlaySwitchFXNextFrame()
     {
@@ -227,7 +244,7 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
             return;
         }
 
-        // Cleanup Skill ของอาชีพปัจจุบัน ก่อน revert
+        // Cleanup Skill ของอาชีพปัจจุบันก่อน revert
         var player = GetComponent<Player>();
         _currentCareer?.CareerSkill?.Cleanup(player);
 
@@ -235,16 +252,21 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
         OnResetCareerCycle?.Invoke();
 
         _currentCareer = _defaultCareer;
+
+        // 🛑 หยุด / เคลียร์ FX ของอาชีพที่เพิ่งหมดเวลาก่อน
+        if (_fxPlayer != null)
+            _fxPlayer.StopAllEffects(); // <<< สำคัญมาก
+
+        // 🔄 เซ็ต FX Profile ให้กลับเป็น Duckling
+        var duckEntry = _careerBodyMaps.Find(m => m.careerID == DuckCareer.Duckling);
+        if (_fxPlayer != null && duckEntry != null && duckEntry.fxProfile != null)
+            _fxPlayer.SetFXProfile(duckEntry.fxProfile);
+
         ApplyCareerAppearance();
         OnCareerChanged(_defaultCareer);
 
-        // เซ็ต FX Profile กลับเป็น Duckling
-        var mapEntry = _careerBodyMaps.Find(m => m.careerID == DuckCareer.Duckling);
-        if (_fxPlayer != null && mapEntry != null && mapEntry.fxProfile != null)
-            _fxPlayer.SetFXProfile(mapEntry.fxProfile);
-
         StartCoroutine(CooldownRoutine());
-        OnRevertToDefaultEvent?.Invoke(); // แจ้ง revert ให้ UI
+        OnRevertToDefaultEvent?.Invoke();
     }
 
 

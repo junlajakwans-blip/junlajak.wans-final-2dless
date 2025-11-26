@@ -286,6 +286,12 @@ public class CardManager : MonoBehaviour
         }
         DuckCareerData careerData = _careerSwitcher.GetCareerData(career);
 
+        if (careerData == null)
+        {
+            Debug.LogError($"[CardManager] ❌ CareerData = NULL for career {career} — _allCareers อาจยังไม่ใส่ตัวนี้ใน CareerSwitcher");
+            return;
+        }
+
         string cardID = System.Guid.NewGuid().ToString();
         Card newCard = new Card(cardID, careerData);
 
@@ -311,17 +317,26 @@ public class CardManager : MonoBehaviour
 
         if (_careerSwitcher == null)
         {
-             Debug.LogError("[CardManager] CareerSwitcher dependency is missing. Cannot add career card.");
-             return;
+            Debug.LogError("[CardManager] ❌ CareerSwitcher dependency is missing. Cannot add career card.");
+            return;
         }
 
         DuckCareer career;
-        
+
+        // สุ่มอาชีพจนกว่าจะไม่เกิน 2 ใบในมือ
         do
         {
             career = GetRandomCareerFromRate();
-        } while (CheckCareerCountInHand(career) >= _maxSameCardInHand);
+        }
+        while (CheckCareerCountInHand(career) >= _maxSameCardInHand);
+
         DuckCareerData careerData = _careerSwitcher.GetCareerData(career);
+
+        if (careerData == null)
+        {
+            Debug.LogError($"[CardManager] ❌ CareerData is NULL for career {career} — Card not created.");
+            return;
+        }
 
         string cardID = System.Guid.NewGuid().ToString();
         Card newCard = new Card(cardID, careerData);
@@ -330,7 +345,8 @@ public class CardManager : MonoBehaviour
         _careerCardDropCount++;
 
         Debug.Log($"[CardManager] Dropped career card: {careerData.DisplayName} ({_careerCardDropCount}/5)");
-}
+    }
+
 
 
     /// <summary>

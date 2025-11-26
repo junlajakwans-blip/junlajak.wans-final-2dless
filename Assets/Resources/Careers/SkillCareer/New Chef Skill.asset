@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97c7fd24f94766b40b6295b795acd3c6, type: 3}
   m_Name: New Chef Skill
   m_EditorClassIdentifier: Assembly-CSharp::ChefSkill
+  FXProfile: {fileID: 11400000, guid: d213def0cdd7210489255df814566df8, type: 2}
   _panEffect: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
   _burnRange: 5
   _burnDamage: 25

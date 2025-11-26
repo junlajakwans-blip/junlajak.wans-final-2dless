@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4b2439feb9bd2245b64d42865b0a3e5, type: 3}
   m_Name: New Fire Fighter Skill
   m_EditorClassIdentifier: Assembly-CSharp::FireFighterSkill
+  FXProfile: {fileID: 11400000, guid: 1300a3c035ada314cb5185d7084719d7, type: 2}
   _waterBallPrefab: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
   _splashEffect: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
   _waterSplashSkillEffect: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
