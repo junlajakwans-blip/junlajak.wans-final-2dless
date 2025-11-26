@@ -20,6 +20,10 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
     [SerializeField] private DuckCareerData _currentCareer;
     [SerializeField] private DuckCareerData _defaultCareer;
 
+
+    [SerializeField] private CareerEffectProfile _effectProfile;
+    public CareerEffectProfile EffectProfile => _effectProfile;
+
     [Header("Appearance Settings")]
     [SerializeField] private List<CareerBodyMap> _careerBodyMaps = new();
     //[SerializeField] private CharacterRigAnimator _playerAnimator;

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 /// Data container for defining the base statistics and behavior properties of an enemy type.
 /// This asset allows designers to adjust stats without modifying code.
 /// </summary>
-[CreateAssetMenu(fileName = "Enemy_New", menuName = "Duck/Enemy Data")]
+[CreateAssetMenu(fileName = "Enemy_New", menuName = "DUFFDUCK/Enemy Data")]
 public class EnemyData : ScriptableObject
 {
     #region Identity & Stats

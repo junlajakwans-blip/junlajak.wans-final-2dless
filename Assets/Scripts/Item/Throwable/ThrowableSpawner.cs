@@ -18,10 +18,8 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
     [Tooltip("Offset แนวตั้งสุดท้าย (ควรตั้งค่าใน MapGenerator)")]
     [SerializeField] private float _spawnYOffset = 0.5f;
 
-    // ⬅️ REMOVED: ไม่ใช้ Raycast แล้ว
-    // [SerializeField] private LayerMask groundLayer; 
 
-    private Transform _pivot;        // Player
+    private Transform _pivot; // Player
     private float _startX;
     private IObjectPool _pool;
     private EnemySpawner _enemySpawner;
@@ -36,7 +34,7 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
     public void Initialize(Transform pivot, EnemySpawner enemySpawner = null)
     {
         _pivot = pivot;
-        // ⚠️ FIX: ตรวจสอบ _pivot ก่อนเข้าถึง .position
+        // FIX: ตรวจสอบ _pivot ก่อนเข้าถึง .position
         if (_pivot != null)
              _startX = _pivot.position.x; 
 
@@ -63,29 +61,30 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
         enemy.OnEnemyDied += HandleEnemyDied;
     }
 
-    private void HandleEnemyDied(Enemy enemy)
+    private void HandleEnemyDied(Enemy enemy) // จัดการ position Enemy when die เพื่อ drop
     {
         enemy.OnEnemyDied -= HandleEnemyDied;
 
         if (_pivot == null) return; // Guard
         
         float distance = Mathf.Max(0f, _pivot.position.x - _startX);
-        
-        if (distance < _phase1End) return;
-        if (distance < _phase2End) return;
-        if (Random.value > _phase3DropChance) return;
 
-        // ⚠️ FIX: ตำแหน่ง Drop ต้องเชื่อถือว่า EnemySpawner ส่งมาเป็นตำแหน่งที่ถูกต้อง
-        // แต่ในกรณีนี้เป็นการ Drop หลัง Enemy ตาย เราต้องคำนวณตำแหน่งเอง
-        // เราจะส่งตำแหน่งที่ Enemy ตาย (+ Offset) ไปให้ SpawnThrowableAt(pos)
-        
-        // ⚠️ NOTE: การ drop จาก Enemy ตาย ควรใช้ SpawnSlot.Reserve 
-        // แต่เราจะให้ SpawnThrowableAt จัดการ Reserve
+        // Early game → ดรอปเยอะหน่อย เพื่อให้ Duckling ใช้สู้ได้
+        if (distance < 600f)
+        {
+            if (Random.value < 0.40f)   // 40%
+                SpawnThrowableAt(enemy.transform.position);
+            return;
+        }
+
+        // ระยะไกล → ความถี่ลดลงแต่ยังเจอเรื่อยๆ
+        if (Random.value < 0.18f)       // 18%
+            SpawnThrowableAt(enemy.transform.position);
+
         
         Vector3 pos = enemy.transform.position;
         GameObject obj = SpawnThrowableAt(pos);
-        
-        // ⚠️ REMOVED: การเพิ่ม obj เข้า _activeThrowables ถูกย้ายไปที่ SpawnThrowableAt
+
     }
 
     #endregion
@@ -100,7 +99,6 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
             return null;
 
         // 1. กำหนดตำแหน่งสุดท้าย (เชื่อถือตำแหน่งที่ส่งมา)
-        // ⚠️ NOTE: การใช้ Raycast ถูกลบออกแล้ว
         Vector3 finalPos = receivedPos;
         finalPos.y += _spawnYOffset; // เพิ่ม Offset ให้ลอยเหนือจุดเกิด Enemy
 
@@ -122,7 +120,7 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
         
         // 3. Inject Info and Sprite
         var info = obj.GetComponent<ThrowableItemInfo>();
-        var sr   = obj.GetComponent<SpriteRenderer>();
+        var sr   = obj.GetComponent<SpriteRenderer>();
 
         if (info != null)
         {
@@ -141,7 +139,6 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
         // [FIX]: เพิ่มการลงทะเบียนวัตถุที่เกิดสำเร็จ
         _activeThrowables.Add(obj);
         
-        // ⚠️ REMOVED: Debug.LogWarning Raycast ที่ไม่จำเป็น
         
         return obj;
     }
@@ -166,7 +163,6 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
     {
         var interact = player.GetComponentInChildren<PlayerInteract>();
         
-        // ⚠️ FIX: ใช้ SetThrowable บน interact และ Despawn ตัวเอง
         
         // 1. ให้ Player เก็บของชิ้นนี้
         interact?.SetThrowable(gameObject);
@@ -175,8 +171,6 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
         if (TryGetComponent<ThrowableItemInfo>(out var info))
             info.DisablePhysicsOnHold(); // ใช้ DisablePhysicsOnHold เพื่อจัดการ physics และ interactable
 
-        // 3. ❌ REMOVED: ไม่ควร Despawn ตัวเองทันทีที่ Interact เพราะ Player ยังถืออยู่
-        // _activeThrowables.Remove(gameObject); // ถูกจัดการเมื่อ Despawn (ตอนโยน/คัดทิ้ง)
         
         // 4. ยกเลิกการจอง Slot เมื่อถูกเก็บ (ถือว่าไม่อยู่บนพื้นแล้ว)
         SpawnSlot.Unreserve(transform.position); 
@@ -184,7 +178,7 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
 
     public void ShowPrompt()
     {
-        UIManager.Instance.ShowPrompt("Press W to pick up");
+        UIManager.Instance.ShowPrompt("Press E to pick up");
     }
     #endregion
 
@@ -193,16 +187,12 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
     {
         if (_pivot == null) return;
         
-        // ⚠️ FIX: ต้องส่งตำแหน่งที่ถูกต้อง (บนพื้น) ให้ SpawnThrowableAt
-        // แต่เนื่องจาก Spawn ถูกใช้สำหรับสุ่มบน Pivot จึงควรใช้ SpawnAtPosition
         Vector3 pos = _pivot.position;
         SpawnAtPosition(pos);
     }
 
     public GameObject SpawnAtPosition(Vector3 position)
     {
-        // ⚠️ FIX: เราไม่ควรเพิ่ม obj ใน _activeThrowables ซ้ำซ้อน 
-        // SpawnThrowableAt จัดการแล้ว
         return SpawnThrowableAt(position); 
     }
 

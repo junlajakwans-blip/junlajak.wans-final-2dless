@@ -23,7 +23,7 @@ public class ThrowableItemInfo : MonoBehaviour
         PoolTag = poolTag;
         Icon = icon;
 
-    // ⬅️ FIX: เปลี่ยน Sprite ทันทีที่ตั้งค่า
+    // FIX: เปลี่ยน Sprite ทันทีที่ตั้งค่า
         if (_sr != null)
             _sr.sprite = icon; 
     }
@@ -56,17 +56,31 @@ public class ThrowableItemInfo : MonoBehaviour
         }
     }
 
-public void OnReturnedToPool()
+    public void OnReturnedToPool()
     {
-        // ⬅️ FIX: ต้อง reset ให้พร้อม spawn ใหม่
+        // FIX: ต้อง reset ให้พร้อม spawn ใหม่
         SetInteractable(true);
         if (_col != null) _col.enabled = true;
         
-        // ⚠️ NEW: Reset Physics เป็น Dynamic/Gravity Scale 1 (ถ้าเป็น Prefab)
+        // NEW: Reset Physics เป็น Dynamic/Gravity Scale 1 (ถ้าเป็น Prefab)
         if (_rb != null)
         {
             _rb.bodyType = RigidbodyType2D.Dynamic;
             _rb.gravityScale = 1;
         }
     }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        // ชนศัตรู → ทำดาเมจ
+        if (collision.collider.TryGetComponent<Enemy>(out var enemy))
+        {
+            enemy.TakeDamage(20); // หรือตามค่าใน dropTable
+            Debug.Log("[Throwable] Hit enemy!");
+        }
+
+        // ชนอะไรก็ได้ → คืนเข้ากอง
+        ObjectPoolManager.Instance.ReturnToPool(PoolTag, gameObject);
+    }
+
 }

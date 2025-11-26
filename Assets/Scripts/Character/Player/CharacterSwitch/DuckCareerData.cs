@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewCareerData", menuName = "Duck/Career Data")]
+[CreateAssetMenu(fileName = "NewCareerData", menuName = "DUFFDUCK/Career Data")]
 
 ///<summary>
 /// Change to ScriptableObeject to Collect Base Stat and Base Cooldown of Carreer in Asset

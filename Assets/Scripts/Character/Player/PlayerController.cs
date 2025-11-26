@@ -95,6 +95,7 @@ public class PlayerController : MonoBehaviour
         // --------------------------------------
         if (Input.GetKeyDown(KeyCode.W))
         {
+            DebugAction("ATTACK ← W");
             _player.Attack();
         }
 
@@ -103,6 +104,7 @@ public class PlayerController : MonoBehaviour
         // --------------------------------------
         if (Input.GetKeyDown(KeyCode.Space))
         {
+            DebugAction("JUMP ← SPACE");
             _player.Jump();
         }
 
@@ -111,6 +113,7 @@ public class PlayerController : MonoBehaviour
         // --------------------------------------
         if (Input.GetKeyDown(KeyCode.R))
         {
+            DebugAction("SKILL ← R");
             _player.UseSkill();
         }
 
@@ -119,7 +122,8 @@ public class PlayerController : MonoBehaviour
         // --------------------------------------
         if (Input.GetKeyDown(KeyCode.E))
         {
-            _player.HandleInteract();   // เรียกให้ Player ตัดสินใจ
+            DebugAction("INTERACT ← E");
+            _player.HandleInteract();
         }
         
         // --------------------------------------
@@ -132,6 +136,12 @@ public class PlayerController : MonoBehaviour
 
         
     }
+
+    private void DebugAction(string msg)
+    {
+        Debug.Log($"<color=#ffc800><b>[INPUT]</b></color> {msg}");
+    }
+
     #endregion
 
     #region Movement
