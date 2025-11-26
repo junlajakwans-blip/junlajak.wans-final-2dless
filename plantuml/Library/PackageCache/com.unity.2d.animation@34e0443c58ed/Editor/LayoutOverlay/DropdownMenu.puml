@@ -1,0 +1,5 @@
+@startuml
+class DropdownMenu <<partial>> {
+}
+VisualElement <|-- DropdownMenu
+@enduml

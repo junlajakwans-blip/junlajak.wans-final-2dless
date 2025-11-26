@@ -1,0 +1,9 @@
+@startuml
+class GridPaintPaletteWindowSplitView {
+    + isVerticalOrientation : bool <<get>> <<set>>
+    + ChangeSplitDimensions(dimension:float) : void
+    + GridPaintPaletteWindowSplitView(isVerticalOrientation:bool)
+}
+VisualElement <|-- GridPaintPaletteWindowSplitView
+GridPaintPaletteWindowSplitView --> "paletteElement" TilePaletteElement
+@enduml

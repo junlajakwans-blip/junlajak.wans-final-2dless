@@ -1,0 +1,27 @@
+@startuml
+class DefaultAssetCreation <<static>> {
+    + {static} CreateTileSetAsset() : void
+}
+enum TilePaletteAssetMenuPriority {
+    Rectangular= 4,
+    HexagonalFlatTop,
+    HexagonalPointTop,
+    Isometric,
+    TileSet,
+}
+class DuplicateWhiteboxPaletteEndNameEditAction {
+    + path : string
+    + <<override>> Action(instanceId:int, pathName:string, resourceFile:string) : void
+}
+class CreateAssetEndNameEditAction {
+    + <<override>> Action(instanceId:int, pathName:string, resourceFile:string) : void
+}
+class "Dictionary`2"<T1,T2> {
+}
+DefaultAssetCreation +-- TilePaletteAssetMenuPriority
+DefaultAssetCreation +-- DuplicateWhiteboxPaletteEndNameEditAction
+DuplicateWhiteboxPaletteEndNameEditAction --> "sample" Sample
+DefaultAssetCreation +-- CreateAssetEndNameEditAction
+CreateAssetEndNameEditAction --> "cellSize" Vector3
+CreateAssetEndNameEditAction --> "hoverData<Vector2Int,TileDragAndDropHoverData>" "Dictionary`2"
+@enduml

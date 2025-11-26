@@ -1,0 +1,17 @@
+@startuml
+interface IColumnUpdate {
+}
+interface IUIModuleColumn {
+}
+class UICellElement {
+    + UICellElement()
+    + <<virtual>> BindPSDNode(index:int, treeView:PSDImporterLayerManagementMultiColumnTreeView) : void
+    + <<virtual>> UnbindPSDNode() : void
+}
+class UIColumn {
+    + UIColumn(treeView:PSDImporterLayerManagementMultiColumnTreeView)
+}
+VisualElement <|-- UICellElement
+UICellElement --> "psdTreeViewNode" PSDTreeViewNode
+Column <|-- UIColumn
+@enduml

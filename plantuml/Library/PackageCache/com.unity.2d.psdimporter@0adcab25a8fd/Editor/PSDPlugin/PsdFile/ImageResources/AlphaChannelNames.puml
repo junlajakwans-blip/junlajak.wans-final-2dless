@@ -1,0 +1,11 @@
+@startuml
+class AlphaChannelNames {
+    + AlphaChannelNames()
+    + AlphaChannelNames(reader:PsdBinaryReader, name:string, resourceDataLength:int)
+}
+class "List`1"<T> {
+}
+ImageResource <|-- AlphaChannelNames
+AlphaChannelNames --> "ID" ResourceID
+AlphaChannelNames --> "ChannelNames<string>" "List`1"
+@enduml

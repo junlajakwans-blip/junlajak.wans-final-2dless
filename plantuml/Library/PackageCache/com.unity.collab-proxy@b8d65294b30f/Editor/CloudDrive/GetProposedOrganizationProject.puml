@@ -1,0 +1,7 @@
+@startuml
+class GetProposedOrganizationProject <<static>> {
+}
+class Values {
+}
+GetProposedOrganizationProject +-- Values
+@enduml

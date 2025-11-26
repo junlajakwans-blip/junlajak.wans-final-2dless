@@ -1,0 +1,6 @@
+@startuml
+class LightmapSamplingSettings {
+    + useBicubicLightmapSampling : bool <<get>> <<set>>
+}
+IRenderPipelineGraphicsSettings <|-- LightmapSamplingSettings
+@enduml

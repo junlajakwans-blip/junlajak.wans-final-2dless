@@ -1,0 +1,19 @@
+@startuml
+class TilePaletteBrushesPopup <<sealed>> <<partial>> {
+    + TilePaletteBrushesPopup()
+    + TilePaletteBrushesPopup(label:string)
+}
+class "PopupField`1"<T> {
+}
+class TilePaletteBrushesPopupFactory {
+}
+class TilePaletteBrushesPopupUxmlTraits {
+}
+class "UxmlFactory`2"<T1,T2> {
+}
+"PopupField`1" "<GridBrushBase>" <|-- TilePaletteBrushesPopup
+TilePaletteBrushesPopup +-- TilePaletteBrushesPopupFactory
+"UxmlFactory`2" "<TilePaletteBrushesPopup,TilePaletteBrushesPopupUxmlTraits>" <|-- TilePaletteBrushesPopupFactory
+TilePaletteBrushesPopup +-- TilePaletteBrushesPopupUxmlTraits
+UxmlTraits <|-- TilePaletteBrushesPopupUxmlTraits
+@enduml

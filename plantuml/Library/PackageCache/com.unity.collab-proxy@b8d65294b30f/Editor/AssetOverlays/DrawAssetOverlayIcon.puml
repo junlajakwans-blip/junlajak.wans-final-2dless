@@ -1,0 +1,4 @@
+@startuml
+class DrawAssetOverlayIcon <<static>> {
+}
+@enduml

@@ -1,0 +1,11 @@
+@startuml
+enum ColliderCornerType {
+    Square,
+    Round,
+    Sharp,
+}
+class LegacyCollider {
+    + {static} Bake(go:GameObject, forced:bool) : void
+}
+MonoBehaviour <|-- LegacyCollider
+@enduml

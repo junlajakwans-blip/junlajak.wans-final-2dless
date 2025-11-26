@@ -1,0 +1,13 @@
+@startuml
+abstract class Solver2DEditor {
+}
+class Contents <<static>> {
+    + {static} <<readonly>> restoreDefaultPoseString : string = "Restore Default Pose"
+    + {static} <<readonly>> createTargetString : string = "Create Target"
+}
+Editor <|-- Solver2DEditor
+Solver2DEditor +-- Contents
+Contents o-> "constrainRotationLabel" GUIContent
+Contents o-> "solveFromDefaultPoseLabel" GUIContent
+Contents o-> "weightLabel" GUIContent
+@enduml

@@ -1,0 +1,13 @@
+@startuml
+class VersionInfo {
+    + HasRealMergedData : bool <<get>> <<set>>
+    + ReaderName : string <<get>> <<set>>
+    + WriterName : string <<get>> <<set>>
+    + VersionInfo()
+    + VersionInfo(reader:PsdBinaryReader, name:string)
+}
+ImageResource <|-- VersionInfo
+VersionInfo --> "ID" ResourceID
+VersionInfo --> "Version" UInt32
+VersionInfo --> "FileVersion" UInt32
+@enduml

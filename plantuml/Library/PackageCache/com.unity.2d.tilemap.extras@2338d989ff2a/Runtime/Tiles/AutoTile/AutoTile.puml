@@ -1,0 +1,37 @@
+@startuml
+class AutoTile {
+    + random : bool <<get>> <<set>>
+    + <<override>> RefreshTile(position:Vector3Int, tilemap:ITilemap) : void
+    + <<override>> GetTileData(position:Vector3Int, itilemap:ITilemap, tileData:TileData) : void
+    + Validate() : void
+}
+abstract class "SerializedDictionary`2"<TKey,TValue> {
+}
+class AutoTileData {
+}
+class AutoTileDictionary {
+}
+enum AutoTileMaskType {
+    Mask_2x2,
+    Mask_3x3,
+}
+class "List`1"<T> {
+}
+class "Dictionary`2"<T1,T2> {
+}
+TileBase <|-- AutoTile
+AutoTile --> "m_DefaultSprite" Sprite
+AutoTile --> "m_DefaultGameObject" GameObject
+AutoTile --> "m_MaskType" AutoTileMaskType
+AutoTile o-> "m_TextureList<Texture2D>" "List`1"
+AutoTile o-> "m_TextureScaleList<float>" "List`1"
+AutoTile +-- "SerializedDictionary`2"
+"Dictionary`2" "<TKey,TValue>" <|-- "SerializedDictionary`2"
+ISerializationCallbackReceiver <|-- "SerializedDictionary`2"
+AutoTile +-- AutoTileData
+AutoTileData o-> "spriteList<Sprite>" "List`1"
+AutoTileData o-> "textureList<Texture2D>" "List`1"
+AutoTile +-- AutoTileDictionary
+"SerializedDictionary`2" "<uint,AutoTileData>" <|-- AutoTileDictionary
+AutoTile +-- AutoTileMaskType
+@enduml

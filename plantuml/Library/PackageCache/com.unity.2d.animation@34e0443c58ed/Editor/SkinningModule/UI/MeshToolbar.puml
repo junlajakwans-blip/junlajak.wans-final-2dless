@@ -1,0 +1,10 @@
+@startuml
+class MeshToolbar <<partial>> {
+    +  <<event>> SetMeshTool : Action<Tools> 
+    + {static} GenerateFromUXML() : MeshToolbar
+    + MeshToolbar()
+    + UpdateToggleState() : void
+}
+Toolbar <|-- MeshToolbar
+MeshToolbar --> "skinningCache" SkinningCache
+@enduml

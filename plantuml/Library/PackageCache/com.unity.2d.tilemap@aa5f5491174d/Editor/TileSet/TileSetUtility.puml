@@ -1,0 +1,9 @@
+@startuml
+class TileSetUtility <<static>> {
+    + {static} IsPalettePrefabFromTileSet(gameObject:GameObject) : bool
+}
+class CreateAssetEndNameEditAction {
+    + <<override>> Action(instanceId:int, pathName:string, resourceFile:string) : void
+}
+TileSetUtility +-- CreateAssetEndNameEditAction
+@enduml

@@ -1,0 +1,10 @@
+@startuml
+class AutoTileTextureSource {
+    + AutoTileTextureSource(texture2D:Texture2D, maskType:AutoTile.AutoTileMaskType, maskChanged:Action<Sprite, Texture2D, uint, uint>, editStopped:Action)
+    + ApplyAutoTileTemplate(template:AutoTileTemplate, matchExact:bool) : void
+    + ClearMaskForTextureSource() : void
+    + GetSpriteData() : List<AutoTileTemplate.SpriteData>
+    + ChangeScale(newScale:float) : void
+}
+ScrollView <|-- AutoTileTextureSource
+@enduml

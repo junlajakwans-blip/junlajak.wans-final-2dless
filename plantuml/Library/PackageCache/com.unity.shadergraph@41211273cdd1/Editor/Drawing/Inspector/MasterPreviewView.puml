@@ -1,0 +1,15 @@
+@startuml
+class MasterPreviewView {
+    + assetName : string <<get>> <<set>>
+    + MasterPreviewView(previewManager:PreviewManager, graph:GraphData)
+    + OnStartResize() : void
+    + OnResized() : void
+    + CanResizePastParentBounds() : bool
+    + KeepSquareAspect() : bool
+}
+VisualElement <|-- MasterPreviewView
+ISGResizable <|-- MasterPreviewView
+MasterPreviewView --> "previewTextureView" Image
+MasterPreviewView --> "preview" VisualElement
+MasterPreviewView --> "onResized" Action
+@enduml

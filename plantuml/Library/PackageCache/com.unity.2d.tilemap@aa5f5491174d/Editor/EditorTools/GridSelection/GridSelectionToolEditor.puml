@@ -1,0 +1,10 @@
+@startuml
+class GridSelectionToolEditor {
+    + <<override>> CreateInspectorGUI() : VisualElement
+    + CreateHorizontalToolbarContent() : OverlayToolbar
+    + CreateVerticalToolbarContent() : OverlayToolbar
+}
+Editor <|-- GridSelectionToolEditor
+ICreateHorizontalToolbar <|-- GridSelectionToolEditor
+ICreateVerticalToolbar <|-- GridSelectionToolEditor
+@enduml

@@ -1,0 +1,24 @@
+@startuml
+class GridPaintCreateTargetsDropdown {
+    + {static} IsOpen : bool = false
+    + GridPaintCreateTargetsDropdown(itemProvider:IFlexibleMenuItemProvider, selectionIndex:int, modifyItemUi:FlexibleMenuModifyItemUI, itemClickedCallback:Action<int, object>, minWidth:float)
+    + <<override>> OnOpen() : void
+    + <<override>> OnClose() : void
+}
+class MenuItemProvider {
+    + MenuItemProvider(hasTilePalette:bool)
+    + Count() : int
+    + GetItem(index:int) : object
+    + Add(obj:object) : int
+    + Replace(index:int, newPresetObject:object) : void
+    + Remove(index:int) : void
+    + Create() : object
+    + Move(index:int, destIndex:int, insertAfterDestIndex:bool) : void
+    + GetName(index:int) : string
+    + IsModificationAllowed(index:int) : bool
+    + GetSeperatorIndices() : int[]
+}
+FlexibleMenu <|-- GridPaintCreateTargetsDropdown
+GridPaintCreateTargetsDropdown +-- MenuItemProvider
+IFlexibleMenuItemProvider <|-- MenuItemProvider
+@enduml

@@ -1,0 +1,15 @@
+@startuml
+class SpriteSkinContainer {
+    + {static}  <<event>> onAddedSpriteSkin : Action<SpriteSkin> 
+    + {static}  <<event>> onRemovedSpriteSkin : Action<SpriteSkin> 
+    + {static}  <<event>> onBoneTransformChanged : Action<SpriteSkin> 
+    + AddSpriteSkin(spriteSkin:SpriteSkin) : void
+    + RemoveSpriteSkin(spriteSkin:SpriteSkin) : void
+    + BoneTransformsChanged(spriteSkin:SpriteSkin) : void
+}
+class "IReadOnlyList`1"<T> {
+}
+ScriptableObject <|-- SpriteSkinContainer
+SpriteSkinContainer --> "instance" SpriteSkinContainer
+SpriteSkinContainer --> "spriteSkins<SpriteSkin>" "IReadOnlyList`1"
+@enduml

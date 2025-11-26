@@ -1,0 +1,11 @@
+@startuml
+class SingerSkill {
+    + <<override>> Initialize(player:Player) : void
+    + IsMapBuffActive : bool <<get>>
+    + <<override>> Cleanup(player:Player) : void
+    + <<override>> UseCareerSkill(player:Player) : void
+    + <<override>> PerformAttack(player:Player) : void
+    + <<override>> PerformChargeAttack(player:Player) : void
+}
+CareerSkillBase <|-- SingerSkill
+@enduml

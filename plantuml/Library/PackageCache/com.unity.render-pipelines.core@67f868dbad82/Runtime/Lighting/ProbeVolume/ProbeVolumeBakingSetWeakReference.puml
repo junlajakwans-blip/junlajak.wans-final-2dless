@@ -1,0 +1,11 @@
+@startuml
+class ProbeVolumeBakingSetWeakReference {
+    + m_InstanceID : int
+    + ProbeVolumeBakingSetWeakReference(bakingSet:ProbeVolumeBakingSet)
+    + ProbeVolumeBakingSetWeakReference()
+    + Set(bakingSet:ProbeVolumeBakingSet) : void
+    + Get() : ProbeVolumeBakingSet
+    + IsLoaded() : bool
+    + Unload() : void
+}
+@enduml

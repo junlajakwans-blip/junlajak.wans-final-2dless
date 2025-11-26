@@ -1,0 +1,77 @@
+@startuml
+interface ISpriteVisibilityToolModel {
+}
+interface ISpriteVisibilityToolView {
+}
+class SpriteVisibilityToolData {
+    + allVisibility : bool <<get>> <<set>>
+    + previousVisibility : bool <<get>> <<set>>
+}
+class SpriteVisibilityToolController {
+    +  <<event>> OnAvailabilityChangeListeners : Action 
+    + SpriteVisibilityToolController(model:ISpriteVisibilityToolModel, events:SkinningEvents)
+    + Activate() : void
+    + Deactivate() : void
+    + Dispose() : void
+    + isAvailable : bool <<get>>
+    + SetAllVisibility(visibility:bool) : void
+    + GetAllVisibility() : bool
+    + BuildTreeView() : List<TreeViewItem>
+    + GetCharacterPartVisibility(item:TreeViewItem) : bool
+    + SetCharacterPartVisibility(item:TreeViewItem, visible:bool, isolate:bool) : void
+    + SetSelectedSprite(rows:IList<TreeViewItem>, selectedIds:IList<int>) : void
+    + GetTreeViewSelectionID(sprite:SpriteCache) : int
+}
+class SpriteVisibilityTool {
+    + SpriteVisibilityTool(s:SkinningCache)
+    + Setup() : void
+    + Dispose() : void
+    + name : string <<get>>
+    + tooltip : string <<get>>
+    + Activate() : void
+    + Deactivate() : void
+    + isAvailable : bool <<get>>
+    + SetAvailabilityChangeCallback(callback:Action) : void
+}
+class SpriteVisibilityToolView {
+    + SpriteVisibilityToolView()
+    + Setup() : void
+    + SetSelection(sprite:SpriteCache) : void
+    + SetSelectionIds(selectedIds:IList<int>) : void
+}
+class SpriteTreeView {
+    + SpriteTreeView(treeViewState:TreeViewState, multiColumnHeader:MultiColumnHeader)
+    + Setup() : void
+    + <<override>> OnGUI(rect:Rect) : void
+    + SetSelectionIds(selectedIds:IList<int>) : void
+    + SetSelection(sprite:SpriteCache) : void
+}
+interface ISpriteVisibilityItem {
+}
+class SpriteVisibilityGroupItem {
+}
+class SpriteVisibilitySpriteItem {
+}
+class "Func`1"<T> {
+}
+CacheObject <|-- SpriteVisibilityToolData
+IVisibilityTool <|-- SpriteVisibilityTool
+ISpriteVisibilityToolModel <|-- SpriteVisibilityTool
+SpriteVisibilityTool --> "skinningCache" SkinningCache
+SpriteVisibilityTool --> "view" VisualElement
+VisibilityToolViewBase <|-- SpriteVisibilityToolView
+ISpriteVisibilityToolView <|-- SpriteVisibilityToolView
+SpriteVisibilityToolView o-> "GetController<SpriteVisibilityToolController>" "Func`1"
+VisibilityTreeViewBase <|-- SpriteTreeView
+SpriteTreeView o-> "GetController<SpriteVisibilityToolController>" "Func`1"
+SpriteTreeView --> "m_Style" GUIStyle
+SpriteVisibilityToolController +-- ISpriteVisibilityItem
+SpriteVisibilityToolController +-- SpriteVisibilityGroupItem
+ISpriteVisibilityItem <|-- SpriteVisibilityGroupItem
+SpriteVisibilityGroupItem --> "group" CharacterGroupCache
+SpriteVisibilityGroupItem --> "characterOrder" ICharacterOrder
+SpriteVisibilityToolController +-- SpriteVisibilitySpriteItem
+ISpriteVisibilityItem <|-- SpriteVisibilitySpriteItem
+SpriteVisibilitySpriteItem --> "sprite" CharacterPartCache
+SpriteVisibilitySpriteItem --> "characterOrder" ICharacterOrder
+@enduml

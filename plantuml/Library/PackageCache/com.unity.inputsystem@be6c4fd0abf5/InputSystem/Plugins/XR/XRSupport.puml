@@ -1,0 +1,88 @@
+@startuml
+class XRUtilities <<static>> {
+    + <<const>> InterfaceMatchAnyVersion : string = "^(XRInput)"
+    + <<const>> InterfaceV1 : string = "XRInput"
+    + <<const>> InterfaceCurrent : string = "XRInputV1"
+}
+enum FeatureType {
+    Custom= 0,
+    Binary,
+    DiscreteStates,
+    Axis1D,
+    Axis2D,
+    Axis3D,
+    Rotation,
+    Hand,
+    Bone,
+    Eyes,
+}
+struct UsageHint {
+    + content : string
+}
+struct XRFeatureDescriptor {
+    + name : string
+    + customSize : uint
+}
+class XRDeviceDescriptor {
+    + deviceName : string
+    + manufacturer : string
+    + serialNumber : string
+    + deviceId : int
+    + ToJson() : string
+    + {static} FromJson(json:string) : XRDeviceDescriptor
+}
+struct Bone {
+    + m_ParentBoneIndex : uint
+    + parentBoneIndex : uint <<get>> <<set>>
+}
+struct Eyes {
+    + m_LeftEyeOpenAmount : float
+    + m_RightEyeOpenAmount : float
+    + leftEyeOpenAmount : float <<get>> <<set>>
+    + rightEyeOpenAmount : float <<get>> <<set>>
+}
+class BoneControl {
+    + <<override>> <<unsafe>> ReadUnprocessedValueFromState(statePtr:void*) : Bone
+    + <<override>> <<unsafe>> WriteValueIntoState(value:Bone, statePtr:void*) : void
+}
+class EyesControl {
+    + <<override>> <<unsafe>> ReadUnprocessedValueFromState(statePtr:void*) : Eyes
+    + <<override>> <<unsafe>> WriteValueIntoState(value:Eyes, statePtr:void*) : void
+}
+class XRSupport <<static>> {
+    + {static} Initialize() : void
+}
+class "List`1"<T> {
+}
+class "InputControl`1"<T> {
+}
+XRFeatureDescriptor --> "usageHints<UsageHint>" "List`1"
+XRFeatureDescriptor --> "featureType" FeatureType
+XRDeviceDescriptor --> "inputFeatures<XRFeatureDescriptor>" "List`1"
+Bone --> "m_Position" Vector3
+Bone --> "m_Rotation" Quaternion
+Bone --> "position" Vector3
+Bone --> "rotation" Quaternion
+Eyes --> "m_LeftEyePosition" Vector3
+Eyes --> "m_LeftEyeRotation" Quaternion
+Eyes --> "m_RightEyePosition" Vector3
+Eyes --> "m_RightEyeRotation" Quaternion
+Eyes --> "m_FixationPoint" Vector3
+Eyes --> "leftEyePosition" Vector3
+Eyes --> "leftEyeRotation" Quaternion
+Eyes --> "rightEyePosition" Vector3
+Eyes --> "rightEyeRotation" Quaternion
+Eyes --> "fixationPoint" Vector3
+"InputControl`1" "<Bone>" <|-- BoneControl
+BoneControl --> "parentBoneIndex" IntegerControl
+BoneControl --> "position" Vector3Control
+BoneControl --> "rotation" QuaternionControl
+"InputControl`1" "<Eyes>" <|-- EyesControl
+EyesControl --> "leftEyePosition" Vector3Control
+EyesControl --> "leftEyeRotation" QuaternionControl
+EyesControl --> "rightEyePosition" Vector3Control
+EyesControl --> "rightEyeRotation" QuaternionControl
+EyesControl --> "fixationPoint" Vector3Control
+EyesControl --> "leftEyeOpenAmount" AxisControl
+EyesControl --> "rightEyeOpenAmount" AxisControl
+@enduml

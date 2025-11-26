@@ -1,0 +1,7 @@
+@startuml
+class TopCurrencyUI {
+    + SetDependencies(currency:Currency) : void
+    + Refresh() : void
+}
+MonoBehaviour <|-- TopCurrencyUI
+@enduml

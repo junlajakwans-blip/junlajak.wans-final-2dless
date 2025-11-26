@@ -1,0 +1,9 @@
+@startuml
+abstract class ImageData {
+    + BitDepth : int <<get>>
+    + BytesPerRow : int <<get>>
+    + <<virtual>> Read() : byte[]
+    + {abstract} ReadCompressed() : byte[]
+}
+ImageData --> "Size" Size
+@enduml

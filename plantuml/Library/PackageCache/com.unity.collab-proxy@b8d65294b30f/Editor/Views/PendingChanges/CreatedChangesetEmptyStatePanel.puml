@@ -1,0 +1,5 @@
+@startuml
+class CreatedChangesetEmptyStatePanel {
+}
+CenteredContentPanel <|-- CreatedChangesetEmptyStatePanel
+@enduml

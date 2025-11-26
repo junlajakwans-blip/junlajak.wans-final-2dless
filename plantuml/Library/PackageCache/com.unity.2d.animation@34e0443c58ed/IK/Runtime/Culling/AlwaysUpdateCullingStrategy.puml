@@ -1,0 +1,6 @@
+@startuml
+class AlwaysUpdateCullingStrategy {
+    + <<override>> AreBonesVisible(transformIds:IList<int>) : bool
+}
+BaseCullingStrategy <|-- AlwaysUpdateCullingStrategy
+@enduml

@@ -1,0 +1,12 @@
+@startuml
+class KahootMon {
+    + <<override>> ApplyCareerBuff(data:DuckCareerData) : void
+    + <<override>> Attack() : void
+    + ShowQuestion() : void
+    + FireBlock(color:Color) : void
+    + ActivateEffect(player:Player) : void
+    + DoubleSpeedMode() : void
+    + <<override>> Die() : void
+}
+Enemy <|-- KahootMon
+@enduml

@@ -1,0 +1,14 @@
+@startuml
+class EnemySpawner {
+    +  <<event>> OnEnemySpawned : System.Action<Enemy> 
+    + InitializeSpawner(pool:IObjectPool, mapType:MapType, player:Player, collectibleSpawner:CollectibleSpawner, cardManager:CardManager, buffManager:BuffManager) : void
+    + Spawn() : void
+    + SpawnAtPosition(position:Vector3) : GameObject
+    + Despawn(enemy:GameObject) : void
+    + GetSpawnCount() : int
+    + SpawnSpecificEnemy(type:EnemyType, position:Vector3) : GameObject
+    + StartWave() : IEnumerator
+}
+MonoBehaviour <|-- EnemySpawner
+ISpawn <|-- EnemySpawner
+@enduml

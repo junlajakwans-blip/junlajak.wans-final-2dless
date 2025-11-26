@@ -1,0 +1,9 @@
+@startuml
+struct SwapOptionData {
+    + category : string
+}
+class PartSwapUI {
+}
+SwapOptionData --> "spriteResolver" SpriteResolver
+MonoBehaviour <|-- PartSwapUI
+@enduml

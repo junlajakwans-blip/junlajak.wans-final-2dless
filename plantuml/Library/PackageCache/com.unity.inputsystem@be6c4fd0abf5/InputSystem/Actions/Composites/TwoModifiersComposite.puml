@@ -1,0 +1,21 @@
+@startuml
+class TwoModifiersComposite {
+    + modifier1 : int
+    + modifier2 : int
+    + binding : int
+    + overrideModifiersNeedToBePressedFirst : bool
+    + <<override>> valueSizeInBytes : int <<get>>
+    + <<override>> EvaluateMagnitude(context:InputBindingCompositeContext) : float
+    + <<override>> <<unsafe>> ReadValue(context:InputBindingCompositeContext, buffer:void*, bufferSize:int) : void
+    + <<override>> ReadValueAsObject(context:InputBindingCompositeContext) : object
+}
+enum ModifiersOrder {
+    Default= 0,
+    Ordered= 1,
+    Unordered= 2,
+}
+InputBindingComposite <|-- TwoModifiersComposite
+TwoModifiersComposite o-> "modifiersOrder" ModifiersOrder
+TwoModifiersComposite --> "valueType" Type
+TwoModifiersComposite +-- ModifiersOrder
+@enduml

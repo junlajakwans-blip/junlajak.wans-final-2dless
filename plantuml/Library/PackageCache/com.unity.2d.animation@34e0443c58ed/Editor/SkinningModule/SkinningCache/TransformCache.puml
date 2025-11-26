@@ -1,0 +1,21 @@
+@startuml
+class TransformCache {
+    + childCount : int <<get>>
+    + SetParent(newParent:TransformCache, worldPositionStays:bool) : void
+}
+class "IEnumerable`1"<T> {
+}
+SkinningObject <|-- TransformCache
+"IEnumerable`1" "<TransformCache>" <|-- TransformCache
+TransformCache --> "parent" TransformCache
+TransformCache --> "localPosition" Vector3
+TransformCache --> "localRotation" Quaternion
+TransformCache --> "localScale" Vector3
+TransformCache --> "position" Vector3
+TransformCache --> "rotation" Quaternion
+TransformCache --> "right" Vector3
+TransformCache --> "up" Vector3
+TransformCache --> "forward" Vector3
+TransformCache --> "localToWorldMatrix" Matrix4x4
+TransformCache --> "worldToLocalMatrix" Matrix4x4
+@enduml

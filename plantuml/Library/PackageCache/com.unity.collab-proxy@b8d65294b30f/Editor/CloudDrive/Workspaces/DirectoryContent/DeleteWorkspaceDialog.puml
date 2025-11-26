@@ -1,0 +1,5 @@
+@startuml
+class DeleteWorkspaceDialog {
+}
+PlasticDialog <|-- DeleteWorkspaceDialog
+@enduml

@@ -1,0 +1,12 @@
+@startuml
+abstract class DefaultVolumeProfileSettingsPropertyDrawer <<partial>> {
+    + <<override>> CreatePropertyGUI(property:SerializedProperty) : VisualElement
+}
+abstract class "DefaultVolumeProfileSettingsContextMenu2`2"<TSetting,TRenderPipeline> {
+}
+class "IRenderPipelineGraphicsSettingsContextMenu2`1"<T> {
+}
+PropertyDrawer <|-- DefaultVolumeProfileSettingsPropertyDrawer
+DefaultVolumeProfileSettingsPropertyDrawer +-- "DefaultVolumeProfileSettingsContextMenu2`2"
+"IRenderPipelineGraphicsSettingsContextMenu2`1" "<TSetting>" <|-- "DefaultVolumeProfileSettingsContextMenu2`2"
+@enduml

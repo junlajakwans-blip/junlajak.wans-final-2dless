@@ -1,0 +1,12 @@
+@startuml
+class CharacterRigAnimator {
+    + SetRigPart(partName:string, sprite:Sprite) : void
+    + SetForm(isAdult:bool) : void
+    + PlayAnimation(animName:string) : void
+    + ResetRig() : void
+    + SetTrigger(triggerName:string) : void
+    + SetMoveAnimation(dirX:float) : void
+    + ResetAllTriggers() : void
+}
+MonoBehaviour <|-- CharacterRigAnimator
+@enduml

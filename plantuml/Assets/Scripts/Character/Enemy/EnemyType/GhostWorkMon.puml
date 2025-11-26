@@ -1,0 +1,8 @@
+@startuml
+class GhostWorkMon {
+    + TryTeleportAttack() : void
+    + <<override>> Attack() : void
+    + <<override>> Die() : void
+}
+Enemy <|-- GhostWorkMon
+@enduml

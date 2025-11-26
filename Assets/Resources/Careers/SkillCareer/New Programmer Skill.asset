@@ -17,6 +17,6 @@ MonoBehaviour:
   _stunDuration: 3
   _skillDuration: 27
   _skillCooldown: 23
-  _bugBombEffect: {fileID: 0}
+  _bugBombEffect: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
   _bugBombRange: 4
   _chargeRange: 6

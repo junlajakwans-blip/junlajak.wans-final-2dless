@@ -1,0 +1,15 @@
+@startuml
+class ExportAssetsPopup {
+    + ShowExportPopup(importerEditor:AsepriteImporterEditor, importerTargets:AsepriteImporter[]) : void
+}
+class Content <<static>> {
+    + {static} <<readonly>> titleText : string
+    + {static} <<readonly>> bodyText : string
+    + {static} <<readonly>> controllerText : string
+    + {static} <<readonly>> clipsText : string
+    + {static} <<readonly>> exportText : string
+    + {static} <<readonly>> cancelText : string
+}
+EditorWindow <|-- ExportAssetsPopup
+ExportAssetsPopup +-- Content
+@enduml

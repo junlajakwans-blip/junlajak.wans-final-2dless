@@ -1,0 +1,7 @@
+@startuml
+class RuleTileTemplateUtility <<static>> {
+    + {static} ApplyTemplateToRuleTile(template:RuleTileTemplate, texture:Texture2D, ruleTile:RuleTile, matchExact:bool) : void
+    + {static} CreateTemplate(ruleTile:RuleTile) : RuleTileTemplate
+    + {static} SaveTemplateToFile(ruleTile:RuleTile) : void
+}
+@enduml

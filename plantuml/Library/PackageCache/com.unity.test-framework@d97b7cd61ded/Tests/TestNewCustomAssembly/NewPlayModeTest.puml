@@ -1,0 +1,6 @@
+@startuml
+class NewPlayModeTest {
+    + NewPlayModeTestSimplePasses() : void
+    + NewPlayModeTestWithEnumeratorPasses() : IEnumerator
+}
+@enduml

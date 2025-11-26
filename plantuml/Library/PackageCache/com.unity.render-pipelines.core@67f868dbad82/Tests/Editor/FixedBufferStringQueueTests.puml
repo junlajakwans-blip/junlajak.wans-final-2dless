@@ -1,0 +1,8 @@
+@startuml
+class FixedBufferStringQueueTests <<unsafe>> {
+    + PushAndPopInBufferRange() : void
+    + PushAndPopOutOfBufferRange() : void
+    + PushAndPopOutOfBufferRange_StringSizeNotDivisibleBy4() : void
+    + PushAndPopAndClear() : void
+}
+@enduml

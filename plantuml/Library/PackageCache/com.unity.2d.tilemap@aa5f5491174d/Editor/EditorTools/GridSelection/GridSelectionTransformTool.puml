@@ -1,0 +1,11 @@
+@startuml
+class GridSelectionTransformTool {
+    + <<override>> HandleTool(position:Vector3, rotation:Quaternion, scale:Vector3) : void
+}
+class Styles <<static>> {
+}
+GridSelectionTool <|-- GridSelectionTransformTool
+GridSelectionTransformTool --> "toolbarIcon" GUIContent
+GridSelectionTransformTool +-- Styles
+Styles o-> "toolbarIcon" GUIContent
+@enduml

@@ -1,0 +1,20 @@
+@startuml
+class TilePaletteBrushPickItemElement {
+    + TilePaletteBrushPickItemElement(hasName:bool)
+    + SetBrush(brush:GridBrushBase) : void
+    + SetSize(size:int) : void
+    + ToggleRename() : void
+}
+class TilePaletteBrushPickTypeElement {
+    + TilePaletteBrushPickTypeElement()
+    + SetBrush(brush:GridBrushBase) : void
+}
+class "Action`1"<T> {
+}
+VisualElement <|-- TilePaletteBrushPickItemElement
+TilePaletteBrushPickItemElement --> "pointerUpEvent" Action
+TilePaletteBrushPickItemElement --> "renameEvent<string>" "Action`1"
+VisualElement <|-- TilePaletteBrushPickTypeElement
+TilePaletteBrushPickTypeElement --> "pointerUpEvent" Action
+TilePaletteBrushPickTypeElement --> "renameEvent<string>" "Action`1"
+@enduml

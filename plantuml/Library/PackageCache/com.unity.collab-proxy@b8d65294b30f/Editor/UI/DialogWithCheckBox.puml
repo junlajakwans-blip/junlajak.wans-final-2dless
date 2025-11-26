@@ -1,0 +1,5 @@
+@startuml
+class DialogWithCheckBox {
+}
+PlasticDialog <|-- DialogWithCheckBox
+@enduml

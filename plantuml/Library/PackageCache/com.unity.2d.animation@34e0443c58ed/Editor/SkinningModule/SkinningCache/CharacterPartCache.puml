@@ -1,0 +1,21 @@
+@startuml
+class CharacterGroupCache {
+    + parentGroup : int
+    + isVisible : bool <<get>> <<set>>
+    + <<virtual>> order : int <<get>> <<set>>
+}
+class CharacterPartCache {
+    + <<virtual>> order : int <<get>> <<set>>
+    + parentGroup : int <<get>> <<set>>
+    + <<virtual>> isVisible : bool <<get>> <<set>>
+    + boneCount : int <<get>>
+    + GetBone(index:int) : BoneCache
+    + IndexOf(bone:BoneCache) : int
+    + Contains(bone:BoneCache) : bool
+}
+SkinningObject <|-- CharacterGroupCache
+ICharacterOrder <|-- CharacterGroupCache
+TransformCache <|-- CharacterPartCache
+ICharacterOrder <|-- CharacterPartCache
+CharacterPartCache --> "sprite" SpriteCache
+@enduml

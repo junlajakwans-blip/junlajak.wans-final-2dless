@@ -1,0 +1,4 @@
+@startuml
+class EntryBuilder <<static>> {
+}
+@enduml

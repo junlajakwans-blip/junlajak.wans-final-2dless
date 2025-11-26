@@ -1,0 +1,12 @@
+@startuml
+class MooPingMon {
+    + <<override>> Move() : void
+    + ChasePlayer(player:Player) : void
+    + Stop() : void
+    + SetDirection(direction:Vector2) : void
+    + <<override>> ApplyCareerBuff(data:DuckCareerData) : void
+    + <<override>> DisableBehavior(duration:float) : void
+    + <<override>> Die() : void
+}
+Enemy <|-- MooPingMon
+@enduml

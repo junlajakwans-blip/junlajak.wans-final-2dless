@@ -1,0 +1,14 @@
+@startuml
+class PaintableSceneViewGrid {
+    + OnSceneGUI(sceneView:SceneView) : void
+    + <<override>> isActive : bool <<get>>
+    + <<override>> Repaint() : void
+}
+class "Action`1"<T> {
+}
+PaintableGrid <|-- PaintableSceneViewGrid
+PaintableSceneViewGrid --> "tilemap" Tilemap
+PaintableSceneViewGrid --> "onEdited<GameObject>" "Action`1"
+PaintableSceneViewGrid --> "rectPosition" Rect
+PaintableSceneViewGrid --> "windowRoot" VisualElement
+@enduml

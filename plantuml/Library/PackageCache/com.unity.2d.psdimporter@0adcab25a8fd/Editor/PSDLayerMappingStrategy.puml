@@ -1,0 +1,21 @@
+@startuml
+interface IPSDLayerMappingStrategyComparable {
+}
+interface IPSDLayerMappingStrategy {
+}
+abstract class "LayerMappingStrategy`1"<T> {
+    + Compare(x:IPSDLayerMappingStrategyComparable, y:BitmapLayer) : bool
+    + Compare(x:IPSDLayerMappingStrategyComparable, y:IPSDLayerMappingStrategyComparable) : bool
+    + LayersUnique(layers:IEnumerable<IPSDLayerMappingStrategyComparable>) : string
+}
+class LayerMappingUseLayerName {
+}
+class LayerMappingUseLayerNameCaseSensitive {
+}
+class LayerMappingUserLayerID {
+}
+IPSDLayerMappingStrategy <|-- "LayerMappingStrategy`1"
+"LayerMappingStrategy`1" "<string>" <|-- LayerMappingUseLayerName
+"LayerMappingStrategy`1" "<string>" <|-- LayerMappingUseLayerNameCaseSensitive
+"LayerMappingStrategy`1" "<int>" <|-- LayerMappingUserLayerID
+@enduml

@@ -1,0 +1,14 @@
+@startuml
+class UniversalRenderingData {
+    + supportsDynamicBatching : bool
+    + stencilLodCrossFadeEnabled : bool <<get>> <<internal set>>
+    + <<override>> Reset() : void
+}
+ContextItem <|-- UniversalRenderingData
+UniversalRenderingData --> "cullResults" CullingResults
+UniversalRenderingData --> "perObjectData" PerObjectData
+UniversalRenderingData --> "renderingMode" RenderingMode
+UniversalRenderingData --> "prepassLayerMask" LayerMask
+UniversalRenderingData --> "opaqueLayerMask" LayerMask
+UniversalRenderingData --> "transparentLayerMask" LayerMask
+@enduml

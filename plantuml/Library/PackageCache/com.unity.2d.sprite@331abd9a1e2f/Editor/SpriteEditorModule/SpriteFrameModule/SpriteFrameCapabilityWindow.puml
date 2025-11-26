@@ -1,0 +1,6 @@
+@startuml
+class SpriteFrameCapabilityWindow {
+    + CreateGUI() : void
+}
+EditorWindow <|-- SpriteFrameCapabilityWindow
+@enduml

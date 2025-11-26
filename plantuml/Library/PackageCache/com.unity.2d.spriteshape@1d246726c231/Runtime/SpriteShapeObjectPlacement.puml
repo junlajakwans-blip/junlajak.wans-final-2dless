@@ -1,0 +1,15 @@
+@startuml
+enum SpriteShapeObjectPlacementMode {
+    Auto,
+    Manual,
+}
+class SpriteShapeObjectPlacement {
+    + setNormal : bool <<get>> <<set>>
+    + ratio : float <<get>> <<set>>
+    + startPoint : int <<get>> <<set>>
+    + endPoint : int <<get>> <<set>>
+}
+MonoBehaviour <|-- SpriteShapeObjectPlacement
+SpriteShapeObjectPlacement --> "mode" SpriteShapeObjectPlacementMode
+SpriteShapeObjectPlacement --> "spriteShapeController" SpriteShapeController
+@enduml

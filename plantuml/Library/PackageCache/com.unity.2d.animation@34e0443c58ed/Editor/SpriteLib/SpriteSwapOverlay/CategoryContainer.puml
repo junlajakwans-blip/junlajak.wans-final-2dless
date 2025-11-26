@@ -1,0 +1,18 @@
+@startuml
+class CategoryContainer {
+    +  <<event>> onSelectionChange : Action<int> 
+    + itemCount : int <<get>>
+    + selectedIndex : int <<get>>
+    + CategoryContainer()
+    + SetItems(categories:IList) : void
+    + Select(i:int) : void
+    + GetItem(i:int) : object
+}
+class Styles <<static>> {
+    + <<const>> categoryContainer : string
+}
+DropdownField <|-- CategoryContainer
+INavigableElement <|-- CategoryContainer
+CategoryContainer --> "visualElement" VisualElement
+CategoryContainer +-- Styles
+@enduml

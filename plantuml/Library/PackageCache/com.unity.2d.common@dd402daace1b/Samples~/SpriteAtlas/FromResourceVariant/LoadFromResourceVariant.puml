@@ -1,0 +1,5 @@
+@startuml
+class LoadFromResourceVariant {
+}
+MonoBehaviour <|-- LoadFromResourceVariant
+@enduml

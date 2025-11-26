@@ -1,0 +1,14 @@
+@startuml
+class SpriteLibUpgrader {
+    + SpriteLibUpgrader(onlyFindOldAssets:bool, onlySearchInAssets:bool)
+}
+class Contents <<static>> {
+    + {static} <<readonly>> ProgressBarTitle : string
+    + {static} <<readonly>> VerifyingSelection : string
+    + {static} <<readonly>> CreatingNewLibraries : string
+    + {static} <<readonly>> ReassignAssetsInComponents : string
+    + {static} <<readonly>> RemoveOldSpriteLibraries : string
+}
+BaseUpgrader <|-- SpriteLibUpgrader
+SpriteLibUpgrader +-- Contents
+@enduml

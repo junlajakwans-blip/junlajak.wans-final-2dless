@@ -1,0 +1,11 @@
+@startuml
+class AssetSpawner {
+    + Initialize(pivot:Transform, pool:IObjectPool) : void
+    + SpawnAtPosition(position:Vector3) : GameObject
+    + Despawn(obj:GameObject) : void
+    + GetSpawnCount() : int
+    + Spawn() : void
+}
+MonoBehaviour <|-- AssetSpawner
+ISpawn <|-- AssetSpawner
+@enduml

@@ -1,0 +1,12 @@
+@startuml
+class LimbSolver2DEditor {
+    + <<override>> OnInspectorGUI() : void
+}
+class Contents <<static>> {
+}
+Solver2DEditor <|-- LimbSolver2DEditor
+LimbSolver2DEditor +-- Contents
+Contents o-> "effectorLabel" GUIContent
+Contents o-> "targetLabel" GUIContent
+Contents o-> "flipLabel" GUIContent
+@enduml

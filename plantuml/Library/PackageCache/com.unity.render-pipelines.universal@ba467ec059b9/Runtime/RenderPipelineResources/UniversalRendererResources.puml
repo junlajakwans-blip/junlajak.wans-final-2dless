@@ -1,0 +1,12 @@
+@startuml
+class UniversalRendererResources {
+    + version : int <<get>>
+}
+IRenderPipelineResources <|-- UniversalRendererResources
+UniversalRendererResources --> "copyDepthPS" Shader
+UniversalRendererResources --> "cameraMotionVector" Shader
+UniversalRendererResources --> "stencilDeferredPS" Shader
+UniversalRendererResources --> "clusterDeferred" Shader
+UniversalRendererResources --> "stencilDitherMaskSeedPS" Shader
+UniversalRendererResources --> "decalDBufferClear" Shader
+@enduml

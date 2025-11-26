@@ -1,0 +1,8 @@
+@startuml
+class CooldownWindowDelayer {
+    + CooldownWindowDelayer(action:Action, cooldownSeconds:double)
+    + Ping() : void
+    + Pause() : void
+    + Resume() : void
+}
+@enduml

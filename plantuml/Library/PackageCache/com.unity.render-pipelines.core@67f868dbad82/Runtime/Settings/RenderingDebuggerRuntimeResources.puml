@@ -1,0 +1,11 @@
+@startuml
+class RenderingDebuggerRuntimeResources {
+}
+enum Version {
+    Initial,
+    Count,
+    Last= Count - 1,
+}
+IRenderPipelineResources <|-- RenderingDebuggerRuntimeResources
+RenderingDebuggerRuntimeResources +-- Version
+@enduml

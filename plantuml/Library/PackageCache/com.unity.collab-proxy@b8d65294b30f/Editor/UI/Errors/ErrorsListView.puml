@@ -1,0 +1,5 @@
+@startuml
+class ErrorsListView {
+}
+PlasticTreeView <|-- ErrorsListView
+@enduml

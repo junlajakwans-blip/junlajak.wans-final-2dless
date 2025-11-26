@@ -1,0 +1,6 @@
+@startuml
+class LabelsTab <<partial>> {
+    + BindElements(controllerEvents:ControllerEvents, viewEvents:ViewEvents) : void
+}
+VisualElement <|-- LabelsTab
+@enduml

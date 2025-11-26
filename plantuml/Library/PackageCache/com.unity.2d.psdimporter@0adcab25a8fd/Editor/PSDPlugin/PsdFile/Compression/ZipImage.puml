@@ -1,0 +1,7 @@
+@startuml
+class ZipImage {
+    + ZipImage(data:byte[], size:Size, bitDepth:int)
+    + <<override>> ReadCompressed() : byte[]
+}
+ImageData <|-- ZipImage
+@enduml

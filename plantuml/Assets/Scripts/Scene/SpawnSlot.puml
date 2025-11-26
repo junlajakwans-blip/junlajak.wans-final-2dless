@@ -1,0 +1,9 @@
+@startuml
+class SpawnSlot <<static>> {
+    + {static} Reserve(worldPos:Vector3) : bool
+    + {static} Unreserve(worldPos:Vector3) : void
+    + {static} IsReserved(worldPos:Vector3) : bool
+    + {static} ClearBehind(pivotX:float, keepDistance:float) : void
+    + {static} ClearAll() : void
+}
+@enduml

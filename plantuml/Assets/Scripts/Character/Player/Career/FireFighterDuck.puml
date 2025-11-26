@@ -1,0 +1,11 @@
+@startuml
+class FireFighterSkill {
+    + <<override>> Initialize(player:Player) : void
+    + <<override>> UseCareerSkill(player:Player) : void
+    + <<override>> PerformAttack(player:Player) : void
+    + <<override>> PerformChargeAttack(player:Player) : void
+    + <<override>> PerformRangeAttack(player:Player, target:Transform) : void
+    + <<override>> Cleanup(player:Player) : void
+}
+CareerSkillBase <|-- FireFighterSkill
+@enduml

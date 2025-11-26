@@ -1,0 +1,7 @@
+@startuml
+interface IPaletteProvider {
+}
+class "ReadOnlyCollection`1"<T> {
+}
+IPaletteProvider --> "entries<PaletteEntry>" "ReadOnlyCollection`1"
+@enduml

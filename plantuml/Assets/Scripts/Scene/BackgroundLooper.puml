@@ -1,0 +1,6 @@
+@startuml
+class BackgroundLooper {
+    + SetBackground(backgroundKey:string) : void
+}
+MonoBehaviour <|-- BackgroundLooper
+@enduml

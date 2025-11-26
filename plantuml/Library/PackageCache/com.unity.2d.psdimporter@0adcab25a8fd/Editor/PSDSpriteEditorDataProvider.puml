@@ -1,0 +1,6 @@
+@startuml
+class PSDImporter <<partial>> {
+}
+ScriptedImporter <|-- PSDImporter
+ISpriteEditorDataProvider <|-- PSDImporter
+@enduml

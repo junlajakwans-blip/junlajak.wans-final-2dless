@@ -1,0 +1,32 @@
+@startuml
+interface IShaderVariantSettings {
+}
+abstract class "VolumeDebugSettings`1"<T> <<partial>> {
+    + {static} ComponentDisplayName(component:Type) : string
+    + {static} RegisterCamera(additionalCamera:T) : void
+    + {static} UnRegisterCamera(additionalCamera:T) : void
+}
+class DebugManager <<sealed>> <<partial>> {
+    + ToggleEditorUI(open:bool) : void
+}
+class ProbeTouchupVolume {
+}
+class VolumeManager <<sealed>> <<partial>> {
+    + Register(volume:Volume, layer:int) : void
+    + Unregister(volume:Volume, layer:int) : void
+}
+class DebugUI <<partial>> {
+}
+class "List`1"<T> {
+}
+class MaskField {
+    + Fill(names:string[]) : void
+    + <<override>> SetValue(value:uint) : void
+}
+class "EnumField`1"<T> {
+}
+"VolumeDebugSettings`1" --> "componentTypes<Type>" "List`1"
+ProbeAdjustmentVolume <|-- ProbeTouchupVolume
+DebugUI +-- MaskField
+"EnumField`1" "<uint>" <|-- MaskField
+@enduml

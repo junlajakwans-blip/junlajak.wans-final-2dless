@@ -1,0 +1,7 @@
+@startuml
+class UpgradeUI {
+    + Init(store:StoreUpgrade, item:StoreItem) : void
+    + Refresh() : void
+}
+MonoBehaviour <|-- UpgradeUI
+@enduml

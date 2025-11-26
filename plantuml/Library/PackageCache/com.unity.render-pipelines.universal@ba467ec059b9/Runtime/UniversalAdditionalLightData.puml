@@ -1,0 +1,33 @@
+@startuml
+class LightExtensions <<static>> {
+    + {static} GetUniversalAdditionalLightData(light:Light) : UniversalAdditionalLightData
+}
+class UniversalAdditionalLightData <<partial>> {
+    + usePipelineSettings : bool <<get>> <<set>>
+    + {static} <<readonly>> AdditionalLightsShadowResolutionTierCustom : int
+    + {static} <<readonly>> AdditionalLightsShadowResolutionTierLow : int = 0
+    + {static} <<readonly>> AdditionalLightsShadowResolutionTierMedium : int = 1
+    + {static} <<readonly>> AdditionalLightsShadowResolutionTierHigh : int = 2
+    + {static} <<readonly>> AdditionalLightsShadowDefaultResolutionTier : int
+    + {static} <<readonly>> AdditionalLightsShadowDefaultCustomResolution : int = 128
+    + {static} <<readonly>> AdditionalLightsShadowMinimumResolution : int = 128
+    + additionalLightsShadowResolutionTier : int <<get>>
+    + customShadowLayers : bool <<get>> <<set>>
+}
+enum Version {
+    Initial= 0,
+    RenderingLayers= 2,
+    SoftShadowQuality= 3,
+    RenderingLayersMask= 4,
+    Count,
+}
+MonoBehaviour <|-- UniversalAdditionalLightData
+ISerializationCallbackReceiver <|-- UniversalAdditionalLightData
+IAdditionalData <|-- UniversalAdditionalLightData
+UniversalAdditionalLightData --> "lightCookieSize" Vector2
+UniversalAdditionalLightData --> "lightCookieOffset" Vector2
+UniversalAdditionalLightData --> "softShadowQuality" SoftShadowQuality
+UniversalAdditionalLightData --> "renderingLayers" RenderingLayerMask
+UniversalAdditionalLightData --> "shadowRenderingLayers" RenderingLayerMask
+UniversalAdditionalLightData +-- Version
+@enduml

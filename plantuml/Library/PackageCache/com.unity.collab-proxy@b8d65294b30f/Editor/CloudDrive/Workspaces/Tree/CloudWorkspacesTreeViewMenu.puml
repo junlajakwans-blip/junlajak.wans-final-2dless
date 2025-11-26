@@ -1,0 +1,16 @@
+@startuml
+enum CloudWorkspacesTreeOperations {
+    None= 0,
+    OpenInExplorer= 1 << 0,
+    OpenUnityCloud= 1 << 1,
+    Delete= 1 << 2,
+    Share= 1 << 3,
+    UnshareWithMe= 1 << 4,
+}
+class CloudWorkspacesTreeMenuUpdater <<static>> {
+}
+interface ICloudWorkspacesTreeMenuOperations {
+}
+class CloudWorkspacesTreeViewMenu {
+}
+@enduml

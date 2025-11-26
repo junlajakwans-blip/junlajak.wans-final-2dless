@@ -1,0 +1,9 @@
+@startuml
+class SettingsWindowUtils {
+}
+class GUIScope {
+    + GUIScope(layoutMaxWidth:float)
+    + GUIScope()
+}
+SettingsWindowUtils +-- GUIScope
+@enduml

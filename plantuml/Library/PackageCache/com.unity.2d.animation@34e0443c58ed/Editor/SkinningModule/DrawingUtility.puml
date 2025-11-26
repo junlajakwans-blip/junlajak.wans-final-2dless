@@ -1,0 +1,13 @@
+@startuml
+class DrawingUtility <<static>> {
+    + {static} BeginLines(color:Color) : void
+    + {static} BeginSolidLines() : void
+    + {static} EndLines() : void
+    + {static} DrawSolidLine(width:float, p1:Vector3, p2:Vector3) : void
+    + {static} DrawBox(position:Rect) : void
+    + {static} DrawMesh(mesh:Mesh, material:Material, matrix:Matrix4x4) : void
+    + {static} DrawGUIStyleCap(controlID:int, position:Vector3, rotation:Quaternion, size:float, guiStyle:GUIStyle) : void
+    + {static} DrawRect(rect:Rect, position:Vector3, rotation:Quaternion, color:Color, rectAlpha:float, outlineAlpha:float) : void
+}
+DrawingUtility o-> "spriteBorderColor" Color
+@enduml

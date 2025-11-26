@@ -1,0 +1,8 @@
+@startuml
+class AutoTileTextureImporterElement {
+    + AutoTileTextureImporterElement()
+}
+VisualElement <|-- AutoTileTextureImporterElement
+AutoTileTextureImporterElement --> "onRevert" Action
+AutoTileTextureImporterElement --> "onApply" Action
+@enduml

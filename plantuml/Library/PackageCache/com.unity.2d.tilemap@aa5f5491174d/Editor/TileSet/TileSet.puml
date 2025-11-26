@@ -1,0 +1,40 @@
+@startuml
+class TileSet {
+    + createAtlas : bool <<get>> <<set>>
+}
+enum HexagonLayout {
+    PointTop,
+    FlatTop,
+}
+class TextureSource {
+}
+class "List`1"<T> {
+}
+struct SerializableSpriteImportData {
+    + name : string <<get>> <<set>>
+    + tessellationDetail : float <<get>> <<set>>
+    + spriteID : string <<get>> <<set>>
+}
+class GeneratedSprites {
+    + m_PixelsPerUnit : int
+}
+ScriptableObject <|-- TileSet
+TileSet --> "textureSources<TextureSource>" "List`1"
+TileSet --> "hexagonLayout" HexagonLayout
+TileSet --> "cellSize" Vector3
+TileSet --> "sortMode" TransparencySortMode
+TileSet --> "sortAxis" Vector3
+TileSet --> "scriptablePacker" ScriptablePacker
+TileSet +-- HexagonLayout
+TileSet +-- TextureSource
+TextureSource --> "texture" Texture2D
+TextureSource --> "tileTemplate" TileTemplate
+TileSet +-- SerializableSpriteImportData
+SerializableSpriteImportData --> "rect" Rect
+SerializableSpriteImportData --> "alignment" SpriteAlignment
+SerializableSpriteImportData --> "pivot" Vector2
+SerializableSpriteImportData --> "border" Vector4
+SerializableSpriteImportData --> "outline<Vector2[]>" "List`1"
+TileSet +-- GeneratedSprites
+GeneratedSprites --> "m_Texture2D" Texture2D
+@enduml

@@ -1,0 +1,11 @@
+@startuml
+class SliderValueNode {
+    + SliderValueNode()
+    + <<override>> hasPreview : bool <<get>>
+    + <<sealed>> <<override>> UpdateNodeAfterDeserialization() : void
+    + <<override>> CollectShaderProperties(properties:PropertyCollector, generationMode:GenerationMode) : void
+    + GenerateNodeCode(sb:ShaderStringBuilder, generationMode:GenerationMode) : void
+}
+AbstractMaterialNode <|-- SliderValueNode
+IGeneratesBodyCode <|-- SliderValueNode
+@enduml

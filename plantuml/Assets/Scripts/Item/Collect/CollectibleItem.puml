@@ -1,0 +1,21 @@
+@startuml
+enum CollectibleType {
+    Coin,
+    Token,
+    GreenTea,
+    Coffee,
+    MooKrata,
+    Takoyaki,
+    CardPickup,
+}
+class CollectibleItem {
+    + GetCollectibleType() : CollectibleType
+    + SetDependencies(manager:CardManager, spawner:CollectibleSpawner, buffManager:BuffManager) : void
+    + Collect(player:Player) : void
+    + OnCollectedEffect() : void
+    + GetCollectType() : string
+    + AssignCareer(data:DuckCareerData) : void
+}
+MonoBehaviour <|-- CollectibleItem
+ICollectable <|-- CollectibleItem
+@enduml

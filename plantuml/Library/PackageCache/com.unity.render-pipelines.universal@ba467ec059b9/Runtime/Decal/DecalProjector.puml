@@ -1,0 +1,29 @@
+@startuml
+enum DecalScaleMode {
+    ScaleInvariant,
+    InheritFromHierarchy,
+}
+class DecalProjector <<partial>> {
+    + drawDistance : float <<get>> <<set>>
+    + fadeScale : float <<get>> <<set>>
+    + startAngleFade : float <<get>> <<set>>
+    + endAngleFade : float <<get>> <<set>>
+    + fadeFactor : float <<get>> <<set>>
+    + IsValid() : bool
+}
+enum Version {
+    Initial,
+    RenderingLayerMask,
+    Count,
+}
+MonoBehaviour <|-- DecalProjector
+ISerializationCallbackReceiver <|-- DecalProjector
+DecalProjector --> "material" Material
+DecalProjector --> "uvScale" Vector2
+DecalProjector --> "uvBias" Vector2
+DecalProjector --> "renderingLayerMask" RenderingLayerMask
+DecalProjector --> "scaleMode" DecalScaleMode
+DecalProjector --> "pivot" Vector3
+DecalProjector --> "size" Vector3
+DecalProjector +-- Version
+@enduml

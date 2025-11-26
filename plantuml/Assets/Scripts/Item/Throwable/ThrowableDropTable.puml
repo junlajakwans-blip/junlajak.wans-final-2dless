@@ -1,0 +1,17 @@
+@startuml
+class ThrowableDropTable {
+}
+class DropEntry {
+    + id : string
+    + assetName : string
+    + poolTag : string
+    + weight : float = 1f
+}
+class "List`1"<T> {
+}
+ScriptableObject <|-- ThrowableDropTable
+ThrowableDropTable --> "mapType" MapType
+ThrowableDropTable o-> "dropList<DropEntry>" "List`1"
+ThrowableDropTable +-- DropEntry
+DropEntry --> "icon" Sprite
+@enduml

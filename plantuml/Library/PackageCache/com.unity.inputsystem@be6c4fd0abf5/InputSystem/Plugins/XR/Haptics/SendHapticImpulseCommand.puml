@@ -1,0 +1,7 @@
+@startuml
+struct SendHapticImpulseCommand {
+    + {static} Create(motorChannel:int, motorAmplitude:float, motorDuration:float) : SendHapticImpulseCommand
+}
+IInputDeviceCommandInfo <|-- SendHapticImpulseCommand
+SendHapticImpulseCommand --> "typeStatic" FourCC
+@enduml

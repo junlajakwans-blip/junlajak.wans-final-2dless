@@ -1,0 +1,10 @@
+@startuml
+class GoldenMon {
+    + <<override>> Move() : void
+    + DanceAttack() : void
+    + BreakPlatform() : void
+    + DropGoldenCoins() : void
+    + <<override>> Die() : void
+}
+Enemy <|-- GoldenMon
+@enduml

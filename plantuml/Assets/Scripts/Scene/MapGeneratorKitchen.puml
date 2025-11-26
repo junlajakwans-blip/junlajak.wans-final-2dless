@@ -1,0 +1,8 @@
+@startuml
+class MapGeneratorKitchen {
+    + <<override>> GenerateMap() : void
+    + <<override>> SetupBackground() : void
+    + <<override>> SetupFloor() : void
+}
+MapGeneratorBase <|-- MapGeneratorKitchen
+@enduml

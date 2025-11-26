@@ -1,0 +1,7 @@
+@startuml
+class DragAndDropManipulator {
+    + <<const>> overlayClassName : string = "DragAndDropOverlay"
+    + DragAndDropManipulator(overlayVisual:VisualElement, canDragStart:Func<bool>, dragPerform:Action<IList<DragAndDropData>, bool>)
+}
+Manipulator <|-- DragAndDropManipulator
+@enduml

@@ -1,0 +1,74 @@
+@startuml
+class TestListGUI {
+    + TestListGUI()
+    + PrintHeadPanel() : void
+    + PrintProgressBar(rect:Rect) : void
+    + PrintBottomPanel() : void
+    + HasTreeData() : bool
+    + RenderTestList() : void
+    + RenderDetails(width:float) : void
+    + Reload() : void
+    + Repaint() : void
+    + Init(window:TestRunnerWindow, rootTest:ITestAdaptor) : void
+    + UpdateResult(result:TestRunnerResult) : void
+    + RunFinished(results:ITestResultAdaptor) : void
+    + UpdateTestTree(tests:ITestAdaptor[]) : void
+    + RebuildUIFilter() : void
+    + GetExecutionSettings() : ExecutionSettings
+}
+class "TreeView`1"<T> {
+}
+class "TreeViewController`1"<T> {
+}
+class "TreeViewItem`1"<T> {
+}
+class "LazyTreeViewDataSource`1"<T> {
+}
+class "TreeViewUtility`1"<T> {
+}
+class "TreeViewSelectState`1"<T> {
+}
+class "ITreeViewGUI`1"<T> {
+}
+class "ITreeViewDragging`1"<T> {
+}
+class "ITreeViewDataSource`1"<T> {
+}
+class "TreeViewGUI`1"<T> {
+}
+class "TreeViewDragging`1"<T> {
+}
+class "TreeViewDataSource`1"<T> {
+}
+class "TreeViewItemAlphaNumericSort`1"<T> {
+}
+class "TreeViewState`1"<T> {
+}
+class "RenameOverlay`1"<T> {
+}
+class "Dictionary`2"<T1,T2> {
+}
+class "List`1"<T> {
+}
+struct PlayerMenuItem {
+    + filterSelectedTestsOnly : bool
+}
+enum RunFilterType {
+    RunAll,
+    RunSelected,
+    RunFailed,
+    RunSpecific,
+    BuildAll,
+    BuildSelected,
+}
+struct FilterConstructionStep {
+    + Id : int
+}
+TestListGUI --> "filteredTree<string,TestTreeViewItem>" "Dictionary`2"
+TestListGUI --> "newResultList<TestRunnerResult>" "List`1"
+TestListGUI +-- PlayerMenuItem
+PlayerMenuItem --> "name" GUIContent
+TestListGUI +-- RunFilterType
+TestListGUI +-- FilterConstructionStep
+FilterConstructionStep --> "Item" TreeViewItem
+@enduml

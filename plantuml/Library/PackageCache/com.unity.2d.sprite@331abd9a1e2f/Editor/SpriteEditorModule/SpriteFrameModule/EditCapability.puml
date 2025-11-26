@@ -1,0 +1,24 @@
+@startuml
+struct EditCapability {
+    + EditCapability(capabilities:EEditCapability[])
+    + HasCapability(hasCapability:EEditCapability) : bool
+    + SetCapability(capability:EEditCapability, on:bool) : void
+    + Equals(other:EditCapability) : bool
+    + <<override>> Equals(obj:object) : bool
+    + <<override>> GetHashCode() : int
+}
+enum EEditCapability {
+    None= 0,
+    EditSpriteName= 1 << 0,
+    EditSpriteRect= 1 << 1,
+    EditBorder= 1 << 2,
+    EditPivot= 1 << 3,
+    CreateAndDeleteSprite= 1 << 4,
+    SliceOnImport= 1 << 5,
+    All= EditSpriteRect | EditBorder | EditPivot | EditSpriteName | CreateAndDeleteSprite | SliceOnImport,
+}
+class "IEquatable`1"<T> {
+}
+"IEquatable`1" "<EditCapability>" <|-- EditCapability
+EditCapability o-> "defaultCapability" EditCapability
+@enduml

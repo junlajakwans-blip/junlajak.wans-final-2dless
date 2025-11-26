@@ -1,0 +1,4 @@
+@startuml
+class BuildAssetBundle <<static>> {
+}
+@enduml

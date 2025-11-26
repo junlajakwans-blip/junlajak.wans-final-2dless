@@ -1,0 +1,7 @@
+@startuml
+class ShelveAndSwitchOptionsFoldout {
+}
+class Styles {
+}
+ShelveAndSwitchOptionsFoldout +-- Styles
+@enduml

@@ -1,0 +1,32 @@
+@startuml
+class CareerSwitcher {
+    +  <<event>> OnCareerChangedEvent : Action<DuckCareerData> 
+    +  <<event>> OnRevertToDefaultEvent : Action 
+    +  <<event>> OnResetCareerCycle : Action 
+    + IsDuckling : bool <<get>>
+    + SwitchCareer(newCareer:DuckCareerData) : void
+    + GetAvailableCareers() : List<DuckCareer>
+    + OnCareerChanged(newCareer:DuckCareerData) : void
+    + ApplyCareerAppearance() : void
+    + GetCurrentCareer() : DuckCareerData
+    + RevertToDefault() : void
+    + StartCareerTimer(duration:float) : void
+    + CanChangeTo(newCareer:DuckCareerData) : bool
+    + GetCareerData(type:DuckCareer) : DuckCareerData
+    + GetCareerDataByName(name:string) : DuckCareerData
+    + SwitchCareerByName(careerName:string) : void
+}
+class CareerBodyMap {
+}
+class "IReadOnlyList`1"<T> {
+}
+MonoBehaviour <|-- CareerSwitcher
+ICareerSwitchable <|-- CareerSwitcher
+CareerSwitcher --> "EffectProfile" CareerEffectProfile
+CareerSwitcher --> "CareerBodyMaps<CareerBodyMap>" "IReadOnlyList`1"
+CareerSwitcher --> "CurrentCareer" DuckCareerData
+CareerSwitcher +-- CareerBodyMap
+CareerBodyMap --> "careerID" DuckCareer
+CareerBodyMap --> "bodyPrefab" GameObject
+CareerBodyMap --> "fxProfile" CareerEffectProfile
+@enduml

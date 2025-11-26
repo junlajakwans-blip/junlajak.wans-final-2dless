@@ -1,0 +1,9 @@
+@startuml
+class TilePaletteWhiteboxSamplesUtility <<static>> {
+}
+class "List`1"<T> {
+}
+TilePaletteWhiteboxSamplesUtility --> "whiteboxSamples<Sample>" "List`1"
+TilePaletteWhiteboxSamplesUtility --> "whiteboxSampleNames<String>" "List`1"
+TilePaletteWhiteboxSamplesUtility --> "longestName" String
+@enduml

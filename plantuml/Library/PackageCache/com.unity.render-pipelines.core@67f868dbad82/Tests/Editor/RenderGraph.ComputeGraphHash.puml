@@ -1,0 +1,35 @@
+@startuml
+class RenderGraphTests <<partial>> {
+    + ComputeGraphHash_WhenCalledMultipleTimes_CacheForDelegatesIsNotGrowingBetweenComputes() : void
+    + ComputeGraphHash_WhenDifferentObjectsUsed_HashcodeIsDifferent() : void
+    + ComputeGraphHash_WhenDifferentStaticMethodsWithTheSameNameUsed_HashcodeIsDifferent() : void
+    + ComputeGraphHash_WhenManyDifferentPassesUsed_HashcodeIsDifferent() : void
+    + ComputeGraphHash_WithTextureParameters(first:TextureDesc, second:TextureDesc, hashCodeEquality:bool) : void
+    + ComputeGraphHash_WhenUsedLambdasDiffer_HashcodeIsDifferent() : void
+    + ComputeGraphHash_WhenUsedStaticMethodsDiffer_HashcodeIsDifferent() : void
+    + ComputeGraphHashForTheSameSetup_WhenSamePassesUsed_HashcodeIsSame() : void
+    + ComputeGraphHashForTheSameSetup_WhenStaticsInStaticClassUsed_HashcodeIsSame() : void
+    + ComputeGraphHashForTheSameSetup_WhenStaticsInRegularClassUsed_HashcodeIsSame() : void
+    + ComputeGraphHashForTheSameSetup_WhenLambdasUsed_HashcodeIsSame() : void
+    + ComputeGraphHashForTheSameSetup_WhenLambdasWithCapturedVariablesUsed_HashcodeIsSame() : void
+    + ComputeGraphHashForTheSameSetup_WhenLocalMethodsUsed_HashcodeIsSame() : void
+    + ComputeGraphHashForTheSameSetup_WhenLocalMethodsWithCapturedVariablesUsed_HashcodeIsSame() : void
+}
+class RegularMethodInRegularClass {
+    + RenderFunc(data:RenderGraphTestPassData, context:RasterGraphContext) : void
+}
+class StaticMethodInsideStaticClass <<static>> {
+    + {static} RenderFunc(data:RenderGraphTestPassData, context:RasterGraphContext) : void
+}
+class StaticMethodInsideRegularClass {
+    + {static} RenderFunc(data:RenderGraphTestPassData, context:RasterGraphContext) : void
+    + {static} RenderFunc2(data:RenderGraphTestPassData, context:UnsafeGraphContext) : void
+}
+class StaticMethodInsideRegularClass2 {
+    + {static} RenderFunc(data:RenderGraphTestPassData, context:UnsafeGraphContext) : void
+}
+RenderGraphTests +-- RegularMethodInRegularClass
+RenderGraphTests +-- StaticMethodInsideStaticClass
+RenderGraphTests +-- StaticMethodInsideRegularClass
+RenderGraphTests +-- StaticMethodInsideRegularClass2
+@enduml

@@ -1,0 +1,9 @@
+@startuml
+class TransparentSettingsPass {
+    + TransparentSettingsPass(evt:RenderPassEvent, shadowReceiveSupported:bool)
+    + Setup() : bool
+    + <<override>> Execute(context:ScriptableRenderContext, renderingData:RenderingData) : void
+    + {static} ExecutePass(rasterCommandBuffer:RasterCommandBuffer) : void
+}
+ScriptableRenderPass <|-- TransparentSettingsPass
+@enduml

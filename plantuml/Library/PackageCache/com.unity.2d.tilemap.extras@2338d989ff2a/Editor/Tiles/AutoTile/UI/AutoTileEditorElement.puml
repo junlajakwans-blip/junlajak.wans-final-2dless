@@ -1,0 +1,15 @@
+@startuml
+class AutoTileEditorElement {
+    + AutoTileEditorElement()
+}
+class Styles <<static>> {
+    + {static} <<readonly>> defaultSpriteTooltip : string
+    + {static} <<readonly>> defaultGameObjectTooltip : string
+    + {static} <<readonly>> tileColliderTooltip : string
+    + {static} <<readonly>> maskTypeTooltip : string
+    + {static} <<readonly>> randomTooltip : string
+}
+VisualElement <|-- AutoTileEditorElement
+AutoTileEditorElement --> "autoTile" AutoTile
+AutoTileEditorElement +-- Styles
+@enduml

@@ -1,0 +1,18 @@
+@startuml
+class ControlPointSettings {
+    + OnGUI() : void
+}
+class HandleSettings {
+    + OnGUI() : void
+}
+class UserSettings {
+    + <<const>> kSettingsUniqueKey : string = "UnityEditor.U2D.SpriteShape/"
+    + UserSettings()
+}
+ControlPointSettings --> "controlPointColor" Color
+ControlPointSettings --> "controlPointSelectedColor" Color
+HandleSettings --> "splineColor" Color
+HandleSettings --> "splineHoveredColor" Color
+HandleSettings --> "tangentColor" Color
+SettingsProvider <|-- UserSettings
+@enduml

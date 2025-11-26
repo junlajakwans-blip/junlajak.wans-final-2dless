@@ -1,0 +1,6 @@
+@startuml
+class TileSetImporter {
+    + <<override>> OnImportAsset(ctx:AssetImportContext) : void
+}
+ScriptedImporter <|-- TileSetImporter
+@enduml

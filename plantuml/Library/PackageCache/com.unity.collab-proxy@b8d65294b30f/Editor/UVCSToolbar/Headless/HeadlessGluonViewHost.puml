@@ -1,0 +1,8 @@
+@startuml
+class HeadlessGluonViewHost {
+}
+class RefreshableView {
+}
+HeadlessGluonViewHost +-- RefreshableView
+IRefreshableView <|-- RefreshableView
+@enduml

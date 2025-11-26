@@ -1,0 +1,14 @@
+@startuml
+class TextureTasks <<static>> {
+    + {static} AddOpacity(texture:NativeArray<Color32>, opacity:float) : void
+    + {static} <<unsafe>> FlipTextureY(texturePtr:Color32*, length:int, size:int2) : void
+    + {static} <<unsafe>> MergeTextures(textures:NativeArray<IntPtr>, textureSizes:NativeArray<RectInt>, blendModes:NativeArray<BlendModes>, output:MergeOutput) : void
+}
+struct MergeOutput {
+}
+class "NativeArray`1"<T> {
+}
+TextureTasks +-- MergeOutput
+MergeOutput --> "rect" RectInt
+MergeOutput --> "image<Color32>" "NativeArray`1"
+@enduml

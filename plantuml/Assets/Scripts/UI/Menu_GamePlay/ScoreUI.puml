@@ -1,0 +1,15 @@
+@startuml
+class ScoreUI {
+    + GetSavedHighScoreValue() : int
+    + InitializeScore(startScore:int) : void
+    + UpdateScore(newScore:int) : void
+    + UpdateCoins(newCoins:int) : void
+    + ShowComboEffect(comboValue:int) : void
+    + DisplaySavedHighScore(highScore:int) : void
+    + GetCurrentSavedHighScore() : int
+    + GetCurrentCoins() : int
+    + SyncSavedHighScoreFromSave(savedValue:int) : void
+    + ShowFinalResult() : void
+}
+MonoBehaviour <|-- ScoreUI
+@enduml

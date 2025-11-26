@@ -1,0 +1,14 @@
+@startuml
+class SlotUI {
+    + Init(currencyRef:Currency, upgradeStore:StoreUpgrade, mapStore:StoreMap, onBuyCallback:System.Action<StoreItem>) : void
+    + Refresh() : void
+    + SetItemObject(obj:StoreItem) : void
+    + Show() : void
+    + Hide() : void
+    + HasItem(id:string) : bool
+    + HasType(type:StoreType) : bool
+}
+MonoBehaviour <|-- SlotUI
+SlotUI --> "ItemType" StoreType
+SlotUI --> "CurrentItem" StoreItem
+@enduml

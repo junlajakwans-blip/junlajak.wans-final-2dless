@@ -1,0 +1,9 @@
+@startuml
+class ApplyShelveWithConflictsQuestionerBuilder {
+    + Get() : IApplyShelveWithConflictsQuestioner
+}
+class ApplyShelveWithConflictsQuestioner {
+}
+IApplyShelveWithConflictsQuestionerBuilder <|-- ApplyShelveWithConflictsQuestionerBuilder
+IApplyShelveWithConflictsQuestioner <|-- ApplyShelveWithConflictsQuestioner
+@enduml

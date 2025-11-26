@@ -1,0 +1,5 @@
+@startuml
+class ImportMergedLayers <<static>> {
+    + {static} Import(assetName:string, layers:List<Layer>, cellBuffers:List<NativeArray<Color32>>, cellSize:List<int2>) : void
+}
+@enduml

@@ -1,0 +1,28 @@
+@startuml
+interface ICharacterDataProvider {
+}
+struct CharacterData {
+    + boneReadOnly : bool
+}
+interface ICharacterOrder {
+}
+struct CharacterGroup {
+    + name : string
+    + parentGroup : int
+    + order : int <<get>> <<set>>
+}
+struct CharacterPart {
+    + spriteId : string
+    + parentGroup : int
+    + order : int <<get>> <<set>>
+}
+interface IMainSkeletonDataProvider {
+}
+struct MainSkeletonData {
+}
+CharacterData --> "dimension" Vector2Int
+CharacterData --> "pivot" Vector2
+ICharacterOrder <|-- CharacterGroup
+ICharacterOrder <|-- CharacterPart
+CharacterPart --> "spritePosition" RectInt
+@enduml

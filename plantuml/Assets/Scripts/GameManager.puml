@@ -1,0 +1,38 @@
+@startuml
+class GameManager {
+    + {static}  <<event>> OnCurrencyReady : System.Action 
+    + IsPaused : bool <<get>>
+    + Score : int <<get>>
+    + PlayTime : float <<get>>
+    + GetProgressData() : GameProgressData
+    + GetCurrency() : Currency
+    + GetStoreManager() : StoreManager
+    + GetStoreList() : List<StoreBase>
+    + {static}  <<event>> OnGameReady : Action 
+    + LoadGameLevel(sceneName:string, mapType:MapType) : void
+    + LoadScene(sceneName:string) : void
+    + InitializeGame() : void
+    + StartGame() : void
+    + TogglePause() : void
+    + PauseGame() : void
+    + ResumeGame() : void
+    + ResumeGameFromPauseButton() : void
+    + RestartGameFromPause() : void
+    + EndGame() : void
+    + PlayerDieHandler() : void
+    + ExitToMainMenuFromResults() : void
+    + RestartGame() : void
+    + ExitGame() : void
+    + AddScore(amount:int) : void
+    + GetPlayTime() : float
+    + SaveProgress() : void
+    + SetupStores(progressData:GameProgressData) : void
+    + ResetGameProgress() : void
+    + DeleteSaveAndRestart() : void
+}
+MonoBehaviour <|-- GameManager
+GameManager --> "Instance" GameManager
+GameManager --> "CardManager" CardManager
+GameManager --> "CurrentMapType" MapType
+GameManager --> "PlayerRef" Player
+@enduml

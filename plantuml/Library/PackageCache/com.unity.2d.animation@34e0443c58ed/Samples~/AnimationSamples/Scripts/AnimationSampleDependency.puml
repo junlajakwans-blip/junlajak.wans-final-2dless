@@ -1,0 +1,11 @@
+@startuml
+class AnimationSampleDependency {
+}
+enum Dependency {
+    None,
+    PsdImporter,
+    AssetBundle,
+}
+MonoBehaviour <|-- AnimationSampleDependency
+AnimationSampleDependency +-- Dependency
+@enduml

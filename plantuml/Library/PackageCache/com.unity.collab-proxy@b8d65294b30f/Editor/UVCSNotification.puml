@@ -1,0 +1,10 @@
+@startuml
+class UVCSNotificationStatus {
+}
+enum IncomingChangesStatus {
+    None,
+    Changes,
+    Conflicts,
+}
+UVCSNotificationStatus +-- IncomingChangesStatus
+@enduml

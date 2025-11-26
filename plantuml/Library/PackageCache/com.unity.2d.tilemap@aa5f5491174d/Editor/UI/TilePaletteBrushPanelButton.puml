@@ -1,0 +1,6 @@
+@startuml
+class TilePaletteBrushPanelButton {
+    + TilePaletteBrushPanelButton()
+}
+EditorToolbarToggle <|-- TilePaletteBrushPanelButton
+@enduml

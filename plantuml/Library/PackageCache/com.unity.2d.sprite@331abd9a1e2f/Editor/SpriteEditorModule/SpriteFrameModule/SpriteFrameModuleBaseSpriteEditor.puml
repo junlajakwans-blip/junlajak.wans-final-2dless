@@ -1,0 +1,30 @@
+@startuml
+abstract class SpriteFrameModuleBase <<partial>> {
+    + <<virtual>> enableMouseMoveEvent : bool <<set>>
+    + <<virtual>> editingDisabled : bool <<get>>
+    + <<virtual>> GetDataProvider() : T
+    + <<virtual>> HandleSpriteSelection() : bool
+    + <<virtual>> RequestRepaint() : void
+    + <<virtual>> SetDataModified() : void
+    + <<virtual>> ApplyOrRevertModification(apply:bool) : void
+    + <<virtual>> GetMainVisualContainer() : VisualElement
+    + <<virtual>> GetToolbarRootElement() : VisualElement
+    + <<virtual>> SetPreviewTexture(texture:Texture2D, width:int, height:int) : void
+    + GetPreviewTexture(texture:Texture2D, width:int, height:int) : void
+    + <<virtual>> ResetZoomAndScroll() : void
+    + <<virtual>> zoomLevel : float <<get>> <<set>>
+    + <<virtual>> showAlpha : bool <<get>> <<set>>
+    + <<virtual>> mipLevel : float <<get>> <<set>>
+    + <<virtual>> GetOverlay(overlayId:string) : T
+    + SetScenePreviewCallback(callback:Action<GameObject[]>) : void
+}
+class "List`1"<T> {
+}
+SpriteEditorModuleModeSupportBase <|-- SpriteFrameModuleBase
+ISpriteEditor <|-- SpriteFrameModuleBase
+SpriteFrameModuleBase --> "modeSpriteEditor" ISpriteEditor
+SpriteFrameModuleBase --> "spriteRects<SpriteRect>" "List`1"
+SpriteFrameModuleBase --> "selectedSpriteRect" SpriteRect
+SpriteFrameModuleBase --> "windowDimension" Rect
+SpriteFrameModuleBase --> "scrollPosition" Vector2
+@enduml

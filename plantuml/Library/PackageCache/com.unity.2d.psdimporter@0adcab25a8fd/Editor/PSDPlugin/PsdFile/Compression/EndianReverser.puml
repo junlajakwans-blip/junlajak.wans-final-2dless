@@ -1,0 +1,7 @@
+@startuml
+class EndianReverser {
+    + EndianReverser(imageData:ImageData)
+    + <<override>> ReadCompressed() : byte[]
+}
+ImageData <|-- EndianReverser
+@enduml

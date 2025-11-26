@@ -1,0 +1,11 @@
+@startuml
+class AppendVectorNode {
+    + AppendVectorNode()
+    + <<override>> hasPreview : bool <<get>>
+    + <<sealed>> <<override>> UpdateNodeAfterDeserialization() : void
+    + GenerateNodeCode(sb:ShaderStringBuilder, generationMode:GenerationMode) : void
+    + <<override>> EvaluateDynamicMaterialSlots(inputSlots:List<MaterialSlot>, outputSlots:List<MaterialSlot>) : void
+}
+AbstractMaterialNode <|-- AppendVectorNode
+IGeneratesBodyCode <|-- AppendVectorNode
+@enduml

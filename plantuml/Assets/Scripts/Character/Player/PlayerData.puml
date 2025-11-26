@@ -1,0 +1,16 @@
+@startuml
+class PlayerData {
+    + PlayerName : string <<get>> <<set>>
+    + SelectedCareer : string <<get>> <<set>>
+    + MaxHealth : int <<get>> <<set>>
+    + Speed : float <<get>> <<set>>
+    + AttackPower : float <<get>> <<set>>
+    + Defense : int <<get>> <<set>>
+    + PlayerData(currency:Currency, progress:GameProgressData)
+    + UpgradeStat(statName:string, value:int) : void
+    + IsDefaultDuckling : bool <<get>> <<set>>
+    + ResetPlayerState() : void
+}
+PlayerData --> "Currency" Currency
+PlayerData --> "Progress" GameProgressData
+@enduml

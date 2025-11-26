@@ -1,0 +1,6 @@
+@startuml
+class PSDImportPostProcessor {
+    + {static} currentApplyAssetPath : string <<set>>
+}
+AssetPostprocessor <|-- PSDImportPostProcessor
+@enduml

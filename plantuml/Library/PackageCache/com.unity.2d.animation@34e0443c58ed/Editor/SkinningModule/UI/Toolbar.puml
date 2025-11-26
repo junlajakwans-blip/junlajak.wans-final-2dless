@@ -1,0 +1,8 @@
+@startuml
+class Toolbar <<partial>> {
+    + Toolbar()
+    + SetButtonChecked(toCheck:Button) : void
+    + CollapseToolBar(collapse:bool) : void
+}
+VisualElement <|-- Toolbar
+@enduml

@@ -1,0 +1,6 @@
+@startuml
+class GpuDeformationSystem {
+}
+BaseDeformationSystem <|-- GpuDeformationSystem
+GpuDeformationSystem --> "deformationMethod" DeformationMethods
+@enduml

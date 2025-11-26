@@ -1,0 +1,18 @@
+@startuml
+class MeshPreviewCache {
+    + enableSkinning : bool <<get>> <<set>>
+    + canSkin : bool <<get>>
+    + SetMeshDirty() : void
+    + SetSkinningDirty() : void
+    + SetWeightsDirty() : void
+    + SetColorsDirty() : void
+    + Prepare() : void
+}
+class "List`1"<T> {
+}
+SkinningObject <|-- MeshPreviewCache
+MeshPreviewCache --> "sprite" SpriteCache
+MeshPreviewCache --> "mesh" Mesh
+MeshPreviewCache --> "defaultMesh" Mesh
+MeshPreviewCache --> "vertices<Vector3>" "List`1"
+@enduml

@@ -1,0 +1,10 @@
+@startuml
+class UniversalRenderPipelineRuntimeTextures {
+    + version : int <<get>>
+}
+IRenderPipelineResources <|-- UniversalRenderPipelineRuntimeTextures
+UniversalRenderPipelineRuntimeTextures --> "blueNoise64LTex" Texture2D
+UniversalRenderPipelineRuntimeTextures --> "bayerMatrixTex" Texture2D
+UniversalRenderPipelineRuntimeTextures --> "debugFontTexture" Texture2D
+UniversalRenderPipelineRuntimeTextures --> "stencilDitherTex" Texture2D
+@enduml

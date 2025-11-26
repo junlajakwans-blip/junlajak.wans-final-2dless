@@ -1,0 +1,10 @@
+@startuml
+class RectTransformSizeDrawer {
+    + DisposePropertyDrawer() : void
+    + DrawProperty(propertyInfo:PropertyInfo, actualObject:object, attribute:InspectableAttribute) : VisualElement
+    + GetPropertyData(setNodesAsDirtyCallback:Action, updateNodeViewsCallback:Action) : void
+}
+IPropertyDrawer <|-- RectTransformSizeDrawer
+IGetNodePropertyDrawerPropertyData <|-- RectTransformSizeDrawer
+RectTransformSizeDrawer --> "inspectorUpdateDelegate" Action
+@enduml

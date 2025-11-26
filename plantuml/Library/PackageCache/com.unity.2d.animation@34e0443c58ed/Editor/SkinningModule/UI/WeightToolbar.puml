@@ -1,0 +1,12 @@
+@startuml
+class WeightToolbar <<partial>> {
+    +  <<event>> SetWeightTool : Action<Tools> 
+    + {static} GenerateFromUXML() : WeightToolbar
+    + WeightToolbar()
+    + EnableBoneInfluenceWidget() : void
+    + DisableBoneInfluenceWidget() : void
+    + UpdateToggleState() : void
+}
+Toolbar <|-- WeightToolbar
+WeightToolbar --> "skinningCache" SkinningCache
+@enduml

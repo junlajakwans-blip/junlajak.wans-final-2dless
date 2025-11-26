@@ -1,0 +1,17 @@
+@startuml
+class SkinningModule <<partial>> {
+    + <<override>> moduleName : string <<get>>
+    + <<override>> OnModuleActivate() : void
+    + <<override>> OnModuleDeactivate() : void
+    + <<override>> CanBeActivated() : bool
+    + <<override>> DoPostGUI() : void
+    + <<override>> DoMainGUI() : void
+    + <<override>> DoToolbarGUI(drawArea:Rect) : void
+    + <<override>> ApplyRevert(apply:bool) : bool
+}
+class Styles <<static>> {
+    + {static} moduleName : string
+}
+SpriteEditorModuleBase <|-- SkinningModule
+SkinningModule +-- Styles
+@enduml

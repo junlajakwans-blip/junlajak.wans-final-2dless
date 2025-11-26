@@ -1,0 +1,95 @@
+@startuml
+class AsepriteImporterEditor {
+    + <<override>> showImportedObject : bool <<get>>
+    + <<override>> UseDefaultMargins() : bool
+    + <<override>> OnEnable() : void
+    + <<override>> CreateInspectorGUI() : VisualElement
+    + <<override>> OnDisable() : void
+    + <<override>> DiscardChanges() : void
+    + <<override>> SaveChanges() : void
+    + <<override>> HasModified() : bool
+    + GetBuildTargetName(sp:SerializedProperty) : string
+    + <<override>> DrawPreview(r:Rect) : void
+}
+class Styles {
+    + Styles()
+}
+class AsepriteImporterEditorFoldOutState {
+    + generalFoldout : bool <<get>> <<set>>
+    + layerImportFoldout : bool <<get>> <<set>>
+    + generateAssetFoldout : bool <<get>> <<set>>
+    + advancedFoldout : bool <<get>> <<set>>
+    + textureFoldout : bool <<get>> <<set>>
+    + platformSettingsFoldout : bool <<get>> <<set>>
+    + AsepriteImporterEditorFoldOutState()
+}
+class "Dictionary`2"<T1,T2> {
+}
+class "List`1"<T> {
+}
+class SavedBool {
+    + SavedBool(name:string, value:bool)
+    + value : bool <<get>> <<set>>
+}
+ScriptedImporterEditor <|-- AsepriteImporterEditor
+ITexturePlatformSettingsDataProvider <|-- AsepriteImporterEditor
+AsepriteImporterEditor --> "platformSettingsArray" SerializedProperty
+AsepriteImporterEditor +-- Styles
+Styles o-> "textureShapeOptionsDictionnary<TextureImporterShape,GUIContent[]>" "Dictionary`2"
+Styles o-> "textureShapeValuesDictionnary<TextureImporterShape,int[]>" "Dictionary`2"
+Styles o-> "filterMode" GUIContent
+Styles o-> "mipmapFadeOutToggle" GUIContent
+Styles o-> "mipmapFadeOut" GUIContent
+Styles o-> "readWrite" GUIContent
+Styles o-> "alphaSource" GUIContent
+Styles o-> "generateMipMaps" GUIContent
+Styles o-> "sRGBTexture" GUIContent
+Styles o-> "borderMipMaps" GUIContent
+Styles o-> "mipMapsPreserveCoverage" GUIContent
+Styles o-> "alphaTestReferenceValue" GUIContent
+Styles o-> "mipMapFilter" GUIContent
+Styles o-> "spriteMeshTypeOptions<string>" "List`1"
+Styles o-> "fileImportMode" GUIContent
+Styles o-> "spritePixelsPerUnit" GUIContent
+Styles o-> "spriteMeshType" GUIContent
+Styles o-> "generatePhysicsShape" GUIContent
+Styles o-> "warpNotSupportWarning" GUIContent
+Styles o-> "anisoLevelLabel" GUIContent
+Styles o-> "anisotropicDisableInfo" GUIContent
+Styles o-> "anisotropicForceEnableInfo" GUIContent
+Styles o-> "unappliedSettingsDialogTitle" GUIContent
+Styles o-> "unappliedSettingsDialogContent" GUIContent
+Styles o-> "applyButtonLabel" GUIContent
+Styles o-> "cancelButtonLabel" GUIContent
+Styles o-> "spriteEditorButtonLabel" GUIContent
+Styles o-> "alphaIsTransparency" GUIContent
+Styles o-> "advancedHeaderText" GUIContent
+Styles o-> "platformSettingsHeaderText" GUIContent
+Styles o-> "wrapModeLabel" GUIContent
+Styles o-> "wrapU" GUIContent
+Styles o-> "wrapV" GUIContent
+Styles o-> "wrapW" GUIContent
+Styles o-> "importHiddenLayer" GUIContent
+Styles o-> "defaultPivotSpace" GUIContent
+Styles o-> "defaultPivotAlignment" GUIContent
+Styles o-> "customPivotPosition" GUIContent
+Styles o-> "mosaicPadding" GUIContent
+Styles o-> "spritePadding" GUIContent
+Styles o-> "spriteAlignmentOptions<string>" "List`1"
+Styles o-> "layerImportMode" GUIContent
+Styles o-> "layerImportOptions<string>" "List`1"
+Styles o-> "generateModelPrefab" GUIContent
+Styles o-> "addSortingGroup" GUIContent
+Styles o-> "addShadowCasters" GUIContent
+Styles o-> "generateAnimationClips" GUIContent
+Styles o-> "generateIndividualEvents" GUIContent
+Styles o-> "generateSpriteAtlas" GUIContent
+Styles o-> "generalHeaderText" GUIContent
+Styles o-> "layerImportHeaderText" GUIContent
+Styles o-> "generateAssetsHeaderText" GUIContent
+Styles o-> "textureHeaderText" GUIContent
+Styles o-> "exportAnimationAssetsText" GUIContent
+Styles o-> "exportAnimationInfoText" GUIContent
+AsepriteImporterEditor +-- AsepriteImporterEditorFoldOutState
+AsepriteImporterEditorFoldOutState +-- SavedBool
+@enduml

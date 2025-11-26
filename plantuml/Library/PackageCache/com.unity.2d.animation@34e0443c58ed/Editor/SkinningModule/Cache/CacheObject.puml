@@ -1,0 +1,8 @@
+@startuml
+class CacheObject {
+    + {static} Create(owner:Cache) : T
+}
+BaseObject <|-- CacheObject
+ISerializationCallbackReceiver <|-- CacheObject
+CacheObject --> "owner" Cache
+@enduml

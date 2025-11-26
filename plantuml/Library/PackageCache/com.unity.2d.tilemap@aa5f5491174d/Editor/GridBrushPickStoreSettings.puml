@@ -1,0 +1,19 @@
+@startuml
+class GridBrushPickStoreSettings {
+}
+class GridBrushPickStoreSettingsProvider {
+}
+class "ScriptableSingleton`1"<T> {
+}
+class SettingsProperties {
+}
+ScriptableObject <|-- GridBrushPickStoreSettings
+GridBrushPickStoreSettings --> "m_UserPickStore" GridBrushPickStore
+"ScriptableSingleton`1" "<GridBrushPickStoreSettingsProvider>" <|-- GridBrushPickStoreSettingsProvider
+GridBrushPickStoreSettingsProvider +-- SettingsProperties
+SettingsProperties o-> "header" GUIStyle
+SettingsProperties o-> "brushPicksLabel" GUIContent
+SettingsProperties o-> "brushPicksAssetLabel" GUIContent
+SettingsProperties o-> "createNewLabel" GUIContent
+SettingsProperties o-> "createCloneLabel" GUIContent
+@enduml

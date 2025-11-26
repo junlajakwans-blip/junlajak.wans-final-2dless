@@ -1,0 +1,6 @@
+@startuml
+class TileSetImporterEditor {
+    + <<override>> CreateInspectorGUI() : VisualElement
+}
+Editor <|-- TileSetImporterEditor
+@enduml

@@ -1,0 +1,10 @@
+@startuml
+interface IDraggable {
+}
+class Draggable {
+    + clampToParentEdges : bool <<get>> <<set>>
+    + Draggable(clampToParentEdges:bool)
+}
+MouseManipulator <|-- Draggable
+Draggable --> "panSpeed" Vector2
+@enduml

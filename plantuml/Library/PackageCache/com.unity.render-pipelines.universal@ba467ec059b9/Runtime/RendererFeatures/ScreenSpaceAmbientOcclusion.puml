@@ -1,0 +1,48 @@
+@startuml
+class ScreenSpaceAmbientOcclusionSettings {
+}
+class ScreenSpaceAmbientOcclusionPersistentResources {
+    + isAvailableInPlayerBuild : bool <<get>>
+    + version : int <<get>>
+}
+class ScreenSpaceAmbientOcclusionDynamicResources {
+    + isAvailableInPlayerBuild : bool <<get>>
+    + version : int <<get>>
+}
+class ScreenSpaceAmbientOcclusion {
+    + <<override>> Create() : void
+    + <<override>> AddRenderPasses(renderer:ScriptableRenderer, renderingData:RenderingData) : void
+}
+enum DepthSource {
+    Depth= 0,
+    DepthNormals= 1,
+}
+enum NormalQuality {
+    Low,
+    Medium,
+    High,
+}
+enum AOSampleOption {
+    High,
+    Medium,
+    Low,
+}
+enum AOMethodOptions {
+    BlueNoise,
+    InterleavedGradient,
+}
+enum BlurQualityOptions {
+    High,
+    Medium,
+    Low,
+}
+IRenderPipelineResources <|-- ScreenSpaceAmbientOcclusionPersistentResources
+ScreenSpaceAmbientOcclusionPersistentResources --> "Shader" Shader
+IRenderPipelineResources <|-- ScreenSpaceAmbientOcclusionDynamicResources
+ScriptableRendererFeature <|-- ScreenSpaceAmbientOcclusion
+ScreenSpaceAmbientOcclusionSettings +-- DepthSource
+ScreenSpaceAmbientOcclusionSettings +-- NormalQuality
+ScreenSpaceAmbientOcclusionSettings +-- AOSampleOption
+ScreenSpaceAmbientOcclusionSettings +-- AOMethodOptions
+ScreenSpaceAmbientOcclusionSettings +-- BlurQualityOptions
+@enduml

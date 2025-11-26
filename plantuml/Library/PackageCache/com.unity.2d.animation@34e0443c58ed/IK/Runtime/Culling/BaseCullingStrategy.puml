@@ -1,0 +1,11 @@
+@startuml
+abstract class BaseCullingStrategy {
+    + enabled : bool <<get>>
+    + {abstract} AreBonesVisible(transformIds:IList<int>) : bool
+    + AddRequestingObject(requestingObject:object) : void
+    + RemoveRequestingObject(requestingObject:object) : void
+    + Initialize() : void
+    + Update() : void
+    + Disable() : void
+}
+@enduml

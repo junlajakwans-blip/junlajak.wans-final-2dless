@@ -1,0 +1,14 @@
+@startuml
+class UniversalRenderPipelineRuntimeShaders {
+    + version : int <<get>>
+}
+IRenderPipelineResources <|-- UniversalRenderPipelineRuntimeShaders
+UniversalRenderPipelineRuntimeShaders --> "fallbackErrorShader" Shader
+UniversalRenderPipelineRuntimeShaders --> "blitHDROverlay" Shader
+UniversalRenderPipelineRuntimeShaders --> "coreBlitPS" Shader
+UniversalRenderPipelineRuntimeShaders --> "coreBlitColorAndDepthPS" Shader
+UniversalRenderPipelineRuntimeShaders --> "samplingPS" Shader
+UniversalRenderPipelineRuntimeShaders --> "terrainDetailLitShader" Shader
+UniversalRenderPipelineRuntimeShaders --> "terrainDetailGrassBillboardShader" Shader
+UniversalRenderPipelineRuntimeShaders --> "terrainDetailGrassShader" Shader
+@enduml

@@ -1,0 +1,9 @@
+@startuml
+class Triangulator {
+    + Triangulate(edges:int2[], vertices:float2[], indices:int[]) : void
+    + ScheduleTriangulate(vertices:float2[], edges:int2[], outputVertices:NativeArray<float2>, outputIndices:NativeArray<int>, outputEdges:NativeArray<int2>, result:NativeArray<int4>) : Unity.Jobs.JobHandle
+    + Tessellate(minAngle:float, maxAngle:float, meshAreaFactor:float, largestTriangleAreaFactor:float, areaThreshold:float, smoothIterations:int, vertices:float2[], edges:int2[], indices:int[]) : void
+    + ScheduleTessellate(minAngle:float, maxAngle:float, meshAreaFactor:float, largestTriangleAreaFactor:float, areaThreshold:float, smoothIterations:int, vertices:float2[], edges:int2[], outputVertices:NativeArray<float2>, outputIndices:NativeArray<int>, outputEdges:NativeArray<int2>, result:NativeArray<int4>) : Unity.Jobs.JobHandle
+}
+ITriangulator <|-- Triangulator
+@enduml

@@ -1,0 +1,12 @@
+@startuml
+class CharacterCache {
+    + GetEnumerator() : IEnumerator<CharacterPartCache>
+}
+class "IEnumerable`1"<T> {
+}
+SkinningObject <|-- CharacterCache
+"IEnumerable`1" "<CharacterPartCache>" <|-- CharacterCache
+CharacterCache --> "skeleton" SkeletonCache
+CharacterCache --> "dimension" Vector2Int
+CharacterCache --> "pivot" Vector2
+@enduml

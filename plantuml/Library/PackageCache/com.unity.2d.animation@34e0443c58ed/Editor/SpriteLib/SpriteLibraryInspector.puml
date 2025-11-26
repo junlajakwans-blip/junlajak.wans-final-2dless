@@ -1,0 +1,17 @@
+@startuml
+class SpriteLibraryInspector {
+    + OnEnable() : void
+    + <<override>> OnInspectorGUI() : void
+}
+class Style <<static>> {
+    + {static} <<readonly>> createNew : string
+    + {static} <<readonly>> exportToAssetInfo : string
+    + {static} <<readonly>> exportToAsset : string
+    + {static} <<readonly>> selectSaveLocation : string
+    + {static} <<readonly>> selectSaveLocationMessage : string
+    + {static} <<readonly>> openInSpriteLibraryEditor : string
+    + {static} <<readonly>> exportIncorrectSavePath : string
+}
+Editor <|-- SpriteLibraryInspector
+SpriteLibraryInspector +-- Style
+@enduml

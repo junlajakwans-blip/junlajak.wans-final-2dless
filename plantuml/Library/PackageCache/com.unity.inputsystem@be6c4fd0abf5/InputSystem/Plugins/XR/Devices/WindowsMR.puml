@@ -1,0 +1,33 @@
+@startuml
+class WMRHMD {
+}
+class HololensHand {
+}
+class WMRSpatialController {
+}
+XRHMD <|-- WMRHMD
+WMRHMD --> "userPresence" ButtonControl
+XRController <|-- HololensHand
+HololensHand --> "deviceVelocity" Vector3Control
+HololensHand --> "airTap" ButtonControl
+HololensHand --> "sourceLossRisk" AxisControl
+HololensHand --> "sourceLossMitigationDirection" Vector3Control
+XRControllerWithRumble <|-- WMRSpatialController
+WMRSpatialController --> "joystick" Vector2Control
+WMRSpatialController --> "touchpad" Vector2Control
+WMRSpatialController --> "grip" AxisControl
+WMRSpatialController --> "gripPressed" ButtonControl
+WMRSpatialController --> "menu" ButtonControl
+WMRSpatialController --> "trigger" AxisControl
+WMRSpatialController --> "triggerPressed" ButtonControl
+WMRSpatialController --> "joystickClicked" ButtonControl
+WMRSpatialController --> "touchpadClicked" ButtonControl
+WMRSpatialController --> "touchpadTouched" ButtonControl
+WMRSpatialController --> "deviceVelocity" Vector3Control
+WMRSpatialController --> "deviceAngularVelocity" Vector3Control
+WMRSpatialController --> "batteryLevel" AxisControl
+WMRSpatialController --> "sourceLossRisk" AxisControl
+WMRSpatialController --> "sourceLossMitigationDirection" Vector3Control
+WMRSpatialController --> "pointerPosition" Vector3Control
+WMRSpatialController --> "pointerRotation" QuaternionControl
+@enduml

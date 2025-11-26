@@ -1,0 +1,4 @@
+@startuml
+abstract class CenteredContentPanel {
+}
+@enduml

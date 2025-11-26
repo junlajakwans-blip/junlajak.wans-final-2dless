@@ -1,0 +1,32 @@
+@startuml
+class BoneReparentToolController {
+    + BoneReparentToolController(model:IBoneTreeViewModel, eventSystem:SkinningEvents)
+    + <<override>> CanDrag() : bool
+    + <<override>> CanRename() : bool
+}
+class BoneReparentToolModel {
+    + BoneReparentToolModel(cache:SkinningCache, view:IBoneVisibilityToolView)
+}
+class BoneReparentTool {
+    + <<override>> Initialize(layout:LayoutOverlay) : void
+}
+class BoneReparentToolWindow <<partial>> {
+    + OnBoneSelectionChange(skeleton:SkeletonSelection) : void
+    + OnBoneExpandedChange(bones:BoneCache[]) : void
+    + OnBoneNameChanged(bone:BoneCache) : void
+    + OnSelectionChange(skeleton:SkeletonCache) : void
+    + Deactivate() : void
+}
+class BoneReparentToolView <<partial>> {
+}
+class "Func`1"<T> {
+}
+BoneTreeWidgetController <|-- BoneReparentToolController
+BoneTreeWidgetModel <|-- BoneReparentToolModel
+SkeletonToolWrapper <|-- BoneReparentTool
+VisualElement <|-- BoneReparentToolWindow
+IBoneVisibilityToolView <|-- BoneReparentToolWindow
+BoneReparentToolWindow o-> "GetModel<IBoneTreeViewModel>" "Func`1"
+BoneReparentToolWindow o-> "GetController<BoneTreeWidgetController>" "Func`1"
+BoneVisibilityToolView <|-- BoneReparentToolView
+@enduml

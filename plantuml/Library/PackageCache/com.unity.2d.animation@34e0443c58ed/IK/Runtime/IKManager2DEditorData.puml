@@ -1,0 +1,5 @@
+@startuml
+class IKManager2D <<partial>> {
+}
+MonoBehaviour <|-- IKManager2D
+@enduml

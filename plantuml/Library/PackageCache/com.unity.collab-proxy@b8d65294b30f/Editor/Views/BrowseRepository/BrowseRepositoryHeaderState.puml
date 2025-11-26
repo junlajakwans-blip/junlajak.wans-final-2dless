@@ -1,0 +1,16 @@
+@startuml
+enum BrowseRepositoryColumn {
+    Item,
+    Size,
+    Type,
+    Branch,
+    Changeset,
+    CreatedBy,
+    DateModified,
+    Repository,
+}
+class BrowseRepositoryHeaderState {
+}
+MultiColumnHeaderState <|-- BrowseRepositoryHeaderState
+ISerializationCallbackReceiver <|-- BrowseRepositoryHeaderState
+@enduml

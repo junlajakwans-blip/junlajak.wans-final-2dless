@@ -1,0 +1,5 @@
+@startuml
+class UpgradeLogWriter <<static>> {
+    + {static} Generate(content:string) : string
+}
+@enduml

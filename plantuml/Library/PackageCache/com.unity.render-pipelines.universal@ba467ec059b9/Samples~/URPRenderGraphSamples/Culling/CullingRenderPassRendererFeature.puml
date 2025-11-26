@@ -1,0 +1,17 @@
+@startuml
+class CullingRenderPassRendererFeature {
+    + <<override>> Create() : void
+    + <<override>> AddRenderPasses(renderer:ScriptableRenderer, renderingData:RenderingData) : void
+}
+class CullingRenderPass {
+    + CullingRenderPass(layerMask:LayerMask)
+    + <<override>> RecordRenderGraph(renderGraph:RenderGraph, frameData:ContextContainer) : void
+}
+class PassData {
+}
+ScriptableRendererFeature <|-- CullingRenderPassRendererFeature
+CullingRenderPassRendererFeature --> "m_LayerMask" LayerMask
+ScriptableRenderPass <|-- CullingRenderPass
+CullingRenderPass +-- PassData
+PassData --> "rendererListHandle" RendererListHandle
+@enduml

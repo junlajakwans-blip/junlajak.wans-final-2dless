@@ -1,0 +1,12 @@
+@startuml
+class SpriteRect {
+    + name : string <<get>> <<set>>
+    + customData : string <<get>> <<set>>
+    + {static} GetSpriteIDFromSerializedProperty(sp:SerializedProperty) : GUID
+}
+SpriteRect --> "pivot" Vector2
+SpriteRect --> "alignment" SpriteAlignment
+SpriteRect --> "border" Vector4
+SpriteRect --> "rect" Rect
+SpriteRect --> "spriteID" GUID
+@enduml

@@ -1,0 +1,6 @@
+@startuml
+class TilePaletteBrushPickPanelPopup {
+    + CreateGUI() : void
+}
+BoolFieldOverlayPopupWindow <|-- TilePaletteBrushPickPanelPopup
+@enduml

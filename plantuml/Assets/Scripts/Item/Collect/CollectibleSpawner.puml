@@ -1,0 +1,13 @@
+@startuml
+class CollectibleSpawner {
+    + InitializeSpawner(pool:IObjectPool, cullingManager:DistanceCulling, cardManager:CardManager, buffManager:BuffManager) : void
+    + SetPlayer(player:Transform) : void
+    + SpawnAtPosition(targetPos:Vector3) : GameObject
+    + Spawn() : void
+    + Despawn(collectible:GameObject) : void
+    + GetSpawnCount() : int
+    + DropCollectible(type:CollectibleType, position:Vector3) : GameObject
+}
+MonoBehaviour <|-- CollectibleSpawner
+ISpawn <|-- CollectibleSpawner
+@enduml

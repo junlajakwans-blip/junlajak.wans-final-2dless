@@ -1,0 +1,14 @@
+@startuml
+class SpriteFrameScenePreview {
+    + SpriteFrameScenePreview(spriteEditor:ISpriteEditor)
+    + ActivateScenePreview() : void
+    + DeactivateScenePreview() : void
+}
+class SceneSprite {
+    + SceneSprite(spriteRenderer:SpriteRenderer, originalSprite:Sprite, overrideSprite:Sprite)
+}
+SpriteFrameScenePreview +-- SceneSprite
+SceneSprite --> "spriteRenderer" SpriteRenderer
+SceneSprite --> "originalSprite" Sprite
+SceneSprite --> "overrideSprite" Sprite
+@enduml

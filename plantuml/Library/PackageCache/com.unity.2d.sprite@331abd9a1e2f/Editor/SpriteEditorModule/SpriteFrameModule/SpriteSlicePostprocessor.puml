@@ -1,0 +1,7 @@
+@startuml
+class SpriteSlicePostprocessor {
+    + <<override>> GetPostprocessOrder() : int
+    + <<override>> GetVersion() : uint
+}
+AssetPostprocessor <|-- SpriteSlicePostprocessor
+@enduml

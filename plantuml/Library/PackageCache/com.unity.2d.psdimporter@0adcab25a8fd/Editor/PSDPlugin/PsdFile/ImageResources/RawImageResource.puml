@@ -1,0 +1,8 @@
+@startuml
+class RawImageResource {
+    + RawImageResource(resourceId:ResourceID, name:string)
+    + RawImageResource(reader:PsdBinaryReader, signature:string, resourceId:ResourceID, name:string, numBytes:int)
+}
+ImageResource <|-- RawImageResource
+RawImageResource --> "ID" ResourceID
+@enduml

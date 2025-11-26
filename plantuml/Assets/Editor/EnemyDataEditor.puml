@@ -1,0 +1,6 @@
+@startuml
+class EnemyDataEditor {
+    + <<override>> OnInspectorGUI() : void
+}
+Editor <|-- EnemyDataEditor
+@enduml

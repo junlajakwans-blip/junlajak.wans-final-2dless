@@ -1,0 +1,14 @@
+@startuml
+class PSDImporter <<partial>> {
+    + PSDImporter()
+    + <<override>> OnImportAsset(ctx:AssetImportContext) : void
+}
+enum ELayerMappingOption {
+    UseLayerName,
+    UseLayerNameCaseSensitive,
+    UseLayerId,
+}
+ScriptedImporter <|-- PSDImporter
+ISpriteEditorDataProvider <|-- PSDImporter
+PSDImporter +-- ELayerMappingOption
+@enduml

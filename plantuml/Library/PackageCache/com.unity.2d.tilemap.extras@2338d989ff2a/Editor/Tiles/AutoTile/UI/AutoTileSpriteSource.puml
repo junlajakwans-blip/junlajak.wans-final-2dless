@@ -1,0 +1,18 @@
+@startuml
+class AutoTileSpriteSource {
+    + mask : uint
+    + AutoTileSpriteSource(spriteAsset:Sprite, sourceTexture:Texture2D, clickState:ClickState, maskType:AutoTile.AutoTileMaskType)
+    + ChangeScale(newScale:float) : void
+    + SetMask(newMask:uint) : void
+    + SetDuplicate(isDuplicate:bool) : void
+}
+class ClickState {
+    + isPointerDown : bool
+    + toggleState : bool
+}
+class "Action`4"<T1,T2,T3,T4> {
+}
+Image <|-- AutoTileSpriteSource
+AutoTileSpriteSource --> "maskChanged<Sprite,Texture2D,uint,uint>" "Action`4"
+AutoTileSpriteSource +-- ClickState
+@enduml

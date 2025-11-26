@@ -1,0 +1,81 @@
+@startuml
+class "RuleTile`1"<T> {
+}
+class RuleTile {
+    + <<virtual>> m_RotationAngle : int <<get>>
+    + m_RotationCount : int <<get>>
+    + UpdateNeighborPositions() : void
+    + <<override>> StartUp(position:Vector3Int, tilemap:ITilemap, instantiatedGameObject:GameObject) : bool
+    + <<override>> GetTileData(position:Vector3Int, tilemap:ITilemap, tileData:TileData) : void
+    + {static} GetPerlinValue(position:Vector3Int, scale:float, offset:float) : float
+    + <<override>> GetTileAnimationData(position:Vector3Int, tilemap:ITilemap, tileAnimationData:TileAnimationData) : bool
+    + <<override>> RefreshTile(position:Vector3Int, tilemap:ITilemap) : void
+    + <<virtual>> RuleMatches(rule:TilingRule, position:Vector3Int, tilemap:ITilemap, transform:Matrix4x4) : bool
+    + <<virtual>> ApplyRandomTransform(type:TilingRuleOutput.Transform, original:Matrix4x4, perlinScale:float, position:Vector3Int) : Matrix4x4
+    + GetCustomFields(isOverrideInstance:bool) : FieldInfo[]
+    + <<virtual>> RuleMatch(neighbor:int, other:TileBase) : bool
+    + RuleMatches(rule:TilingRule, position:Vector3Int, tilemap:ITilemap, angle:int, mirrorX:bool) : bool
+    + RuleMatches(rule:TilingRule, position:Vector3Int, tilemap:ITilemap, mirrorX:bool, mirrorY:bool) : bool
+    + <<virtual>> GetRotatedPosition(position:Vector3Int, rotation:int) : Vector3Int
+    + <<virtual>> GetMirroredPosition(position:Vector3Int, mirrorX:bool, mirrorY:bool) : Vector3Int
+    + <<virtual>> GetOffsetPosition(position:Vector3Int, offset:Vector3Int) : Vector3Int
+    + <<virtual>> GetOffsetPositionReverse(position:Vector3Int, offset:Vector3Int) : Vector3Int
+}
+class "List`1"<T> {
+}
+class "HashSet`1"<T> {
+}
+class TilingRuleOutput {
+    + m_Id : int
+    + m_MinAnimationSpeed : float = 1f
+    + m_MaxAnimationSpeed : float = 1f
+    + m_PerlinScale : float = 0.5f
+}
+class TilingRule {
+    + Clone() : TilingRule
+    + GetNeighbors() : Dictionary<Vector3Int, int>
+    + ApplyNeighbors(dict:Dictionary<Vector3Int, int>) : void
+    + GetBounds() : BoundsInt
+}
+class DontOverride {
+}
+enum OutputSprite {
+    Single,
+    Random,
+    Animation,
+}
+enum Transform {
+    Fixed,
+    Rotated,
+    MirrorX,
+    MirrorY,
+    MirrorXY,
+    RotatedMirror,
+}
+class Neighbor {
+    + <<const>> This : int = 1
+    + <<const>> NotThis : int = 2
+}
+RuleTile <|-- "RuleTile`1"
+"RuleTile`1" --> "m_NeighborType" Type
+TileBase <|-- RuleTile
+RuleTile --> "m_DefaultSprite" Sprite
+RuleTile --> "m_DefaultGameObject" GameObject
+RuleTile o-> "m_TilingRules<TilingRule>" "List`1"
+RuleTile --> "m_NeighborType" Type
+RuleTile --> "neighborPositions<Vector3Int>" "HashSet`1"
+RuleTile +-- TilingRuleOutput
+TilingRuleOutput --> "m_GameObject" GameObject
+TilingRuleOutput o-> "m_Output" OutputSprite
+TilingRuleOutput --> "m_RandomTransform" Transform
+RuleTile +-- TilingRule
+TilingRuleOutput <|-- TilingRule
+TilingRule o-> "m_Neighbors<int>" "List`1"
+TilingRule o-> "m_NeighborPositions<Vector3Int>" "List`1"
+TilingRule --> "m_RuleTransform" Transform
+RuleTile +-- DontOverride
+Attribute <|-- DontOverride
+TilingRuleOutput +-- OutputSprite
+TilingRuleOutput +-- Transform
+TilingRuleOutput +-- Neighbor
+@enduml

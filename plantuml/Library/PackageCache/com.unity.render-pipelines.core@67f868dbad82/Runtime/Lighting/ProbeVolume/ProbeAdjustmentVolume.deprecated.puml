@@ -1,0 +1,6 @@
+@startuml
+class ProbeAdjustmentVolume <<partial>> {
+    + invalidateProbes : bool = false
+    + overrideDilationThreshold : bool = false
+}
+@enduml

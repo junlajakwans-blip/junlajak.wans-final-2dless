@@ -1,0 +1,29 @@
+@startuml
+abstract class MapGeneratorBase {
+    + WallPushSpeed : float <<get>> <<set>>
+    + IsPlatformBreakable : bool <<get>> <<set>>
+    + IsWallPushEnabled : bool <<get>> <<set>>
+    + <<virtual>> InitializeGenerators(pivot:Transform) : void
+    + {abstract} GenerateMap() : void
+    + <<virtual>> SetupBackground() : void
+    + <<virtual>> SetupFloor() : void
+    + <<virtual>> SpawnEnemies() : void
+    + <<virtual>> SpawnCollectibles() : void
+    + <<virtual>> SpawnAssets() : void
+    + <<virtual>> SpawnThrowables() : void
+    + <<virtual>> BreakRightmostPlatform() : void
+    + <<virtual>> WallUpdate() : void
+    + SetWallPushSpeed(speed:float) : void
+    + EnableWallPush(enabled:bool) : void
+    + <<virtual>> ClearAllObjects() : void
+}
+enum PlatformState {
+    Normal,
+    AscendingSteps,
+    DescendingSteps,
+    HillUp,
+    HillDown,
+}
+MonoBehaviour <|-- MapGeneratorBase
+MapGeneratorBase +-- PlatformState
+@enduml

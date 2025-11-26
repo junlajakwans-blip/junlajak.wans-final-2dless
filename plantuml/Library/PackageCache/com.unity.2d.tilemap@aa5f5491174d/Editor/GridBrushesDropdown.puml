@@ -1,0 +1,28 @@
+@startuml
+class GridBrushesDropdown {
+    + selectedIndex : int <<get>> <<set>>
+    + GridBrushesDropdown(itemClickedCallback:Action<int, object>, minWidth:float)
+    + <<override>> GetWindowSize() : Vector2
+    + <<override>> OnGUI(rect:Rect) : void
+}
+class Styles {
+}
+class MenuItemProvider {
+    + Count() : int
+    + GetItem(index:int) : object
+    + Add(obj:object) : int
+    + Replace(index:int, newPresetObject:object) : void
+    + Remove(index:int) : void
+    + Create() : object
+    + Move(index:int, destIndex:int, insertAfterDestIndex:bool) : void
+    + GetName(index:int) : string
+    + GetTooltip(index:int) : string
+    + IsModificationAllowed(index:int) : bool
+    + GetSeperatorIndices() : int[]
+}
+PopupWindowContent <|-- GridBrushesDropdown
+GridBrushesDropdown +-- Styles
+Styles o-> "menuItem" GUIStyle
+GridBrushesDropdown +-- MenuItemProvider
+IFlexibleMenuItemProvider <|-- MenuItemProvider
+@enduml

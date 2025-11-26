@@ -1,0 +1,6 @@
+@startuml
+class TilePaletteClipboardViewElement <<partial>> {
+    + TilePaletteClipboardViewElement()
+}
+VisualElement <|-- TilePaletteClipboardViewElement
+@enduml

@@ -1,0 +1,5 @@
+@startuml
+class OverlayPopupWindow {
+    + <<new>> {static} Show(trigger:VisualElement, size:Vector2) : T
+}
+@enduml

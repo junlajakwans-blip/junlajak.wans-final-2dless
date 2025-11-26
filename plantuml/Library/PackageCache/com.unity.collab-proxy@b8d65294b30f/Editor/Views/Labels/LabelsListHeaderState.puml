@@ -1,0 +1,15 @@
+@startuml
+enum LabelsListColumn {
+    Name,
+    CreationDate,
+    Changeset,
+    Comment,
+    CreatedBy,
+    Branch,
+    Repository,
+}
+class LabelsListHeaderState {
+}
+MultiColumnHeaderState <|-- LabelsListHeaderState
+ISerializationCallbackReceiver <|-- LabelsListHeaderState
+@enduml

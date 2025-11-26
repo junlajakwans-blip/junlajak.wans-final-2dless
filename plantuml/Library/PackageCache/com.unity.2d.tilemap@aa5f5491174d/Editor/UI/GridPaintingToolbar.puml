@@ -1,0 +1,17 @@
+@startuml
+class GridPaintingToolbar <<partial>> {
+    + GridPaintingToolbar()
+    + GridPaintingToolbar(editorWindow:EditorWindow)
+}
+class GridPaintingToolbarFactory {
+}
+class GridPaintingToolbarUxmlTraits {
+}
+class "UxmlFactory`2"<T1,T2> {
+}
+VisualElement <|-- GridPaintingToolbar
+GridPaintingToolbar +-- GridPaintingToolbarFactory
+"UxmlFactory`2" "<GridPaintingToolbar,GridPaintingToolbarUxmlTraits>" <|-- GridPaintingToolbarFactory
+GridPaintingToolbar +-- GridPaintingToolbarUxmlTraits
+UxmlTraits <|-- GridPaintingToolbarUxmlTraits
+@enduml

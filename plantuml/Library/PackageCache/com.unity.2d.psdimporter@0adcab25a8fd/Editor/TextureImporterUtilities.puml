@@ -1,0 +1,5 @@
+@startuml
+class TextureImporterUtilities <<static>> {
+    + {static} GetPlatformTextureSettings(buildTarget:BuildTarget, platformSettings:List<TextureImporterPlatformSettings>) : TextureImporterPlatformSettings
+}
+@enduml

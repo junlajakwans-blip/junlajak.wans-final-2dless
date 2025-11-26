@@ -1,0 +1,40 @@
+@startuml
+class PSDImportData {
+    + importedTextureWidth : int <<get>> <<set>>
+    + importedTextureHeight : int <<get>> <<set>>
+    + textureActualHeight : int <<get>> <<set>>
+    + textureActualWidth : int <<get>> <<set>>
+    + CreatePSDLayerData(bitmapLayer:List<BitmapLayer>) : void
+}
+struct BoneGO {
+    + index : int
+}
+class PSDLayerImportSetting {
+    + name : string
+    + layerId : int
+    + flatten : bool
+    + isGroup : bool
+    + importLayer : bool
+    + layerID : int <<get>>
+}
+class PSDLayerData {
+    + name : string <<get>> <<set>>
+    + parentIndex : int <<get>> <<set>>
+    + layerID : int <<get>> <<set>>
+    + isVisible : bool <<get>> <<set>>
+    + isGroup : bool <<get>> <<set>>
+    + isImported : bool <<get>> <<set>>
+}
+class PSDExtractLayerData {
+}
+ScriptableObject <|-- PSDImportData
+PSDImportData --> "documentSize" Vector2Int
+PSDImportData --> "singleSpriteTextureImporterSettings" TextureImporterSettings
+BoneGO --> "go" GameObject
+IPSDLayerMappingStrategyComparable <|-- PSDLayerImportSetting
+PSDLayerImportSetting --> "spriteId" GUID
+IPSDLayerMappingStrategyComparable <|-- PSDLayerData
+PSDLayerData --> "layerSizeOnFile" Vector2Int
+PSDExtractLayerData --> "bitmapLayer" BitmapLayer
+PSDExtractLayerData --> "importSetting" PSDLayerImportSetting
+@enduml

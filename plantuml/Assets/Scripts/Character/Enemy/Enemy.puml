@@ -1,0 +1,27 @@
+@startuml
+abstract class Enemy {
+    + SpawnWeight : float = 30f
+    + CanDetectOverride : bool = true
+    + Speed : float <<get>> <<set>>
+    + AttackPower : int <<get>> <<set>>
+    + DetectionRange : float <<get>> <<set>>
+    + InitializeFromData() : void
+    + SetDependencies(player:Player, spawner:CollectibleSpawner, cardManager:CardManager, buffManager:BuffManager, pool:IObjectPool) : void
+    + <<virtual>> Move() : void
+    + <<override>> Attack() : void
+    + <<virtual>> DetectPlayer(playerPos:Vector3) : bool
+    + <<virtual>> DetectPlayer(playerPos:Vector3, customRange:float) : bool
+    + <<virtual>> ApplyCareerBuff(data:DuckCareerData) : void
+    + <<virtual>> DisableBehavior(duration:float) : void
+    + <<override>> TakeDamage(amount:int) : void
+    + <<override>> Die() : void
+    + <<virtual>> ChargeAttack(power:float) : void
+    + <<virtual>> RangeAttack(target:Transform) : void
+    + <<virtual>> ApplyDamage(target:IDamageable, amount:int) : void
+    + Confuse(duration:float) : void
+    + ApplyFear(duration:float) : void
+}
+Character <|-- Enemy
+IAttackable <|-- Enemy
+Enemy --> "EnemyType" EnemyType
+@enduml

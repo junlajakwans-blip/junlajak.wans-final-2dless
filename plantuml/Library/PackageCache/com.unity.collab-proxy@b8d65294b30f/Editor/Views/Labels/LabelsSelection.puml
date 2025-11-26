@@ -1,0 +1,4 @@
+@startuml
+class LabelsSelection <<static>> {
+}
+@enduml

@@ -1,0 +1,11 @@
+@startuml
+class CardUIPool {
+    + resourcesFolder : string = "Careers"
+    + GetData(id:string) : DuckCareerData
+    + GetRandomCareerForDrop() : DuckCareerData
+    + CreateCardUI(data:DuckCareerData, parent:Transform) : GameObject
+}
+ScriptableObject <|-- CardUIPool
+CardUIPool --> "careerCardPrefab" GameObject
+CardUIPool --> "muscleCardPrefab" GameObject
+@enduml

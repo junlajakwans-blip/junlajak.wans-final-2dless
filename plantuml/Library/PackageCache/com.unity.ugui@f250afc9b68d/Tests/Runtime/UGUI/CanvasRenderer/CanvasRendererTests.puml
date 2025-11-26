@@ -1,0 +1,10 @@
+@startuml
+class CanvasRendererTests {
+    + SetUp() : void
+    + InitialData() : void
+    + AddSecondaryTextures() : void
+    + RemoveSecondaryTextures() : void
+    + SetSecondaryTextureCount() : void
+    + TearDown() : void
+}
+@enduml

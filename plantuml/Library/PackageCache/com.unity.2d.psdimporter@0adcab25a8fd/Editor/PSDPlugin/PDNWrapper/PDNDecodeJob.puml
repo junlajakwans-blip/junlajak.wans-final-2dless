@@ -1,0 +1,44 @@
+@startuml
+struct PDNDecoderData {
+    + SurfaceWidth : int
+    + SurfaceByteDepth : int
+}
+struct PDNDecoderJob {
+    + Execute(index:int) : void
+}
+struct PDNAlphaMaskData {
+    + SurfaceWidth : int
+    + SurfaceByteDepth : int
+    + HasAlphaChannel : int
+    + HasUserAlphaMask : int
+    + UserMaskInvertOnBlend : int
+    + HasLayerAlphaMask : int
+    + LayerMaskInvertOnBlend : int
+    + UserMaskBackgroundColor : byte
+    + LayerMaskBackgroundColor : byte
+}
+struct PDNAlphaMaskJob {
+    + Execute() : void
+}
+class "NativeArray`1"<T> {
+}
+PDNDecoderData --> "DecoderType" DecodeType
+PDNDecoderData --> "ColorChannel0<byte>" "NativeArray`1"
+PDNDecoderData --> "ColorChannel1<byte>" "NativeArray`1"
+PDNDecoderData --> "ColorChannel2<byte>" "NativeArray`1"
+PDNDecoderData --> "ColorChannel3<byte>" "NativeArray`1"
+PDNDecoderData --> "ColorModeData<byte>" "NativeArray`1"
+PDNDecoderData --> "DecodedImage<Color32>" "NativeArray`1"
+IJobParallelFor <|-- PDNDecoderJob
+PDNDecoderJob --> "data" PDNDecoderData
+PDNAlphaMaskData --> "AlphaChannel0<byte>" "NativeArray`1"
+PDNAlphaMaskData --> "UserMask<byte>" "NativeArray`1"
+PDNAlphaMaskData --> "UserAlphaMask<byte>" "NativeArray`1"
+PDNAlphaMaskData --> "UserAlphaMaskEmpty<byte>" "NativeArray`1"
+PDNAlphaMaskData --> "LayerMask<byte>" "NativeArray`1"
+PDNAlphaMaskData --> "LayerAlphaMask<byte>" "NativeArray`1"
+PDNAlphaMaskData --> "LayerAlphaMaskEmpty<byte>" "NativeArray`1"
+PDNAlphaMaskData --> "DecodedImage<Color32>" "NativeArray`1"
+IJob <|-- PDNAlphaMaskJob
+PDNAlphaMaskJob --> "data" PDNAlphaMaskData
+@enduml

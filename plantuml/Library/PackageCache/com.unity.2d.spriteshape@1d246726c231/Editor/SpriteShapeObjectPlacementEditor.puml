@@ -1,0 +1,6 @@
+@startuml
+class SpriteShapeObjectPlacementEditor {
+    + <<override>> OnInspectorGUI() : void
+}
+Editor <|-- SpriteShapeObjectPlacementEditor
+@enduml

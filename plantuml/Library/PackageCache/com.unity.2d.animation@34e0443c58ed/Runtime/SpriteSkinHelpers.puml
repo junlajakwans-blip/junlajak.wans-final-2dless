@@ -1,0 +1,7 @@
+@startuml
+class SpriteSkinHelpers <<static>> {
+    + {static} CacheChildren(current:Transform, cache:Dictionary<int, List<SpriteSkin.TransformData>>) : void
+    + {static} GenerateTransformPath(rootBone:Transform, child:Transform) : string
+    + {static} GetSpriteBonesTransforms(spriteSkin:SpriteSkin, outTransform:Transform[]) : bool
+}
+@enduml

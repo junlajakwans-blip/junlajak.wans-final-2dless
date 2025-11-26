@@ -1,0 +1,7 @@
+@startuml
+class LayoutGroupTests {
+    + TestSetup() : void
+    + TearDown() : void
+    + EmptyRecttransformUpdatesLayoutGroup() : IEnumerator
+}
+@enduml

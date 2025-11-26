@@ -1,0 +1,39 @@
+@startuml
+class VisibilityToolWindow <<partial>> {
+    +  <<event>> onBoneOpacitySliderChange : Action<float> 
+    +  <<event>> onMeshOpacitySliderChange : Action<float> 
+    +  <<event>> onBoneOpacitySliderChangeBegin : Action 
+    +  <<event>> onBoneOpacitySliderChangeEnd : Action 
+    +  <<event>> onMeshOpacitySliderChangeBegin : Action 
+    +  <<event>> onMeshOpacitySliderChangeEnd : Action 
+    + {static} CreateFromUXML() : VisibilityToolWindow
+    + BindElements() : void
+    + Initialize(layout:LayoutOverlay) : void
+    + Show() : void
+    + Hide() : void
+    + SetBoneOpacitySliderValue(value:float) : void
+    + SetMeshOpacitySliderValue(value:float) : void
+    + AddToolTab(name:string, tooltip:string, onClick:Action) : void
+    + SetActiveTab(toolIndex:int) : void
+    + SetContent(content:VisualElement) : void
+    + SetToolAvailable(toolIndex:int, available:bool) : void
+}
+class VisibilityTool {
+    + <<override>> Initialize(layout:LayoutOverlay) : void
+}
+interface IVisibilityToolModel {
+}
+interface IVisibilityToolWindow {
+}
+class VisibilityToolController {
+    + VisibilityToolController(model:IVisibilityToolModel, tools:IVisibilityTool[], skeletonTool:Func<SkeletonTool>, meshPreviewBehaviour:Func<IMeshPreviewBehaviour>)
+    + Activate() : void
+    + Deactivate() : void
+}
+VisualElement <|-- VisibilityToolWindow
+IVisibilityToolWindow <|-- VisibilityToolWindow
+BaseTool <|-- VisibilityTool
+IVisibilityToolModel <|-- VisibilityTool
+VisibilityTool --> "skeletonTool" SkeletonTool
+VisibilityTool --> "previewBehaviour" IMeshPreviewBehaviour
+@enduml

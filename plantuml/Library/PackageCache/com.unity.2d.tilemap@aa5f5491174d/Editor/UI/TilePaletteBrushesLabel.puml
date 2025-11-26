@@ -1,0 +1,20 @@
+@startuml
+class TilePaletteBrushesLabel <<partial>> {
+    + {static} kNullBrushName : string
+    + {static} kLabelTooltip : string
+    + appendSettings : bool <<get>> <<set>>
+    + <<new>> {static} <<readonly>> ussClassName : string = "unity-tilepalette-brushes-label"
+    + TilePaletteBrushesLabel()
+}
+class TilePaletteBrushesLabelFactory {
+}
+class TilePaletteBrushesLabelUxmlTraits {
+}
+class "UxmlFactory`2"<T1,T2> {
+}
+TextElement <|-- TilePaletteBrushesLabel
+TilePaletteBrushesLabel +-- TilePaletteBrushesLabelFactory
+"UxmlFactory`2" "<TilePaletteBrushesLabel,TilePaletteBrushesLabelUxmlTraits>" <|-- TilePaletteBrushesLabelFactory
+TilePaletteBrushesLabel +-- TilePaletteBrushesLabelUxmlTraits
+UxmlTraits <|-- TilePaletteBrushesLabelUxmlTraits
+@enduml

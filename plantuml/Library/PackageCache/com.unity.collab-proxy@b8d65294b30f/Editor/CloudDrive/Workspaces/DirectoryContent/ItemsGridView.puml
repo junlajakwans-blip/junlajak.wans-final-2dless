@@ -1,0 +1,7 @@
+@startuml
+interface IItemsGridView {
+}
+class ItemsGridView {
+}
+IItemsGridView <|-- ItemsGridView
+@enduml

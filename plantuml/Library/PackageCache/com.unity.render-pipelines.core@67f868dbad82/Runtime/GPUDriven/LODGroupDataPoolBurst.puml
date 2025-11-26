@@ -1,0 +1,6 @@
+@startuml
+class LODGroupDataPoolBurst <<static>> {
+    + {static} FreeLODGroupData(destroyedLODGroupsID:NativeArray<int>, lodGroupsData:NativeList<LODGroupData>, lodGroupDataHash:NativeParallelHashMap<int, GPUInstanceIndex>, freeLODGroupDataHandles:NativeList<GPUInstanceIndex>) : int
+    + {static} AllocateOrGetLODGroupDataInstances(lodGroupsID:NativeArray<int>, lodGroupsData:NativeList<LODGroupData>, lodGroupCullingData:NativeList<LODGroupCullingData>, lodGroupDataHash:NativeParallelHashMap<int, GPUInstanceIndex>, freeLODGroupDataHandles:NativeList<GPUInstanceIndex>, lodGroupInstances:NativeArray<GPUInstanceIndex>) : int
+}
+@enduml

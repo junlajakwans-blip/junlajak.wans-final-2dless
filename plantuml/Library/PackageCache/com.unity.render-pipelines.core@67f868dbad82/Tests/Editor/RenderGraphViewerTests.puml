@@ -1,0 +1,7 @@
+@startuml
+class RenderGraphViewerTests {
+    + ScriptPathToAssetPath(absoluteOrRelativePath:string, expectedResult:string) : void
+    + CallerFilePathToRelative() : void
+    + SearchFiltering(content:Dictionary<VisualElement, List<TextElement>>, searchString:string, expectedResults:List<string>, isMatch:bool) : void
+}
+@enduml

@@ -1,0 +1,19 @@
+@startuml
+class SpriteBoneInfluenceToolController {
+    + SpriteBoneInfluenceToolController(model:ISpriteBoneInfluenceToolModel, events:SkinningEvents)
+    + Activate() : void
+    + Deactivate() : void
+    + OnViewCreated() : void
+    + ShouldEnableAddButton() : bool
+}
+interface ISpriteBoneInfluenceToolModel {
+}
+class SpriteBoneInfluenceTool {
+    + <<override>> Initialize(layout:LayoutOverlay) : void
+    + GetSpriteCharacterPart(sprite:SpriteCache) : CharacterPartCache
+}
+BaseTool <|-- SpriteBoneInfluenceTool
+ISpriteBoneInfluenceToolModel <|-- SpriteBoneInfluenceTool
+SpriteBoneInfluenceTool --> "skeletonTool" SkeletonTool
+SpriteBoneInfluenceTool --> "previewBehaviour" IMeshPreviewBehaviour
+@enduml

@@ -1,0 +1,21 @@
+@startuml
+enum SpriteMeshViewMode {
+    EditGeometry,
+    CreateVertex,
+    CreateEdge,
+    SplitEdge,
+}
+enum MeshEditorAction {
+    None,
+    CreateVertex,
+    MoveVertex,
+    CreateEdge,
+    SplitEdge,
+    MoveEdge,
+    SelectVertex,
+    SelectEdge,
+    Remove,
+}
+interface ISpriteMeshView {
+}
+@enduml

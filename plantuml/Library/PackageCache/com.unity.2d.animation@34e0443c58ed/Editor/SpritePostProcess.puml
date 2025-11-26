@@ -1,0 +1,9 @@
+@startuml
+class SpritePostProcess {
+}
+class SkinningCachePersistentStateTemp {
+}
+AssetPostprocessor <|-- SpritePostProcess
+SpritePostProcess +-- SkinningCachePersistentStateTemp
+ISkinningCachePersistentState <|-- SkinningCachePersistentStateTemp
+@enduml

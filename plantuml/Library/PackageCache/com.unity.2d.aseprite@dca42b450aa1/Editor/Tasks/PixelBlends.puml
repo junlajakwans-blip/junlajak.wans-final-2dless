@@ -1,0 +1,23 @@
+@startuml
+class PixelBlends <<static>> {
+    + {static} Normal(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} Darken(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} Multiply(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} ColorBurn(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} Lighten(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} Screen(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} ColorDodge(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} Addition(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} Overlay(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} SoftLight(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} HardLight(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} Difference(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} Exclusion(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} Subtract(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} Divide(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} Hue(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} Saturation(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} ColorBlend(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+    + {static} Luminosity(prevOutColor:Color32, inColor:Color32, outColor:Color32) : void
+}
+@enduml

@@ -1,0 +1,32 @@
+@startuml
+interface ISpriteEditorDataProvider {
+}
+interface ISpriteBoneDataProvider {
+}
+interface ISpriteNameFileIdDataProvider {
+}
+interface ISpriteOutlineDataProvider {
+}
+interface ISpritePhysicsOutlineDataProvider {
+}
+interface ITextureDataProvider {
+}
+interface ISecondaryTextureDataProvider {
+}
+struct Vertex2DMetaData {
+}
+interface ISpriteMeshDataProvider {
+}
+interface ISpriteCustomDataProvider {
+    + GetKeys() : IEnumerable<string>
+    + SetData(key:string, data:string) : void
+    + RemoveData(key:string) : void
+    + GetData(key:string, data:string) : bool
+}
+interface ISpriteFrameEditCapability {
+    + GetEditCapability() : EditCapability
+    + SetEditCapability(editCapability:EditCapability) : void
+}
+Vertex2DMetaData --> "position" Vector2
+Vertex2DMetaData --> "boneWeight" BoneWeight
+@enduml

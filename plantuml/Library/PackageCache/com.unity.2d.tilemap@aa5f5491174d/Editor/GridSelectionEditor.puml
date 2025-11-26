@@ -1,0 +1,13 @@
+@startuml
+class GridSelectionEditor {
+    + <<override>> OnInspectorGUI() : void
+    + HasFrameBounds() : bool
+    + OnGetFrameBounds() : Bounds
+}
+class Styles <<static>> {
+    + {static} <<readonly>> iconPath : string = "Packages/com.unity.2d.tilemap/Editor/Icons/GridSelection.png"
+}
+Editor <|-- GridSelectionEditor
+GridSelectionEditor +-- Styles
+Styles o-> "gridSelectionLabel" GUIContent
+@enduml

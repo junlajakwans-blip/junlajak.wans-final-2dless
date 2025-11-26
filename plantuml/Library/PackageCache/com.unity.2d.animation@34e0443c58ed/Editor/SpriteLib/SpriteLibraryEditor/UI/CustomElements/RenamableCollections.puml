@@ -1,0 +1,40 @@
+@startuml
+interface IRenamableCollection {
+    + <<const>> labelElementName : string = "SpriteLibraryLabel"
+    + <<const>> textFieldElementName : string = "SpriteLibraryTextField"
+}
+class RenamableListView {
+    + renamingIndex : int <<get>>
+    + RenamableListView()
+    + SetSourceItems(sourceList:IList) : void
+    + GetItemSource() : IList
+    + SetElementSize(newSize:float) : void
+    + SetWidth(newWidth:float) : void
+    + StartRename() : void
+    + EndRename(cancelled:bool) : void
+}
+class RenamableGridView {
+    + renamingIndex : int <<get>>
+    + RenamableGridView()
+    + StartRename() : void
+    + EndRename(cancelled:bool) : void
+    + SetSourceItems(sourceList:IList) : void
+    + GetItemSource() : IList
+    + SetElementSize(newSize:float) : void
+    + SetWidth(newWidth:float) : void
+}
+class "Action`2"<T1,T2> {
+}
+IRenamableCollection --> "onRename<int,string>" "Action`2"
+IRenamableCollection --> "onItemsReordered" Action
+ListView <|-- RenamableListView
+IRenamableCollection <|-- RenamableListView
+RenamableListView --> "onRename<int,string>" "Action`2"
+RenamableListView --> "onItemsReordered" Action
+RenamableListView --> "CanRenameAtIndex" CanRenameDelegate
+GridView <|-- RenamableGridView
+IRenamableCollection <|-- RenamableGridView
+RenamableGridView --> "onRename<int,string>" "Action`2"
+RenamableGridView --> "onItemsReordered" Action
+RenamableGridView --> "CanRenameAtIndex" CanRenameDelegate
+@enduml

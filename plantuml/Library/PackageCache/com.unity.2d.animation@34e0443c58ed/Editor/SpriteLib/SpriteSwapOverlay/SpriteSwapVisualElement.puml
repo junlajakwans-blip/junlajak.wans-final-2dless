@@ -1,0 +1,17 @@
+@startuml
+class SpriteSwapVisualElement {
+    + SpriteSwapVisualElement()
+    + SetSpriteResolvers(newSelection:SpriteResolver[]) : void
+    + RefreshSpriteResolvers() : void
+    + OnSceneGUI() : void
+    + SetFiltered(isFiltered:bool) : void
+}
+class Styles <<static>> {
+    + <<const>> selectorList : string
+    + {static} infoLabelHolder : string
+    + {static} infoLabelIcon : string
+    + {static} infoLabel : string
+}
+VisualElement <|-- SpriteSwapVisualElement
+SpriteSwapVisualElement +-- Styles
+@enduml

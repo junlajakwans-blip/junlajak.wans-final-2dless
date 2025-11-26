@@ -1,0 +1,7 @@
+@startuml
+class PrebuildSetupWithTestDataAttribute {
+    + PrebuildSetupWithTestDataAttribute(targetClass:Type)
+    + PrebuildSetupWithTestDataAttribute(targetClassName:string)
+}
+Attribute <|-- PrebuildSetupWithTestDataAttribute
+@enduml

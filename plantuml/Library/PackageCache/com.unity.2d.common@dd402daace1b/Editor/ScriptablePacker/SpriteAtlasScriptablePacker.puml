@@ -1,0 +1,38 @@
+@startuml
+struct PixelMask {
+}
+struct AtlasMask {
+}
+struct UPackConfig {
+}
+struct UPack {
+}
+class SpriteAtlasScriptablePacker {
+    + <<override>> Pack(config:SpriteAtlasPackingSettings, setting:SpriteAtlasTextureSettings, input:PackerData) : bool
+}
+struct SpriteRaster {
+    + index : int
+    + vertexCount : int
+    + indexCount : int
+    + Execute() : void
+}
+struct SpriteFitter {
+    + resultIndex : int
+    + Execute() : void
+}
+class "NativeArray`1"<T> {
+}
+UPack +-- SpriteRaster
+IJob <|-- SpriteRaster
+SpriteRaster --> "cfg" UPackConfig
+SpriteRaster --> "textureCfg" int2
+SpriteRaster --> "spriteMasks<PixelMask>" "NativeArray`1"
+UPack +-- SpriteFitter
+IJob <|-- SpriteFitter
+SpriteFitter --> "config" UPackConfig
+SpriteFitter --> "atlasXInc" int4
+SpriteFitter --> "atlasYInc" int4
+SpriteFitter --> "atlasMask" AtlasMask
+SpriteFitter --> "spriteMask" PixelMask
+SpriteFitter --> "resultSet<int4>" "NativeArray`1"
+@enduml

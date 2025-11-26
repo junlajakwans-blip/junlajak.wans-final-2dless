@@ -1,0 +1,8 @@
+@startuml
+enum StoreType {
+    None,
+    Exchange,
+    Upgrade,
+    Map,
+}
+@enduml

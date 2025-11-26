@@ -1,0 +1,7 @@
+@startuml
+class TileDragAndDropManager {
+}
+class "ScriptableSingleton`1"<T> {
+}
+"ScriptableSingleton`1" "<TileDragAndDropManager>" <|-- TileDragAndDropManager
+@enduml

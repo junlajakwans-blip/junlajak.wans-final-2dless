@@ -1,0 +1,6 @@
+@startuml
+class CollaboratorsListView {
+    + <<override>> OnGUI(rect:Rect) : void
+}
+PlasticTreeView <|-- CollaboratorsListView
+@enduml

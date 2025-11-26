@@ -1,0 +1,6 @@
+@startuml
+class VrsResources {
+    + Dispose() : void
+}
+IDisposable <|-- VrsResources
+@enduml

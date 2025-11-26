@@ -1,0 +1,7 @@
+@startuml
+class RenderGraph <<partial>> {
+}
+class RenderGraphExceptionMessages <<static>> {
+}
+RenderGraph +-- RenderGraphExceptionMessages
+@enduml

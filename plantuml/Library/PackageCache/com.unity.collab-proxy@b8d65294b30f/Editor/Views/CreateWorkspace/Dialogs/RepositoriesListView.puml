@@ -1,0 +1,8 @@
+@startuml
+class RepositoriesListView {
+}
+class "IPlasticTable`1"<T> {
+}
+PlasticTreeView <|-- RepositoriesListView
+"IPlasticTable`1" "<RepositoryInfo>" <|-- RepositoriesListView
+@enduml

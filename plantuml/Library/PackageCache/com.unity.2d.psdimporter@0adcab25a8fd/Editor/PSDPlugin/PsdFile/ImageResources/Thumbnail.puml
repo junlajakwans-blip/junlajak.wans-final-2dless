@@ -1,0 +1,7 @@
+@startuml
+class Thumbnail {
+    + Thumbnail(id:ResourceID, name:string)
+    + Thumbnail(psdReader:PsdBinaryReader, id:ResourceID, name:string, numBytes:int)
+}
+RawImageResource <|-- Thumbnail
+@enduml

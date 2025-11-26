@@ -1,0 +1,33 @@
+@startuml
+class GridPaintingState {
+    + {static}  <<event>> scenePaintTargetChanged : Action<GameObject> 
+    + {static}  <<event>> scenePaintTargetEdited : Action<GameObject> 
+    + {static}  <<event>> brushChanged : Action<GridBrushBase> 
+    + {static}  <<event>> brushPickChanged : Action 
+    + {static}  <<event>> brushPickStoreChanged : Action 
+    + {static}  <<event>> brushToolsChanged : Action 
+    + {static}  <<event>> beforePaletteChanged : Action 
+    + {static}  <<event>> paletteChanged : Action<GameObject> 
+    + {static}  <<event>> palettesChanged : Action 
+    + {static}  <<event>> validTargetsChanged : Action 
+    + {static}  <<event>> editModeChanged : Action 
+    + {static} isPaletteEditable : bool <<get>>
+    + {static} IsPartOfActivePalette(target:GameObject) : bool
+    + {static} isEditing : bool <<get>> <<internal set>>
+    + {static} SetPickOnActiveGridBrush(user:bool, index:int) : void
+}
+class "ScriptableSingleton`1"<T> {
+}
+class "IList`1"<T> {
+}
+"ScriptableSingleton`1" "<GridPaintingState>" <|-- GridPaintingState
+GridPaintingState --> "scenePaintTarget" GameObject
+GridPaintingState --> "gridBrush" GridBrushBase
+GridPaintingState --> "brushPickStore" GridBrushPickStore
+GridPaintingState --> "brushes<GridBrushBase>" "IList`1"
+GridPaintingState --> "palette" GameObject
+GridPaintingState --> "palettes<GameObject>" "IList`1"
+GridPaintingState --> "activeBrushEditor" GridBrushEditorBase
+GridPaintingState --> "lastSceneViewMousePosition" Vector2
+GridPaintingState --> "lastSceneViewGridPosition" Vector3Int
+@enduml

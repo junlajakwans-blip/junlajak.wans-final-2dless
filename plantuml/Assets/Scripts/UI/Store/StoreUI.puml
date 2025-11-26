@@ -1,0 +1,24 @@
+@startuml
+class StoreUI {
+    + {static} IconsInitialized : bool
+    + SetDependencies(currency:Currency, stores:List<StoreBase>, manager:StoreManager) : void
+    + SetActiveStore(store:StoreBase) : void
+    + PopulateSlots(store:StoreBase) : void
+    + SwitchStore(type:StoreType) : void
+    + RefreshCurrency() : void
+    + {static} GetGlobalCurrencyIcon(currency:StoreCurrency) : Sprite
+    + RefreshActiveSlots() : void
+    + OpenExchange() : void
+    + OpenUpgrade() : void
+    + OpenMap() : void
+    + HighlightItem(itemID:string) : void
+}
+class "IEnumerable`1"<T> {
+}
+MonoBehaviour <|-- StoreUI
+StoreUI --> "StoreMapRef" StoreMap
+StoreUI --> "MapSlots<SlotUI>" "IEnumerable`1"
+StoreUI --> "CoinIcon" Sprite
+StoreUI --> "TokenIcon" Sprite
+StoreUI --> "KeyMapIcon" Sprite
+@enduml

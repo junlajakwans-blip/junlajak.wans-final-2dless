@@ -1,0 +1,6 @@
+@startuml
+class SpriteLibrarySourceAssetImporter {
+    + <<override>> OnImportAsset(ctx:AssetImportContext) : void
+}
+ScriptedImporter <|-- SpriteLibrarySourceAssetImporter
+@enduml

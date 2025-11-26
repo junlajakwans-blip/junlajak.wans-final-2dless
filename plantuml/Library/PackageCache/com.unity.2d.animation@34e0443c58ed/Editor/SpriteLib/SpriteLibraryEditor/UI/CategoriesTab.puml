@@ -1,0 +1,6 @@
+@startuml
+class CategoriesTab <<partial>> {
+    + BindElements(controllerEvents:ControllerEvents, viewEvents:ViewEvents) : void
+}
+VisualElement <|-- CategoriesTab
+@enduml

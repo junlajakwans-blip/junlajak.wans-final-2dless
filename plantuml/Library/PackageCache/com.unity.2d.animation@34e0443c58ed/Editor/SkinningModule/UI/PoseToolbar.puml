@@ -1,0 +1,13 @@
+@startuml
+class PoseToolbar <<partial>> {
+    +  <<event>> SetMeshTool : Action<Tools> 
+    +  <<event>> SetSkeletonTool : Action<Tools> 
+    +  <<event>> ActivateEditPoseTool : Action 
+    + {static} GenerateFromUXML() : PoseToolbar
+    + PoseToolbar()
+    + Setup(s:SkinningCache) : void
+    + UpdateToggleState() : void
+    + UpdateResetButtonState() : void
+}
+Toolbar <|-- PoseToolbar
+@enduml

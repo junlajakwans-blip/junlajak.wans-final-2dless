@@ -1,0 +1,8 @@
+@startuml
+class ProbeVolumeBuildProcessor {
+    + <<override>> PrepareForBuild(buildPlayerContext:BuildPlayerContext) : void
+    + OnPostprocessBuild(report:BuildReport) : void
+}
+BuildPlayerProcessor <|-- ProbeVolumeBuildProcessor
+IPostprocessBuildWithReport <|-- ProbeVolumeBuildProcessor
+@enduml

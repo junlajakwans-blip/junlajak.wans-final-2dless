@@ -1,0 +1,6 @@
+@startuml
+class CustomPackScriptableObjectInspector {
+    + <<override>> OnInspectorGUI() : void
+}
+Editor <|-- CustomPackScriptableObjectInspector
+@enduml

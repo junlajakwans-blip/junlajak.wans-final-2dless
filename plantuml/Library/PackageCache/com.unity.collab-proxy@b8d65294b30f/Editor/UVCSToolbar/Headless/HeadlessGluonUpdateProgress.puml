@@ -1,0 +1,5 @@
+@startuml
+class HeadlessGluonUpdateProgress {
+}
+IUpdateProgress <|-- HeadlessGluonUpdateProgress
+@enduml

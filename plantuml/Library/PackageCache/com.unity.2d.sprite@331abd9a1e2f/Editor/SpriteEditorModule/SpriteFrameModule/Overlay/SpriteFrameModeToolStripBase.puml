@@ -1,0 +1,12 @@
+@startuml
+abstract class SpriteFrameModeToolStripBase {
+    + {abstract} NotifyModeToolStripToggled(value:SpriteFrameModeToolStripBase) : void
+    + {abstract} GetUIContent(overlayLayout:Layout) : VisualElement[]
+    + {abstract} order : int <<get>>
+    + {abstract} OverlayActivated(spriteEditorModule:ISpriteEditorModuleMode) : bool
+    + {abstract} OverlayDeactivated() : void
+    + {abstract} GetSpriteFrameModeType() : Type
+}
+class "Action`1"<T> {
+}
+@enduml

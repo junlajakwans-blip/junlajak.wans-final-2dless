@@ -1,0 +1,19 @@
+@startuml
+class SpriteLibrarySourceAssetImporterInspector {
+    + <<override>> showImportedObject : bool <<get>>
+    + <<override>> OnEnable() : void
+    + <<override>> OnInspectorGUI() : void
+}
+class CreateSpriteLibrarySourceAsset {
+    + <<override>> Action(instanceId:int, pathName:string, resourceFile:string) : void
+}
+class Contents <<static>> {
+}
+class Style <<static>> {
+}
+ScriptedImporterEditor <|-- SpriteLibrarySourceAssetImporterInspector
+SpriteLibrarySourceAssetImporterInspector +-- Contents
+Contents o-> "openInSpriteLibraryEditor" GUIContent
+SpriteLibrarySourceAssetImporterInspector +-- Style
+Style o-> "mainAssetLabel" GUIContent
+@enduml

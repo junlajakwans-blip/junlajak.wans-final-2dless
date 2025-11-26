@@ -1,0 +1,7 @@
+@startuml
+abstract class GridSelectionTool {
+    + <<override>> OnToolGUI(window:EditorWindow) : void
+    + {abstract} HandleTool(position:Vector3, rotation:Quaternion, scale:Vector3) : void
+}
+EditorTool <|-- GridSelectionTool
+@enduml

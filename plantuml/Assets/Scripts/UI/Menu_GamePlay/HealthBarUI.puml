@@ -1,0 +1,9 @@
+@startuml
+class HealthBarUI {
+    + InitializeHealth(maxHP:int) : void
+    + UpdateHealth(currentHP:int) : void
+    + AnimateDamageEffect() : void
+    + AnimateHealEffect() : void
+}
+MonoBehaviour <|-- HealthBarUI
+@enduml

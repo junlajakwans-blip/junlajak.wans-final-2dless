@@ -1,0 +1,7 @@
+@startuml
+class OtherOptionsFoldout {
+}
+class Styles {
+}
+OtherOptionsFoldout +-- Styles
+@enduml

@@ -1,0 +1,6 @@
+@startuml
+class UnityVersionUtils {
+    + {static} FindClosestMatch(prefix:string, unityVersion:Version, dllFiles:string[]) : string
+}
+UnityVersionUtils --> "UnityVersion" Version
+@enduml

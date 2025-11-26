@@ -1,0 +1,13 @@
+@startuml
+enum ShelvesListColumn {
+    Name,
+    CreationDate,
+    Comment,
+    CreatedBy,
+    Repository,
+}
+class ShelvesListHeaderState {
+}
+MultiColumnHeaderState <|-- ShelvesListHeaderState
+ISerializationCallbackReceiver <|-- ShelvesListHeaderState
+@enduml

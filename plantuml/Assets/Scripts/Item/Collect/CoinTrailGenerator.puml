@@ -1,0 +1,7 @@
+@startuml
+class CoinTrailGenerator {
+    + InitializeDependencies(pool:IObjectPool, cardManager:CardManager, collectibleSpawner:CollectibleSpawner, buffManager:BuffManager) : void
+    + SpawnRandomTrail(startPosition:Vector3) : void
+}
+MonoBehaviour <|-- CoinTrailGenerator
+@enduml

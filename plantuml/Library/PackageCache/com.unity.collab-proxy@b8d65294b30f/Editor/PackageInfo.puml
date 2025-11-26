@@ -1,0 +1,7 @@
+@startuml
+class PackageInfo <<static>> {
+}
+class VersionData {
+}
+PackageInfo +-- VersionData
+@enduml

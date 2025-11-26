@@ -1,0 +1,10 @@
+@startuml
+class SpriteShapeColored {
+    + m_EdgeWidth : float = 1.0f
+    + <<override>> GetVersion() : int
+    + <<override>> GetVertexArrayCount(sc:SpriteShapeController) : int
+    + <<override>> MakeCreatorJob(sc:SpriteShapeController, indices:NativeArray<ushort>, positions:NativeSlice<Vector3>, texCoords:NativeSlice<Vector2>, tangents:NativeSlice<Vector4>, segments:NativeArray<UnityEngine.U2D.SpriteShapeSegment>, colliderData:NativeArray<float2>) : JobHandle
+}
+SpriteShapeGeometryCreator <|-- SpriteShapeColored
+SpriteShapeColored o-> "m_Gradient" Gradient
+@enduml

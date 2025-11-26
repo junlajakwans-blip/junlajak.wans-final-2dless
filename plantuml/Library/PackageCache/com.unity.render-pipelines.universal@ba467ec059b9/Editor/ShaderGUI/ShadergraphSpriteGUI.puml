@@ -1,0 +1,7 @@
+@startuml
+class ShaderGraphSpriteGUI {
+    + <<override>> FindProperties(properties:MaterialProperty[]) : void
+    + <<override>> DrawSurfaceInputs(material:Material) : void
+}
+BaseShaderGUI <|-- ShaderGraphSpriteGUI
+@enduml

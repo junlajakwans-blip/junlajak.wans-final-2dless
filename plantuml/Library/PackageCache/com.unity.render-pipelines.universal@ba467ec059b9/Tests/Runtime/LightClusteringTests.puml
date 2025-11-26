@@ -1,0 +1,6 @@
+@startuml
+class LightClusteringTests {
+    + LightClustering_WithOrthographicCameraAndCollinearConvexHull_ZBinsAndTileMasksAreCorrect() : void
+    + LightClustering_WhenLightVolumeIntersectionWithXZPlaneIsOutsideTheScreen_ZBinsAndTileMasksAreCorrect() : void
+}
+@enduml

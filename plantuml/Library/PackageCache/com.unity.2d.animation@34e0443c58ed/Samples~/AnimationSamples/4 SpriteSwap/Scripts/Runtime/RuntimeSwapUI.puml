@@ -1,0 +1,17 @@
+@startuml
+class RuntimeSwapUI {
+}
+class SwapEntry {
+    + category : string = ""
+    + entry : string = ""
+}
+class SwapGroup {
+    + name : string
+}
+MonoBehaviour <|-- RuntimeSwapUI
+RuntimeSwapUI +-- SwapEntry
+SwapEntry o-> "sprite" Sprite
+RuntimeSwapUI +-- SwapGroup
+SwapGroup --> "defaultSprite" Sprite
+SwapGroup --> "overrideSprite" Sprite
+@enduml

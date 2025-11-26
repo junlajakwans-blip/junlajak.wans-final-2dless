@@ -1,0 +1,7 @@
+@startuml
+class TilePaletteBrushesDropdownToggle {
+    + TilePaletteBrushesDropdownToggle()
+    + <<override>> value : bool <<get>> <<set>>
+}
+EditorToolbarToggle <|-- TilePaletteBrushesDropdownToggle
+@enduml

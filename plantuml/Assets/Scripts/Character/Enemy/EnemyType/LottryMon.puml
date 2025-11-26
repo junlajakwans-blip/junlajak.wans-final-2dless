@@ -1,0 +1,10 @@
+@startuml
+class LotteryMon {
+    + <<override>> Attack() : void
+    + ApplyGoodLuck(player:Player) : void
+    + ApplyBadLuck(player:Player) : void
+    + <<override>> ApplyCareerBuff(data:DuckCareerData) : void
+    + <<override>> Die() : void
+}
+Enemy <|-- LotteryMon
+@enduml

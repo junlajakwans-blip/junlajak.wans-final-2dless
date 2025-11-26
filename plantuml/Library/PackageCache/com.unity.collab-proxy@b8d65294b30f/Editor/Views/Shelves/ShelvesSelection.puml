@@ -1,0 +1,4 @@
+@startuml
+class ShelvesSelection <<static>> {
+}
+@enduml

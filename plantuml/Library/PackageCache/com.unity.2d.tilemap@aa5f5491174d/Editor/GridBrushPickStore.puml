@@ -1,0 +1,18 @@
+@startuml
+class GridBrushPickStore {
+    + lastIndex : int <<get>>
+    + AddNewLastSavedBrush(brush:GridBrushBase) : void
+    + ClearLastSavedBrush(index:int) : void
+    + AddNewUserSavedBrush(brush:GridBrushBase) : void
+    + SwapUserSavedBrushes(oldIdx:int, newIdx:int) : void
+    + SaveUserSavedBrush(index:int, brush:GridBrushBase) : void
+    + RemoveUserSavedBrush(index:int) : bool
+    + SetUserBrushFilterType(filterType:Type, filterText:string) : void
+}
+class "List`1"<T> {
+}
+ScriptableObject <|-- GridBrushPickStore
+GridBrushPickStore --> "lastSavedBrushes<GridBrushBase>" "List`1"
+GridBrushPickStore --> "userSavedBrushes<GridBrushBase>" "List`1"
+GridBrushPickStore --> "filteredUserSavedBrushes<GridBrushBase>" "List`1"
+@enduml

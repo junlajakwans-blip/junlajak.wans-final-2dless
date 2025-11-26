@@ -1,0 +1,6 @@
+@startuml
+class ComicEffectSpawner <<static>> {
+    + {static} Spawn(data:ComicEffectData, target:Transform) : void
+    + {static} Spawn(data:ComicEffectData, worldPos:Vector3) : void
+}
+@enduml

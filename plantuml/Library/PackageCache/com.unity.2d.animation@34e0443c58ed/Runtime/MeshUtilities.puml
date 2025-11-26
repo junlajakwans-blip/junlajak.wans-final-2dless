@@ -1,0 +1,5 @@
+@startuml
+class MeshUtilities <<static>> {
+    + {static} GetOutlineEdges(indices:NativeArray<ushort>) : NativeArray<int2>
+}
+@enduml

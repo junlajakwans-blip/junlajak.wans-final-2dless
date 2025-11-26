@@ -1,0 +1,20 @@
+@startuml
+class TilePaletteClipboardElement <<partial>> {
+    +  <<event>> onBrushPicked : Action 
+    + clipboardUnlocked : bool <<get>> <<set>>
+    +  <<event>> clipboardUnlockedChanged : Action<bool> 
+    + TilePaletteClipboardElement()
+}
+class TilePaletteClipboardElementFactory {
+}
+class TilePaletteClipboardElementUxmlTraits {
+}
+class "UxmlFactory`2"<T1,T2> {
+}
+VisualElement <|-- TilePaletteClipboardElement
+TilePaletteClipboardElement --> "clipboardMouseGridPosition" Vector3Int
+TilePaletteClipboardElement +-- TilePaletteClipboardElementFactory
+"UxmlFactory`2" "<TilePaletteClipboardElement,TilePaletteClipboardElementUxmlTraits>" <|-- TilePaletteClipboardElementFactory
+TilePaletteClipboardElement +-- TilePaletteClipboardElementUxmlTraits
+UxmlTraits <|-- TilePaletteClipboardElementUxmlTraits
+@enduml

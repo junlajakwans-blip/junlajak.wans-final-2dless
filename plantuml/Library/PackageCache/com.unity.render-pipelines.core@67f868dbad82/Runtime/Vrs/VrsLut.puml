@@ -1,0 +1,6 @@
+@startuml
+class VrsLut {
+    + {static} CreateDefault() : VrsLut
+    + CreateBuffer(forVisualization:bool) : GraphicsBuffer
+}
+@enduml

@@ -1,0 +1,10 @@
+@startuml
+class AsepriteUtilities <<static>> {
+    + {static} ReadString(reader:BinaryReader) : string
+    + {static} ReadAndDecompressedData(reader:BinaryReader, dataLength:int) : byte[]
+    + {static} GenerateImageData(colorDepth:ushort, imageData:byte[], paletteEntries:ReadOnlyCollection<PaletteEntry>, alphaPaletteEntry:byte) : NativeArray<Color32>
+    + {static} Contains(list:IReadOnlyCollection<T>, item:T) : bool
+    + {static} FindIndex(list:IReadOnlyCollection<T>, match:Predicate<T>) : int
+    + {static} Find(list:IReadOnlyCollection<T>, match:Predicate<T>) : T
+}
+@enduml

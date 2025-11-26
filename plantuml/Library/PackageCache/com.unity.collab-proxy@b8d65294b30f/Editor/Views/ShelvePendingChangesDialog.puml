@@ -1,0 +1,12 @@
+@startuml
+class ShelvePendingChangesQuestionerBuilder {
+    + Get() : IShelvePendingChangesQuestioner
+}
+class ShelvePendingChangesQuestioner {
+}
+class ShelvePendingChangesDialog {
+}
+IShelvePendingChangesQuestionerBuilder <|-- ShelvePendingChangesQuestionerBuilder
+IShelvePendingChangesQuestioner <|-- ShelvePendingChangesQuestioner
+PlasticDialog <|-- ShelvePendingChangesDialog
+@enduml

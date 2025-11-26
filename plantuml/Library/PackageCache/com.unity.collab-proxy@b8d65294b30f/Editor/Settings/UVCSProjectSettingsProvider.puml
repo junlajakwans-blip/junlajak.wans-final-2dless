@@ -1,0 +1,11 @@
+@startuml
+class UVCSProjectSettingsProvider {
+    + <<override>> OnActivate(searchContext:string, rootElement:VisualElement) : void
+    + <<override>> OnDeactivate() : void
+    + <<override>> OnGUI(searchContext:string) : void
+}
+class Styles {
+}
+SettingsProvider <|-- UVCSProjectSettingsProvider
+UVCSProjectSettingsProvider +-- Styles
+@enduml

@@ -1,0 +1,12 @@
+@startuml
+class SceneViewOpenTilePaletteOverlay {
+    + SceneViewOpenTilePaletteOverlay()
+    + visible : bool <<get>>
+}
+class TilePaletteOpenPalette <<sealed>> {
+    + TilePaletteOpenPalette()
+}
+ToolbarOverlay <|-- SceneViewOpenTilePaletteOverlay
+ITransientOverlay <|-- SceneViewOpenTilePaletteOverlay
+EditorToolbarButton <|-- TilePaletteOpenPalette
+@enduml

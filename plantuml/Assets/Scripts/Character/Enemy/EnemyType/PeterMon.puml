@@ -1,0 +1,9 @@
+@startuml
+class PeterMon {
+    + <<override>> Move() : void
+    + <<override>> ApplyCareerBuff(data:DuckCareerData) : void
+    + <<override>> DisableBehavior(duration:float) : void
+    + <<override>> Die() : void
+}
+Enemy <|-- PeterMon
+@enduml

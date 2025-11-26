@@ -1,0 +1,7 @@
+@startuml
+class UpdateOrder <<static>> {
+    + <<const>> spriteResolverUpdateOrder : int
+    + <<const>> ikUpdateOrder : int
+    + <<const>> spriteSkinUpdateOrder : int = 10
+}
+@enduml

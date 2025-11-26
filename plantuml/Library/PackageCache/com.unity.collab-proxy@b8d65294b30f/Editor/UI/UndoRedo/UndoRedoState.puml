@@ -1,0 +1,10 @@
+@startuml
+class UndoRedoState {
+    + <<override>> Equals(obj:object) : bool
+    + <<override>> GetHashCode() : int
+    + <<override>> ToString() : string
+}
+class "IEquatable`1"<T> {
+}
+"IEquatable`1" "<UndoRedoState>" <|-- UndoRedoState
+@enduml

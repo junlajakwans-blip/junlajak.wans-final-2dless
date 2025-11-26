@@ -1,0 +1,5 @@
+@startuml
+class IsometricSlicingUtility {
+    + {static} GetIsometricRects(textureToUse:UnityTexture2D, size:Vector2, offset:Vector2, isAlternate:bool, keepEmptyRects:bool) : IEnumerable<Rect>
+}
+@enduml

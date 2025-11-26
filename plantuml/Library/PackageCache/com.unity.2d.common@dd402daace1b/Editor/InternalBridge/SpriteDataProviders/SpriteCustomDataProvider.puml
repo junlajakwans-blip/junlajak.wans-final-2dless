@@ -1,0 +1,11 @@
+@startuml
+class SpriteCustomDataProvider {
+    + {static} HasDataProvider(dataProvider:ISpriteEditorDataProvider) : bool
+    + SpriteCustomDataProvider(dataProvider:ISpriteEditorDataProvider)
+    + GetKeys() : IEnumerable<string>
+    + SetData(key:string, data:string) : void
+    + RemoveData(key:string) : void
+    + GetData(key:string, data:string) : bool
+}
+ISpriteCustomDataProvider <|-- SpriteCustomDataProvider
+@enduml

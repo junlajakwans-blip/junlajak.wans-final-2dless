@@ -1,0 +1,7 @@
+@startuml
+class VrsLutDrawer <<sealed>> {
+    + <<override>> CreatePropertyGUI(property:SerializedProperty) : VisualElement
+    + <<override>> GetPropertyHeight(property:SerializedProperty, label:GUIContent) : float
+}
+PropertyDrawer <|-- VrsLutDrawer
+@enduml

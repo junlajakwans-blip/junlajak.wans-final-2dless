@@ -1,0 +1,8 @@
+@startuml
+class SpriteLibraryAssetPostprocessor {
+    + {static}  <<event>> OnImported : Action<string> 
+    + {static}  <<event>> OnDeleted : Action<string> 
+    + {static}  <<event>> OnMovedAssetFromTo : Action<string, string> 
+}
+AssetPostprocessor <|-- SpriteLibraryAssetPostprocessor
+@enduml

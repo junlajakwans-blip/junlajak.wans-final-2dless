@@ -1,0 +1,6 @@
+@startuml
+class ComicEffectAutoRecycle {
+    + BeginCountdown(delay:float) : void
+}
+MonoBehaviour <|-- ComicEffectAutoRecycle
+@enduml

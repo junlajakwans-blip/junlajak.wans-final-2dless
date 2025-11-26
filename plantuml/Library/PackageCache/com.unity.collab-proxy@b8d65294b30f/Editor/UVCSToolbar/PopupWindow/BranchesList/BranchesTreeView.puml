@@ -1,0 +1,16 @@
+@startuml
+class BranchesTreeView {
+    + <<override>> OnGUI(rect:Rect) : void
+}
+class BranchTreeViewItem {
+    + FormattedComment : string <<get>>
+}
+class CategoryTreeViewItem {
+}
+interface IClickListener {
+}
+TreeView <|-- BranchesTreeView
+TreeViewItem <|-- BranchTreeViewItem
+TreeViewItem <|-- CategoryTreeViewItem
+BranchesTreeView +-- IClickListener
+@enduml

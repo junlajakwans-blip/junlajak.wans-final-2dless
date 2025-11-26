@@ -1,0 +1,8 @@
+@startuml
+class PostbuildCleanupWithTestDataTask {
+    + PostbuildCleanupWithTestDataTask(settings:ExecutionSettings)
+}
+class "BuildActionTaskBase`1"<T> {
+}
+"BuildActionTaskBase`1" "<IPostbuildCleanupWithTestData>" <|-- PostbuildCleanupWithTestDataTask
+@enduml

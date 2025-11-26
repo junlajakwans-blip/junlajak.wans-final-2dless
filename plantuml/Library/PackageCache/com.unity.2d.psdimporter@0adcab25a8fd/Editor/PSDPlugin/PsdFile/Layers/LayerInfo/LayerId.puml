@@ -1,0 +1,10 @@
+@startuml
+class LayerId {
+    + <<override>> Signature : string <<get>>
+    + <<override>> Key : string <<get>>
+    + ID : int <<get>>
+    + LayerId(key:string)
+    + LayerId(reader:PsdBinaryReader, key:string, dataLength:long)
+}
+LayerInfo <|-- LayerId
+@enduml

@@ -1,0 +1,14 @@
+@startuml
+enum ColorProfileTypes {
+    NoProfile= 0,
+    sRGB= 1,
+    ICC= 2,
+}
+class ColorProfileChunk {
+    + flags : ushort <<get>>
+    + gamma : float <<get>>
+}
+BaseChunk <|-- ColorProfileChunk
+ColorProfileChunk --> "chunkType" ChunkTypes
+ColorProfileChunk --> "profileType" ColorProfileTypes
+@enduml

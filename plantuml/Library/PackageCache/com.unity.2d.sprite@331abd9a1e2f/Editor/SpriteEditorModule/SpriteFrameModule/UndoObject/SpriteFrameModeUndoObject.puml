@@ -1,0 +1,17 @@
+@startuml
+struct EquatableType {
+    + typeFullNanme : string
+    + assemblyName : string
+    + Equals(other:EquatableType) : bool
+    + Equals(other:Type) : bool
+}
+class SpriteFrameModeUndoObject {
+}
+class "IEquatable`1"<T> {
+}
+class "UndoObject`1"<T> {
+}
+"IEquatable`1" "<EquatableType>" <|-- EquatableType
+"IEquatable`1" "<Type>" <|-- EquatableType
+"UndoObject`1" "<EquatableType>" <|-- SpriteFrameModeUndoObject
+@enduml

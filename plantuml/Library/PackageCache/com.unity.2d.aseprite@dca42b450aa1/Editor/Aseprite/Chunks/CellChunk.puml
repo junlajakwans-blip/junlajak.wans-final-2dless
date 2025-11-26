@@ -1,0 +1,25 @@
+@startuml
+enum CellTypes {
+    RawImage= 0,
+    LinkedCell= 1,
+    CompressedImage= 2,
+    CompressedTileMap= 3,
+}
+class CellChunk {
+    + layerIndex : ushort <<get>>
+    + posX : short <<get>>
+    + posY : short <<get>>
+    + opacity : byte <<get>>
+    + linkedToFrame : int <<get>>
+    + width : ushort <<get>>
+    + height : ushort <<get>>
+    + <<override>> Dispose() : void
+}
+class "NativeArray`1"<T> {
+}
+BaseChunk <|-- CellChunk
+CellChunk --> "chunkType" ChunkTypes
+CellChunk --> "cellType" CellTypes
+CellChunk --> "image<Color32>" "NativeArray`1"
+CellChunk --> "dataChunk" UserDataChunk
+@enduml

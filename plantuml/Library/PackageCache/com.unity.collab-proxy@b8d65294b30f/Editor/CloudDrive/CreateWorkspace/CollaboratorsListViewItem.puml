@@ -1,0 +1,5 @@
+@startuml
+class CollaboratorsListViewItem {
+}
+TreeViewItem <|-- CollaboratorsListViewItem
+@enduml

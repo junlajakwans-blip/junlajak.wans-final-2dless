@@ -1,0 +1,44 @@
+@startuml
+class MenuItems <<static>> {
+}
+enum SpriteAssetMenuPriority {
+    Triangle= 1,
+    Square,
+    Circle,
+    Capsule,
+    IsometricDiamond,
+    HexagonFlatTop,
+    HexagonPointTop,
+    Sliced9,
+}
+enum SpriteAtlasAssetMenuPriority {
+    SpriteAtlas= SpriteAssetMenuPriority.Triangle + 11,
+}
+enum SpriteGameObjectMenuPriority {
+    Triangle= 1,
+    Square,
+    Circle,
+    Capsule,
+    IsometricDiamond,
+    HexagonFlatTop,
+    HexagonPointTop,
+    Sliced9,
+}
+enum PhysicsGameObjectMenuPriority {
+    StaticSprite= 2,
+    DynamicSprite,
+}
+enum SpriteMaskGameObjectMenuPriority {
+    SpriteMask= 6,
+}
+class DoCreateSpriteAtlas {
+    + sides : int
+    + <<override>> Action(instanceId:int, pathName:string, resourceFile:string) : void
+}
+MenuItems +-- SpriteAssetMenuPriority
+MenuItems +-- SpriteAtlasAssetMenuPriority
+MenuItems +-- SpriteGameObjectMenuPriority
+MenuItems +-- PhysicsGameObjectMenuPriority
+MenuItems +-- SpriteMaskGameObjectMenuPriority
+MenuItems +-- DoCreateSpriteAtlas
+@enduml

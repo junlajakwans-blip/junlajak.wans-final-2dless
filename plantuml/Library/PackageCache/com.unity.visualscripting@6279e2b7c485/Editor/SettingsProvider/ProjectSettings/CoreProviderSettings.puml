@@ -1,0 +1,6 @@
+@startuml
+class CoreSettings {
+    + CoreSettings(coreConfig:BoltCoreConfiguration)
+    + OnGUI() : void
+}
+@enduml

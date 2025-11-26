@@ -1,0 +1,6 @@
+@startuml
+class Bone {
+    + guid : string <<get>> <<set>>
+}
+MonoBehaviour <|-- Bone
+@enduml

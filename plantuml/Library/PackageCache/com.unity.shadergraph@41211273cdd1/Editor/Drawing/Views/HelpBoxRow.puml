@@ -1,0 +1,9 @@
+@startuml
+class HelpBoxRow {
+    + HelpBoxRow(text:string, messageType:MessageType)
+    + {static} CreateVariantLimitHelpBox(currentVariantCount:int, maxVariantCount:int) : VisualElement
+    + {static} CreateUpgradePrompt(deprecatedTypeName:string, upgradeAction:Action, dismissAction:Action, tooltip:string, buttonText:string, labelText:string, messageType:MessageType) : VisualElement
+}
+VisualElement <|-- HelpBoxRow
+HelpBoxRow --> "contentContainer" VisualElement
+@enduml

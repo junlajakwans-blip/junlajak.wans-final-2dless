@@ -1,0 +1,56 @@
+@startuml
+class CategoryData {
+    + <<readonly>> name : string
+    + <<readonly>> fromMain : bool
+    + <<readonly>> isOverride : bool
+    + CategoryData(name:string, fromMain:bool, isOverride:bool)
+}
+class LabelData {
+    + <<readonly>> name : string
+    + <<readonly>> fromMain : bool
+    + <<readonly>> spriteOverride : bool
+    + <<readonly>> categoryFromMain : bool
+    + LabelData(name:string, sprite:Sprite, fromMain:bool, spriteOverride:bool, categoryFromMain:bool)
+}
+class SpriteLibraryEditorModel {
+    + hasSelectedCategories : bool <<get>>
+    + hasSelectedLabels : bool <<get>>
+    + isModified : bool <<get>>
+    + isSaving : bool <<get>>
+    + GetSelectedCategories() : List<string>
+    + SelectCategories(newSelection:IList<string>) : void
+    + GetSelectedLabels() : List<string>
+    + SelectLabels(labels:IList<string>) : void
+    + GetAllCategories() : List<CategoryData>
+    + GetFilteredCategories(filterString:string, searchType:SearchType, comparison:StringComparison) : List<CategoryData>
+    + GetAllLabels() : List<LabelData>
+    + GetFilteredLabels(filterString:string, searchType:SearchType, comparison:StringComparison) : List<LabelData>
+    + BeginUndo(actionType:ActionType, actionName:string) : void
+    + EndUndo() : void
+    + {static} IsActionModifyingAssets(actionType:ActionType) : bool
+    + CreateNewLabel(labelName:string) : void
+    + SetLabelSprite(labelName:string, newSprite:Sprite) : void
+    + DeleteSelectedLabels() : void
+    + RenameSelectedLabel(newName:string) : void
+    + AddLabelsToCategory(categoryName:string, sprites:IEnumerable<Sprite>, replaceConflicting:bool) : void
+    + DeleteSelectedCategories() : void
+    + ReorderCategories(reorderedCategories:IList<string>) : void
+    + RenameSelectedCategory(newName:string) : void
+    + SelectAsset(asset:SpriteLibraryAsset) : void
+    + ReorderLabels(reorderedLabels:IList<string>) : void
+    + CreateNewCategory(categoryName:string, sprites:IList<Sprite>) : void
+    + SaveLibrary(path:string) : void
+    + GetMainLibrary() : SpriteLibraryAsset
+    + SetMainLibrary(newMainLibrary:SpriteLibraryAsset) : void
+    + RevertLabels(labels:IList<string>) : void
+    + SetAssetPath(assetPath:string) : void
+    + GetLabels(categoryName:string) : List<LabelData>
+    + CompareLabels(labelsToCompare:IList<string>) : bool
+    + CompareCategories(categoriesToCompare:IList<string>) : bool
+    + Destroy() : void
+}
+LabelData --> "sprite" Sprite
+ScriptableObject <|-- SpriteLibraryEditorModel
+SpriteLibraryEditorModel --> "lastActionType" ActionType
+SpriteLibraryEditorModel --> "selectedAsset" SpriteLibraryAsset
+@enduml

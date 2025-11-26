@@ -1,0 +1,8 @@
+@startuml
+class UncontrolledPopupWindow {
+    + <<override>> GetWindowSize() : Vector2
+    + <<override>> OnClose() : void
+    + <<override>> OnGUI(rect:Rect) : void
+}
+PopupWindowContent <|-- UncontrolledPopupWindow
+@enduml

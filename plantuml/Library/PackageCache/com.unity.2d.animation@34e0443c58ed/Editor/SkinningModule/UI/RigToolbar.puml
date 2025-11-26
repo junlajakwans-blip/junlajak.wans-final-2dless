@@ -1,0 +1,12 @@
+@startuml
+class RigToolbar <<partial>> {
+    +  <<event>> ActivateCopyTool : Action 
+    +  <<event>> TogglePasteTool : Action 
+    + {static} GenerateFromUXML() : RigToolbar
+    + RigToolbar()
+    + UpdatePasteButtonCheckedState() : void
+    + UpdatePasteButtonEnabledState() : void
+}
+Toolbar <|-- RigToolbar
+RigToolbar --> "skinningCache" SkinningCache
+@enduml

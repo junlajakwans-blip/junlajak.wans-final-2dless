@@ -1,0 +1,14 @@
+@startuml
+class CustomToggle {
+    + UpdateMaterial(findGroupToggles:bool) : void
+    + <<virtual>> GetModifiedMaterial(baseMaterial:Material) : Material
+    + <<override>> OnPointerClick(eventData:PointerEventData) : void
+    + <<override>> OnSubmit(eventData:BaseEventData) : void
+}
+class "UnityEvent`1"<T> {
+}
+Toggle <|-- CustomToggle
+IMaterialModifier <|-- CustomToggle
+CustomToggle --> "onStateChanged<int>" "UnityEvent`1"
+CustomToggle --> "Graphic" Graphic
+@enduml

@@ -1,0 +1,13 @@
+@startuml
+class SceneManager <<sealed>> {
+    + {static}  <<event>> OnSceneInitialized : System.Action 
+    + Inject(gen:MapGeneratorBase, player:Player) : void
+    + TryInitializeScene() : void
+    + GetCurrentSceneName() : string
+    + GetCurrentMapType() : MapType
+    + IsInitialized : bool <<get>>
+    + GetMapGenerator() : MapGeneratorBase
+    + ClearSceneObjects() : void
+}
+MonoBehaviour <|-- SceneManager
+@enduml

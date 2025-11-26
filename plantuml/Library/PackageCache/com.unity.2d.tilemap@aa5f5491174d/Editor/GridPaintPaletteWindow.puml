@@ -1,0 +1,49 @@
+@startuml
+class GridPaintPaletteWindow {
+    + {static} isActive : bool <<get>>
+}
+class Styles <<static>> {
+}
+class UIStyles <<static>> {
+    + {static} <<readonly>> styleSheetPath : string = "Packages/com.unity.2d.tilemap/Editor/UI/GridPaintPaletteWindow.uss"
+    + {static} <<readonly>> darkStyleSheetPath : string = "Packages/com.unity.2d.tilemap/Editor/UI/GridPaintPaletteWindowDark.uss"
+    + {static} <<readonly>> lightStyleSheetPath : string = "Packages/com.unity.2d.tilemap/Editor/UI/GridPaintPaletteWindowLight.uss"
+    + {static} <<readonly>> ussClassName : string = "unity-grid-paint-palette-window"
+}
+class ShortcutIds <<static>> {
+    + <<const>> k_Select : string = "Grid Painting/Select"
+    + <<const>> k_Move : string = "Grid Painting/Move"
+    + <<const>> k_Brush : string = "Grid Painting/Brush"
+    + <<const>> k_Rectangle : string = "Grid Painting/Rectangle"
+    + <<const>> k_Picker : string = "Grid Painting/Picker"
+    + <<const>> k_Erase : string = "Grid Painting/Erase"
+    + <<const>> k_Fill : string = "Grid Painting/Fill"
+    + <<const>> k_RotateClockwise : string = "Grid Painting/Rotate Clockwise"
+    + <<const>> k_RotateAntiClockwise : string = "Grid Painting/Rotate Anti-Clockwise"
+    + <<const>> k_FlipX : string = "Grid Painting/Flip X"
+    + <<const>> k_FlipY : string = "Grid Painting/Flip Y"
+    + <<const>> k_IncreaseZ : string = "Grid Painting/Increase Z"
+    + <<const>> k_DecreaseZ : string = "Grid Painting/Decrease Z"
+    + <<const>> k_SwitchToNextBrush : string = "Grid Painting/Switch To Next Brush"
+    + <<const>> k_SwitchToPreviousBrush : string = "Grid Painting/Switch To Previous Brush"
+    + <<const>> k_ToggleSceneViewPalette : string = "Grid Painting/Toggle SceneView Palette"
+    + <<const>> k_ToggleSceneViewBrushPick : string = "Grid Painting/Toggle SceneView BrushPick"
+}
+EditorWindow <|-- GridPaintPaletteWindow
+ISupportsOverlays <|-- GridPaintPaletteWindow
+GridPaintPaletteWindow +-- Styles
+Styles o-> "selectPaintTarget" GUIContent
+Styles o-> "selectPalettePrefab" GUIContent
+Styles o-> "selectTileAsset" GUIContent
+Styles o-> "unlockPaletteEditing" GUIContent
+Styles o-> "lockPaletteEditing" GUIContent
+Styles o-> "verticalBrushSplit" GUIContent
+Styles o-> "horizontalBrushSplit" GUIContent
+Styles o-> "openTilePalettePreferences" GUIContent
+Styles o-> "openAsFloatingWindow" GUIContent
+Styles o-> "openAsDockableWindow" GUIContent
+Styles o-> "tilePalette" GUIContent
+Styles o-> "mouseGridPositionAtZ" GUIContent
+GridPaintPaletteWindow +-- UIStyles
+GridPaintPaletteWindow +-- ShortcutIds
+@enduml

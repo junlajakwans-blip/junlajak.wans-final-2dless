@@ -1,0 +1,17 @@
+@startuml
+class Currency {
+    + {static}  <<event>> OnCurrencyChanged : Action 
+    + Coin : int <<get>> <<set>>
+    + Token : int <<get>> <<set>>
+    + KeyMap : int <<get>> <<set>>
+    + Initialize(switcher:CareerSwitcher) : void
+    + AddCoin(amount:int) : void
+    + UseCoin(amount:int) : bool
+    + AddToken(amount:int) : void
+    + UseToken(amount:int) : bool
+    + AddKey(amount:int) : void
+    + UseKey(amount:int) : bool
+    + ResetAll() : void
+    + <<override>> ToString() : string
+}
+@enduml

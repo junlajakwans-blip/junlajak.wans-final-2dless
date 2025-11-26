@@ -1,0 +1,16 @@
+@startuml
+class TilePaletteBrushesButton <<sealed>> <<partial>> {
+    + TilePaletteBrushesButton()
+}
+class TilePaletteBrushesButtonFactory {
+}
+class TilePaletteBrushesButtonUxmlTraits {
+}
+class "UxmlFactory`2"<T1,T2> {
+}
+EditorToolbarDropdown <|-- TilePaletteBrushesButton
+TilePaletteBrushesButton +-- TilePaletteBrushesButtonFactory
+"UxmlFactory`2" "<TilePaletteBrushesButton,TilePaletteBrushesButtonUxmlTraits>" <|-- TilePaletteBrushesButtonFactory
+TilePaletteBrushesButton +-- TilePaletteBrushesButtonUxmlTraits
+UxmlTraits <|-- TilePaletteBrushesButtonUxmlTraits
+@enduml

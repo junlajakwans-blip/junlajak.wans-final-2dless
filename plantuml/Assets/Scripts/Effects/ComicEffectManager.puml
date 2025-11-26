@@ -1,0 +1,10 @@
+@startuml
+class ComicEffectManager {
+    + Register(key:string, prefab:ComicEffectPlayer, preloadCount:int) : void
+    + Play(data:ComicEffectData, pos:Vector3) : void
+    + Release(fx:ComicEffectPlayer) : void
+    + Initialize(player:Player) : void
+}
+MonoBehaviour <|-- ComicEffectManager
+ComicEffectManager --> "Instance" ComicEffectManager
+@enduml

@@ -1,0 +1,29 @@
+@startuml
+interface ICopyToolStringStore {
+}
+class SystemCopyBufferStringStore {
+    + stringStore : string <<get>> <<set>>
+}
+class BoneStorage {
+    + BoneStorage(bones:BoneCache[], boneMapping:Dictionary<string, string>)
+}
+class CopyTool {
+    + pixelsPerUnit : float <<set>>
+    + hasValidCopiedData : bool <<get>>
+    + <<override>> Initialize(layout:LayoutOverlay) : void
+    + OnCopyActivated() : void
+    + OnPasteActivated(shouldPasteBones:bool, shouldPasteMesh:bool, shouldFlipX:bool, shouldFlipY:bool) : void
+}
+class CopyToolView {
+    +  <<event>> onPasteActivated : Action<bool, bool, bool, bool> 
+    + Show(readonlyBone:bool) : void
+    + Hide() : void
+    + Initialize(layoutOverlay:LayoutOverlay) : void
+}
+class "Dictionary`2"<T1,T2> {
+}
+ICopyToolStringStore <|-- SystemCopyBufferStringStore
+BoneStorage --> "boneMapping<string,string>" "Dictionary`2"
+MeshToolWrapper <|-- CopyTool
+CopyTool --> "copyToolStringStore" ICopyToolStringStore
+@enduml

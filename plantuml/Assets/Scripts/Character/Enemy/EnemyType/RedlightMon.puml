@@ -1,0 +1,11 @@
+@startuml
+class RedlightMon {
+    + <<override>> Attack() : void
+    + SpawnCarAttack() : void
+    + SwitchLightState() : void
+    + WarnPlayer() : void
+    + ForceSignalState(state:string, forcePermanent:bool) : void
+    + <<override>> Die() : void
+}
+Enemy <|-- RedlightMon
+@enduml

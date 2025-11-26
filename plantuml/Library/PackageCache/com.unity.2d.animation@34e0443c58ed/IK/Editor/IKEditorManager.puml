@@ -1,0 +1,16 @@
+@startuml
+class IKEditorManager {
+    + Initialize() : void
+    + CheckGizmoToggle() : void
+    + FindManager(solver:Solver2D) : IKManager2D
+    + Record(solver:Solver2D, undoName:string) : void
+    + RegisterUndo(solver:Solver2D, undoName:string) : void
+    + Record(manager:IKManager2D, undoName:string) : void
+    + RegisterUndo(manager:IKManager2D, undoName:string) : void
+    + UpdateManagerImmediate(manager:IKManager2D, recordRootLoops:bool) : void
+    + UpdateSolverImmediate(solver:Solver2D, recordRootLoops:bool) : void
+    + SetChainPositionOverride(chain:IKChain2D, position:Vector3) : void
+}
+ScriptableObject <|-- IKEditorManager
+IKEditorManager --> "instance" IKEditorManager
+@enduml

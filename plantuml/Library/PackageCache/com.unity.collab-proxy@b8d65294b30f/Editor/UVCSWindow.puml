@@ -1,0 +1,5 @@
+@startuml
+class UVCSWindow {
+}
+EditorWindow <|-- UVCSWindow
+@enduml

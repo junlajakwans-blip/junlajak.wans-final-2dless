@@ -1,0 +1,46 @@
+@startuml
+class UIManager {
+    + GetScoreUI() : ScoreUI
+    + SetDependencies(gm:GameManager, currency:Currency, storeManager:StoreManager, stores:List<StoreBase>) : void
+    + ShowMainMenu() : void
+    + ShowSelectMap() : void
+    + ShowStoreMenu(isActive:bool) : void
+    + SwitchStorePanel(type:StoreType) : void
+    + ShowStoreBase() : void
+    + ShowPrompt(message:string) : void
+    + HidePrompt() : void
+    + GetPlayerHealthBarUI() : HealthBarUI
+    + InitializeHealth(maxHP:int) : void
+    + UpdateHealth(currentHP:int) : void
+    + ShowDamageEffect() : void
+    + ShowHealEffect() : void
+    + InitializeScore(startScore:int) : void
+    + UpdateScore(newScore:int) : void
+    + ShowComboEffect(combo:int) : void
+    + DisplayHighScore(score:int) : void
+    + UpdateCardSlots(cards:System.Collections.Generic.List<Card>) : void
+    + HighlightCard(index:int) : void
+    + ResetCardSlots() : void
+    + ShowCardSelectionPanel(isActive:bool) : void
+    + ShowPauseMenu(isActive:bool) : void
+    + ShowResultMenu() : void
+    + CloseAllMenus() : void
+    + IsAnyMenuOpen() : bool
+    + ShowGameplayHUD() : void
+    + OpenStore() : void
+    + ShowStoreExchange() : void
+    + ShowStoreUpgrade() : void
+    + ShowStoreMap() : void
+    + RefreshStoreUI() : void
+}
+MonoBehaviour <|-- UIManager
+UIManager --> "panelHUDMain" GameObject
+UIManager --> "panelMainMenu" GameObject
+UIManager --> "panelSelectMap" GameObject
+UIManager --> "panelStore" GameObject
+UIManager --> "panelSettings" GameObject
+UIManager --> "panelStoreExchange" GameObject
+UIManager --> "panelStoreUpgrade" GameObject
+UIManager --> "upgradeUI" UpgradeUI
+UIManager --> "Instance" UIManager
+@enduml

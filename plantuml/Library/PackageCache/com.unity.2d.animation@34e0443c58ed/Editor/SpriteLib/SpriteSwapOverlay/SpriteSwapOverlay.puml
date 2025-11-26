@@ -1,0 +1,33 @@
+@startuml
+interface INavigableElement {
+    +  <<event>> onSelectionChange : Action<int> 
+    + Select(index:int) : void
+}
+enum PropertyAnimationState {
+    NotAnimated,
+    Animated,
+    Candidate,
+    Recording,
+}
+class SpriteSwapOverlay {
+    + <<const>> overlayId : string = "Scene View/Sprite Swap"
+    + <<const>> rootStyle : string = "sprite-swap-overlay"
+    + SpriteSwapOverlay()
+    + <<override>> CreatePanelContent() : VisualElement
+    + <<override>> OnCreated() : void
+    + <<override>> OnWillBeDestroyed() : void
+}
+class Settings <<static>> {
+    + <<const>> minThumbnailSize : float
+    + <<const>> maxThumbnailSize : float
+    + <<const>> defaultThumbnailSize : float
+    + {static} filter : bool <<get>> <<set>>
+    + {static} locked : bool <<get>> <<set>>
+    + {static} thumbnailSize : float <<get>> <<set>>
+    + {static} preferredWidth : float <<get>> <<set>>
+    + {static} preferredHeight : float <<get>> <<set>>
+}
+Overlay <|-- SpriteSwapOverlay
+SpriteSwapOverlay --> "mainVisualElement" SpriteSwapVisualElement
+SpriteSwapOverlay +-- Settings
+@enduml

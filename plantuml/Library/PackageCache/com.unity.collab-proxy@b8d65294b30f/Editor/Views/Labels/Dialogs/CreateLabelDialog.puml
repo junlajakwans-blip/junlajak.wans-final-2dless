@@ -1,0 +1,5 @@
+@startuml
+class CreateLabelDialog {
+}
+PlasticDialog <|-- CreateLabelDialog
+@enduml

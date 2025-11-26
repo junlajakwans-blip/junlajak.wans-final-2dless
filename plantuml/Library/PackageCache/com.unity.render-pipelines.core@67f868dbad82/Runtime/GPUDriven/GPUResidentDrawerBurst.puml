@@ -1,0 +1,7 @@
+@startuml
+class GPUResidentDrawerBurst <<static>> {
+    + {static} ClassifyMaterials(materialIDs:NativeArray<int>, batchMaterialHash:NativeParallelHashMap<int, BatchMaterialID>.ReadOnly, supportedMaterialIDs:NativeList<int>, unsupportedMaterialIDs:NativeList<int>, supportedPackedMaterialDatas:NativeList<GPUDrivenPackedMaterialData>) : void
+    + {static} FindUnsupportedRenderers(unsupportedMaterials:NativeArray<int>, materialIDArrays:NativeArray<SmallIntegerArray>.ReadOnly, rendererGroups:NativeArray<int>.ReadOnly, unsupportedRenderers:NativeList<int>) : void
+    + {static} GetMaterialsWithChangedPackedMaterial(materialIDs:NativeArray<int>, packedMaterialDatas:NativeArray<GPUDrivenPackedMaterialData>, packedMaterialHash:NativeParallelHashMap<int, GPUDrivenPackedMaterialData>.ReadOnly, filteredMaterials:NativeHashSet<int>) : void
+}
+@enduml

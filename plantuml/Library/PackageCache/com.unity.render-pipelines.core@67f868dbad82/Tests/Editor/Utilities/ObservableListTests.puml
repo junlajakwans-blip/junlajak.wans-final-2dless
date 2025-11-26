@@ -1,0 +1,25 @@
+@startuml
+class ObservableListTests {
+    + Add_On_List(modify:Action<ObservableList<int>>, comparison:Comparison<int>, expected:int[]) : void
+    + Remove_From_List(init:int[], modify:Action<ObservableList<int>>, comparison:Comparison<int>, expected:int[]) : void
+    + Insert_Into_List(init:int[], modify:Action<ObservableList<int>>, comparison:Comparison<int>, expected:int[]) : void
+    + Clear_ClearsList_ItemRemovedEventTriggeredForEach_NoComparison() : void
+    + SetIndexer_SetsItem_TriggersEvents() : void
+    + Contains_ReturnsTrueIfItemExists() : void
+    + IndexOf_ReturnsCorrectIndex() : void
+    + ConstructorWithCollection_SortsItems_WhenComparisonProvided() : void
+    + ConstructorWithComparison_SortsItems_WhenComparisonProvided() : void
+    + InsertsItemAtIndex_ItemAddedEventTriggered_NoComparison() : void
+    + InsertsItemAtBeginning_ItemAddedEventTriggered() : void
+    + InsertsItemAtOutOfRangeIndex_ItemAddedEventTriggered() : void
+    + Remove_ItemNotInList_ReturnsFalse() : void
+    + RemoveAt_IndexOutOfRange_ThrowsException() : void
+    + InsertMultiple_AddsItemsAtSpecificIndex_ItemAddedEventTriggeredForEach() : void
+    + Clear_ClearsList_ItemRemovedEventTriggeredForEach() : void
+}
+class "IEnumerable`1"<T> {
+}
+ObservableListTests --> "TestCasesAdd<TestCaseData>" "IEnumerable`1"
+ObservableListTests --> "TestCasesRemove<TestCaseData>" "IEnumerable`1"
+ObservableListTests --> "TestCasesInsert<TestCaseData>" "IEnumerable`1"
+@enduml

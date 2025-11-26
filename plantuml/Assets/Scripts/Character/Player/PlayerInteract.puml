@@ -1,0 +1,10 @@
+@startuml
+class PlayerInteract {
+    + HasItem() : bool
+    + TryPickUp() : void
+    + SetThrowable(itemObject:GameObject) : void
+    + ThrowItem() : void
+    + ConsumeHeldItem() : GameObject
+}
+MonoBehaviour <|-- PlayerInteract
+@enduml

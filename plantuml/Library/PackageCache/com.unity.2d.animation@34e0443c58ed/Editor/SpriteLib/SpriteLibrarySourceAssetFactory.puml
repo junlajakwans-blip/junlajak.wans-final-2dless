@@ -1,0 +1,22 @@
+@startuml
+class SpriteLibraryLabel {
+    + name : string <<get>>
+    + SpriteLibraryLabel(labelName:string, labelSprite:Sprite)
+}
+class SpriteLibraryCategory {
+    + name : string <<get>>
+    + SpriteLibraryCategory(categoryName:string, categoryLabels:IEnumerable<SpriteLibraryLabel>)
+}
+class SpriteLibrarySourceAssetFactory <<static>> {
+    + <<const>> extension : string
+    + {static} Create(path:string, categories:IEnumerable<ISpriteLibraryCategory>, mainLibraryPath:string) : string
+    + {static} Create(path:string, spriteLibraryAsset:SpriteLibraryAsset, mainLibraryPath:string) : string
+    + {static} SaveAsSourceAsset(spriteLibraryAsset:SpriteLibraryAsset, path:string, mainLibraryPath:string) : string
+}
+class "IEnumerable`1"<T> {
+}
+ISpriteLibraryLabel <|-- SpriteLibraryLabel
+SpriteLibraryLabel --> "sprite" Sprite
+ISpriteLibraryCategory <|-- SpriteLibraryCategory
+SpriteLibraryCategory --> "labels<ISpriteLibraryLabel>" "IEnumerable`1"
+@enduml

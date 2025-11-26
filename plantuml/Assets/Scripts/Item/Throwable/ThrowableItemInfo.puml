@@ -1,0 +1,16 @@
+@startuml
+class ThrowableItemInfo {
+    + PoolTag : string <<get>>
+    + CanInteract : bool <<get>> = true
+    + SetInfo(poolTag:string, icon:Sprite) : void
+    + SetInteractable(active:bool) : void
+    + Interact(player:Player) : void
+    + DisablePhysicsOnHold() : void
+    + EnablePhysicsOnThrow() : void
+    + OnReturnedToPool() : void
+    + ShowPrompt() : void
+}
+MonoBehaviour <|-- ThrowableItemInfo
+IInteractable <|-- ThrowableItemInfo
+ThrowableItemInfo --> "Icon" Sprite
+@enduml

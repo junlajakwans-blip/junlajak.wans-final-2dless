@@ -1,0 +1,11 @@
+@startuml
+class ComicEffectPlayer {
+    + Initialize() : void
+    + SetPoolKey(key:string) : void
+    + GetPoolKey() : string
+    + Play(data:ComicEffectData, pos:Vector3) : void
+    + SetFXProfile(profile:CareerEffectProfile) : void
+}
+MonoBehaviour <|-- ComicEffectPlayer
+ComicEffectPlayer --> "Profile" CareerEffectProfile
+@enduml

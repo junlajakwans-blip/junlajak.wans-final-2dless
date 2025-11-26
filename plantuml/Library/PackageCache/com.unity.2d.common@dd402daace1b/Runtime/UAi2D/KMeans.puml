@@ -1,0 +1,5 @@
+@startuml
+class kMeans <<static>> {
+    + {static} Cluster3(items:NativeArray<float3>, clusterCount:int, alloc:Allocator, maxIterations:int) : int[]
+}
+@enduml

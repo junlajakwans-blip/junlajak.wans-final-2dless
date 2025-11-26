@@ -1,0 +1,8 @@
+@startuml
+class UVCSAssetPostprocessor {
+}
+struct PathToMove {
+}
+AssetPostprocessor <|-- UVCSAssetPostprocessor
+UVCSAssetPostprocessor +-- PathToMove
+@enduml

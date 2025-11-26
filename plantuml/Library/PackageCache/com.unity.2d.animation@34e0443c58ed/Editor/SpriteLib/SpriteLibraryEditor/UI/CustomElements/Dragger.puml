@@ -1,0 +1,15 @@
+@startuml
+class Dragger {
+    + dragThreshold : float <<get>> <<set>> = 8f
+    + isActive : bool <<get>>
+    + Dragger(dragStarted:Action<PointerMoveEvent>, dragging:Action<PointerMoveEvent>, dragEnded:Action<PointerUpEvent>, dragCanceled:Action)
+    + Cancel() : void
+}
+class "Func`2"<T1,T2> {
+}
+class "Func`1"<T> {
+}
+PointerManipulator <|-- Dragger
+Dragger --> "acceptStartDrag<Vector2,bool>" "Func`2"
+Dragger --> "acceptDrag<bool>" "Func`1"
+@enduml

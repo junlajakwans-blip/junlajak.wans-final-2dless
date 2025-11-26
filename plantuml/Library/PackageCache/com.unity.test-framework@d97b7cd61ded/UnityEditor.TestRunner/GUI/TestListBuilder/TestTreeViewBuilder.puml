@@ -1,0 +1,45 @@
+@startuml
+class TestTreeViewBuilder {
+    + TestTreeViewBuilder(tests:ITestAdaptor[], oldTestResultResults:Dictionary<string, TestRunnerResult>, uiFilter:TestRunnerUIFilter, runningOnPlatform:bool)
+    + BuildTreeView() : TreeViewItem
+}
+class "TreeView`1"<T> {
+}
+class "TreeViewController`1"<T> {
+}
+class "TreeViewItem`1"<T> {
+}
+class "LazyTreeViewDataSource`1"<T> {
+}
+class "TreeViewUtility`1"<T> {
+}
+class "TreeViewSelectState`1"<T> {
+}
+class "ITreeViewGUI`1"<T> {
+}
+class "ITreeViewDragging`1"<T> {
+}
+class "ITreeViewDataSource`1"<T> {
+}
+class "TreeViewGUI`1"<T> {
+}
+class "TreeViewDragging`1"<T> {
+}
+class "TreeViewDataSource`1"<T> {
+}
+class "TreeViewItemAlphaNumericSort`1"<T> {
+}
+class "RenameOverlay`1"<T> {
+}
+struct TestCount {
+    + TotalTestCount : int
+    + TotalFailedTestCount : int
+}
+class "List`1"<T> {
+}
+class "Dictionary`2"<T1,T2> {
+}
+TestTreeViewBuilder o-> "results<TestRunnerResult>" "List`1"
+TestTreeViewBuilder o-> "m_treeFiltered<string,TestTreeViewItem>" "Dictionary`2"
+TestTreeViewBuilder +-- TestCount
+@enduml

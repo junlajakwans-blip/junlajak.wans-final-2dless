@@ -1,0 +1,8 @@
+@startuml
+class ShaderOptions <<static>> {
+    + <<const>> k_MaxVisibleLightCountLowEndMobile : int = 16
+    + <<const>> k_MaxVisibleLightCountMobile : int = 32
+    + <<const>> k_MaxVisibleLightCountDesktop : int = 256
+    + <<const>> k_UseDynamicBranchFogKeyword : int = 0
+}
+@enduml

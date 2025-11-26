@@ -1,0 +1,5 @@
+@startuml
+class TilePaletteGeneration <<static>> {
+    + {static} Generate(ctx:AssetImportContext, layers:List<Layer>, tileSets:List<TileSet>, sprites:Sprite[], ppu:float, mainAsset:UnityEngine.Object) : void
+}
+@enduml

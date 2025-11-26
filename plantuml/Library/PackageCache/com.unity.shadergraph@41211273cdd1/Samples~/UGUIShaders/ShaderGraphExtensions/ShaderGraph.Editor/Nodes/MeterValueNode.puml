@@ -1,0 +1,11 @@
+@startuml
+class MeterValueNode {
+    + MeterValueNode()
+    + <<override>> hasPreview : bool <<get>>
+    + <<sealed>> <<override>> UpdateNodeAfterDeserialization() : void
+    + <<override>> CollectShaderProperties(properties:PropertyCollector, generationMode:GenerationMode) : void
+    + GenerateNodeCode(sb:ShaderStringBuilder, generationMode:GenerationMode) : void
+}
+AbstractMaterialNode <|-- MeterValueNode
+IGeneratesBodyCode <|-- MeterValueNode
+@enduml

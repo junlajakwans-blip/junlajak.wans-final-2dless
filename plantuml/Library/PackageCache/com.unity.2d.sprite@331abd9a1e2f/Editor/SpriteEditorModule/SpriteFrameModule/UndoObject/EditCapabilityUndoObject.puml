@@ -1,0 +1,12 @@
+@startuml
+struct EditCapabilityUndoData {
+}
+class EditCapabilityUndoObject {
+}
+class "UndoObject`1"<T> {
+}
+EditCapabilityUndoData --> "data" EditCapability
+EditCapabilityUndoData --> "originalData" EditCapability
+"UndoObject`1" "<EditCapability>" <|-- EditCapabilityUndoObject
+EditCapabilityUndoObject --> "originalData" EditCapability
+@enduml

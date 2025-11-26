@@ -1,0 +1,11 @@
+@startuml
+class MenuUI {
+    + ShowPauseMenu(isActive:bool) : void
+    + ShowResultMenu() : void
+    + ShowStoreMenu(isActive:bool) : void
+    + CloseAllPanels() : void
+    + IsAnyPanelActive() : bool
+}
+MonoBehaviour <|-- MenuUI
+MenuUI --> "Instance" MenuUI
+@enduml

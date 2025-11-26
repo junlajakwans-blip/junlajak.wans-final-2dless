@@ -1,0 +1,37 @@
+@startuml
+enum RenderingMode {
+    Forward= 0,
+    ForwardPlus= 2,
+    Deferred= 1,
+    DeferredPlus= 3,
+}
+enum DepthPrimingMode {
+    Disabled,
+    Auto,
+    Forced,
+}
+enum UniversalRendererStencilRef {
+    CrossFadeStencilRef_0= 1 << 2,
+    CrossFadeStencilRef_1= 1 << 3,
+    CrossFadeStencilRef_All= CrossFadeStencilRef_0 + CrossFadeStencilRef_1,
+}
+class UniversalRenderer <<sealed>> <<partial>> {
+    + <<override>> SupportedCameraStackingTypes() : int
+    + UniversalRenderer(data:UniversalRendererData)
+    + {static} IsOffscreenDepthTexture(cameraData:CameraData) : bool
+    + {static} IsOffscreenDepthTexture(cameraData:UniversalCameraData) : bool
+    + <<override>> Setup(context:ScriptableRenderContext, renderingData:RenderingData) : void
+    + <<override>> SetupLights(context:ScriptableRenderContext, renderingData:RenderingData) : void
+    + <<override>> SetupCullingParameters(cullingParameters:ScriptableCullingParameters, cameraData:CameraData) : void
+    + <<override>> FinishRendering(cmd:CommandBuffer) : void
+}
+class Profiling <<static>> {
+}
+struct RenderPassInputSummary {
+}
+ScriptableRenderer <|-- UniversalRenderer
+UniversalRenderer --> "depthPrimingMode" DepthPrimingMode
+UniversalRenderer +-- Profiling
+Profiling o-> "createCameraRenderTarget" ProfilingSampler
+UniversalRenderer +-- RenderPassInputSummary
+@enduml

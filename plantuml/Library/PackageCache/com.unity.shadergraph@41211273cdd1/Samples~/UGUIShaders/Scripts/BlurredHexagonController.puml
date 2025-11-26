@@ -1,0 +1,18 @@
+@startuml
+class BlurredHexagonController {
+    + Saturation : float <<get>> <<set>>
+    + TintRed : float <<get>> <<set>>
+    + TintGreen : float <<get>> <<set>>
+    + TintBlue : float <<get>> <<set>>
+    + HexagonDissolve : float <<get>> <<set>>
+    + HexagonTiles : float <<get>> <<set>>
+    + Blur : float <<get>> <<set>>
+    + BlurCycles : float <<get>> <<set>>
+    + BlurSamplesPerCycle : float <<get>> <<set>>
+    + GetModifiedMaterial(baseMaterial:Material) : Material
+}
+UIBehaviour <|-- BlurredHexagonController
+IMaterialModifier <|-- BlurredHexagonController
+BlurredHexagonController --> "Tint" Color
+BlurredHexagonController --> "Graphic" Graphic
+@enduml

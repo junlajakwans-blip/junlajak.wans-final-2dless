@@ -1,0 +1,7 @@
+@startuml
+class Projectile {
+    + PoolTag : string <<get>>
+    + SetDamage(amount:int) : void
+}
+MonoBehaviour <|-- Projectile
+@enduml

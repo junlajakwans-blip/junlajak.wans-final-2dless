@@ -1,0 +1,27 @@
+@startuml
+class TextureImporterDataProviderFactory {
+    + CreateDataProvider(obj:Texture2D) : ISpriteEditorDataProvider
+    + CreateDataProvider(obj:Sprite) : ISpriteEditorDataProvider
+    + CreateDataProvider(obj:GameObject) : ISpriteEditorDataProvider
+    + CreateDataProvider(obj:TextureImporter) : ISpriteEditorDataProvider
+}
+class TextureImporterDataProvider {
+    + GetSerializedObject() : SerializedObject
+    + assetPath : string <<get>>
+    + GetWidthAndHeight(width:int, height:int) : void
+    + <<override>> Equals(a:object) : bool
+    + <<override>> GetHashCode() : int
+}
+class "ISpriteDataProviderFactory`1"<T> {
+}
+class "Dictionary`2"<T1,T2> {
+}
+"ISpriteDataProviderFactory`1" "<Texture2D>" <|-- TextureImporterDataProviderFactory
+"ISpriteDataProviderFactory`1" "<Sprite>" <|-- TextureImporterDataProviderFactory
+"ISpriteDataProviderFactory`1" "<TextureImporter>" <|-- TextureImporterDataProviderFactory
+"ISpriteDataProviderFactory`1" "<GameObject>" <|-- TextureImporterDataProviderFactory
+ISpriteEditorDataProvider <|-- TextureImporterDataProvider
+ISpriteNameFileIdDataProvider <|-- TextureImporterDataProvider
+TextureImporterDataProvider --> "customMetadata<string,string>" "Dictionary`2"
+TextureImporterDataProvider --> "spriteImportMode" SpriteImportMode
+@enduml

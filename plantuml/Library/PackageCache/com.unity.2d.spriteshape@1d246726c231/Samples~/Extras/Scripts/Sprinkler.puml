@@ -1,0 +1,8 @@
+@startuml
+class Sprinkler {
+    + m_UseNormals : bool = false
+    + m_Instances : int = 10
+}
+MonoBehaviour <|-- Sprinkler
+Sprinkler --> "m_Prefab" GameObject
+@enduml

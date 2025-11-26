@@ -1,0 +1,7 @@
+@startuml
+class PostBuildCleanupWithTestDataAttribute {
+    + PostBuildCleanupWithTestDataAttribute(targetClass:Type)
+    + PostBuildCleanupWithTestDataAttribute(targetClassName:string)
+}
+Attribute <|-- PostBuildCleanupWithTestDataAttribute
+@enduml

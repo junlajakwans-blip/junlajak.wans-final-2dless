@@ -1,0 +1,45 @@
+@startuml
+enum GridInformationType {
+    Integer,
+    String,
+    Float,
+    Double,
+    UnityObject,
+    Color,
+}
+class GridInformation {
+    + <<virtual>> Reset() : void
+    + SetPositionProperty(position:Vector3Int, name:string, positionProperty:T) : bool
+    + SetPositionProperty(position:Vector3Int, name:string, positionProperty:int) : bool
+    + SetPositionProperty(position:Vector3Int, name:string, positionProperty:string) : bool
+    + SetPositionProperty(position:Vector3Int, name:string, positionProperty:float) : bool
+    + SetPositionProperty(position:Vector3Int, name:string, positionProperty:double) : bool
+    + SetPositionProperty(position:Vector3Int, name:string, positionProperty:Object) : bool
+    + SetPositionProperty(position:Vector3Int, name:string, positionProperty:Color) : bool
+    + GetPositionProperty(position:Vector3Int, name:string, defaultValue:T) : T
+    + GetPositionProperty(position:Vector3Int, name:string, defaultValue:int) : int
+    + GetPositionProperty(position:Vector3Int, name:string, defaultValue:string) : string
+    + GetPositionProperty(position:Vector3Int, name:string, defaultValue:float) : float
+    + GetPositionProperty(position:Vector3Int, name:string, defaultValue:double) : double
+    + GetPositionProperty(position:Vector3Int, name:string, defaultValue:Color) : Color
+    + ErasePositionProperty(position:Vector3Int, name:string) : bool
+    + GetAllPositions(propertyName:string) : Vector3Int[]
+}
+struct GridInformationValue {
+    + data : object
+}
+struct GridInformationKey {
+    + name : string
+    + Equals(key:GridInformationKey) : bool
+    + <<override>> GetHashCode() : int
+}
+class "IEquatable`1"<T> {
+}
+MonoBehaviour <|-- GridInformation
+ISerializationCallbackReceiver <|-- GridInformation
+GridInformation +-- GridInformationValue
+GridInformationValue --> "type" GridInformationType
+GridInformation +-- GridInformationKey
+"IEquatable`1" "<GridInformationKey>" <|-- GridInformationKey
+GridInformationKey --> "position" Vector3Int
+@enduml

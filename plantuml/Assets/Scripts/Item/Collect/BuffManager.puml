@@ -1,0 +1,8 @@
+@startuml
+class BuffManager {
+    + Initialize(gm:GameManager) : void
+    + ApplyCollectibleBuff(type:CollectibleType, player:Player, value:int, duration:float) : void
+}
+MonoBehaviour <|-- BuffManager
+BuffManager --> "Instance" BuffManager
+@enduml

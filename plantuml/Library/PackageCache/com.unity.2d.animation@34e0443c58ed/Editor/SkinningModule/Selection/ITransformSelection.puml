@@ -1,0 +1,7 @@
+@startuml
+interface "ITransformSelection`1"<T> {
+}
+class "ISelection`1"<T> {
+}
+"ISelection`1" "<T>" <|-- "ITransformSelection`1"
+@enduml

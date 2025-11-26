@@ -1,0 +1,62 @@
+@startuml
+class SpriteEditorMenuSettingObject {
+}
+class SpriteEditorMenuSetting {
+    + <<const>> kSliceOnImportKey : string = "SpriteEditor.SliceOnImport"
+    + <<const>> kSliceSettingsKey : string = "SpriteEditor.SliceSettings"
+    + sliceOnImport : bool = false
+    + autoSlicingMethod : int
+    + spriteAlignment : int
+    + keepEmptyRects : bool
+    + isAlternate : bool
+}
+class SpriteEditorMenu {
+}
+enum SlicingType {
+    Automatic= 0,
+    GridByCellSize= 1,
+    GridByCellCount= 2,
+    IsometricGrid= 3,
+}
+class Styles {
+    + Styles()
+    + <<readonly>> deleteExistingTitle : string
+    + <<readonly>> deleteExistingMessage : string
+    + <<readonly>> yes : string
+    + <<readonly>> no : string
+}
+ScriptableObject <|-- SpriteEditorMenuSettingObject
+SpriteEditorMenuSettingObject --> "settings" SpriteEditorMenuSetting
+SpriteEditorMenuSetting o-> "gridCellCount" Vector2
+SpriteEditorMenuSetting o-> "gridSpriteSize" Vector2
+SpriteEditorMenuSetting o-> "gridSpriteOffset" Vector2
+SpriteEditorMenuSetting o-> "gridSpritePadding" Vector2
+SpriteEditorMenuSetting o-> "pivot" Vector2
+SpriteEditorMenuSetting o-> "pivotPixels" Vector2
+SpriteEditorMenuSetting --> "slicingType" SlicingType
+EditorWindow <|-- SpriteEditorMenu
+SpriteEditorMenuSetting +-- SlicingType
+SpriteEditorMenu +-- Styles
+Styles o-> "background" GUIStyle
+Styles --> "notice" GUIStyle
+Styles o-> "methodLabel" GUIContent
+Styles o-> "pivotLabel" GUIContent
+Styles o-> "pivotUnitMode" GUIContent
+Styles o-> "typeLabel" GUIContent
+Styles o-> "sliceOnImportLabel" GUIContent
+Styles o-> "sliceButtonLabel" GUIContent
+Styles o-> "columnAndRowLabel" GUIContent
+Styles o-> "columnLabel" GUIContent
+Styles o-> "rowLabel" GUIContent
+Styles o-> "pixelSizeLabel" GUIContent
+Styles o-> "xLabel" GUIContent
+Styles o-> "yLabel" GUIContent
+Styles o-> "offsetLabel" GUIContent
+Styles o-> "paddingLabel" GUIContent
+Styles o-> "automaticSlicingHintLabel" GUIContent
+Styles o-> "customPivotLabel" GUIContent
+Styles o-> "keepEmptyRectsLabel" GUIContent
+Styles o-> "isAlternateLabel" GUIContent
+Styles o-> "copyLabel" GUIContent
+Styles o-> "pasteLabel" GUIContent
+@enduml

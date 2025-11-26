@@ -1,0 +1,12 @@
+@startuml
+class StoreManager {
+    + StoreManager(currency:Currency, progressData:GameProgressData)
+    + RegisterStore(store:StoreBase) : void
+    + Purchase(itemID:string) : bool
+}
+class "List`1"<T> {
+}
+StoreManager o-> "Stores<StoreBase>" "List`1"
+StoreManager --> "Currency" Currency
+StoreManager --> "ProgressData" GameProgressData
+@enduml

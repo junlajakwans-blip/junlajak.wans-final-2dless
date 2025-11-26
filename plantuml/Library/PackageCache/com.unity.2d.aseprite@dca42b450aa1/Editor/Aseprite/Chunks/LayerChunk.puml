@@ -1,0 +1,48 @@
+@startuml
+enum LayerFlags {
+    Visible= 1,
+    Editable= 2,
+    LockMovement= 4,
+    Background= 8,
+    PreferLinkedCels= 16,
+    DisplayAsCollapsed= 32,
+    ReferenceLayer= 64,
+}
+enum LayerTypes {
+    Normal= 0,
+    Group= 1,
+    Tilemap= 2,
+}
+enum BlendModes {
+    Normal= 0,
+    Multiply= 1,
+    Screen= 2,
+    Overlay= 3,
+    Darken= 4,
+    Lighten= 5,
+    ColorDodge= 6,
+    ColorBurn= 7,
+    HardLight= 8,
+    SoftLight= 9,
+    Difference= 10,
+    Exclusion= 11,
+    Hue= 12,
+    Saturation= 13,
+    Color= 14,
+    Luminosity= 15,
+    Addition= 16,
+    Subtract= 17,
+    Divide= 18,
+}
+class LayerChunk {
+    + childLevel : ushort <<get>>
+    + opacity : byte <<get>>
+    + name : string <<get>>
+    + tileSetIndex : uint <<get>>
+}
+BaseChunk <|-- LayerChunk
+LayerChunk --> "chunkType" ChunkTypes
+LayerChunk --> "flags" LayerFlags
+LayerChunk --> "layerType" LayerTypes
+LayerChunk --> "blendMode" BlendModes
+@enduml

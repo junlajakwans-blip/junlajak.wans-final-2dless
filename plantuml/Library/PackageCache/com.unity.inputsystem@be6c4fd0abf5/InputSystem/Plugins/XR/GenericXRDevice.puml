@@ -1,0 +1,20 @@
+@startuml
+class XRHMD {
+}
+class XRController {
+}
+class XRControllerWithRumble {
+    + SendImpulse(amplitude:float, duration:float) : void
+}
+TrackedDevice <|-- XRHMD
+XRHMD --> "leftEyePosition" Vector3Control
+XRHMD --> "leftEyeRotation" QuaternionControl
+XRHMD --> "rightEyePosition" Vector3Control
+XRHMD --> "rightEyeRotation" QuaternionControl
+XRHMD --> "centerEyePosition" Vector3Control
+XRHMD --> "centerEyeRotation" QuaternionControl
+TrackedDevice <|-- XRController
+XRController --> "leftHand" XRController
+XRController --> "rightHand" XRController
+XRController <|-- XRControllerWithRumble
+@enduml

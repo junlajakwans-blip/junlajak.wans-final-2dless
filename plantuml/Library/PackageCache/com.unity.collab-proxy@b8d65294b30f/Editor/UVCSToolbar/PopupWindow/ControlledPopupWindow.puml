@@ -1,0 +1,9 @@
+@startuml
+class ControlledPopupWindow {
+    + <<override>> GetWindowSize() : Vector2
+    + <<override>> OnOpen() : void
+    + <<override>> OnClose() : void
+    + <<override>> OnGUI(rect:Rect) : void
+}
+PopupWindowContent <|-- ControlledPopupWindow
+@enduml

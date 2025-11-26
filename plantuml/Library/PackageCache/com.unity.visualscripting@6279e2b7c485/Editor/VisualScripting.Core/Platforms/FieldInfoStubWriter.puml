@@ -1,0 +1,10 @@
+@startuml
+class FieldInfoStubWriter {
+    + FieldInfoStubWriter(fieldInfo:FieldInfo)
+    + <<override>> GetStubStatements() : IEnumerable<CodeStatement>
+    + <<override>> skip : bool <<get>>
+}
+class "AccessorInfoStubWriter`1"<T> {
+}
+"AccessorInfoStubWriter`1" "<FieldInfo>" <|-- FieldInfoStubWriter
+@enduml

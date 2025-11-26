@@ -1,0 +1,7 @@
+@startuml
+class CreateWorkspacePanel {
+}
+class InputValidationResult {
+}
+CreateWorkspacePanel +-- InputValidationResult
+@enduml

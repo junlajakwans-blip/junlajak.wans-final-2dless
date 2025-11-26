@@ -1,0 +1,16 @@
+@startuml
+class DevCheat {
+    + cheatEnabled : bool = true
+    + InitializeCheat(gm:GameManager, player:Player, currency:Currency, mapSelect:MapSelectController, storeUI:StoreUI, uiManager:UIManager) : void
+}
+MonoBehaviour <|-- DevCheat
+DevCheat o-> "addCoinKey" KeyCode
+DevCheat o-> "addTokenKey" KeyCode
+DevCheat o-> "addKeyMapKey" KeyCode
+DevCheat o-> "unlockAllMapsKey" KeyCode
+DevCheat o-> "godModeKey" KeyCode
+DevCheat o-> "addScoreKey" KeyCode
+DevCheat o-> "resetSaveKey" KeyCode
+DevCheat o-> "addRandomCardKey" KeyCode
+DevCheat --> "cheatPanel" GameObject
+@enduml

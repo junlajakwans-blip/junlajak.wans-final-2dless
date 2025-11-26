@@ -1,0 +1,11 @@
+@startuml
+class UnicodeAlphaNames {
+    + UnicodeAlphaNames()
+    + UnicodeAlphaNames(reader:PsdBinaryReader, name:string, resourceDataLength:int)
+}
+class "List`1"<T> {
+}
+ImageResource <|-- UnicodeAlphaNames
+UnicodeAlphaNames --> "ID" ResourceID
+UnicodeAlphaNames --> "ChannelNames<string>" "List`1"
+@enduml

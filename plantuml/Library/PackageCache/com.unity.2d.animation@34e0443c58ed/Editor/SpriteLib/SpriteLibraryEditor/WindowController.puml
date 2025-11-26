@@ -1,0 +1,41 @@
+@startuml
+enum ActionType {
+    SelectCategory,
+    SelectLabels,
+    RenameCategory,
+    RenameLabel,
+    CreateCategory,
+    CreateLabel,
+    DeleteCategories,
+    DeleteLabels,
+    ReorderCategories,
+    ReorderLabels,
+    ModifiedCategories,
+    ModifiedLabels,
+    SetMainLibrary,
+    SetLabelSprite,
+    None,
+}
+enum ViewType {
+    List,
+    Grid,
+}
+struct ViewData {
+    + relativeSize : float
+    + absoluteSize : float
+}
+enum SearchType {
+    CategoryAndLabel,
+    Category,
+    Label,
+}
+class WindowController {
+    + GetSelectedAsset() : SpriteLibraryAsset
+    + WindowController(window:ISpriteLibraryEditorWindow, model:SpriteLibraryEditorModel, controllerEvents:ControllerEvents, viewEvents:ViewEvents)
+    + Destroy() : void
+    + SaveChanges() : void
+    + RevertChanges() : void
+    + SelectAsset(asset:SpriteLibraryAsset, modifiedExternally:bool) : void
+}
+ViewData --> "viewType" ViewType
+@enduml

@@ -1,0 +1,28 @@
+@startuml
+enum EnemyType {
+    None= 0,
+    KahootMon= 1,
+    GhostWorkMon= 2,
+    LotteryMon= 3,
+    DoggoMon= 4,
+    RedlightMon= 5,
+    PeterMon= 6,
+    MamaMon= 7,
+    MooPingMon= 8,
+    GoldenMon= 9,
+}
+class EnemyTypeExtensions <<static>> {
+    + {static} IsCommon(enemyType:EnemyType) : bool
+    + {static} IsRare(enemyType:EnemyType) : bool
+    + {static} GetAssociatedMaps(enemyType:EnemyType) : List<MapType>
+    + {static} CanAppearInMap(enemyType:EnemyType, mapType:MapType) : bool
+}
+enum EnemyState {
+    Idle,
+    Chase,
+    Attack,
+    Confused,
+    Disabled,
+    Dead,
+}
+@enduml

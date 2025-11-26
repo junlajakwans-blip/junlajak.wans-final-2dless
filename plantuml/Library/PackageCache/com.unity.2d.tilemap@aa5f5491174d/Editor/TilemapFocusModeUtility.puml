@@ -1,0 +1,10 @@
+@startuml
+class TilemapFocusModeUtility {
+}
+enum TilemapFocusMode {
+    None= 0,
+    Tilemap= 1,
+    Grid= 2,
+}
+TilemapFocusModeUtility +-- TilemapFocusMode
+@enduml

@@ -1,0 +1,7 @@
+@startuml
+class LightbarSettings {
+    + ChangeColor() : void
+}
+MonoBehaviour <|-- LightbarSettings
+LightbarSettings --> "SetColor" Color
+@enduml

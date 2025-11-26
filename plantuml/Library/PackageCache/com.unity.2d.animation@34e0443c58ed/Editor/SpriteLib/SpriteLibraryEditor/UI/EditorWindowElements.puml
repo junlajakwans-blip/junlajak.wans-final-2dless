@@ -1,0 +1,16 @@
+@startuml
+class EditorMainWindow <<partial>> {
+}
+class EditorBottomToolbar <<partial>> {
+    + BindElements(controllerEvents:ControllerEvents, viewEvents:ViewEvents) : void
+}
+class EditorTopToolbar <<partial>> {
+    + BindElements(controllerEvents:ControllerEvents, viewEvents:ViewEvents) : void
+}
+class EditorTabHeader <<partial>> {
+}
+VisualElement <|-- EditorMainWindow
+VisualElement <|-- EditorBottomToolbar
+VisualElement <|-- EditorTopToolbar
+VisualElement <|-- EditorTabHeader
+@enduml

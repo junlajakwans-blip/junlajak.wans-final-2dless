@@ -1,0 +1,5 @@
+@startuml
+class ShelveListViewItem {
+}
+TreeViewItem <|-- ShelveListViewItem
+@enduml

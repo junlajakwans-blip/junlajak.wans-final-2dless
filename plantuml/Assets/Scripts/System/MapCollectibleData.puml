@@ -1,0 +1,17 @@
+@startuml
+class MapCollectibleData {
+    + ID : string <<get>>
+    + Name : string <<get>>
+    + RewardValue : int <<get>>
+}
+enum RarityLevel {
+    Common,
+    Rare,
+    Epic,
+    Legendary,
+}
+MapCollectibleData --> "Type" CollectibleType
+MapCollectibleData --> "Rarity" RarityLevel
+MapCollectibleData --> "Prefab" GameObject
+MapCollectibleData --> "Icon" Sprite
+@enduml

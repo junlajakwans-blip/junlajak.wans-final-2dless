@@ -1,0 +1,70 @@
+@startuml
+class SpriteShapeControllerEditor {
+    + DrawHeader(content:GUIContent) : void
+    + GetAngleRange(index:int) : int
+    + OnOverlayGUI() : void
+    + <<override>> OnInspectorGUI() : void
+}
+class SceneViewPathOverlay {
+    + visible : bool <<get>>
+    + <<override>> OnGUI() : void
+}
+class SpriteShapeUpdateCache <<static>> {
+}
+class "PathComponentEditor`1"<T> {
+}
+class Contents <<static>> {
+    + {static} <<readonly>> editSplineLabel : string = "Edit Spline"
+}
+struct ShapeSegment {
+    + start : int
+    + end : int
+    + angleRange : int
+}
+struct ShapeAngleRange {
+    + start : float
+    + end : float
+    + order : int
+    + index : int
+}
+"PathComponentEditor`1" "<CustomPath>" <|-- SpriteShapeControllerEditor
+SpriteShapeControllerEditor --> "spriteshapeControllerEditor" SpriteShapeControllerEditor
+IMGUIOverlay <|-- SceneViewPathOverlay
+ITransientOverlay <|-- SceneViewPathOverlay
+SpriteShapeControllerEditor +-- Contents
+Contents o-> "splineLabel" GUIContent
+Contents o-> "fillLabel" GUIContent
+Contents o-> "colliderLabel" GUIContent
+Contents o-> "shadowLabel" GUIContent
+Contents o-> "customGeometryLabel" GUIContent
+Contents o-> "fillPixelPerUnitLabel" GUIContent
+Contents o-> "spriteShapeProfile" GUIContent
+Contents o-> "materialLabel" GUIContent
+Contents o-> "colorLabel" GUIContent
+Contents o-> "metaDataLabel" GUIContent
+Contents o-> "showComponentsLabel" GUIContent
+Contents o-> "splineDetail" GUIContent
+Contents o-> "openEndedLabel" GUIContent
+Contents o-> "adaptiveUVLabel" GUIContent
+Contents o-> "enableTangentsLabel" GUIContent
+Contents o-> "worldUVLabel" GUIContent
+Contents o-> "stretchUVLabel" GUIContent
+Contents o-> "stretchTilingLabel" GUIContent
+Contents o-> "colliderDetail" GUIContent
+Contents o-> "cornerThresholdDetail" GUIContent
+Contents o-> "colliderOffset" GUIContent
+Contents o-> "updateColliderLabel" GUIContent
+Contents o-> "updateGeometryLabel" GUIContent
+Contents o-> "shadowDetail" GUIContent
+Contents o-> "shadowOffset" GUIContent
+Contents o-> "updateShadowLabel" GUIContent
+Contents o-> "optimizeColliderLabel" GUIContent
+Contents o-> "optimizeGeometryLabel" GUIContent
+Contents o-> "cacheGeometryLabel" GUIContent
+Contents o-> "uTess2DLabel" GUIContent
+Contents o-> "creatorLabel" GUIContent
+Contents o-> "modifiersLabel" GUIContent
+Contents o-> "boundsScaleLabel" GUIContent
+SpriteShapeControllerEditor +-- ShapeSegment
+SpriteShapeControllerEditor +-- ShapeAngleRange
+@enduml

@@ -1,0 +1,23 @@
+@startuml
+struct BiharmonicsJob {
+    + numIterations : int
+    + numSamples : int
+    + supressCommonWarnings : int
+    + Execute() : void
+}
+class BoundedBiharmonicWeightsGenerator {
+    + Calculate(name:string, vertices:float2[], indices:int[], edges:int2[], controlPoints:float2[], bones:int2[], pins:int[]) : BoneWeight[]
+    + CalculateJob(name:string, vertices:float2[], indices:int[], edges:int2[], controlPoints:float2[], bones:int2[], pins:int[], sd:SpriteJobData) : JobHandle
+}
+class "NativeArray`1"<T> {
+}
+IJob <|-- BiharmonicsJob
+BiharmonicsJob --> "weights<BoneWeight>" "NativeArray`1"
+BiharmonicsJob --> "inputVertices<float2>" "NativeArray`1"
+BiharmonicsJob --> "inputIndices<int>" "NativeArray`1"
+BiharmonicsJob --> "inputEdges<int2>" "NativeArray`1"
+BiharmonicsJob --> "inputControlPoints<float2>" "NativeArray`1"
+BiharmonicsJob --> "inputBones<int2>" "NativeArray`1"
+BiharmonicsJob --> "inputPins<int>" "NativeArray`1"
+IWeightsGenerator <|-- BoundedBiharmonicWeightsGenerator
+@enduml

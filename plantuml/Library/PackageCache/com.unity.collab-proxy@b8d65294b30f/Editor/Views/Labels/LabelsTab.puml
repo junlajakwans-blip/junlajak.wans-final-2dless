@@ -1,0 +1,9 @@
+@startuml
+class LabelsTab <<partial>> {
+}
+IRefreshableView <|-- LabelsTab
+IQueryRefreshableView <|-- LabelsTab
+ILabelMenuOperations <|-- LabelsTab
+IGetQueryText <|-- LabelsTab
+IGetFilterText <|-- LabelsTab
+@enduml

@@ -1,0 +1,6 @@
+@startuml
+class CpuDeformationSystem {
+}
+BaseDeformationSystem <|-- CpuDeformationSystem
+CpuDeformationSystem --> "deformationMethod" DeformationMethods
+@enduml

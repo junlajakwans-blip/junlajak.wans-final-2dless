@@ -1,0 +1,7 @@
+@startuml
+class EnableSwitchAndShelveFeature {
+}
+class EnableSwitchAndShelveFeatureDialog {
+}
+PlasticDialog <|-- EnableSwitchAndShelveFeatureDialog
+@enduml

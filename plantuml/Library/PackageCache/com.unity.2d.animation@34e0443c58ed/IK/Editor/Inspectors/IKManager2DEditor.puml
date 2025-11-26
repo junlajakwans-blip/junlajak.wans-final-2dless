@@ -1,0 +1,22 @@
+@startuml
+class IKManager2DEditor {
+    + <<override>> OnInspectorGUI() : void
+}
+class Contents {
+    + {static} <<readonly>> listHeaderLabel : string = "IK Solvers"
+    + {static} <<readonly>> createSolverString : string = "Create Solver"
+    + {static} <<readonly>> restoreDefaultPoseString : string = "Restore Default Pose"
+    + {static} showGizmoPropertyWidth : int = 20
+    + {static} solverPropertyWidth : int = 100
+    + {static} solverColorPropertyWidth : int = 40
+    + Contents()
+}
+Editor <|-- IKManager2DEditor
+IKManager2DEditor +-- Contents
+Contents o-> "findAllSolversLabel" GUIContent
+Contents o-> "weightLabel" GUIContent
+Contents o-> "alwaysUpdate" GUIContent
+Contents o-> "gizmoColorTooltip" GUIContent
+Contents o-> "gizmoVisibilityToolTip" GUIContent
+Contents --> "visibilityToggleStyle" GUIStyle
+@enduml

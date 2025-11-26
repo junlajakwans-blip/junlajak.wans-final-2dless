@@ -1,0 +1,8 @@
+@startuml
+class CreateWorkspaceView {
+}
+interface ICreateWorkspaceListener {
+}
+IPlasticDialogCloser <|-- CreateWorkspaceView
+CreateWorkspaceView +-- ICreateWorkspaceListener
+@enduml

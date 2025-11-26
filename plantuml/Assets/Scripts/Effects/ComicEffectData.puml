@@ -1,0 +1,16 @@
+@startuml
+class ComicEffectData {
+    + duration : float = 0.6f
+    + baseScale : float = 1f
+    + randomScaleRange : float = 0.2f
+    + randomRotation : bool = true
+    + rotationMin : float
+    + rotationMax : float = 20f
+}
+ScriptableObject <|-- ComicEffectData
+ComicEffectData --> "prefab" ComicEffectPlayer
+ComicEffectData --> "sprite" Sprite
+ComicEffectData o-> "color" Color
+ComicEffectData o-> "offset" Vector2
+ComicEffectData o-> "randomOffsetRange" Vector2
+@enduml

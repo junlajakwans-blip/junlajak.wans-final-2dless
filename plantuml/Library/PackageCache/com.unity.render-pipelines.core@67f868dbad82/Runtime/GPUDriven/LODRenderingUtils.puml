@@ -1,0 +1,13 @@
+@startuml
+class LODRenderingUtils <<static>> {
+    + {static} CalculateFOVHalfAngle(fieldOfView:float) : float
+    + {static} CalculateScreenRelativeMetricNoBias(lodParams:LODParameters) : float
+    + {static} CalculateMeshLodConstant(lodParams:LODParameters, screenRelativeMetric:float, meshLodThreshold:float) : float
+    + {static} CalculatePerspectiveDistance(objPosition:Vector3, camPosition:Vector3, sqrScreenRelativeMetric:float) : float
+    + {static} CalculateSqrPerspectiveDistance(objPosition:Vector3, camPosition:Vector3, sqrScreenRelativeMetric:float) : float
+    + {static} GetWorldReferencePoint(lodGroup:LODGroup) : Vector3
+    + {static} GetWorldSpaceScale(lodGroup:LODGroup) : float
+    + {static} GetWorldSpaceSize(lodGroup:LODGroup) : float
+    + {static} CalculateLODDistance(relativeScreenHeight:float, size:float) : float
+}
+@enduml

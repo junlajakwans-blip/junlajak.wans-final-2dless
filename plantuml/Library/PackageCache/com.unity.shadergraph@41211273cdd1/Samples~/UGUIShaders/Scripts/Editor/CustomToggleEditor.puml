@@ -1,0 +1,6 @@
+@startuml
+class CustomToggleEditor {
+    + <<override>> OnInspectorGUI() : void
+}
+ToggleEditor <|-- CustomToggleEditor
+@enduml

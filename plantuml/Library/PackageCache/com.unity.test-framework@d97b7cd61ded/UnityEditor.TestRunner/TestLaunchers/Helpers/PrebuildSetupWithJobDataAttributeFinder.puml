@@ -1,0 +1,8 @@
+@startuml
+class PrebuildSetupWithTestDataAttributeFinder {
+    + PrebuildSetupWithTestDataAttributeFinder()
+}
+class "AttributeFinderBase`2"<T1,T2> {
+}
+"AttributeFinderBase`2" "<IPrebuildSetupWithTestData,PrebuildSetupWithTestDataAttribute>" <|-- PrebuildSetupWithTestDataAttributeFinder
+@enduml

@@ -1,0 +1,22 @@
+@startuml
+class SpriteLibrary {
+    + OnPreviewUpdate() : void
+    + GetSprite(category:string, label:string) : Sprite
+    + AddOverride(spriteLib:SpriteLibraryAsset, category:string, label:string) : void
+    + AddOverride(spriteLib:SpriteLibraryAsset, category:string) : void
+    + AddOverride(sprite:Sprite, category:string, label:string) : void
+    + RemoveOverride(category:string) : void
+    + RemoveOverride(category:string, label:string) : void
+    + HasOverride(category:string, label:string) : bool
+    + RefreshSpriteResolvers() : void
+}
+struct CategoryEntrySprite {
+    + category : string
+    + entry : string
+}
+MonoBehaviour <|-- SpriteLibrary
+IPreviewable <|-- SpriteLibrary
+SpriteLibrary --> "spriteLibraryAsset" SpriteLibraryAsset
+SpriteLibrary +-- CategoryEntrySprite
+CategoryEntrySprite --> "sprite" Sprite
+@enduml

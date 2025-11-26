@@ -1,0 +1,92 @@
+@startuml
+struct PerSkinJobData {
+    + deformVerticesStartPos : int
+}
+struct SpriteSkinData {
+    + hasTangents : bool
+    + spriteVertexStreamSize : int
+    + spriteVertexCount : int
+    + tangentVertexOffset : int
+    + deformVerticesStartPos : int
+    + transformId : int
+}
+struct PrepareDeformJob {
+    + batchDataSize : int
+    + Execute() : void
+}
+struct BoneDeformBatchedJob {
+    + Execute(i:int) : void
+}
+struct SkinDeformBatchedJob {
+    + <<unsafe>> Execute(i:int) : void
+}
+struct CalculateSpriteSkinAABBJob {
+    + <<unsafe>> Execute(i:int) : void
+}
+struct FillPerSkinJobSingleThread {
+    + Execute() : void
+}
+struct CopySpriteRendererBuffersJob {
+    + Execute(i:int) : void
+}
+struct CopySpriteRendererBoneTransformBuffersJob {
+    + Execute(i:int) : void
+}
+class "NativeCustomSlice`1"<T> {
+}
+class "NativeArray`1"<T> {
+}
+class "NativeHashMap`2"<T1,T2> {
+}
+class "NativeSlice`1"<T> {
+}
+PerSkinJobData --> "bindPosesIndex" int2
+PerSkinJobData --> "verticesIndex" int2
+SpriteSkinData --> "vertices<Vector3>" "NativeCustomSlice`1"
+SpriteSkinData --> "boneWeights<BoneWeight>" "NativeCustomSlice`1"
+SpriteSkinData --> "bindPoses<Matrix4x4>" "NativeCustomSlice`1"
+SpriteSkinData --> "tangents<Vector4>" "NativeCustomSlice`1"
+SpriteSkinData --> "boneTransformId<int>" "NativeCustomSlice`1"
+IJob <|-- PrepareDeformJob
+PrepareDeformJob --> "perSkinJobData<PerSkinJobData>" "NativeArray`1"
+PrepareDeformJob --> "boneLookupData<int2>" "NativeArray`1"
+PrepareDeformJob --> "vertexLookupData<int2>" "NativeArray`1"
+IJobParallelFor <|-- BoneDeformBatchedJob
+BoneDeformBatchedJob --> "boneTransform<float4x4>" "NativeArray`1"
+BoneDeformBatchedJob --> "rootTransform<float4x4>" "NativeArray`1"
+BoneDeformBatchedJob --> "boneLookupData<int2>" "NativeArray`1"
+BoneDeformBatchedJob --> "spriteSkinData<SpriteSkinData>" "NativeArray`1"
+BoneDeformBatchedJob --> "rootTransformIndex<int,TransformAccessJob.TransformData>" "NativeHashMap`2"
+BoneDeformBatchedJob --> "boneTransformIndex<int,TransformAccessJob.TransformData>" "NativeHashMap`2"
+BoneDeformBatchedJob --> "finalBoneTransforms<float4x4>" "NativeArray`1"
+IJobParallelFor <|-- SkinDeformBatchedJob
+SkinDeformBatchedJob --> "vertices<byte>" "NativeSlice`1"
+SkinDeformBatchedJob --> "finalBoneTransforms<float4x4>" "NativeArray`1"
+SkinDeformBatchedJob --> "perSkinJobData<PerSkinJobData>" "NativeArray`1"
+SkinDeformBatchedJob --> "spriteSkinData<SpriteSkinData>" "NativeArray`1"
+SkinDeformBatchedJob --> "vertexLookupData<int2>" "NativeArray`1"
+IJobParallelFor <|-- CalculateSpriteSkinAABBJob
+CalculateSpriteSkinAABBJob --> "vertices<byte>" "NativeSlice`1"
+CalculateSpriteSkinAABBJob --> "isSpriteSkinValidForDeformArray<bool>" "NativeArray`1"
+CalculateSpriteSkinAABBJob --> "spriteSkinData<SpriteSkinData>" "NativeArray`1"
+CalculateSpriteSkinAABBJob --> "bounds<Bounds>" "NativeArray`1"
+IJob <|-- FillPerSkinJobSingleThread
+FillPerSkinJobSingleThread --> "combinedSkinBatch" PerSkinJobData
+FillPerSkinJobSingleThread --> "isSpriteSkinValidForDeformArray<bool>" "NativeArray`1"
+FillPerSkinJobSingleThread --> "spriteSkinDataArray<SpriteSkinData>" "NativeArray`1"
+FillPerSkinJobSingleThread --> "perSkinJobDataArray<PerSkinJobData>" "NativeArray`1"
+FillPerSkinJobSingleThread --> "combinedSkinBatchArray<PerSkinJobData>" "NativeArray`1"
+IJobParallelFor <|-- CopySpriteRendererBuffersJob
+CopySpriteRendererBuffersJob --> "isSpriteSkinValidForDeformArray<bool>" "NativeArray`1"
+CopySpriteRendererBuffersJob --> "spriteSkinData<SpriteSkinData>" "NativeArray`1"
+CopySpriteRendererBuffersJob --> "ptrVertices" IntPtr
+CopySpriteRendererBuffersJob --> "buffers<IntPtr>" "NativeArray`1"
+CopySpriteRendererBuffersJob --> "bufferSizes<int>" "NativeArray`1"
+IJobParallelFor <|-- CopySpriteRendererBoneTransformBuffersJob
+CopySpriteRendererBoneTransformBuffersJob --> "isSpriteSkinValidForDeformArray<bool>" "NativeArray`1"
+CopySpriteRendererBoneTransformBuffersJob --> "spriteSkinData<SpriteSkinData>" "NativeArray`1"
+CopySpriteRendererBoneTransformBuffersJob --> "perSkinJobData<PerSkinJobData>" "NativeArray`1"
+CopySpriteRendererBoneTransformBuffersJob --> "ptrBoneTransforms" IntPtr
+CopySpriteRendererBoneTransformBuffersJob --> "buffers<IntPtr>" "NativeArray`1"
+CopySpriteRendererBoneTransformBuffersJob --> "bufferSizes<int>" "NativeArray`1"
+@enduml

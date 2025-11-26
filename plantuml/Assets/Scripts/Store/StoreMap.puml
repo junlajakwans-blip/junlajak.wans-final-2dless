@@ -1,0 +1,16 @@
+@startuml
+class StoreMap {
+    + <<override>> StoreName : string <<get>>
+    + <<override>> Initialize(manager:StoreManager, itemList:List<StoreItem>) : void
+    + RenderToUI(slots:List<SlotUI>) : void
+    + <<override>> Purchase(item:StoreItem) : bool
+    + GetSceneName(item:StoreItem) : string
+    + ForceUnlock(type:MapType) : void
+    + <<override>> IsUnlocked(item:StoreItem) : bool
+}
+class "Action`1"<T> {
+}
+StoreBase <|-- StoreMap
+StoreMap --> "StoreType" StoreType
+StoreMap --> "OnMapUnlockedEvent<string>" "Action`1"
+@enduml

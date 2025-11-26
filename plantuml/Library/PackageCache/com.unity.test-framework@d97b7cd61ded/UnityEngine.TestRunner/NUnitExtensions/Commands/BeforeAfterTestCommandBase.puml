@@ -1,0 +1,15 @@
+@startuml
+abstract class "BeforeAfterTestCommandBase`1"<T> {
+    + ExecuteEnumerable(context:ITestExecutionContext) : IEnumerable
+    + ExecuteEnumerable(context:ITestExecutionContext, flags:ExecutionFlags) : IEnumerable
+    + <<override>> Execute(context:ITestExecutionContext) : TestResult
+}
+enum ExecutionFlags {
+    None= 0,
+    SkipAfterActions= 1 << 0,
+    SkipStateReset= 1 << 1,
+}
+DelegatingTestCommand <|-- "BeforeAfterTestCommandBase`1"
+IEnumerableTestMethodCommand <|-- "BeforeAfterTestCommandBase`1"
+"BeforeAfterTestCommandBase`1" +-- ExecutionFlags
+@enduml

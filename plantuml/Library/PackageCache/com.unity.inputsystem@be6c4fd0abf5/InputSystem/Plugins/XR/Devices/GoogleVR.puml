@@ -1,0 +1,19 @@
+@startuml
+class DaydreamHMD {
+}
+class DaydreamController {
+}
+XRHMD <|-- DaydreamHMD
+XRController <|-- DaydreamController
+DaydreamController --> "touchpad" Vector2Control
+DaydreamController --> "volumeUp" ButtonControl
+DaydreamController --> "recentered" ButtonControl
+DaydreamController --> "volumeDown" ButtonControl
+DaydreamController --> "recentering" ButtonControl
+DaydreamController --> "app" ButtonControl
+DaydreamController --> "home" ButtonControl
+DaydreamController --> "touchpadClicked" ButtonControl
+DaydreamController --> "touchpadTouched" ButtonControl
+DaydreamController --> "deviceVelocity" Vector3Control
+DaydreamController --> "deviceAcceleration" Vector3Control
+@enduml

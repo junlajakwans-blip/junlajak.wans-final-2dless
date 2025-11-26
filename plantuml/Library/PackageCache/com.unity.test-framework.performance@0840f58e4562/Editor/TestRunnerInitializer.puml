@@ -1,0 +1,10 @@
+@startuml
+class TestRunnerInitializer {
+}
+class CmdLineArguments {
+    + IsCmdLineRun : bool
+    + PerfTestResults : string
+    + CmdLineArguments(isCmdLineRun:bool, perfTestResults:string)
+}
+TestRunnerInitializer +-- CmdLineArguments
+@enduml

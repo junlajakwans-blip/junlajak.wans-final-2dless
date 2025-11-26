@@ -1,0 +1,15 @@
+@startuml
+class GridPaletteAddWhiteboxPopup {
+}
+class Styles <<static>> {
+}
+EditorWindow <|-- GridPaletteAddWhiteboxPopup
+GridPaletteAddWhiteboxPopup +-- Styles
+Styles o-> "nameLabel" GUIContent
+Styles o-> "ok" GUIContent
+Styles o-> "cancel" GUIContent
+Styles o-> "header" GUIContent
+Styles o-> "gridLabel" GUIContent
+Styles o-> "sizeLabel" GUIContent
+Styles o-> "hexagonLabel" GUIContent
+@enduml

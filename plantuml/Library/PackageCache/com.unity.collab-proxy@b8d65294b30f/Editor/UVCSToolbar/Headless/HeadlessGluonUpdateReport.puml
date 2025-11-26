@@ -1,0 +1,5 @@
+@startuml
+class HeadlessGluonUpdateReport {
+}
+IUpdateReport <|-- HeadlessGluonUpdateReport
+@enduml

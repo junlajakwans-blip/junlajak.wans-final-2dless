@@ -1,0 +1,6 @@
+@startuml
+abstract class TileTemplate {
+    + {abstract} CreateTileAssets(texture2D:Texture2D, sprites:IEnumerable<Sprite>, tilesToAdd:List<TileChangeData>) : void
+}
+ScriptableObject <|-- TileTemplate
+@enduml

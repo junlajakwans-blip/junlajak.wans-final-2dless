@@ -1,0 +1,57 @@
+@startuml
+class GridView <<partial>> {
+    + GridView()
+    + GridView(itemsSource:IList, itemHeight:int, makeItem:Func<VisualElement>, bindItem:Action<VisualElement, int>)
+    + columnCount : int <<get>> <<set>>
+    + itemHeight : int <<get>> <<set>>
+    + itemWidth : float <<get>>
+    + resolvedItemHeight : float <<get>>
+    + resolvedItemWidth : float <<get>>
+    + selectedIndex : int <<get>> <<set>>
+    + selectedItem : object <<get>>
+    + showBorder : bool <<get>> <<set>>
+    +  <<event>> onItemsChosen : Action<IEnumerable<object>> 
+    +  <<event>> onSelectionChange : Action<IEnumerable<object>> 
+    + AddToSelection(index:int) : void
+    + ClearSelection() : void
+    + Refresh() : void
+    + RemoveFromSelection(index:int) : void
+    + ScrollToItem(index:int) : void
+    + SetSelection(index:int) : void
+    + SetSelection(indices:IEnumerable<int>) : void
+    + SetSelectionWithoutNotify(indices:IEnumerable<int>) : void
+}
+class "Action`2"<T1,T2> {
+}
+class "Func`1"<T> {
+}
+class "IEnumerable`1"<T> {
+}
+class RecycledRow {
+    + <<const>> kUndefinedIndex : int
+    + RecycledRow(height:float)
+    + firstIndex : int <<get>>
+    + lastIndex : int <<get>>
+    + ClearSelection() : void
+    + ContainsId(id:int, indexInRow:int) : bool
+    + ContainsIndex(index:int, indexInRow:int) : bool
+    + SetSelected(indexInRow:int, selected:bool) : void
+}
+class "List`1"<T> {
+}
+BindableElement <|-- GridView
+ISerializationCallbackReceiver <|-- GridView
+GridView --> "bindItem<VisualElement,int>" "Action`2"
+GridView --> "contentContainer" VisualElement
+GridView --> "itemsSource" IList
+GridView --> "makeItem<VisualElement>" "Func`1"
+GridView --> "selectedIndices<int>" "IEnumerable`1"
+GridView --> "selectedItems<object>" "IEnumerable`1"
+GridView --> "selectedIds<int>" "IEnumerable`1"
+GridView --> "selectionType" SelectionType
+GridView --> "unbindItem<VisualElement,int>" "Action`2"
+GridView +-- RecycledRow
+VisualElement <|-- RecycledRow
+RecycledRow --> "ids<int>" "List`1"
+RecycledRow --> "indices<int>" "List`1"
+@enduml

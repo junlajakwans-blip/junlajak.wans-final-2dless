@@ -1,0 +1,9 @@
+@startuml
+class CullContextData {
+    + <<override>> Reset() : void
+    + SetRenderContext(renderContext:ScriptableRenderContext) : void
+    + Cull(parameters:ScriptableCullingParameters) : CullingResults
+    + CullShadowCasters(cullingResults:CullingResults, shadowCastersCullingInfos:ShadowCastersCullingInfos) : void
+}
+ContextItem <|-- CullContextData
+@enduml

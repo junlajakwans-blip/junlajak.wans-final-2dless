@@ -1,0 +1,5 @@
+@startuml
+class ErrorEmptyState {
+}
+CenteredContentPanel <|-- ErrorEmptyState
+@enduml

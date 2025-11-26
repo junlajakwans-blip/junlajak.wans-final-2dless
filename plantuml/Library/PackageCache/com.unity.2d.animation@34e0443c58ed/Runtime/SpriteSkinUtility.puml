@@ -1,0 +1,15 @@
+@startuml
+class NativeByteArray {
+    + Length : int <<get>>
+    + IsCreated : bool <<get>>
+    + NativeByteArray(array:NativeArray<byte>)
+    + Dispose() : void
+}
+class SpriteSkinUtility <<static>> {
+}
+class BurstedSpriteSkinUtilities <<static>> {
+}
+class "NativeArray`1"<T> {
+}
+NativeByteArray --> "array<byte>" "NativeArray`1"
+@enduml

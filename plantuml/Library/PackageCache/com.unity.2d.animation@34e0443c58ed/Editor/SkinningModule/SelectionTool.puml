@@ -1,0 +1,8 @@
+@startuml
+class SelectionTool {
+    +  <<event>> CanSelect : Func<bool> 
+    + <<override>> Initialize(layoutOverlay:LayoutOverlay) : void
+}
+BaseTool <|-- SelectionTool
+SelectionTool --> "spriteEditor" ISpriteEditor
+@enduml

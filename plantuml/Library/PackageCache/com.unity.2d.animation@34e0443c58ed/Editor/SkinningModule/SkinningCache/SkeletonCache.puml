@@ -1,0 +1,22 @@
+@startuml
+class SkeletonCache {
+    + isPosePreview : bool <<get>>
+    + boneCount : int <<get>>
+    + AddBone(bone:BoneCache, worldPositionStays:bool) : void
+    + ReorderBones(boneCache:IEnumerable<BoneCache>) : void
+    + DestroyBone(bone:BoneCache) : void
+    + SetDefaultPose() : void
+    + RestoreDefaultPose() : void
+    + SetPosePreview() : void
+    + GetLocalPose() : BonePose[]
+    + SetLocalPose(pose:BonePose[]) : void
+    + GetWorldPose() : BonePose[]
+    + SetWorldPose(pose:BonePose[]) : void
+    + GetBone(index:int) : BoneCache
+    + IndexOf(bone:BoneCache) : int
+    + Contains(bone:BoneCache) : bool
+    + Clear() : void
+    + GetUniqueName(bone:BoneCache) : string
+}
+TransformCache <|-- SkeletonCache
+@enduml

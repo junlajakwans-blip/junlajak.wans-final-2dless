@@ -1,0 +1,26 @@
+@startuml
+class UnityConstants <<static>> {
+    + <<const>> PLUGIN_DELAYED_INITIALIZE_INTERVAL : double = 0.25
+}
+class ChangesetsColumns <<static>> {
+}
+class BranchesColumns <<static>> {
+}
+class LocksColumns <<static>> {
+}
+class ShelvesColumns <<static>> {
+}
+class CloudDrive <<static>> {
+}
+class LabelsColumns <<static>> {
+}
+class BrowseRepositoryColumns <<static>> {
+}
+UnityConstants +-- ChangesetsColumns
+UnityConstants +-- BranchesColumns
+UnityConstants +-- LocksColumns
+UnityConstants +-- ShelvesColumns
+UnityConstants +-- CloudDrive
+UnityConstants +-- LabelsColumns
+UnityConstants +-- BrowseRepositoryColumns
+@enduml

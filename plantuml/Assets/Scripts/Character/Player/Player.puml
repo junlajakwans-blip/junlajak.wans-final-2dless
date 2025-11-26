@@ -1,0 +1,46 @@
+@startuml
+class Player {
+    +  <<event>> OnCoinCollected : System.Action<int> 
+    + GetChargePower() : float
+    + PlayerName : string <<get>>
+    + FaceDir : int <<get>> = 1
+    + Initialize(data:PlayerData, cardManager:CardManager, careerSwitcher:CareerSwitcher) : void
+    + <<override>> Move(direction:Vector2) : void
+    + ApplySpeedModifier(multiplier:float, duration:float) : void
+    + HandleInteract() : void
+    + <<virtual>> Jump() : void
+    + <<override>> TakeDamage(amount:int) : void
+    + <<override>> Heal(amount:int) : void
+    + Revive(reviveHP:int) : void
+    + <<override>> Die() : void
+    + GetCurrentCareerID() : DuckCareer
+    + SetHealthBarUI(healthBarUI:HealthBarUI) : void
+    + HookScoreUI(scoreUI:ScoreUI, initialCoin:int) : void
+    + AddCoin(amount:int) : void
+    + AddToken(amount:int) : void
+    + GetCurrency() : Currency
+    + <<override>> Attack() : void
+    + <<virtual>> ChargeAttack(power:float) : void
+    + <<virtual>> RangeAttack(target:Transform) : void
+    + <<virtual>> ApplyDamage(target:IDamageable, amount:int) : void
+    + <<virtual>> UseSkill() : void
+    + <<virtual>> OnSkillCooldown() : void
+    + UseCard(card:Card) : void
+    + EnterOverdrive() : void
+    + ExitOverdrive() : void
+    + SetFXProfile(newProfile:CareerEffectProfile) : void
+    + OnCareerChanged(newCareer:DuckCareerData) : void
+    + IsDuckling : bool <<get>>
+    + UpdatePlayerFormState() : void
+    + ResetState() : void
+}
+Character <|-- Player
+IDamageable <|-- Player
+IAttackable <|-- Player
+ISkillUser <|-- Player
+Player --> "CurrentCareerData" DuckCareerData
+Player --> "CurrentCareerID" DuckCareer
+Player --> "CurrentMapType" MapType
+Player --> "FXProfile" CareerEffectProfile
+Player --> "CurrentCareerSkill" CareerSkillBase
+@enduml

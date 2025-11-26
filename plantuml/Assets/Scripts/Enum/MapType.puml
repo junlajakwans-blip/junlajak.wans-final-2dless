@@ -1,0 +1,17 @@
+@startuml
+enum MapType {
+    None= 0,
+    School= 1,
+    RoadTraffic= 2,
+    Kitchen= 3,
+    All= 99,
+}
+class MapTypeExtensions <<static>> {
+    + {static} IsPlayableMap(mapType:MapType) : bool
+    + {static} ToSceneName(mapType:MapType) : string
+    + {static} FromSceneName(sceneName:string) : MapType
+    + {static} IsUniversal(mapType:MapType) : bool
+    + {static} ToFriendlyString(mapType:MapType) : string
+    + {static} DebugInfo(mapType:MapType) : string
+}
+@enduml

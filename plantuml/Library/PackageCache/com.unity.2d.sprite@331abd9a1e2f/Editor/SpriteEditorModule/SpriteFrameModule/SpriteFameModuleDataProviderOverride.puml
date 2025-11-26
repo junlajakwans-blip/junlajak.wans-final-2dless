@@ -1,0 +1,28 @@
+@startuml
+class SpriteFrameModule <<partial>> {
+    + <<override>> SetPreviewTexture(texture:Texture2D, width:int, height:int) : void
+    + pixelsPerUnit : float <<get>>
+    + GetSpriteRects() : SpriteRect[]
+    + SetSpriteRects(spriteRects:SpriteRect[]) : void
+    + Apply() : void
+    + InitSpriteEditorDataProvider() : void
+    + <<override>> GetDataProvider() : T
+    + HasDataProvider(type:Type) : bool
+    + RegisterDataChangeCallback(action:Action<ISpriteEditorDataProvider>) : void
+    + UnregisterDataChangeCallback(action:Action<ISpriteEditorDataProvider>) : void
+    + GetTextureActualWidthAndHeight(width:int, height:int) : void
+    + GetReadableTexture2D() : Texture2D
+    + OverrideTextures(mainTexture:Texture2D, previewTexture:Texture2D, width:int, height:int) : bool
+    + ClearOverrideTextures() : void
+    + RegisterSourceTextureOverride(action:Action<string>) : void
+    + UnregisterSourceTextureOverride(action:Action<string>) : void
+    + RegisterDataChangeCallback(action:Action<ITextureDataProvider>) : void
+    + UnregisterDataChangeCallback(action:Action<ITextureDataProvider>) : void
+}
+SpriteFrameModuleBase <|-- SpriteFrameModule
+ISpriteEditorDataProvider <|-- SpriteFrameModule
+ITextureDataProvider <|-- SpriteFrameModule
+SpriteFrameModule --> "targetObject" UnityObject
+SpriteFrameModule --> "texture" Texture2D
+SpriteFrameModule --> "previewTexture" Texture2D
+@enduml

@@ -1,0 +1,5 @@
+@startuml
+class CoinMagnet {
+}
+MonoBehaviour <|-- CoinMagnet
+@enduml

@@ -1,0 +1,5 @@
+@startuml
+class CurveEditUtility <<static>> {
+    + {static} CreateMatchingCurve(curve:AnimationCurve) : AnimationCurve
+}
+@enduml

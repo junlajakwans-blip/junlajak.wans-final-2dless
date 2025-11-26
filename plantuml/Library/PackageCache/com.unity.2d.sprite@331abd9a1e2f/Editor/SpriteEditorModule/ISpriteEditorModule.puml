@@ -1,0 +1,52 @@
+@startuml
+abstract class SpriteEditorModuleBase {
+    + {abstract} moduleName : string <<get>>
+    + {abstract} CanBeActivated() : bool
+    + {abstract} DoMainGUI() : void
+    + {abstract} DoToolbarGUI(drawArea:Rect) : void
+    + {abstract} OnModuleActivate() : void
+    + {abstract} OnModuleDeactivate() : void
+    + {abstract} DoPostGUI() : void
+    + {abstract} ApplyRevert(apply:bool) : bool
+}
+abstract class SpriteEditorModuleModeSupportBase {
+    + <<virtual>> SetModuleModes(modes:IEnumerable<Type>) : void
+    + RegisterModuleActivate(onActivate:Action) : void
+    + UnregisterModuleActivate(onActivate:Action) : void
+    + SignalModuleActivate() : void
+}
+interface ISpriteEditorModuleMode {
+}
+abstract class SpriteEditorModeBase {
+    + {abstract} ActivateMode() : bool
+    + {abstract} DeactivateMode() : void
+    + {abstract} OnAddToModule(module:SpriteEditorModuleModeSupportBase) : void
+    + {abstract} OnRemoveFromModule(module:SpriteEditorModuleModeSupportBase) : void
+    + {abstract} RegisterOnModeRequestActivate(onActivate:Action<SpriteEditorModeBase>) : void
+    + {abstract} UnregisterOnModeRequestActivate(onActivate:Action<SpriteEditorModeBase>) : void
+    + {abstract} ApplyModeData(apply:bool, dataProviderTypes:HashSet<Type>) : bool
+    + <<virtual>> RequestModeToActivate() : void
+}
+interface ISpriteEditor {
+    + GetOverlay(overlayID:string) : T
+    + SetScenePreviewCallback(callback:Action<GameObject[]>) : void
+}
+class RequireSpriteDataProviderAttribute {
+    + RequireSpriteDataProviderAttribute(types:Type[])
+}
+class SpriteEditorModuleModeAttribute {
+    + SpriteEditorModuleModeAttribute(showAsModule:bool, types:Type[])
+}
+class "List`1"<T> {
+}
+class "Action`1"<T> {
+}
+SpriteEditorModuleBase --> "spriteEditor" ISpriteEditor
+SpriteEditorModuleBase <|-- SpriteEditorModuleModeSupportBase
+SpriteEditorModuleModeSupportBase --> "modes<ISpriteEditorModuleMode>" "List`1"
+SpriteEditorModuleModeSupportBase --> "modeSpriteEditor" ISpriteEditor
+SpriteEditorModuleBase <|-- SpriteEditorModeBase
+ISpriteEditorModuleMode <|-- SpriteEditorModeBase
+Attribute <|-- RequireSpriteDataProviderAttribute
+Attribute <|-- SpriteEditorModuleModeAttribute
+@enduml

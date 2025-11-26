@@ -1,0 +1,23 @@
+@startuml
+class UniqueNameGenerator {
+    + ContainHash(i:int) : bool
+    + AddHash(i:int) : void
+    + AddHash(name:string) : void
+    + GetUniqueName(name:string, logNewNameGenerated:bool, context:UnityEngine.Object) : string
+    + {static} SanitizeName(name:string) : string
+}
+class GameObjectCreationFactory {
+    + GameObjectCreationFactory(names:IList<string>)
+    + CreateGameObject(name:string, components:System.Type[]) : GameObject
+}
+class ImportUtilities <<static>> {
+    + {static} SaveToPng(buffer:NativeArray<Color32>, width:int, height:int) : string
+    + {static} ValidatePSDLayerId(oldPsdLayer:IEnumerable<PSDLayer>, layers:IEnumerable<BitmapLayer>, uniqueNameGenerator:UniqueNameGenerator) : void
+    + {static} TranslatePivotPoint(pivot:Vector2, rect:Rect, alignment:SpriteAlignment, customPivot:Vector2) : void
+    + {static} GetPivotPoint(rect:Rect, alignment:SpriteAlignment, customPivot:Vector2) : Vector2
+    + {static} GetUniqueSpriteName(name:string, generator:UniqueNameGenerator, keepDupilcateSpriteName:bool) : string
+    + {static} VisibleInHierarchy(psdGroup:List<PSDLayer>, index:int) : bool
+    + {static} IsSpriteMetaDataDefault(metaData:SpriteMetaData) : bool
+}
+UniqueNameGenerator <|-- GameObjectCreationFactory
+@enduml

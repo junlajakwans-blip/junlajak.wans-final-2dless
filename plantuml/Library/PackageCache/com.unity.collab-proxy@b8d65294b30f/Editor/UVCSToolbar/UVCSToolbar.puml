@@ -1,0 +1,4 @@
+@startuml
+class UVCSToolbar <<static>> {
+}
+@enduml

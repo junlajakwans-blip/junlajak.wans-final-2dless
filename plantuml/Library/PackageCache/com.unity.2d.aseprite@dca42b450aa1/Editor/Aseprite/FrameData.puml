@@ -1,0 +1,12 @@
+@startuml
+class FrameData {
+    + noOfBytes : uint <<get>>
+    + frameDuration : ushort <<get>>
+    + chunkCount : uint <<get>>
+    + Dispose() : void
+}
+class "ReadOnlyCollection`1"<T> {
+}
+IDisposable <|-- FrameData
+FrameData --> "chunks<BaseChunk>" "ReadOnlyCollection`1"
+@enduml

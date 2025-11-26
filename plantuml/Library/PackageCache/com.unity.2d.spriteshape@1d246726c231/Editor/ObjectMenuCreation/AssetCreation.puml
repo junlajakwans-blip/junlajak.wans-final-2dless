@@ -1,0 +1,9 @@
+@startuml
+class AssetCreation <<static>> {
+    {static} + CreateAssetObject(obj:T) : T
+}
+class CreateAssetEndNameEditAction {
+    + <<override>> Action(instanceId:int, pathName:string, resourceFile:string) : void
+}
+AssetCreation +-- CreateAssetEndNameEditAction
+@enduml

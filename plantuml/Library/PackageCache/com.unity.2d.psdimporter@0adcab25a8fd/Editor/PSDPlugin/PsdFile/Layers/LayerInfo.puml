@@ -1,0 +1,11 @@
+@startuml
+class LayerInfoFactory <<static>> {
+    + {static} Load(reader:PsdBinaryReader, psdFile:PsdFile, globalLayerInfo:bool, fileEndPos:long) : LayerInfo
+}
+class LayerInfoUtil <<static>> {
+}
+abstract class LayerInfo {
+    + {abstract} Signature : string <<get>>
+    + {abstract} Key : string <<get>>
+}
+@enduml

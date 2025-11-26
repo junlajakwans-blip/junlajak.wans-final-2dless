@@ -1,0 +1,13 @@
+@startuml
+class CullingTestRenderPass {
+    + <<override>> RecordRenderGraph(renderGraph:RenderGraph, frameData:ContextContainer) : void
+    + <<override>> Execute(context:ScriptableRenderContext, renderingData:RenderingData) : void
+}
+class RenderGraphTests {
+    + Setup() : void
+    + TearDown() : void
+    + RenderPassCullingAPIWorks() : void
+    + RenderPassCullingAPIDoesNotAlloc() : void
+}
+ScriptableRenderPass <|-- CullingTestRenderPass
+@enduml

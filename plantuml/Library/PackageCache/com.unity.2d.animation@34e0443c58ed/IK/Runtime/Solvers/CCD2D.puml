@@ -1,0 +1,5 @@
+@startuml
+class CCD2D <<static>> {
+    + {static} Solve(targetPosition:Vector3, forward:Vector3, solverLimit:int, tolerance:float, velocity:float, positions:Vector3[]) : bool
+}
+@enduml

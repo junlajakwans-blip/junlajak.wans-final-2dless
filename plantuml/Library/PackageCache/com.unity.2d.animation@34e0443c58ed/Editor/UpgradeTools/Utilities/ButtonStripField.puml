@@ -1,0 +1,12 @@
+@startuml
+class ButtonStripField <<partial>> {
+    + AddButton(text:string, name:string) : void
+    + AddButton(icon:Background, name:string) : void
+    + ButtonStripField()
+    + ButtonStripField(label:string)
+    + <<override>> SetValueWithoutNotify(newValue:int) : void
+}
+class "BaseField`1"<T> {
+}
+"BaseField`1" "<int>" <|-- ButtonStripField
+@enduml

@@ -1,0 +1,10 @@
+@startuml
+class RandomStarterCard {
+    + SetDependencies(manager:CardManager, gm:GameManager) : void
+    + OpenPanel() : void
+    + ClosePanel() : void
+    + TrySummonCard() : bool
+    + ResetForNewGame() : void
+}
+MonoBehaviour <|-- RandomStarterCard
+@enduml

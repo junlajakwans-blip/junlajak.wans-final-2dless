@@ -1,0 +1,5 @@
+@startuml
+class InstanceCullerBurst <<static>> {
+    + {static} <<unsafe>> SetupCullingJobInput(lodBias:float, meshLodThreshold:float, context:BatchCullingContext*, receiverPlanes:ReceiverPlanes*, receiverSphereCuller:ReceiverSphereCuller*, frustumPlaneCuller:FrustumPlaneCuller*, screenRelativeMetric:float*, meshLodConstant:float*) : void
+}
+@enduml

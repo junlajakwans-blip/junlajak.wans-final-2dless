@@ -1,0 +1,45 @@
+@startuml
+class ControllerEvents {
+}
+class ViewEvents {
+}
+class "UnityEvent`2"<T1,T2> {
+}
+class "UnityEvent`1"<T> {
+}
+class "UnityEvent`3"<T1,T2,T3> {
+}
+ControllerEvents o-> "onModifiedCategories<List<CategoryData>,bool>" "UnityEvent`2"
+ControllerEvents o-> "onModifiedLabels<List<LabelData>,bool>" "UnityEvent`2"
+ControllerEvents o-> "onSelectedLibrary<SpriteLibraryAsset>" "UnityEvent`1"
+ControllerEvents o-> "onSelectedCategories<List<string>>" "UnityEvent`1"
+ControllerEvents o-> "onSelectedLabels<List<string>>" "UnityEvent`1"
+ControllerEvents o-> "onViewChanged<ViewData>" "UnityEvent`1"
+ControllerEvents o-> "onMainLibraryChanged<SpriteLibraryAsset>" "UnityEvent`1"
+ControllerEvents o-> "onLibraryDataChanged<bool>" "UnityEvent`1"
+ViewEvents o-> "onCreateNewSpriteLibraryAsset<string>" "UnityEvent`1"
+ViewEvents o-> "onMainUISplitPaneSizeChanged<float>" "UnityEvent`1"
+ViewEvents o-> "onSave" UnityEvent
+ViewEvents o-> "onRevert" UnityEvent
+ViewEvents o-> "onToggleAutoSave<bool>" "UnityEvent`1"
+ViewEvents o-> "onViewSizeUpdate<float>" "UnityEvent`1"
+ViewEvents o-> "onViewTypeUpdate<ViewType>" "UnityEvent`1"
+ViewEvents o-> "onSelectedFilter<string>" "UnityEvent`1"
+ViewEvents o-> "onSelectedFilterType<SearchType>" "UnityEvent`1"
+ViewEvents o-> "onSetMainAsset<SpriteLibraryAsset>" "UnityEvent`1"
+ViewEvents o-> "onSelectCategories<IList<string>>" "UnityEvent`1"
+ViewEvents o-> "onSelectLabels<IList<string>>" "UnityEvent`1"
+ViewEvents o-> "onCreateNewCategory<string,IList<Sprite>>" "UnityEvent`2"
+ViewEvents o-> "onRenameCategory<string>" "UnityEvent`1"
+ViewEvents o-> "onReorderCategories<IList<string>>" "UnityEvent`1"
+ViewEvents o-> "onDeleteCategories" UnityEvent
+ViewEvents o-> "onCreateNewLabel<string>" "UnityEvent`1"
+ViewEvents o-> "onRenameLabel<string>" "UnityEvent`1"
+ViewEvents o-> "onReorderLabels<IList<string>>" "UnityEvent`1"
+ViewEvents o-> "onDeleteLabels" UnityEvent
+ViewEvents o-> "onSetLabelSprite<string,Sprite>" "UnityEvent`2"
+ViewEvents o-> "onAddDataToCategories<IList<DragAndDropData>,bool,string>" "UnityEvent`3"
+ViewEvents o-> "onAddDataToLabels<IList<DragAndDropData>,bool,string>" "UnityEvent`3"
+ViewEvents o-> "onRevertOverridenLabels<IList<string>>" "UnityEvent`1"
+ViewEvents o-> "onToggleSelectionLock<bool>" "UnityEvent`1"
+@enduml

@@ -1,0 +1,7 @@
+@startuml
+class InstanceDataSystemBurst <<static>> {
+    + {static} ReallocateInstances(implicitInstanceIndices:bool, rendererGroupIDs:NativeArray<int>, packedRendererData:NativeArray<GPUDrivenPackedRendererData>, instanceOffsets:NativeArray<int>, instanceCounts:NativeArray<int>, instanceAllocators:InstanceAllocators, instanceData:CPUInstanceData, perCameraInstanceData:CPUPerCameraInstanceData, sharedInstanceData:CPUSharedInstanceData, instances:NativeArray<InstanceHandle>, rendererGroupInstanceMultiHash:NativeParallelMultiHashMap<int, InstanceHandle>) : void
+    + {static} FreeRendererGroupInstances(rendererGroupsID:NativeArray<int>.ReadOnly, instanceAllocators:InstanceAllocators, instanceData:CPUInstanceData, perCameraInstanceData:CPUPerCameraInstanceData, sharedInstanceData:CPUSharedInstanceData, rendererGroupInstanceMultiHash:NativeParallelMultiHashMap<int, InstanceHandle>) : void
+    + {static} FreeInstances(instances:NativeArray<InstanceHandle>.ReadOnly, instanceAllocators:InstanceAllocators, instanceData:CPUInstanceData, perCameraInstanceData:CPUPerCameraInstanceData, sharedInstanceData:CPUSharedInstanceData, rendererGroupInstanceMultiHash:NativeParallelMultiHashMap<int, InstanceHandle>) : void
+}
+@enduml

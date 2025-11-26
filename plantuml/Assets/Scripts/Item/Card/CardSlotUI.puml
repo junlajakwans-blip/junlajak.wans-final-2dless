@@ -1,0 +1,16 @@
+@startuml
+class CardSlotUI {
+    + SetManager(manager:CardManager) : void
+    + UpdateSlots(cards:List<Card>) : void
+    + HighlightSlot(index:int) : void
+    + HighlightFullHand() : void
+    + ClearHighlights() : void
+    + LockAllSlots() : void
+    + UnlockAllSlots() : void
+    + ClearSlot(index:int) : void
+    + PlayUseAnimation(index:int) : void
+    + ResetAllSlots() : void
+    + HandleSlotClick(index:int) : void
+}
+MonoBehaviour <|-- CardSlotUI
+@enduml

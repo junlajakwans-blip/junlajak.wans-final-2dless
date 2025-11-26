@@ -1,0 +1,6 @@
+@startuml
+class TileSetImporterDragAndDropManipulator {
+    + TileSetImporterDragAndDropManipulator(canDragStart:Func<bool>, dragPerform:Action<IEnumerable<Texture2D>, bool>)
+}
+Manipulator <|-- TileSetImporterDragAndDropManipulator
+@enduml

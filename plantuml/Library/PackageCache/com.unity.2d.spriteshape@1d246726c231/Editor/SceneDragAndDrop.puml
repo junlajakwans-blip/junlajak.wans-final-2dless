@@ -1,0 +1,14 @@
+@startuml
+class SceneDragAndDrop <<static>> {
+    + {static} Create(shape:UnityEngine.U2D.SpriteShape, position:Vector3, sceneView:SceneView) : GameObject
+}
+class Contents <<static>> {
+    + {static} <<readonly>> createString : string = "Create Sprite Shape"
+}
+enum DragType {
+    NotInitialized,
+    CreateMultiple,
+}
+SceneDragAndDrop +-- Contents
+SceneDragAndDrop +-- DragType
+@enduml

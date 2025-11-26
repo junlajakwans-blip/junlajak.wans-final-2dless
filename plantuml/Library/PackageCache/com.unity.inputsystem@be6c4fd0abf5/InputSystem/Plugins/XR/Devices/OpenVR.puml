@@ -1,0 +1,70 @@
+@startuml
+class OpenVRHMD {
+}
+class OpenVRControllerWMR {
+}
+class ViveWand {
+}
+class ViveLighthouse {
+}
+class ViveTracker {
+}
+class HandedViveTracker {
+}
+class OpenVROculusTouchController {
+}
+XRHMD <|-- OpenVRHMD
+OpenVRHMD --> "deviceVelocity" Vector3Control
+OpenVRHMD --> "deviceAngularVelocity" Vector3Control
+OpenVRHMD --> "leftEyeVelocity" Vector3Control
+OpenVRHMD --> "leftEyeAngularVelocity" Vector3Control
+OpenVRHMD --> "rightEyeVelocity" Vector3Control
+OpenVRHMD --> "rightEyeAngularVelocity" Vector3Control
+OpenVRHMD --> "centerEyeVelocity" Vector3Control
+OpenVRHMD --> "centerEyeAngularVelocity" Vector3Control
+XRController <|-- OpenVRControllerWMR
+OpenVRControllerWMR --> "deviceVelocity" Vector3Control
+OpenVRControllerWMR --> "deviceAngularVelocity" Vector3Control
+OpenVRControllerWMR --> "touchpadClick" ButtonControl
+OpenVRControllerWMR --> "touchpadTouch" ButtonControl
+OpenVRControllerWMR --> "gripPressed" ButtonControl
+OpenVRControllerWMR --> "triggerPressed" ButtonControl
+OpenVRControllerWMR --> "menu" ButtonControl
+OpenVRControllerWMR --> "trigger" AxisControl
+OpenVRControllerWMR --> "grip" AxisControl
+OpenVRControllerWMR --> "touchpad" Vector2Control
+OpenVRControllerWMR --> "joystick" Vector2Control
+XRControllerWithRumble <|-- ViveWand
+ViveWand --> "grip" AxisControl
+ViveWand --> "gripPressed" ButtonControl
+ViveWand --> "primary" ButtonControl
+ViveWand --> "trackpadPressed" ButtonControl
+ViveWand --> "trackpadTouched" ButtonControl
+ViveWand --> "trackpad" Vector2Control
+ViveWand --> "trigger" AxisControl
+ViveWand --> "triggerPressed" ButtonControl
+ViveWand --> "deviceVelocity" Vector3Control
+ViveWand --> "deviceAngularVelocity" Vector3Control
+TrackedDevice <|-- ViveLighthouse
+TrackedDevice <|-- ViveTracker
+ViveTracker --> "deviceVelocity" Vector3Control
+ViveTracker --> "deviceAngularVelocity" Vector3Control
+ViveTracker <|-- HandedViveTracker
+HandedViveTracker --> "grip" AxisControl
+HandedViveTracker --> "gripPressed" ButtonControl
+HandedViveTracker --> "primary" ButtonControl
+HandedViveTracker --> "trackpadPressed" ButtonControl
+HandedViveTracker --> "triggerPressed" ButtonControl
+XRControllerWithRumble <|-- OpenVROculusTouchController
+OpenVROculusTouchController --> "thumbstick" Vector2Control
+OpenVROculusTouchController --> "trigger" AxisControl
+OpenVROculusTouchController --> "grip" AxisControl
+OpenVROculusTouchController --> "primaryButton" ButtonControl
+OpenVROculusTouchController --> "secondaryButton" ButtonControl
+OpenVROculusTouchController --> "gripPressed" ButtonControl
+OpenVROculusTouchController --> "triggerPressed" ButtonControl
+OpenVROculusTouchController --> "thumbstickClicked" ButtonControl
+OpenVROculusTouchController --> "thumbstickTouched" ButtonControl
+OpenVROculusTouchController --> "deviceVelocity" Vector3Control
+OpenVROculusTouchController --> "deviceAngularVelocity" Vector3Control
+@enduml

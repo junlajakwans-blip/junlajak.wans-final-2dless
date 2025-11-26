@@ -1,0 +1,32 @@
+@startuml
+class TilePaletteBrushPickElement <<partial>> {
+    + hideOnPick : bool <<get>> <<set>>
+    + TilePaletteBrushPickElement()
+}
+class TilePaletteBrushPickActiveBrushToggle <<sealed>> {
+    + TilePaletteBrushPickActiveBrushToggle()
+}
+class TilePaletteBrushPickSaveButton <<sealed>> {
+    + TilePaletteBrushPickSaveButton()
+}
+class TilePaletteHidePicksToggle <<sealed>> {
+    + TilePaletteHidePicksToggle()
+}
+class TilePaletteBrushPickElementFactory {
+}
+class TilePaletteBrushPickElementUxmlTraits {
+}
+class "Action`1"<T> {
+}
+class "UxmlFactory`2"<T1,T2> {
+}
+VisualElement <|-- TilePaletteBrushPickElement
+EditorToolbarToggle <|-- TilePaletteBrushPickActiveBrushToggle
+EditorToolbarButton <|-- TilePaletteBrushPickSaveButton
+EditorToolbarToggle <|-- TilePaletteHidePicksToggle
+TilePaletteHidePicksToggle --> "ToggleChanged<bool>" "Action`1"
+TilePaletteBrushPickElement +-- TilePaletteBrushPickElementFactory
+"UxmlFactory`2" "<TilePaletteBrushPickElement,TilePaletteBrushPickElementUxmlTraits>" <|-- TilePaletteBrushPickElementFactory
+TilePaletteBrushPickElement +-- TilePaletteBrushPickElementUxmlTraits
+UxmlTraits <|-- TilePaletteBrushPickElementUxmlTraits
+@enduml

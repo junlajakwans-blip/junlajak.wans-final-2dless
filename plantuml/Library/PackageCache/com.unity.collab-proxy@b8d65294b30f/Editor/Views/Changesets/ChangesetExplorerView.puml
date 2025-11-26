@@ -1,0 +1,6 @@
+@startuml
+class ChangesetExplorerView {
+}
+IGetQueryText <|-- ChangesetExplorerView
+IGetFilterText <|-- ChangesetExplorerView
+@enduml

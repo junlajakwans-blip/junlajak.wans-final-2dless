@@ -1,0 +1,9 @@
+@startuml
+class DistanceCulling {
+    + ToggleCulling(enable:bool) : void
+    + RegisterObject(obj:GameObject) : void
+    + UnregisterObject(obj:GameObject) : void
+    + ClearAllTargets() : void
+}
+MonoBehaviour <|-- DistanceCulling
+@enduml

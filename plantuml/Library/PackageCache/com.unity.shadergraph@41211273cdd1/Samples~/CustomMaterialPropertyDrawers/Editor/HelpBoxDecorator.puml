@@ -1,0 +1,12 @@
+@startuml
+class HelpBoxDecorator {
+    + HelpBoxDecorator()
+    + HelpBoxDecorator(label:string)
+    + HelpBoxDecorator(label:string, height:float)
+    + HelpBoxDecorator(label:string, tooltip:string)
+    + HelpBoxDecorator(label:string, tooltip:string, height:float)
+    + <<override>> GetPropertyHeight(prop:MaterialProperty, label:string, editor:MaterialEditor) : float
+    + <<override>> OnGUI(position:Rect, prop:MaterialProperty, label:String, editor:MaterialEditor) : void
+}
+MaterialPropertyDrawer <|-- HelpBoxDecorator
+@enduml

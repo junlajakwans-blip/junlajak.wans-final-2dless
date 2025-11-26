@@ -1,0 +1,6 @@
+@startuml
+class "TreeViewItemIds`1"<T> {
+}
+class "TreeViewItemIds`2"<C,I> {
+}
+@enduml

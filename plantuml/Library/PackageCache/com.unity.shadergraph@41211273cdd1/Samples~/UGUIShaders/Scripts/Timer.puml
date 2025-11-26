@@ -1,0 +1,9 @@
+@startuml
+class Timer {
+    + TheTime : float <<get>> <<set>>
+}
+class "UnityEvent`1"<T> {
+}
+MonoBehaviour <|-- Timer
+Timer --> "timerEvent<float>" "UnityEvent`1"
+@enduml

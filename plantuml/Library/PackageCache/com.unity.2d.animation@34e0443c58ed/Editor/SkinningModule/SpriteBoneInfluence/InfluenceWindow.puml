@@ -1,0 +1,21 @@
+@startuml
+interface IInfluenceWindow {
+}
+class InfluenceWindow <<partial>> {
+    +  <<event>> onAddElement : Action 
+    +  <<event>> onRemoveElement : Action 
+    +  <<event>> onReordered : Action<IEnumerable<TransformCache>> 
+    +  <<event>> onSelectionChanged : Action<IEnumerable<object>> 
+    + headerText : string <<get>> <<set>>
+    + listLabelText : string <<get>> <<set>>
+    + SetTooltips(addButtonTooltip:string, removeButtonTooltip:string) : void
+    + SetListReorderable(reorderable:bool) : void
+    + SetAllowMultiselect(allowMultiselect:bool) : void
+    + UpdateList(transformsList:List<TransformCache>) : void
+    + UpdateSelection(newSelection:IEnumerable<TransformCache>) : void
+    + ToggleAddButton(enabled:bool) : void
+    + ToggleRemoveButton(enabled:bool) : void
+}
+VisualElement <|-- InfluenceWindow
+IInfluenceWindow <|-- InfluenceWindow
+@enduml

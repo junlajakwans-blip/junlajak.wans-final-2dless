@@ -1,0 +1,9 @@
+@startuml
+enum RendererOverrideOption {
+    Custom,
+    UsePipelineSettings,
+}
+class UniversalAdditionalCameraData <<partial>> {
+    + version : float <<get>>
+}
+@enduml

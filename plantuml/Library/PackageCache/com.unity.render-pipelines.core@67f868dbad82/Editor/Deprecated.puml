@@ -1,0 +1,41 @@
+@startuml
+class SetAdditionalPropertiesVisibilityAttribute <<sealed>> {
+}
+class VolumeComponentEditorAttribute <<sealed>> {
+    + VolumeComponentEditorAttribute(componentType:Type)
+}
+interface "IRemoveAdditionalDataContextualMenu`1"<T> {
+}
+class RenderPipelineGlobalSettingsUI <<static>> <<partial>> {
+    + {static} DrawShaderStrippingSettings(serialized:ISerializedRenderPipelineGlobalSettings, owner:Editor, additionalShaderStrippingSettings:CoreEditorDrawer<ISerializedRenderPipelineGlobalSettings>.IDrawer) : void
+}
+interface ISerializedRenderPipelineGlobalSettings {
+}
+class DefaultVolumeProfileEditor <<sealed>> <<partial>> {
+    + DefaultVolumeProfileEditor(baseEditor:Editor, profile:VolumeProfile)
+}
+abstract class DefaultVolumeProfileSettingsPropertyDrawer <<partial>> {
+}
+class DebugUIDrawerMaskField <<sealed>> {
+}
+class Styles <<static>> {
+    + <<const>> labelWidth : int = 250
+}
+abstract class "DefaultVolumeProfileSettingsContextMenu`2"<TSetting,TRenderPipeline> {
+}
+class "DebugUIFieldDrawer`3"<T1,T2,T3> {
+}
+class "IRenderPipelineGraphicsSettingsContextMenu`1"<T> {
+}
+Attribute <|-- SetAdditionalPropertiesVisibilityAttribute
+CustomEditor <|-- VolumeComponentEditorAttribute
+VolumeComponentEditorAttribute --> "componentType" Type
+"DebugUIFieldDrawer`3" "<uint,DebugUI.MaskField,DebugStateUInt>" <|-- DebugUIDrawerMaskField
+RenderPipelineGlobalSettingsUI +-- Styles
+Styles o-> "shaderStrippingSettingsLabel" GUIContent
+Styles o-> "shaderVariantLogLevelLabel" GUIContent
+Styles o-> "exportShaderVariantsLabel" GUIContent
+Styles o-> "stripRuntimeDebugShadersLabel" GUIContent
+DefaultVolumeProfileSettingsPropertyDrawer +-- "DefaultVolumeProfileSettingsContextMenu`2"
+"IRenderPipelineGraphicsSettingsContextMenu`1" "<TSetting>" <|-- "DefaultVolumeProfileSettingsContextMenu`2"
+@enduml

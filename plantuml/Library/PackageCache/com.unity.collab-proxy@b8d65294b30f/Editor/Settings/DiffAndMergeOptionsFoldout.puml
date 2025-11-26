@@ -1,0 +1,7 @@
+@startuml
+class DiffAndMergeOptionsFoldout {
+}
+class Styles {
+}
+DiffAndMergeOptionsFoldout +-- Styles
+@enduml

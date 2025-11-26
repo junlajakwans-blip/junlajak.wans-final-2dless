@@ -1,0 +1,9 @@
+@startuml
+class UIEffectCharacter {
+    + RegisterEffect(name:string, effect:GameObject) : void
+    + PlayEffect(name:string) : void
+    + StopCurrentEffect() : void
+    + IsEffectPlaying() : bool
+}
+MonoBehaviour <|-- UIEffectCharacter
+@enduml

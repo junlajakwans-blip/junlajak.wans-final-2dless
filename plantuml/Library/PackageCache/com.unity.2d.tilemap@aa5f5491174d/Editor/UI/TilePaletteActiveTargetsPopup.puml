@@ -1,0 +1,23 @@
+@startuml
+class TilePaletteActiveTargetsPopup <<sealed>> <<partial>> {
+    + TilePaletteActiveTargetsPopup()
+    + TilePaletteActiveTargetsPopup(label:string)
+}
+class TilePaletteActiveTargetsPopupIcon {
+    + TilePaletteActiveTargetsPopupIcon()
+}
+class "PopupField`1"<T> {
+}
+class TilePaletteActiveTargetsPopupFactory {
+}
+class TilePaletteActiveTargetsPopupUxmlTraits {
+}
+class "UxmlFactory`2"<T1,T2> {
+}
+"PopupField`1" "<GameObject>" <|-- TilePaletteActiveTargetsPopup
+VisualElement <|-- TilePaletteActiveTargetsPopupIcon
+TilePaletteActiveTargetsPopup +-- TilePaletteActiveTargetsPopupFactory
+"UxmlFactory`2" "<TilePaletteActiveTargetsPopup,TilePaletteActiveTargetsPopupUxmlTraits>" <|-- TilePaletteActiveTargetsPopupFactory
+TilePaletteActiveTargetsPopup +-- TilePaletteActiveTargetsPopupUxmlTraits
+UxmlTraits <|-- TilePaletteActiveTargetsPopupUxmlTraits
+@enduml

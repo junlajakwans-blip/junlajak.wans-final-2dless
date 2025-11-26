@@ -1,0 +1,8 @@
+@startuml
+class SpriteEditorWindowBridge <<static>> {
+    + {static} GetSpriteEditorWindow() : EditorWindow
+    + {static} GetSpriteEditorModules(window:EditorWindow) : List<SpriteEditorModuleBase>
+    + {static} ActivateModule(window:EditorWindow, i:int) : void
+    + {static} GetSpriteModuleModes(module:SpriteEditorModuleBase) : List<object>
+}
+@enduml

@@ -1,0 +1,9 @@
+@startuml
+class UVCSToolbarButton {
+    + <<override>> OnGUI(rect:Rect) : void
+}
+struct Layout {
+}
+SubToolbar <|-- UVCSToolbarButton
+UVCSToolbarButton +-- Layout
+@enduml

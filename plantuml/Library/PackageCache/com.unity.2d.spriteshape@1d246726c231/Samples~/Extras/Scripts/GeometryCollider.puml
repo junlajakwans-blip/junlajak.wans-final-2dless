@@ -1,0 +1,6 @@
+@startuml
+class GeometryCollider {
+    {static} + Bake(go:GameObject, forced:bool) : void
+}
+MonoBehaviour <|-- GeometryCollider
+@enduml

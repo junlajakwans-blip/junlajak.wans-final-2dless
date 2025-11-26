@@ -1,0 +1,16 @@
+@startuml
+struct TriangulateJob {
+    + Execute() : void
+}
+struct TessellateJob {
+    + Execute() : void
+}
+class TriangulationUtility {
+    + {static} Tessellate(minAngle:float, maxAngle:float, meshAreaFactor:float, largestTriangleAreaFactor:float, targetArea:float, refineIterations:int, smoothenIterations:int, vertices:float2[], edges:int2[], indices:int[], allocator:Allocator) : void
+    + {static} ScheduleTriangulate(vertices:float2[], edges:int2[], outputVertices:NativeArray<float2>, outputEdges:NativeArray<int2>, outputIndices:NativeArray<int>, result:NativeArray<int4>) : JobHandle
+    + {static} ScheduleTessellate(minAngle:float, maxAngle:float, meshAreaFactor:float, largestTriangleAreaFactor:float, targetArea:float, refineIterations:int, smoothenIterations:int, vertices:float2[], edges:int2[], outputVertices:NativeArray<float2>, outputEdges:NativeArray<int2>, outputIndices:NativeArray<int>, result:NativeArray<int4>) : JobHandle
+    + {static} TessellateSafe(largestTriangleAreaFactor:float, targetArea:float, refineIterations:int, smoothenIterations:int, vertices:float2[], edges:int2[], indices:int[]) : void
+}
+IJob <|-- TriangulateJob
+IJob <|-- TessellateJob
+@enduml

@@ -1,0 +1,20 @@
+@startuml
+class BoneSpriteInfluenceToolController {
+    + BoneSpriteInfluenceToolController(model:IBoneSpriteInfluenceToolModel, events:SkinningEvents)
+    + Activate() : void
+    + Deactivate() : void
+    + OnViewCreated() : void
+    + ShouldEnableAddButton() : bool
+    + IsCharacterMode() : bool
+}
+interface IBoneSpriteInfluenceToolModel {
+}
+class BoneSpriteInfluenceTool {
+    + GetSpriteCharacterPart(sprite:SpriteCache) : CharacterPartCache
+    + <<override>> Initialize(layout:LayoutOverlay) : void
+}
+BaseTool <|-- BoneSpriteInfluenceTool
+IBoneSpriteInfluenceToolModel <|-- BoneSpriteInfluenceTool
+BoneSpriteInfluenceTool --> "skeletonTool" SkeletonTool
+BoneSpriteInfluenceTool --> "previewBehaviour" IMeshPreviewBehaviour
+@enduml

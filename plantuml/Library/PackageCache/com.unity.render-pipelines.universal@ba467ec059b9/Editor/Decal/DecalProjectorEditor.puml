@@ -1,0 +1,13 @@
+@startuml
+class DecalProjectorEditor <<partial>> {
+    + HasFrameBounds() : bool
+    + OnGetFrameBounds() : Bounds
+    + UpdateMaterialEditor() : void
+    + <<override>> OnInspectorGUI() : void
+}
+class DoCreateDecalDefaultMaterial {
+    + <<override>> Action(instanceId:int, pathName:string, resourceFile:string) : void
+}
+Editor <|-- DecalProjectorEditor
+DoCreateDecalDefaultMaterial --> "decalProjector" DecalProjector
+@enduml

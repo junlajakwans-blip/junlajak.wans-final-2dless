@@ -1,0 +1,20 @@
+@startuml
+class SpriteFrameModule <<partial>> {
+    + <<override>> DoMainGUI() : void
+    + DoSpriteFrameMainGUI() : void
+    + <<override>> DoToolbarGUI(toolbarRect:Rect) : void
+    + <<override>> DoPostGUI() : void
+    + DoSpriteFramePostGUI() : void
+}
+class SpriteFrameModuleStyles {
+    + SpriteFrameModuleStyles()
+}
+SpriteFrameModuleBase <|-- SpriteFrameModule
+SpriteFrameModule +-- SpriteFrameModuleStyles
+SpriteFrameModuleStyles o-> "capabilityButtonLabel" GUIContent
+SpriteFrameModuleStyles o-> "sliceButtonLabel" GUIContent
+SpriteFrameModuleStyles o-> "sliceButtonLabelDisabled" GUIContent
+SpriteFrameModuleStyles o-> "trimButtonLabel" GUIContent
+SpriteFrameModuleStyles o-> "trimButtonLabelDisabled" GUIContent
+SpriteFrameModuleStyles --> "instance" SpriteFrameModuleStyles
+@enduml

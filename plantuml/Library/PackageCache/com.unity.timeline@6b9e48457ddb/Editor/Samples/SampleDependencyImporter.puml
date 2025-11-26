@@ -1,0 +1,27 @@
+@startuml
+class SampleDependencyImporter {
+    + OnPackageAddedOrUpdated(packageInfo:PackageManager.PackageInfo) : void
+    + OnPackageRemoved(packageInfo:PackageManager.PackageInfo) : void
+    + OnPackageSelectionChange(packageInfo:PackageManager.PackageInfo) : void
+}
+class SamplePostprocessor {
+    + {static}  <<event>> AssetImported : Action<string> 
+}
+class SampleConfiguration {
+    + GetEntry(sample:Sample) : SampleEntry
+}
+class PackageChecker {
+    + PackageChecker()
+    + RefreshPackageCache() : void
+    + ContainsPackage(packageName:string) : bool
+}
+class SampleEntry {
+    + Path : string
+}
+IPackageManagerExtension <|-- SampleDependencyImporter
+SampleDependencyImporter +-- SamplePostprocessor
+AssetPostprocessor <|-- SamplePostprocessor
+SampleDependencyImporter +-- SampleConfiguration
+SampleDependencyImporter +-- PackageChecker
+SampleConfiguration +-- SampleEntry
+@enduml

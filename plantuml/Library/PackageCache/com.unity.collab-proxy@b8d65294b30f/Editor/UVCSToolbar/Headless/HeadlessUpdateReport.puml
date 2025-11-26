@@ -1,0 +1,5 @@
+@startuml
+class HeadlessUpdateReport {
+}
+IUpdateReport <|-- HeadlessUpdateReport
+@enduml

@@ -1,0 +1,9 @@
+@startuml
+class Meter {
+    + Value : float <<get>> <<set>>
+    + <<virtual>> GetModifiedMaterial(baseMaterial:Material) : Material
+}
+UIBehaviour <|-- Meter
+IMaterialModifier <|-- Meter
+Meter --> "Graphic" Graphic
+@enduml

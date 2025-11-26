@@ -1,0 +1,20 @@
+@startuml
+class TilePaletteClipboardErrorElement <<partial>> {
+    + TilePaletteClipboardErrorElement()
+    + SetEmptyPaletteText() : void
+    + SetEmptyModelPaletteText() : void
+    + SetInvalidPaletteText() : void
+    + SetInvalidGridText() : void
+    + SetInvalidDragAndDropText() : void
+    + ClearText() : void
+}
+class Styles <<static>> {
+    + {static} <<readonly>> emptyPaletteInfo : string
+    + {static} <<readonly>> emptyModelPrefabInfo : string
+    + {static} <<readonly>> invalidPaletteInfo : string
+    + {static} <<readonly>> invalidGridInfo : string
+    + {static} <<readonly>> invalidDragAndDropInfo : string
+}
+VisualElement <|-- TilePaletteClipboardErrorElement
+TilePaletteClipboardErrorElement +-- Styles
+@enduml

@@ -1,0 +1,8 @@
+@startuml
+abstract class BoolFieldOverlayPopupWindow {
+    + {static} ShowOverlayPopup(trigger:BaseField<bool>, position:Rect, size:Vector2, isLocked:bool) : void
+    + {static} ShowOverlayPopup(trigger:BaseField<bool>, size:Vector2, isLocked:bool) : void
+    + {static} CloseAllWindows() : void
+}
+OverlayPopupWindow <|-- BoolFieldOverlayPopupWindow
+@enduml

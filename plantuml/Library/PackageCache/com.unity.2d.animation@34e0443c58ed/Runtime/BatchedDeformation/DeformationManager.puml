@@ -1,0 +1,11 @@
+@startuml
+enum DeformationMethods {
+    Cpu= 0,
+    Gpu= 1,
+    None= 2,
+}
+class DeformationManager {
+}
+ScriptableObject <|-- DeformationManager
+DeformationManager --> "instance" DeformationManager
+@enduml

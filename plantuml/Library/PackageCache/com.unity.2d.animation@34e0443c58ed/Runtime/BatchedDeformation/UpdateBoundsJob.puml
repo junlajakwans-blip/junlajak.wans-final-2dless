@@ -1,0 +1,18 @@
+@startuml
+struct UpdateBoundJob {
+    + Execute(i:int) : void
+}
+class "NativeArray`1"<T> {
+}
+class "NativeHashMap`2"<T1,T2> {
+}
+IJobParallelFor <|-- UpdateBoundJob
+UpdateBoundJob --> "rootTransformId<int>" "NativeArray`1"
+UpdateBoundJob --> "rootBoneTransformId<int>" "NativeArray`1"
+UpdateBoundJob --> "rootTransform<float4x4>" "NativeArray`1"
+UpdateBoundJob --> "boneTransform<float4x4>" "NativeArray`1"
+UpdateBoundJob --> "rootTransformIndex<int,TransformAccessJob.TransformData>" "NativeHashMap`2"
+UpdateBoundJob --> "boneTransformIndex<int,TransformAccessJob.TransformData>" "NativeHashMap`2"
+UpdateBoundJob --> "spriteSkinBound<Bounds>" "NativeArray`1"
+UpdateBoundJob --> "bounds<Bounds>" "NativeArray`1"
+@enduml

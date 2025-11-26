@@ -1,0 +1,5 @@
+@startuml
+class SpriteAtlasGeneration <<static>> {
+    + {static} Generate(ctx:AssetImportContext, importer:AsepriteImporter, assetName:string) : void
+}
+@enduml

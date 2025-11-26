@@ -1,0 +1,14 @@
+@startuml
+class LayoutOverlay <<partial>> {
+    + VisibilityWindowOn(on:bool) : void
+    + hasScrollbar : bool <<get>> <<set>>
+    + LayoutOverlay()
+}
+VisualElement <|-- LayoutOverlay
+LayoutOverlay --> "horizontalToolbar" ScrollableToolbar
+LayoutOverlay --> "verticalToolbar" ScrollableToolbar
+LayoutOverlay --> "horizontalHolder" VisualElement
+LayoutOverlay --> "leftOverlay" VisualElement
+LayoutOverlay --> "rightOverlay" VisualElement
+LayoutOverlay --> "dropdownOverlay" DropdownMenu
+@enduml

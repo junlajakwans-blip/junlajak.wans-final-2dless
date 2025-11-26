@@ -1,0 +1,23 @@
+@startuml
+class LabelContainer {
+    +  <<event>> onSelectionChange : Action<int> 
+    + itemCount : int <<get>>
+    + selectedIndex : int <<get>>
+    + LabelContainer()
+    + SetItems(labels:IList) : void
+    + GetItem(index:int) : object
+    + Select(index:int) : void
+    + SetAnimationState(animationState:PropertyAnimationState) : void
+}
+class Styles <<static>> {
+    + <<const>> labelVisual : string
+    + <<const>> labelContainer : string
+    + <<const>> directionButton : string
+    + <<const>> labelImagesContainer : string
+    + <<const>> labelSelected : string
+}
+VisualElement <|-- LabelContainer
+INavigableElement <|-- LabelContainer
+LabelContainer --> "visualElement" VisualElement
+LabelContainer +-- Styles
+@enduml

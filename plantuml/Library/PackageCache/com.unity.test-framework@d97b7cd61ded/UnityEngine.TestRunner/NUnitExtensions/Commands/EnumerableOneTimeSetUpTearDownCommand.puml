@@ -1,0 +1,16 @@
+@startuml
+class EnumerableOneTimeSetUpTearDownCommand {
+    + EnumerableOneTimeSetUpTearDownCommand(suite:Test)
+    + ExecuteOneTimeSetUpEnumerable(context:ITestExecutionContext) : IEnumerable
+    + ExecuteOneTimeTeardownEnumerable(context:ITestExecutionContext) : IEnumerable
+}
+class "BeforeAfterTestCommandBase`1"<T> {
+}
+class DoNothing {
+    + DoNothing(test:Test)
+    + <<override>> Execute(context:ITestExecutionContext) : TestResult
+}
+"BeforeAfterTestCommandBase`1" "<MethodInfo>" <|-- EnumerableOneTimeSetUpTearDownCommand
+EnumerableOneTimeSetUpTearDownCommand +-- DoNothing
+TestCommand <|-- DoNothing
+@enduml

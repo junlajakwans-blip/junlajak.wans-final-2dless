@@ -1,0 +1,9 @@
+@startuml
+class MamaMon {
+    + <<override>> Attack() : void
+    + BoilSplash() : void
+    + RecoverHP() : void
+    + <<override>> Die() : void
+}
+Enemy <|-- MamaMon
+@enduml

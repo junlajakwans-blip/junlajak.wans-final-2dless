@@ -1,0 +1,27 @@
+@startuml
+class DuckCareerData {
+    + CareerDuration : float <<get>>
+    + CareerCooldownAfterUse : float <<get>>
+    + BaseCooldown : float = 10f
+    + DisplayName : string <<get>>
+    + BaseHealth : int <<get>>
+    + BaseSpeed : float <<get>>
+    + SkillName : string <<get>>
+    + SkillDescription : string <<get>>
+    + ChefMonCoinMinBonusValue : int <<get>>
+    + ChefMonCoinMaxBonusValue : int <<get>>
+    + PeterMonAttackSkipChance : float <<get>>
+    + PeterMonBuffDuration : float <<get>>
+    + ProgrammerMonCoinBonusValue : int <<get>>
+    + KahootMonDisableChance : float <<get>>
+    + GetCareerStats() : string
+    + ActivateSkill(player:Player) : void
+}
+ScriptableObject <|-- DuckCareerData
+DuckCareerData --> "CareerSkill" CareerSkillBase
+DuckCareerData --> "CareerID" DuckCareer
+DuckCareerData --> "SkillIcon" Sprite
+DuckCareerData --> "CardType" CardType
+DuckCareerData --> "CareerIcon" Sprite
+DuckCareerData --> "CareerCard" Sprite
+@enduml

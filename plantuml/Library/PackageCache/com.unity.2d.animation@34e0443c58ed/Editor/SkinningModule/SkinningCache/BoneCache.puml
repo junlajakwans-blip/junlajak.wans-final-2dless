@@ -1,0 +1,38 @@
+@startuml
+struct Pose {
+    + {static} Create(p:Vector3, r:Quaternion) : Pose
+    + <<override>> Equals(other:object) : bool
+    + <<override>> GetHashCode() : int
+}
+struct BonePose {
+    + length : float
+    + {static} Create(p:Pose, l:float) : BonePose
+    + <<override>> Equals(other:object) : bool
+    + <<override>> GetHashCode() : int
+}
+class BoneCache {
+    + NotInDefaultPose() : bool
+    + isVisible : bool <<get>> <<set>>
+    + guid : string <<get>> <<set>>
+    + depth : float <<get>> <<set>>
+    + localLength : float <<get>> <<set>>
+    + length : float <<get>> <<set>>
+    + <<new>> SetParent(newParent:TransformCache, worldPositionStays:bool) : void
+    + OrientToChainedChild(freezeChildren:bool) : void
+    + SetDefaultPose() : void
+    + RestoreDefaultPose() : void
+}
+Pose --> "position" Vector3
+Pose --> "rotation" Quaternion
+Pose --> "matrix" Matrix4x4
+BonePose --> "pose" Pose
+TransformCache <|-- BoneCache
+BoneCache --> "bindPoseColor" Color
+BoneCache --> "parentBone" BoneCache
+BoneCache --> "skeleton" SkeletonCache
+BoneCache --> "chainedChild" BoneCache
+BoneCache --> "endPosition" Vector3
+BoneCache --> "localPose" BonePose
+BoneCache --> "worldPose" BonePose
+BoneCache --> "bindPose" Pose
+@enduml

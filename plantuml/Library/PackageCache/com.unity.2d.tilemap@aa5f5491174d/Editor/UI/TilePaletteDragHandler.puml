@@ -1,0 +1,6 @@
+@startuml
+class TilePaletteDragHandler {
+    + TilePaletteDragHandler(dragUpdated:Action, dragPerformed:Action)
+}
+MouseManipulator <|-- TilePaletteDragHandler
+@enduml

@@ -1,0 +1,12 @@
+@startuml
+class CareerEffectProfile {
+}
+ScriptableObject <|-- CareerEffectProfile
+CareerEffectProfile --> "switchFX" ComicEffectData
+CareerEffectProfile --> "basicAttackFX" ComicEffectData
+CareerEffectProfile --> "skillFX" ComicEffectData
+CareerEffectProfile --> "jumpAttackFX" ComicEffectData
+CareerEffectProfile --> "hurtFX" ComicEffectData
+CareerEffectProfile --> "deathFX" ComicEffectData
+CareerEffectProfile --> "extraFX" ComicEffectData
+@enduml

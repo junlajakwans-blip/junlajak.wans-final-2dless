@@ -1,0 +1,15 @@
+@startuml
+struct HapticState {
+    + HapticState(samplesQueued:uint, samplesAvailable:uint)
+    + samplesQueued : uint <<get>>
+    + samplesAvailable : uint <<get>>
+}
+struct GetCurrentHapticStateCommand {
+    + samplesQueued : uint
+    + samplesAvailable : uint
+    + {static} Create() : GetCurrentHapticStateCommand
+}
+IInputDeviceCommandInfo <|-- GetCurrentHapticStateCommand
+GetCurrentHapticStateCommand --> "typeStatic" FourCC
+GetCurrentHapticStateCommand --> "currentState" HapticState
+@enduml

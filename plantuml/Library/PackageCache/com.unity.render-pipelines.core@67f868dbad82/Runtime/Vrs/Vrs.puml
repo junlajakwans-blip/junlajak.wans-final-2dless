@@ -1,0 +1,34 @@
+@startuml
+class Vrs <<static>> {
+    + {static} IsColorMaskTextureConversionSupported() : bool
+    + {static} IsInitialized() : bool
+    + {static} InitializeResources() : void
+    + {static} DisposeResources() : void
+    + {static} ColorMaskTextureToShadingRateImage(renderGraph:RenderGraph, sriRtHandle:RTHandle, colorMaskRtHandle:RTHandle, yFlip:bool) : TextureHandle
+    + {static} ColorMaskTextureToShadingRateImage(renderGraph:RenderGraph, sriTextureHandle:TextureHandle, colorMaskHandle:TextureHandle, colorMaskDimension:TextureDimension, yFlip:bool) : TextureHandle
+    + {static} ShadingRateImageToColorMaskTexture(renderGraph:RenderGraph, sriTextureHandle:TextureHandle, colorMaskHandle:TextureHandle) : void
+    + {static} ColorMaskTextureToShadingRateImageDispatch(cmd:CommandBuffer, sriDestination:RTHandle, colorMaskSource:Texture, yFlip:bool) : void
+    + {static} ShadingRateImageToColorMaskTextureBlit(cmd:CommandBuffer, sriSource:RTHandle, colorMaskDestination:RTHandle) : void
+}
+class ConversionPassData {
+    + kernelIndex : int
+    + yFlip : bool
+}
+class VisualizationPassData {
+}
+Vrs +-- ConversionPassData
+ConversionPassData --> "sriTextureHandle" TextureHandle
+ConversionPassData --> "mainTexHandle" TextureHandle
+ConversionPassData --> "mainTexDimension" TextureDimension
+ConversionPassData --> "mainTexLutHandle" BufferHandle
+ConversionPassData --> "validatedShadingRateFragmentSizeHandle" BufferHandle
+ConversionPassData --> "computeShader" ComputeShader
+ConversionPassData --> "scaleBias" Vector4
+ConversionPassData --> "dispatchSize" Vector2Int
+Vrs +-- VisualizationPassData
+VisualizationPassData --> "material" Material
+VisualizationPassData --> "source" TextureHandle
+VisualizationPassData --> "lut" BufferHandle
+VisualizationPassData --> "dummy" TextureHandle
+VisualizationPassData --> "visualizationParams" Vector4
+@enduml

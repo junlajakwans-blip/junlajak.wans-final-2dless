@@ -1,0 +1,6 @@
+@startuml
+class TilePaletteClipboardButton {
+    + TilePaletteClipboardButton()
+}
+EditorToolbarToggle <|-- TilePaletteClipboardButton
+@enduml

@@ -1,0 +1,18 @@
+@startuml
+struct "MatrixMxN`1"<T> {
+    + MatrixMxN(width:int, height:int, allocMode:Allocator, options:NativeArrayOptions)
+    + GetArray() : NativeArray<T>
+    + Get(x:int, y:int) : T
+    + Set(x:int, y:int, v:T) : void
+    + IsCreated : bool <<get>>
+    + Length : int <<get>>
+    + DimensionX : int <<get>>
+    + DimensionY : int <<get>>
+    + Dispose() : void
+    + CopyTo(array:T[]) : void
+}
+class "MatrixMxNDebugView`1"<T> <<sealed>> {
+    + MatrixMxNDebugView(array:MatrixMxN<T>)
+}
+IDisposable <|-- "MatrixMxN`1"
+@enduml

@@ -1,0 +1,16 @@
+@startuml
+class CustomButton {
+    + OnPointerClick(eventData:PointerEventData) : void
+    + OnSubmit(eventData:BaseEventData) : void
+    + <<virtual>> GetModifiedMaterial(baseMaterial:Material) : Material
+}
+class "UnityEvent`1"<T> {
+}
+Selectable <|-- CustomButton
+IPointerClickHandler <|-- CustomButton
+ISubmitHandler <|-- CustomButton
+IMaterialModifier <|-- CustomButton
+CustomButton --> "onClick" UnityEvent
+CustomButton --> "onStateChanged<int>" "UnityEvent`1"
+CustomButton --> "Graphic" Graphic
+@enduml

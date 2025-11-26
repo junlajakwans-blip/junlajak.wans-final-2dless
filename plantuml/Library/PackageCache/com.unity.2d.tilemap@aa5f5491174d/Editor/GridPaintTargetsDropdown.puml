@@ -1,0 +1,42 @@
+@startuml
+class GridPaintTargetsDropdown {
+    + selectedIndex : int <<get>> <<set>>
+    + GridPaintTargetsDropdown(itemProvider:IFlexibleMenuItemProvider, selectionIndex:int, modifyItemUi:FlexibleMenuModifyItemUI, itemClickedCallback:Action<int, object>, itemHoveredCallback:Action<int, Rect>, minWidth:float)
+    + <<override>> GetWindowSize() : Vector2
+    + <<override>> OnGUI(rect:Rect) : void
+}
+class Styles {
+    + {static} GetItemBackgroundColor(isHovered:bool, isSelected:bool, isFocused:bool) : Color
+}
+class MenuItemProvider {
+    + Count() : int
+    + GetItem(index:int) : object
+    + Add(obj:object) : int
+    + Replace(index:int, newPresetObject:object) : void
+    + Remove(index:int) : void
+    + Create() : object
+    + Move(index:int, destIndex:int, insertAfterDestIndex:bool) : void
+    + GetName(index:int) : string
+    + IsModificationAllowed(index:int) : bool
+    + GetSeperatorIndices() : int[]
+}
+class IconState {
+}
+PopupWindowContent <|-- GridPaintTargetsDropdown
+GridPaintTargetsDropdown +-- Styles
+Styles o-> "menuItem" GUIStyle
+Styles o-> "backIcon" GUIContent
+Styles o-> "backgroundColor" Color
+Styles o-> "hoveredBackgroundColor" Color
+Styles o-> "selectedBackgroundColor" Color
+Styles o-> "selectedNoFocusBackgroundColor" Color
+Styles o-> "sceneVisibilityStyle" GUIStyle
+Styles o-> "iconNormal" IconState
+Styles o-> "iconHovered" IconState
+GridPaintTargetsDropdown +-- MenuItemProvider
+IFlexibleMenuItemProvider <|-- MenuItemProvider
+Styles +-- IconState
+IconState --> "visible" GUIContent
+IconState --> "hidden" GUIContent
+IconState --> "ping" GUIContent
+@enduml

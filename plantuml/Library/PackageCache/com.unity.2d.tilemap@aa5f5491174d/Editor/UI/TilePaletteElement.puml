@@ -1,0 +1,45 @@
+@startuml
+class TilePaletteElement <<partial>> {
+    + clipboardUnlocked : bool <<get>> <<set>>
+    + hideOnPick : bool <<get>> <<set>>
+    + TilePaletteElement()
+}
+class TilePaletteEditToggle <<sealed>> {
+    + TilePaletteEditToggle()
+}
+class TilePaletteGridToggle <<sealed>> {
+    + TilePaletteGridToggle()
+}
+class TilePaletteBrushElementToggle <<sealed>> {
+    + TilePaletteBrushElementToggle()
+}
+class TilePaletteGizmoToggle <<sealed>> {
+    + TilePaletteGizmoToggle()
+}
+class TilePaletteHideClipboardToggle <<sealed>> {
+    + TilePaletteHideClipboardToggle()
+}
+class TilePaletteElementFactory {
+}
+class TilePaletteElementUxmlTraits {
+}
+class "Action`1"<T> {
+}
+class "UxmlFactory`2"<T1,T2> {
+}
+VisualElement <|-- TilePaletteElement
+EditorToolbarToggle <|-- TilePaletteEditToggle
+TilePaletteEditToggle --> "ToggleChanged<bool>" "Action`1"
+EditorToolbarToggle <|-- TilePaletteGridToggle
+TilePaletteGridToggle --> "ToggleChanged<bool>" "Action`1"
+EditorToolbarToggle <|-- TilePaletteBrushElementToggle
+TilePaletteBrushElementToggle --> "ToggleChanged<bool>" "Action`1"
+EditorToolbarToggle <|-- TilePaletteGizmoToggle
+TilePaletteGizmoToggle --> "ToggleChanged<bool>" "Action`1"
+EditorToolbarToggle <|-- TilePaletteHideClipboardToggle
+TilePaletteHideClipboardToggle --> "ToggleChanged<bool>" "Action`1"
+TilePaletteElement +-- TilePaletteElementFactory
+"UxmlFactory`2" "<TilePaletteElement,TilePaletteElementUxmlTraits>" <|-- TilePaletteElementFactory
+TilePaletteElement +-- TilePaletteElementUxmlTraits
+UxmlTraits <|-- TilePaletteElementUxmlTraits
+@enduml

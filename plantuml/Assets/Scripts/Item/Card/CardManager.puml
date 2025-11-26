@@ -1,0 +1,17 @@
+@startuml
+class CardManager {
+    + IsReady : bool <<get>>
+    + Initialize(player:Player) : void
+    + SetCareerSwitcher(switcher:CareerSwitcher) : void
+    + AddCard(newCard:Card) : void
+    + RemoveCard(index:int) : void
+    + OnClickStarterButton() : void
+    + UseCard(index:int) : void
+    + ActivateMuscleDuck() : void
+    + AddStarterCard() : void
+    + AddCareerCard() : void
+}
+MonoBehaviour <|-- CardManager
+CardManager --> "Instance" CardManager
+CardManager --> "starterPanel" RandomStarterCard
+@enduml

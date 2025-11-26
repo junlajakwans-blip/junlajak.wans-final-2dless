@@ -1,0 +1,33 @@
+@startuml
+class SpriteShapeController {
+    + spriteShapeHashCode : int <<get>>
+    + worldSpaceUVs : bool <<get>> <<set>>
+    + fillPixelsPerUnit : float <<get>> <<set>>
+    + enableTangents : bool <<get>> <<set>>
+    + stretchTiling : float <<get>> <<set>>
+    + splineDetail : int <<get>> <<set>>
+    + colliderDetail : int <<get>> <<set>>
+    + colliderOffset : float <<get>> <<set>>
+    + cornerAngleThreshold : float <<get>> <<set>>
+    + autoUpdateCollider : bool <<get>> <<set>>
+    + optimizeCollider : bool <<get>>
+    + optimizeGeometry : bool <<get>>
+    + hasCollider : bool <<get>>
+    + boundsScale : float <<get>> <<set>>
+    + WaitForBake : bool <<get>> <<set>>
+    + RefreshSpriteShape() : void
+    + BakeMesh() : JobHandle
+    + UpdateSpriteShapeParameters() : bool
+    + BakeCollider() : void
+}
+class "List`1"<T> {
+}
+MonoBehaviour <|-- SpriteShapeController
+SpriteShapeController --> "spriteShapeCreator" SpriteShapeGeometryCreator
+SpriteShapeController --> "modifiers<SpriteShapeGeometryModifier>" "List`1"
+SpriteShapeController --> "spline" Spline
+SpriteShapeController --> "spriteShape" SpriteShape
+SpriteShapeController --> "edgeCollider" EdgeCollider2D
+SpriteShapeController --> "polygonCollider" PolygonCollider2D
+SpriteShapeController --> "spriteShapeRenderer" SpriteShapeRenderer
+@enduml

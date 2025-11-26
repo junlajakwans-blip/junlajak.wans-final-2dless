@@ -1,0 +1,23 @@
+@startuml
+enum DefaultMaterialType {
+    Default,
+    Particle,
+    Terrain,
+    Sprite,
+    SpriteMask,
+    Decal,
+}
+class UniversalRenderPipelineAsset <<partial>> {
+}
+UniversalRenderPipelineAsset --> "defaultMaterial" Material
+UniversalRenderPipelineAsset --> "defaultParticleMaterial" Material
+UniversalRenderPipelineAsset --> "defaultLineMaterial" Material
+UniversalRenderPipelineAsset --> "defaultTerrainMaterial" Material
+UniversalRenderPipelineAsset --> "default2DMaterial" Material
+UniversalRenderPipelineAsset --> "default2DMaskMaterial" Material
+UniversalRenderPipelineAsset --> "decalMaterial" Material
+UniversalRenderPipelineAsset --> "defaultShader" Shader
+UniversalRenderPipelineAsset --> "terrainDetailLitShader" Shader
+UniversalRenderPipelineAsset --> "terrainDetailGrassShader" Shader
+UniversalRenderPipelineAsset --> "terrainDetailGrassBillboardShader" Shader
+@enduml

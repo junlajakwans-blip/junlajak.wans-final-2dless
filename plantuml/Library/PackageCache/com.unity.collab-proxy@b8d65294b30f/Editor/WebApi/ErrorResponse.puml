@@ -1,0 +1,10 @@
+@startuml
+class ErrorResponse {
+}
+class ErrorFields {
+    + ErrorCode : string <<get>> <<set>>
+    + Message : string <<get>> <<set>>
+}
+ErrorResponse --> "Error" ErrorFields
+ErrorResponse +-- ErrorFields
+@enduml

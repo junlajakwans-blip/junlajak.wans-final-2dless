@@ -1,0 +1,32 @@
+@startuml
+class TilePaletteClipboardOverlay {
+    + <<const>> k_OverlayId : string = "Scene View/Tile Palette Clipboard"
+    + visible : bool <<get>>
+    + TilePaletteClipboardOverlay()
+    + <<override>> OnWillBeDestroyed() : void
+    + Hide() : void
+    + Show() : void
+    + TogglePopup() : void
+    + TogglePopup(mousePosition:Vector2) : void
+    + Repaint() : void
+    + <<override>> CreatePanelContent() : VisualElement
+    + CreateHorizontalToolbarContent() : OverlayToolbar
+    + CreateVerticalToolbarContent() : OverlayToolbar
+}
+class TilePaletteClipboardToggle {
+    + TilePaletteClipboardToggle()
+    + <<override>> value : bool <<get>> <<set>>
+    + <<override>> SetValueWithoutNotify(newValue:bool) : void
+}
+class TilePaletteClipboardDropdownToggle {
+    + TilePaletteClipboardDropdownToggle()
+    + <<override>> value : bool <<get>> <<set>>
+    + <<override>> SetValueWithoutNotify(newValue:bool) : void
+}
+Overlay <|-- TilePaletteClipboardOverlay
+ICreateHorizontalToolbar <|-- TilePaletteClipboardOverlay
+ICreateVerticalToolbar <|-- TilePaletteClipboardOverlay
+ITransientOverlay <|-- TilePaletteClipboardOverlay
+EditorToolbarToggle <|-- TilePaletteClipboardToggle
+EditorToolbarDropdownToggle <|-- TilePaletteClipboardDropdownToggle
+@enduml

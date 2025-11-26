@@ -1,0 +1,21 @@
+@startuml
+interface IUpdateToolbarButtonVisibility {
+}
+class ToolbarController {
+    + <<const>> ToolbarButtonPath : string = "Services/Unity Version Control"
+    +  <<event>> OnToolbarButtonInvalidated : Action 
+    +  <<event>> OnToolbarInvalidated : Action 
+}
+class ButtonTooltipData {
+    + WorkingObjectType : string <<get>> <<set>>
+    + WorkingObjectName : string <<get>> <<set>>
+    + RepositoryName : string <<get>> <<set>>
+    + ServerName : string <<get>> <<set>>
+    + Comment : string <<get>> <<set>>
+    + PendingChangesInfo : string <<get>> <<set>>
+    + IncomingChangesInfo : string <<get>> <<set>>
+}
+IRefreshableView <|-- ToolbarController
+IUpdateToolbarButtonVisibility <|-- ToolbarController
+ToolbarController +-- ButtonTooltipData
+@enduml

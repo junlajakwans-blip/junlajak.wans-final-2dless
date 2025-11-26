@@ -1,0 +1,5 @@
+@startuml
+class NoBranchesEmptyState {
+}
+CenteredContentPanel <|-- NoBranchesEmptyState
+@enduml

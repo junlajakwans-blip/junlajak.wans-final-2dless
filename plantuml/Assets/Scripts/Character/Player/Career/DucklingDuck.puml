@@ -1,0 +1,13 @@
+@startuml
+class DucklingSkill {
+    + <<override>> Initialize(player:Player) : void
+    + <<override>> Cleanup(player:Player) : void
+    + <<override>> UseCareerSkill(player:Player) : void
+    + <<override>> PerformAttack(player:Player) : void
+    + <<override>> PerformChargeAttack(player:Player) : void
+    + <<override>> PerformRangeAttack(player:Player, target:Transform) : void
+    + <<override>> OnTakeDamage(player:Player, dmg:int) : void
+    + <<override>> OnBeforeDie(player:Player) : bool
+}
+CareerSkillBase <|-- DucklingSkill
+@enduml

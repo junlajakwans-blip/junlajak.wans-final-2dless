@@ -1,0 +1,20 @@
+@startuml
+class SpriteOutlineToolOverlayPanel <<partial>> {
+    +  <<event>> onGenerateOutline : Action<bool> 
+    +  <<event>> onAlphaToleranceChanged : Action<int> 
+    +  <<event>> onOutlineDetailChanged : Action<float> 
+    +  <<event>> onCopy : Action 
+    +  <<event>> onPaste : Action 
+    +  <<event>> onPasteAll : Action 
+    +  <<event>> onPasteAlternate : Action 
+    +  <<event>> onPasteAlternateAll : Action 
+    + snapOn : bool <<get>> <<set>>
+    + outlineDetail : float <<get>> <<set>>
+    + alphaTolerance : int <<get>> <<set>>
+    + optimizeOutline : bool <<get>> <<set>>
+    + SpriteOutlineToolOverlayPanel()
+    + SetPanelMode(hasSelection:bool) : void
+    + {static} GenerateFromUXML(alternateLabelText:string) : SpriteOutlineToolOverlayPanel
+}
+VisualElement <|-- SpriteOutlineToolOverlayPanel
+@enduml

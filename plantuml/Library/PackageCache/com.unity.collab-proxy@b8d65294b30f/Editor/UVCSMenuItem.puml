@@ -1,0 +1,4 @@
+@startuml
+class UVCSMenuItem <<static>> {
+}
+@enduml

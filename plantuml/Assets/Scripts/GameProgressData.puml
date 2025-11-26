@@ -1,0 +1,27 @@
+@startuml
+class GameProgressData {
+    + GlobalHighScore : int = 0
+    + TotalCoins : int <<get>> <<set>>
+    + TotalTokens : int <<get>> <<set>>
+    + TotalKeyMaps : int <<get>> <<set>>
+    + BestScore : int <<get>> <<set>>
+    + PlayTime : float <<get>> <<set>>
+    + GameProgressData()
+    + GetUpgradeLevel(itemID:string) : int
+    + SetUpgradeLevel(itemID:string, level:int) : void
+    + AddUnlockedMap(id:string) : void
+    + IsMapUnlocked(id:string) : bool
+    + AddUnlockedCareer(id:string) : void
+    + AddCoins(amount:int) : void
+    + UpdateBestScore(score:int) : void
+    + ResetProgress() : void
+}
+class "List`1"<T> {
+}
+class "Dictionary`2"<T1,T2> {
+}
+GameProgressData --> "UnlockedMaps<string>" "List`1"
+GameProgressData --> "UnlockedCareers<string>" "List`1"
+GameProgressData --> "UpgradeLevels<string,int>" "Dictionary`2"
+GameProgressData --> "LastPlayDate" DateTime
+@enduml

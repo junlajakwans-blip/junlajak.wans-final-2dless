@@ -1,0 +1,8 @@
+@startuml
+enum TestMode {
+    None= 0,
+    EditMode= 1 << 0,
+    PlayMode= 1 << 1,
+    Player= 1 << 2,
+}
+@enduml

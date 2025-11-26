@@ -1,0 +1,103 @@
+@startuml
+class RenderGraphTestsOnLoad {
+}
+class RenderGraphTests <<partial>> {
+    + Setup() : void
+    + Cleanup() : void
+    + CleanupRenderGraph() : void
+    + WriteToBackBufferNotCulled() : void
+    + NoWriteToBackBufferCulled() : void
+    + WriteToImportedTextureNotCulled() : void
+    + WriteToImportedComputeBufferNotCulled() : void
+    + PassWriteResourcePartialNotReadAfterNotCulled() : void
+    + PassDisallowCullingNotCulled() : void
+    + PartialUnusedProductNotCulled() : void
+    + SimpleCreateReleaseTexture() : void
+    + UseTransientOutsidePassRaiseException() : void
+    + TransientCreateReleaseInSamePass() : void
+    + AsyncPassReleaseTextureOnGraphicsPipe() : void
+    + TransientResourceNotCulled() : void
+    + AsyncPassWriteWaitOnGraphicsPipe() : void
+    + AsyncPassReadWaitOnGraphicsPipe() : void
+    + GraphicsPassWriteWaitOnAsyncPipe() : void
+    + GraphicsPassReadWaitOnAsyncPipe() : void
+    + SetRenderAttachmentValidation() : void
+    + UseTextureValidation() : void
+    + GetDescAndInfoForImportedTextureWorks() : void
+    + TextureDescFormatPropertiesWork() : void
+    + ImportingBuiltinRenderTextureTypeWithNoInfoThrows() : void
+    + ImportingRenderTextureWithColorAndDepthThrows() : void
+    + ImportingBuiltinRenderTextureTypeWithInfoHasNoDesc() : void
+    + CreateLegacyRendererLists() : void
+    + RenderPassWithNoRenderFuncThrows() : void
+    + UsingAddRenderPassWithNRPThrows() : void
+    + RenderGraphClearDepthTextureWithDepthReadOnlyFlag() : void
+    + ImportedTexturesAreClearedOnFirstUse() : void
+    + RequestAsyncReadbackIntoNativeArrayWorks() : void
+    + ImportingBufferWorks() : void
+    + TransientHandleAreValidatedByCommandBufferSafetyLayer() : void
+    + GetTempMaterialPropertyBlockAreReleasedAfterRenderGraphNodeExecution() : void
+    + RenderGraphThrowsException_ErrorsWhenRecordingPass() : void
+    + RenderGraphThrowsException_ErrorsWhenRecordingGraph() : void
+    + RenderGraphThrowsException_ErrorsWhenExecutingGraph() : void
+    + RenderGraphThrowsException_ErrorsWhenRecordingPassAndExecutingGraph() : void
+    + RenderGraphThrowsException_ErrorsWhenRecordingPassAndGraphAndExecutingGraph() : void
+    + Cleanup_ReleaseGraphicsResources_WhenCallingCleanup() : void
+    + Cleanup_RenderAgain_AfterCallingCleanup() : void
+}
+class RenderGraphTestPipelineAsset {
+}
+class RenderGraphTestPipelineInstance {
+    + RenderGraphTestPipelineInstance(asset:RenderGraphTestPipelineAsset)
+}
+class RenderGraphTestGlobalSettings {
+}
+class RenderGraphTestPassData {
+}
+class TestBufferTextureComputeData {
+}
+class RenderGraphAsyncRequestTestData {
+}
+class TestBuffersImport {
+}
+class RenderGraphTransientTestData {
+}
+class TempAllocTestData {
+}
+class RenderGraphCleanupTestData {
+}
+class "RenderPipelineAsset`1"<T> {
+}
+class "Action`3"<T1,T2,T3> {
+}
+class "RenderPipelineGlobalSettings`2"<T1,T2> {
+}
+class "NativeArray`1"<T> {
+}
+RenderGraphTests +-- RenderGraphTestPipelineAsset
+"RenderPipelineAsset`1" "<RenderGraphTestPipelineInstance>" <|-- RenderGraphTestPipelineAsset
+RenderGraphTestPipelineAsset --> "recordRenderGraphBody<ScriptableRenderContext,Camera,CommandBuffer>" "Action`3"
+RenderGraphTestPipelineAsset --> "renderGraph" RenderGraph
+RenderGraphTests +-- RenderGraphTestPipelineInstance
+RenderPipeline <|-- RenderGraphTestPipelineInstance
+RenderGraphTests +-- RenderGraphTestGlobalSettings
+"RenderPipelineGlobalSettings`2" "<RenderGraphTestGlobalSettings,RenderGraphTestPipelineInstance>" <|-- RenderGraphTestGlobalSettings
+RenderGraphTests +-- RenderGraphTestPassData
+RenderGraphTests +-- TestBufferTextureComputeData
+TestBufferTextureComputeData --> "bufferHandle" BufferHandle
+TestBufferTextureComputeData --> "depthTexture" TextureHandle
+TestBufferTextureComputeData --> "computeShader" ComputeShader
+RenderGraphTests +-- RenderGraphAsyncRequestTestData
+RenderGraphAsyncRequestTestData --> "texture" TextureHandle
+RenderGraphAsyncRequestTestData --> "pixels<byte>" "NativeArray`1"
+RenderGraphTests +-- TestBuffersImport
+TestBuffersImport --> "bufferHandle" BufferHandle
+TestBuffersImport --> "computeShader" ComputeShader
+RenderGraphTests +-- RenderGraphTransientTestData
+RenderGraphTransientTestData --> "transientTexture" TextureHandle
+RenderGraphTransientTestData --> "whiteTexture" TextureHandle
+RenderGraphTests +-- TempAllocTestData
+TempAllocTestData --> "whiteTexture" TextureHandle
+RenderGraphTests +-- RenderGraphCleanupTestData
+RenderGraphCleanupTestData --> "textureToRelease" TextureHandle
+@enduml

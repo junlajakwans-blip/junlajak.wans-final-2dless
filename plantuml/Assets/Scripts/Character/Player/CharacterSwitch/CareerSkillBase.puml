@@ -1,0 +1,15 @@
+@startuml
+abstract class CareerSkillBase {
+    + <<virtual>> Initialize(player:Player) : void
+    + {abstract} UseCareerSkill(player:Player) : void
+    + <<virtual>> PerformAttack(player:Player) : void
+    + <<virtual>> PerformChargeAttack(player:Player) : void
+    + <<virtual>> PerformRangeAttack(player:Player, target:Transform) : void
+    + <<virtual>> Cleanup(player:Player) : void
+    + <<virtual>> OnEnterOverdrive(player:Player) : void
+    + <<virtual>> OnExitOverdrive(player:Player) : void
+    + <<virtual>> OnTakeDamage(player:Player, damage:int) : void
+    + <<virtual>> OnBeforeDie(player:Player) : bool
+}
+ScriptableObject <|-- CareerSkillBase
+@enduml

@@ -1,0 +1,22 @@
+@startuml
+class TilePaletteSaveUtility {
+    + {static} SaveTilePalette(originalPalette:GameObject, paletteInstance:GameObject) : bool
+    + {static} ValidateSaveFolder(folderPath:string) : bool
+}
+class Styles <<static>> {
+    + {static} <<readonly>> invalidFolderTitle : string
+    + {static} <<readonly>> invalidFolderContent : string
+    + {static} <<readonly>> nonAssetFolderTitle : string
+    + {static} <<readonly>> nonAssetFolderContent : string
+    + {static} <<readonly>> readOnlyFolderTitle : string
+    + {static} <<readonly>> readOnlyFolderContent : string
+    + {static} <<readonly>> ok : string
+}
+class TilePaletteSaveScope {
+    + TilePaletteSaveScope(paletteInstance:GameObject)
+    + Dispose() : void
+}
+TilePaletteSaveUtility +-- Styles
+TilePaletteSaveUtility +-- TilePaletteSaveScope
+IDisposable <|-- TilePaletteSaveScope
+@enduml

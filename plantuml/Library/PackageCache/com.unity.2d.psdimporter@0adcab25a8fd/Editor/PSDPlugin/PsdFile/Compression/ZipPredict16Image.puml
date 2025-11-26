@@ -1,0 +1,7 @@
+@startuml
+class ZipPredict16Image {
+    + ZipPredict16Image(zipData:byte[], size:Size)
+    + <<override>> ReadCompressed() : byte[]
+}
+ImageData <|-- ZipPredict16Image
+@enduml

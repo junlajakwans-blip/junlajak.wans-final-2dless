@@ -1,0 +1,32 @@
+@startuml
+interface ITexturePlatformSettingsDataProvider {
+}
+class TexturePlatformSettings {
+    + TexturePlatformSettings(name:string, target:BuildTarget, inspector:ITexturePlatformSettingsDataProvider, defaultPlatform:Func<BaseTextureImportPlatformSettings>)
+    + CacheSerializedProperties(platformSettingsArray:SerializedProperty) : void
+    + <<override>> textureTypeHasMultipleDifferentValues : bool <<get>>
+    + <<override>> GetTargetCount() : int
+    + <<override>> ShowPresetSettings() : bool
+    + <<override>> GetImporterSettings(i:int) : TextureImporterSettings
+    + <<override>> IsSourceTextureHDR(i:int) : bool
+    + <<override>> DoesSourceTextureHaveAlpha(i:int) : bool
+    + <<override>> GetPlatformTextureSettings(i:int, name:string) : TextureImporterPlatformSettings
+    + <<override>> GetDefaultImportSettings() : BaseTextureImportPlatformSettings
+    + <<override>> SetPlatformTextureSettings(i:int, platformSettings:TextureImporterPlatformSettings) : void
+}
+class TexturePlatformSettingsHelper {
+    + TexturePlatformSettingsHelper(dataProvider:ITexturePlatformSettingsDataProvider)
+    + {static} defaultPlatformName : string <<get>>
+    + textureTypeHasMultipleDifferentValues : bool <<get>>
+    + ShowPlatformSpecificSettings() : void
+    + HasModified() : bool
+    + Apply() : void
+    + {static} GetBuildTargetGroupName(target:BuildTarget) : string
+}
+BaseTextureImportPlatformSettings <|-- TexturePlatformSettings
+TexturePlatformSettings --> "model" TextureImportPlatformSettingsData
+TexturePlatformSettings --> "textureType" TextureImporterType
+TexturePlatformSettings --> "spriteImportMode" SpriteImportMode
+TexturePlatformSettingsHelper --> "spriteImportMode" SpriteImportMode
+TexturePlatformSettingsHelper --> "textureType" TextureImporterType
+@enduml

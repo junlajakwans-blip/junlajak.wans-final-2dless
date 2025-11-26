@@ -1,0 +1,18 @@
+@startuml
+class UICellImportElement {
+    + UICellImportElement()
+    + <<override>> BindPSDNode(index:int, treeView:PSDImporterLayerManagementMultiColumnTreeView) : void
+    + Update() : void
+}
+interface ILayerImportColumnField {
+}
+class UILayerImportColumn {
+    + UILayerImportColumn(treeView:PSDImporterLayerManagementMultiColumnTreeView)
+    + <<virtual>> DestroyCell(e:VisualElement) : void
+    + <<virtual>> UnBindCell(e:VisualElement, index:int) : void
+    + <<virtual>> BindCell(e:VisualElement, index:int) : void
+}
+UICellElement <|-- UICellImportElement
+UIColumn <|-- UILayerImportColumn
+IColumnUpdate <|-- UILayerImportColumn
+@enduml

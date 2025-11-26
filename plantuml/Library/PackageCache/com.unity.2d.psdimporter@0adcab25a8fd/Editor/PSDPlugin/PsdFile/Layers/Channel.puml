@@ -1,0 +1,23 @@
+@startuml
+class ChannelList {
+    + ToIdArray() : Channel[]
+    + ChannelList()
+    + GetId(id:int) : Channel
+    + ContainsId(id:int) : bool
+}
+class Channel {
+    + ID : short <<get>> <<set>>
+    + Length : long <<get>> <<set>>
+    + DecodeImageData() : void
+}
+class "List`1"<T> {
+}
+class "NativeArray`1"<T> {
+}
+"List`1" "<Channel>" <|-- ChannelList
+Channel --> "Layer" Layer
+Channel --> "Rect" Rectangle
+Channel --> "ImageData<byte>" "NativeArray`1"
+Channel --> "ImageCompression" ImageCompression
+Channel --> "RleRowLengths" RleRowLengths
+@enduml

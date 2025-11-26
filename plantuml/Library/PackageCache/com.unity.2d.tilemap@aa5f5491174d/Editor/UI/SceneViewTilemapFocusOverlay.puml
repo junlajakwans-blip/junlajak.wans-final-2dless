@@ -1,0 +1,26 @@
+@startuml
+class SceneViewTilemapFocusOverlay {
+    + SceneViewTilemapFocusOverlay()
+    + visible : bool <<get>>
+}
+class TilePaletteFocusLabel <<sealed>> {
+    + TilePaletteFocusLabel()
+}
+class TilePaletteFocusDropdown <<sealed>> <<partial>> {
+    + TilePaletteFocusDropdown()
+}
+class TilePaletteFocusDropdownFactory {
+}
+class TilePaletteFocusDropdownUxmlTraits {
+}
+class "UxmlFactory`2"<T1,T2> {
+}
+ToolbarOverlay <|-- SceneViewTilemapFocusOverlay
+ITransientOverlay <|-- SceneViewTilemapFocusOverlay
+VisualElement <|-- TilePaletteFocusLabel
+EditorToolbarDropdown <|-- TilePaletteFocusDropdown
+TilePaletteFocusDropdown +-- TilePaletteFocusDropdownFactory
+"UxmlFactory`2" "<TilePaletteFocusDropdown,TilePaletteFocusDropdownUxmlTraits>" <|-- TilePaletteFocusDropdownFactory
+TilePaletteFocusDropdown +-- TilePaletteFocusDropdownUxmlTraits
+UxmlTraits <|-- TilePaletteFocusDropdownUxmlTraits
+@enduml

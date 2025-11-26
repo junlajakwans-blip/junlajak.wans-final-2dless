@@ -1,0 +1,6 @@
+@startuml
+class CreateWorkspaceDialog {
+}
+PlasticDialog <|-- CreateWorkspaceDialog
+IPlasticDialogCloser <|-- CreateWorkspaceDialog
+@enduml

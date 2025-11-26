@@ -1,0 +1,5 @@
+@startuml
+class LoadFromAssetBundle {
+}
+MonoBehaviour <|-- LoadFromAssetBundle
+@enduml

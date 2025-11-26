@@ -1,0 +1,6 @@
+@startuml
+class TilePaletteContextMenuHandler {
+    + TilePaletteContextMenuHandler(contextClick:Action)
+}
+MouseManipulator <|-- TilePaletteContextMenuHandler
+@enduml

@@ -1,0 +1,5 @@
+@startuml
+class DeformationManagerUpdater {
+}
+MonoBehaviour <|-- DeformationManagerUpdater
+@enduml

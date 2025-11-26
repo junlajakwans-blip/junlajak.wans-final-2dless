@@ -1,0 +1,10 @@
+@startuml
+class StoreExchange {
+    + <<override>> StoreName : string <<get>>
+    + <<override>> Initialize(manager:StoreManager, itemList:List<StoreItem>) : void
+    + RenderToUI(slots:List<SlotUI>, iconCoin:Sprite, iconToken:Sprite, iconKeyMap:Sprite) : void
+    + <<override>> Purchase(item:StoreItem) : bool
+}
+StoreBase <|-- StoreExchange
+StoreExchange --> "StoreType" StoreType
+@enduml

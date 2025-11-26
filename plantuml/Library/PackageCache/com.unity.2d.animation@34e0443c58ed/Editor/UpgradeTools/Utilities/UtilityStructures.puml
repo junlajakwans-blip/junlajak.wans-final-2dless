@@ -1,0 +1,37 @@
+@startuml
+enum UpgradeMode {
+    SpriteLibrary,
+    AnimationClip,
+}
+enum UpgradeResult {
+    None= 0,
+    Successful= 1,
+    Warning= 2,
+    Error= 3,
+}
+struct ObjectIndexPair {
+    + Index : int
+}
+struct UpgradeEntry {
+    + Index : int
+    + Message : string
+}
+struct UpgradeReport {
+    + Log : string
+}
+class Logger {
+    + Add(entry:string) : void
+    + AddLineBreak() : void
+    + Clear() : void
+    + GetLog() : string
+}
+class UpgradeUtilities <<static>> {
+    + {static} IsPsbImportedFile(path:string) : bool
+}
+class "List`1"<T> {
+}
+ObjectIndexPair --> "Target" Object
+UpgradeEntry --> "Target" Object
+UpgradeEntry --> "Result" UpgradeResult
+UpgradeReport --> "UpgradeEntries<UpgradeEntry>" "List`1"
+@enduml

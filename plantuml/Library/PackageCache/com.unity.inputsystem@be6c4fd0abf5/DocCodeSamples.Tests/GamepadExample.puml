@@ -1,0 +1,5 @@
+@startuml
+class GamepadExample {
+}
+MonoBehaviour <|-- GamepadExample
+@enduml

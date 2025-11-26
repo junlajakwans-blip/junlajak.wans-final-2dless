@@ -1,0 +1,10 @@
+@startuml
+class PositionTileTemplate {
+    + PositionTileTemplate(positions:IEnumerable<Vector3Int>)
+    + <<override>> CreateTileAssets(texture2D:Texture2D, sprites:IEnumerable<Sprite>, tilesToAdd:List<TileChangeData>) : void
+}
+class "IEnumerable`1"<T> {
+}
+TileTemplate <|-- PositionTileTemplate
+PositionTileTemplate --> "positions<Vector3Int>" "IEnumerable`1"
+@enduml

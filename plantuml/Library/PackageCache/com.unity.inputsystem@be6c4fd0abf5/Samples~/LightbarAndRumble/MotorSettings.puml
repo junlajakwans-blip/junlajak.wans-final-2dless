@@ -1,0 +1,8 @@
+@startuml
+class MotorSettings {
+    + lowFrequencyMotorSpeed : float
+    + highFrequencyMotorSpeed : float
+    + SetMotorSpeeds() : void
+}
+MonoBehaviour <|-- MotorSettings
+@enduml

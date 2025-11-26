@@ -1,0 +1,7 @@
+@startuml
+interface "ICircleSelector`1"<T> {
+}
+class "ISelector`1"<T> {
+}
+"ISelector`1" "<T>" <|-- "ICircleSelector`1"
+@enduml

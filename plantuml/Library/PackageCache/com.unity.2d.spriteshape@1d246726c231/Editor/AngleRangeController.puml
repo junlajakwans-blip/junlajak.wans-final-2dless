@@ -1,0 +1,21 @@
+@startuml
+interface IAngleRangeCache {
+}
+class AngleRangeController {
+    +  <<event>> selectionChanged : Action 
+    + angleOffset : float <<get>> <<set>>
+    + radius : float <<get>> <<set>>
+    + snap : bool <<get>> <<set>>
+    + OnGUI() : void
+    + RemoveInvalidRanges() : void
+    + CreateRange() : void
+    + SetRange(angleRange:AngleRange, start:float, end:float) : void
+}
+AngleRangeController --> "cache" IAngleRangeCache
+AngleRangeController --> "view" IAngleRangeView
+AngleRangeController --> "rect" Rect
+AngleRangeController --> "gradientMin" Color
+AngleRangeController --> "gradientMid" Color
+AngleRangeController --> "gradientMax" Color
+AngleRangeController --> "selectedAngleRange" AngleRange
+@enduml

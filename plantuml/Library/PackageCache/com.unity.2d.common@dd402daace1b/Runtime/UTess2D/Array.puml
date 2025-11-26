@@ -1,0 +1,14 @@
+@startuml
+struct "Array`1"<T> {
+    + Array(length:int, maxSize:int, allocMode:Allocator, options:NativeArrayOptions)
+    + IsCreated : bool <<get>>
+    + Length : int <<get>>
+    + MaxSize : int <<get>>
+    + Dispose() : void
+    + CopyTo(array:T[]) : void
+}
+class "ArrayDebugView`1"<T> <<sealed>> {
+    + ArrayDebugView(array:Array<T>)
+}
+IDisposable <|-- "Array`1"
+@enduml

@@ -1,0 +1,8 @@
+@startuml
+class ProgressControlsForWindow {
+}
+class Data {
+}
+IProgressControls <|-- ProgressControlsForWindow
+ProgressControlsForWindow +-- Data
+@enduml

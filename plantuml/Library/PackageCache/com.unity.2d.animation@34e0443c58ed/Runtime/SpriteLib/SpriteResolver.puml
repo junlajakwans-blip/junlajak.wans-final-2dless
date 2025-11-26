@@ -1,0 +1,12 @@
+@startuml
+class SpriteResolver <<partial>> {
+    + SetCategoryAndLabel(category:string, label:string) : bool
+    + GetCategory() : string
+    + GetLabel() : string
+    + OnPreviewUpdate() : void
+    + ResolveSpriteToSpriteRenderer() : bool
+}
+MonoBehaviour <|-- SpriteResolver
+IPreviewable <|-- SpriteResolver
+SpriteResolver --> "spriteLibrary" SpriteLibrary
+@enduml

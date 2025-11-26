@@ -1,0 +1,11 @@
+@startuml
+class SelectableStateNode {
+    + SelectableStateNode()
+    + <<override>> hasPreview : bool <<get>>
+    + <<sealed>> <<override>> UpdateNodeAfterDeserialization() : void
+    + <<override>> CollectShaderProperties(properties:PropertyCollector, generationMode:GenerationMode) : void
+    + GenerateNodeCode(sb:ShaderStringBuilder, generationMode:GenerationMode) : void
+}
+AbstractMaterialNode <|-- SelectableStateNode
+IGeneratesBodyCode <|-- SelectableStateNode
+@enduml

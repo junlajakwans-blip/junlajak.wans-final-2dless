@@ -1,0 +1,10 @@
+@startuml
+interface IDrawOperationSuccess {
+}
+class NotifySuccessForCreatedChangeset {
+}
+class NotifySuccessForUndo {
+}
+IDrawOperationSuccess <|-- NotifySuccessForCreatedChangeset
+IDrawOperationSuccess <|-- NotifySuccessForUndo
+@enduml

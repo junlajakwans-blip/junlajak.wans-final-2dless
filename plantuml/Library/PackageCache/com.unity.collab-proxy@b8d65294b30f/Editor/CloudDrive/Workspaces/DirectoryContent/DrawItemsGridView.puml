@@ -1,0 +1,4 @@
+@startuml
+class DrawItemsGridView <<static>> {
+}
+@enduml

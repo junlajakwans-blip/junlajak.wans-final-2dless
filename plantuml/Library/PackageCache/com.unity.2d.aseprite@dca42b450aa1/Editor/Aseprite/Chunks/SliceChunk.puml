@@ -1,0 +1,6 @@
+@startuml
+class SliceChunk {
+}
+BaseChunk <|-- SliceChunk
+SliceChunk --> "chunkType" ChunkTypes
+@enduml

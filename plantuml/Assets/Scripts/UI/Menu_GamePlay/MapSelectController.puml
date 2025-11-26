@@ -1,0 +1,34 @@
+@startuml
+class MapSelectController {
+    + SetDependencies(gm:GameManager, currency:Currency) : void
+    + RefreshUI() : void
+    + NextMap() : void
+    + PrevMap() : void
+    + BackToMainMenu() : void
+    + TryPlaySelectedMap() : void
+    + OnUnlockYes() : void
+    + OnUnlockNo() : void
+    + BuyCurrentMap() : void
+}
+class MapInfo {
+    + sceneName : string
+    + mapName : string
+    + difficultyLevel : int
+    + description : string
+    + unlocked : bool
+}
+MonoBehaviour <|-- MapSelectController
+MapSelectController --> "previewImage" Image
+MapSelectController --> "mapNameText" TMP_Text
+MapSelectController --> "descriptionText" TMP_Text
+MapSelectController --> "lockedIcon" GameObject
+MapSelectController --> "mainMenuPanel" GameObject
+MapSelectController --> "mapPanel" GameObject
+MapSelectController --> "previewImageButton" Button
+MapSelectController --> "schoolSprite" Sprite
+MapSelectController --> "roadSprite" Sprite
+MapSelectController --> "kitchenSprite" Sprite
+MapSelectController +-- MapInfo
+MapInfo --> "mapType" MapType
+MapInfo --> "previewImage" Sprite
+@enduml

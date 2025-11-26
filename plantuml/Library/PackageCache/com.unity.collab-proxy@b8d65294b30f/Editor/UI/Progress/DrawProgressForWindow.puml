@@ -1,0 +1,4 @@
+@startuml
+class DrawProgressForWindow <<static>> {
+}
+@enduml

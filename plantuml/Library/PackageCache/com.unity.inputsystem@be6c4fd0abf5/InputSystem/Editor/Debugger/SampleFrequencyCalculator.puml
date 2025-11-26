@@ -1,0 +1,10 @@
+@startuml
+struct SampleFrequencyCalculator {
+    + SampleFrequencyCalculator(targetFrequency:float, realtimeSinceStartup:double)
+    + targetFrequency : float <<get>>
+    + frequency : float <<get>>
+    + ProcessSample(eventPtr:InputEventPtr) : void
+    + Update() : bool
+    + Update(realtimeSinceStartup:double) : bool
+}
+@enduml

@@ -1,0 +1,15 @@
+@startuml
+class RectTransformSizeNode {
+    + PreviewScaleFactor : float <<get>> <<set>>
+    + PreviewPixelsPerUnit : float <<get>> <<set>>
+    + RectTransformSizeNode()
+    + <<override>> hasPreview : bool <<get>>
+    + <<sealed>> <<override>> UpdateNodeAfterDeserialization() : void
+    + <<override>> CollectShaderProperties(properties:PropertyCollector, generationMode:GenerationMode) : void
+    + GenerateNodeCode(sb:ShaderStringBuilder, generationMode:GenerationMode) : void
+}
+AbstractMaterialNode <|-- RectTransformSizeNode
+IGeneratesBodyCode <|-- RectTransformSizeNode
+RectTransformSizeNode --> "PreviewSize" Vector2
+RectTransformSizeNode --> "PreviewValue" Vector4
+@enduml

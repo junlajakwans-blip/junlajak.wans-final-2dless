@@ -1,0 +1,11 @@
+@startuml
+class DoggoMon {
+    + <<override>> Move() : void
+    + ChasePlayer(player:Player) : void
+    + Stop() : void
+    + SetDirection(direction:Vector2) : void
+    + <<override>> ApplyCareerBuff(data:DuckCareerData) : void
+    + <<override>> Die() : void
+}
+Enemy <|-- DoggoMon
+@enduml

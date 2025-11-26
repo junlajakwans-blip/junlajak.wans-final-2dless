@@ -1,0 +1,40 @@
+@startuml
+class AnimClipUpgrader {
+}
+class Contents <<static>> {
+    + {static} <<readonly>> ProgressBarTitle : string
+    + {static} <<readonly>> VerifyingSelection : string
+    + {static} <<readonly>> UpgradingSpriteKeys : string
+    + {static} <<readonly>> UpgradingCategoryLabelHash : string
+}
+enum HashType {
+    Label,
+    Category,
+    SpriteKey,
+    SpriteHash,
+}
+class BindingData {
+    + BindingPath : string
+}
+class KeyData {
+    + Time : float
+    + Value : float
+}
+class ConvertedKeyData {
+    + Time : float
+    + Value : float
+    + Category : string
+    + Label : string
+}
+class "List`1"<T> {
+}
+BaseUpgrader <|-- AnimClipUpgrader
+AnimClipUpgrader +-- Contents
+AnimClipUpgrader +-- HashType
+AnimClipUpgrader +-- BindingData
+BindingData --> "RawKeys<KeyData>" "List`1"
+BindingData --> "ConvertedKeys<ConvertedKeyData>" "List`1"
+AnimClipUpgrader +-- KeyData
+KeyData --> "HashType" HashType
+AnimClipUpgrader +-- ConvertedKeyData
+@enduml

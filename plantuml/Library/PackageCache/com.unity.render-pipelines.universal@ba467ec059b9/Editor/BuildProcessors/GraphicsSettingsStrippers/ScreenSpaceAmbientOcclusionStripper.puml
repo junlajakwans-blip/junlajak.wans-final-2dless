@@ -1,0 +1,14 @@
+@startuml
+class ScreenSpaceAmbientOcclusionDynamicResourcesStripper {
+    + active : bool <<get>>
+    + CanRemoveSettings(resources:ScreenSpaceAmbientOcclusionDynamicResources) : bool
+}
+class ScreenSpaceAmbientOcclusionPersistentResourcesStripper {
+    + active : bool <<get>>
+    + CanRemoveSettings(resources:ScreenSpaceAmbientOcclusionPersistentResources) : bool
+}
+class "IRenderPipelineGraphicsSettingsStripper`1"<T> {
+}
+"IRenderPipelineGraphicsSettingsStripper`1" "<ScreenSpaceAmbientOcclusionDynamicResources>" <|-- ScreenSpaceAmbientOcclusionDynamicResourcesStripper
+"IRenderPipelineGraphicsSettingsStripper`1" "<ScreenSpaceAmbientOcclusionPersistentResources>" <|-- ScreenSpaceAmbientOcclusionPersistentResourcesStripper
+@enduml

@@ -1,0 +1,13 @@
+@startuml
+class TimelinePlayable <<partial>> {
+}
+struct TrackCacheManager {
+    + TrackCacheManager(cache:HashSet<AnimationTrack>, activeRuntimeElements:IReadOnlyList<RuntimeElement>)
+    + Dispose() : void
+}
+class "HashSet`1"<T> {
+}
+TimelinePlayable +-- TrackCacheManager
+IDisposable <|-- TrackCacheManager
+TrackCacheManager --> "trackCache<AnimationTrack>" "HashSet`1"
+@enduml

@@ -1,0 +1,19 @@
+@startuml
+struct VertexBufferChunk {
+    + verticesStartOffset : int
+    + vertexCount : uint
+    + vertexStride : uint
+    + baseVertex : int
+}
+class BLASPositionsPool <<sealed>> {
+    + BLASPositionsPool(copyPositionsShader:ComputeShader, copyShader:ComputeShader)
+    + Dispose() : void
+    + <<const>> VertexSizeInDwords : int = 3
+    + Clear() : void
+    + Add(info:VertexBufferChunk, verticesAllocation:BlockAllocator.Allocation) : bool
+    + Remove(verticesAllocation:BlockAllocator.Allocation) : void
+}
+VertexBufferChunk --> "vertices" GraphicsBuffer
+IDisposable <|-- BLASPositionsPool
+BLASPositionsPool --> "VertexBuffer" GraphicsBuffer
+@enduml

@@ -1,0 +1,8 @@
+@startuml
+class AsepriteImporter <<partial>> {
+    + <<override>> OnImportAsset(ctx:AssetImportContext) : void
+    + <<override>> SupportsRemappedAssetType(type:Type) : bool
+}
+ScriptedImporter <|-- AsepriteImporter
+ISpriteEditorDataProvider <|-- AsepriteImporter
+@enduml

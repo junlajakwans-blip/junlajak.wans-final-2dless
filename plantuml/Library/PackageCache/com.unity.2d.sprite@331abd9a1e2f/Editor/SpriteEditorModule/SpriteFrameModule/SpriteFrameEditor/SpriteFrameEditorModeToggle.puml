@@ -1,0 +1,11 @@
+@startuml
+class SpriteFrameEditorModeToggle {
+    + <<override>> NotifyModeToolStripToggled(value:SpriteFrameModeToolStripBase) : void
+    + <<override>> GetUIContent(overlayLayout:Layout) : VisualElement[]
+    + <<override>> order : int <<get>>
+    + <<override>> OverlayActivated(spriteEditor:ISpriteEditorModuleMode) : bool
+    + <<override>> OverlayDeactivated() : void
+    + <<override>> GetSpriteFrameModeType() : Type
+}
+SpriteFrameModeToolStripBase <|-- SpriteFrameEditorModeToggle
+@enduml

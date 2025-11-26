@@ -1,0 +1,5 @@
+@startuml
+class AsepriteReader <<static>> {
+    + {static} ReadFile(assetPath:string) : AsepriteFile
+}
+@enduml

@@ -1,0 +1,50 @@
+@startuml
+class AsepriteImporter <<partial>> {
+    + spritePixelsPerUnit : float <<get>> <<set>>
+    + generatePhysicsShape : bool <<get>> <<set>>
+    + spriteExtrude : uint <<get>> <<set>>
+    + includeHiddenLayers : bool <<get>> <<set>>
+    + mosaicPadding : uint <<get>> <<set>>
+    + spritePadding : uint <<get>> <<set>>
+    + generateModelPrefab : bool <<get>> <<set>>
+    + addSortingGroup : bool <<get>> <<set>>
+    + addShadowCasters : bool <<get>> <<set>>
+    + generateAnimationClips : bool <<get>> <<set>>
+    + generateIndividualEvents : bool <<get>> <<set>>
+    + generateSpriteAtlas : bool <<get>> <<set>>
+    + aniso : int <<get>> <<set>>
+    + sRGBTexture : bool <<get>> <<set>>
+    + mipMapBias : float <<get>> <<set>>
+    + mipmapEnabled : bool <<get>> <<set>>
+    + mipmapFadeDistanceEnd : int <<get>> <<set>>
+    + mipmapFadeDistanceStart : int <<get>> <<set>>
+    + streamingMipmaps : bool <<get>> <<set>>
+    + streamingMipmapsPriority : int <<get>> <<set>>
+    + mipMapsPreserveCoverage : bool <<get>> <<set>>
+    + GetImporterPlatformSettings(buildTarget:BuildTarget) : TextureImporterPlatformSettings
+    + SetImporterPlatformSettings(setting:TextureImporterPlatformSettings) : void
+}
+struct ImportEventArgs {
+    + ImportEventArgs(importer:AsepriteImporter, context:AssetImportContext)
+}
+AsepriteImporter --> "asepriteFile" AsepriteFile
+AsepriteImporter --> "importMode" FileImportModes
+AsepriteImporter --> "textureType" TextureImporterType
+AsepriteImporter --> "spriteImportMode" SpriteImportMode
+AsepriteImporter --> "spriteMeshType" SpriteMeshType
+AsepriteImporter --> "canvasSize" Vector2
+AsepriteImporter --> "layerImportMode" LayerImportModes
+AsepriteImporter --> "pivotSpace" PivotSpaces
+AsepriteImporter --> "pivotAlignment" SpriteAlignment
+AsepriteImporter --> "customPivotPosition" Vector2
+AsepriteImporter --> "wrapMode" TextureWrapMode
+AsepriteImporter --> "wrapModeU" TextureWrapMode
+AsepriteImporter --> "wrapModeV" TextureWrapMode
+AsepriteImporter --> "wrapModeW" TextureWrapMode
+AsepriteImporter --> "filterMode" FilterMode
+AsepriteImporter --> "mipmapFilter" TextureImporterMipFilter
+AsepriteImporter --> "OnPostAsepriteImport" AsepriteImportEventHandler
+AsepriteImporter +-- ImportEventArgs
+ImportEventArgs --> "importer" AsepriteImporter
+ImportEventArgs --> "context" AssetImportContext
+@enduml

@@ -1,0 +1,8 @@
+@startuml
+class CloudWorkspacesTreeViewItem {
+}
+class CloudWorkspacesLabelTreeViewItem {
+}
+TreeViewItem <|-- CloudWorkspacesTreeViewItem
+TreeViewItem <|-- CloudWorkspacesLabelTreeViewItem
+@enduml

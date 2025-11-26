@@ -1,0 +1,6 @@
+@startuml
+class AutoTileEditor {
+    + <<override>> CreateInspectorGUI() : VisualElement
+}
+Editor <|-- AutoTileEditor
+@enduml

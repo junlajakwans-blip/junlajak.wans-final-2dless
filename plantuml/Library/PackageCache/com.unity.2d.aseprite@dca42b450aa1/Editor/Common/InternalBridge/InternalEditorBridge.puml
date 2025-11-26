@@ -1,0 +1,13 @@
+@startuml
+class InternalEditorBridge <<static>> {
+    + {static} DoesHardwareSupportsFullNPOT() : bool
+    + {static} CreateTemporaryDuplicate(tex:Texture2D, width:int, height:int) : Texture2D
+    + {static} ShowSpriteEditorWindow(obj:Object) : void
+    + {static} ApplySpriteEditorWindow() : void
+    + {static} AddManagedGameObject(scene:PreviewRenderUtility, go:GameObject) : void
+    + {static} RefreshInspectors() : void
+    + {static} GenerateOutlineFromSprite(sprite:Sprite, detail:float, alphaTolerance:byte, holeDetection:bool, paths:Vector2[][]) : void
+    + {static} SetSpriteAtlasToV2(atlas:SpriteAtlas) : void
+    + {static} RegisterAndPackSpriteAtlas(atlas:SpriteAtlas, ctx:AssetImportContext, importer:AssetImporter, packer:ScriptablePacker) : void
+}
+@enduml

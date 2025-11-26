@@ -1,0 +1,16 @@
+@startuml
+class TilePaletteBrushInspectorElement <<partial>> {
+    + TilePaletteBrushInspectorElement()
+}
+class TilePaletteBrushInspectorElementFactory {
+}
+class TilePaletteBrushInspectorElementUxmlTraits {
+}
+class "UxmlFactory`2"<T1,T2> {
+}
+IMGUIContainer <|-- TilePaletteBrushInspectorElement
+TilePaletteBrushInspectorElement +-- TilePaletteBrushInspectorElementFactory
+"UxmlFactory`2" "<TilePaletteBrushInspectorElement,TilePaletteBrushInspectorElementUxmlTraits>" <|-- TilePaletteBrushInspectorElementFactory
+TilePaletteBrushInspectorElement +-- TilePaletteBrushInspectorElementUxmlTraits
+UxmlTraits <|-- TilePaletteBrushInspectorElementUxmlTraits
+@enduml

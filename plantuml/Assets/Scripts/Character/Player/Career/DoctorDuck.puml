@@ -1,0 +1,13 @@
+@startuml
+class DoctorSkill {
+    + <<override>> Initialize(player:Player) : void
+    + <<override>> OnTakeDamage(player:Player, incomingDamage:int) : void
+    + <<override>> OnBeforeDie(player:Player) : bool
+    + <<override>> UseCareerSkill(player:Player) : void
+    + <<override>> PerformAttack(player:Player) : void
+    + <<override>> PerformChargeAttack(player:Player) : void
+    + <<override>> PerformRangeAttack(player:Player, target:Transform) : void
+    + <<override>> Cleanup(player:Player) : void
+}
+CareerSkillBase <|-- DoctorSkill
+@enduml

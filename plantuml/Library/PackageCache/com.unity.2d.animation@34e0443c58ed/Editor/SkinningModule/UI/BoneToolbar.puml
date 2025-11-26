@@ -1,0 +1,11 @@
+@startuml
+class BoneToolbar <<partial>> {
+    +  <<event>> SetSkeletonTool : Action<Tools> 
+    + {static} GenerateFromUXML() : BoneToolbar
+    + BoneToolbar()
+    + Setup(s:SkinningCache) : void
+    + UpdateToggleState() : void
+}
+Toolbar <|-- BoneToolbar
+BoneToolbar --> "skinningCache" SkinningCache
+@enduml

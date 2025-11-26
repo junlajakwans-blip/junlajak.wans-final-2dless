@@ -1,0 +1,102 @@
+@startuml
+class Layer {
+    + opacity : float
+    + index : int <<get>> <<set>>
+    + guid : int <<get>> <<set>>
+    + name : string <<get>> <<set>>
+    + tileSetIndex : uint <<get>> <<set>>
+    + parentIndex : int <<get>> <<set>>
+    + {static} GenerateGuid(layer:Layer, layers:IReadOnlyList<Layer>) : int
+}
+struct Cell {
+    + updatedCellRect : bool
+    + opacity : float
+    + name : string <<get>> <<set>>
+    + frameIndex : int <<get>> <<set>>
+    + additiveSortOrder : int <<get>> <<set>>
+    + Equals(other:Cell) : bool
+    + <<override>> Equals(obj:object) : bool
+    + <<override>> GetHashCode() : int
+}
+class LinkedCell {
+    + frameIndex : int <<get>> <<set>>
+    + linkedToFrame : int <<get>> <<set>>
+}
+struct TileCell {
+    + layerIndex : uint <<get>> <<set>>
+    + frameIndex : int <<get>> <<set>>
+}
+class Frame {
+    + duration : int <<get>> <<set>>
+}
+class Tag {
+    + name : string <<get>> <<set>>
+    + fromFrame : int <<get>> <<set>>
+    + toFrame : int <<get>> <<set>>
+    + noOfRepeats : int <<get>> <<set>>
+    + noOfFrames : int <<get>>
+    + isRepeating : bool <<get>>
+}
+class TileSet {
+    + id : uint <<get>> <<set>>
+    + name : string <<get>> <<set>>
+    + guid : int <<get>> <<set>>
+    + {static} GenerateGuid(tileSet:TileSet) : int
+}
+struct Tile {
+    + tileId : uint <<get>> <<set>>
+    + name : string <<get>> <<set>>
+}
+enum FileImportModes {
+    SpriteSheet= 0,
+    AnimatedSprite= 1,
+    TileSet= 2,
+}
+enum LayerImportModes {
+    IndividualLayers,
+    MergeFrame,
+}
+enum PivotSpaces {
+    Canvas,
+    Local,
+}
+struct UUID {
+    + UUID(value0:uint, value1:uint, value2:uint, value3:uint)
+    + <<override>> Equals(obj:object) : bool
+    + Equals(obj:UUID) : bool
+    + <<override>> GetHashCode() : int
+    + CompareTo(obj:object) : int
+    + CompareTo(rhs:UUID) : int
+    + <<override>> ToString() : string
+}
+class "List`1"<T> {
+}
+class "IEquatable`1"<T> {
+}
+class "NativeArray`1"<T> {
+}
+class "IComparable`1"<T> {
+}
+Layer --> "uuid" UUID
+Layer --> "layerFlags" LayerFlags
+Layer --> "layerType" LayerTypes
+Layer --> "blendMode" BlendModes
+Layer --> "cells<Cell>" "List`1"
+Layer --> "linkedCells<LinkedCell>" "List`1"
+Layer --> "tileCells<TileCell>" "List`1"
+"IEquatable`1" "<Cell>" <|-- Cell
+Cell --> "blendMode" BlendModes
+Cell --> "image<Color32>" "NativeArray`1"
+Cell --> "cellRect" RectInt
+Cell --> "spriteId" GUID
+TileCell --> "cellRect" RectInt
+TileSet --> "tileSize" int2
+TileSet --> "tiles<Tile>" "List`1"
+Tile --> "image<Color32>" "NativeArray`1"
+Tile --> "size" int2
+Tile --> "spriteId" GUID
+IComparable <|-- UUID
+"IComparable`1" "<UUID>" <|-- UUID
+"IEquatable`1" "<UUID>" <|-- UUID
+UUID o-> "zero" UUID
+@enduml

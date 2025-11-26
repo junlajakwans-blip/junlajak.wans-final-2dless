@@ -1,0 +1,66 @@
+@startuml
+class OculusHMD {
+}
+class OculusTouchController {
+}
+class OculusTrackingReference {
+}
+class OculusRemote {
+}
+class OculusHMDExtended {
+}
+class GearVRTrackedController {
+}
+XRHMD <|-- OculusHMD
+OculusHMD --> "userPresence" ButtonControl
+OculusHMD --> "deviceAngularVelocity" Vector3Control
+OculusHMD --> "deviceAcceleration" Vector3Control
+OculusHMD --> "deviceAngularAcceleration" Vector3Control
+OculusHMD --> "leftEyeAngularVelocity" Vector3Control
+OculusHMD --> "leftEyeAcceleration" Vector3Control
+OculusHMD --> "leftEyeAngularAcceleration" Vector3Control
+OculusHMD --> "rightEyeAngularVelocity" Vector3Control
+OculusHMD --> "rightEyeAcceleration" Vector3Control
+OculusHMD --> "rightEyeAngularAcceleration" Vector3Control
+OculusHMD --> "centerEyeAngularVelocity" Vector3Control
+OculusHMD --> "centerEyeAcceleration" Vector3Control
+OculusHMD --> "centerEyeAngularAcceleration" Vector3Control
+XRControllerWithRumble <|-- OculusTouchController
+OculusTouchController --> "thumbstick" Vector2Control
+OculusTouchController --> "trigger" AxisControl
+OculusTouchController --> "grip" AxisControl
+OculusTouchController --> "primaryButton" ButtonControl
+OculusTouchController --> "secondaryButton" ButtonControl
+OculusTouchController --> "gripPressed" ButtonControl
+OculusTouchController --> "start" ButtonControl
+OculusTouchController --> "thumbstickClicked" ButtonControl
+OculusTouchController --> "primaryTouched" ButtonControl
+OculusTouchController --> "secondaryTouched" ButtonControl
+OculusTouchController --> "triggerTouched" AxisControl
+OculusTouchController --> "triggerPressed" ButtonControl
+OculusTouchController --> "thumbstickTouched" ButtonControl
+OculusTouchController --> "deviceVelocity" Vector3Control
+OculusTouchController --> "deviceAngularVelocity" Vector3Control
+OculusTouchController --> "deviceAcceleration" Vector3Control
+OculusTouchController --> "deviceAngularAcceleration" Vector3Control
+TrackedDevice <|-- OculusTrackingReference
+OculusTrackingReference --> "trackingState" IntegerControl
+OculusTrackingReference --> "isTracked" ButtonControl
+InputDevice <|-- OculusRemote
+OculusRemote --> "back" ButtonControl
+OculusRemote --> "start" ButtonControl
+OculusRemote --> "touchpad" Vector2Control
+OculusHMD <|-- OculusHMDExtended
+OculusHMDExtended --> "back" ButtonControl
+OculusHMDExtended --> "touchpad" Vector2Control
+XRController <|-- GearVRTrackedController
+GearVRTrackedController --> "touchpad" Vector2Control
+GearVRTrackedController --> "trigger" AxisControl
+GearVRTrackedController --> "back" ButtonControl
+GearVRTrackedController --> "triggerPressed" ButtonControl
+GearVRTrackedController --> "touchpadClicked" ButtonControl
+GearVRTrackedController --> "touchpadTouched" ButtonControl
+GearVRTrackedController --> "deviceAngularVelocity" Vector3Control
+GearVRTrackedController --> "deviceAcceleration" Vector3Control
+GearVRTrackedController --> "deviceAngularAcceleration" Vector3Control
+@enduml

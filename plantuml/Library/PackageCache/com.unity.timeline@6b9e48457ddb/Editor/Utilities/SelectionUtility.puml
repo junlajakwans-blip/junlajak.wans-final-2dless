@@ -1,0 +1,8 @@
+@startuml
+class SelectionUtility <<static>> {
+    + {static} IdToObject(instanceId:int) : Object
+}
+class "IEnumerable`1"<T> {
+}
+SelectionUtility --> "selectionIds<int>" "IEnumerable`1"
+@enduml

@@ -1,0 +1,24 @@
+@startuml
+class RangeBar {
+    + Min : float <<get>> <<set>>
+    + Max : float <<get>> <<set>>
+    + <<virtual>> GetModifiedMaterial(baseMaterial:Material) : Material
+}
+enum Direction {
+    LeftToRight,
+    RightToLeft,
+    BottomToTop,
+    TopToBottom,
+}
+struct Range {
+    + min : float
+    + max : float
+}
+UIBehaviour <|-- RangeBar
+IMaterialModifier <|-- RangeBar
+RangeBar --> "direction" Direction
+RangeBar --> "Graphic" Graphic
+RangeBar --> "Value" Vector2
+RangeBar +-- Direction
+RangeBar +-- Range
+@enduml

@@ -1,0 +1,5 @@
+@startuml
+class SkeletonSharingUI {
+}
+MonoBehaviour <|-- SkeletonSharingUI
+@enduml

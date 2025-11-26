@@ -1,0 +1,5 @@
+@startuml
+class UpdateReportListView {
+}
+PlasticTreeView <|-- UpdateReportListView
+@enduml

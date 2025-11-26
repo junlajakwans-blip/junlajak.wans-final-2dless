@@ -1,0 +1,17 @@
+@startuml
+class AnimatedTileEditor {
+    + <<override>> OnInspectorGUI() : void
+}
+class Styles <<static>> {
+}
+Editor <|-- AnimatedTileEditor
+AnimatedTileEditor +-- Styles
+Styles o-> "orderAnimatedTileSpritesInfo" GUIContent
+Styles o-> "emptyAnimatedTileInfo" GUIContent
+Styles o-> "minimumSpeedLabel" GUIContent
+Styles o-> "maximumSpeedLabel" GUIContent
+Styles o-> "startTimeLabel" GUIContent
+Styles o-> "startFrameLabel" GUIContent
+Styles o-> "colliderTypeLabel" GUIContent
+Styles o-> "flagsLabel" GUIContent
+@enduml

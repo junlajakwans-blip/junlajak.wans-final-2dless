@@ -1,0 +1,8 @@
+@startuml
+class WeightInspectorIMGUIPanel <<partial>> {
+    +  <<event>> weightsChanged : Action 
+    + WeightInspectorIMGUIPanel()
+}
+VisualElement <|-- WeightInspectorIMGUIPanel
+WeightInspectorIMGUIPanel --> "weightInspector" WeightInspector
+@enduml

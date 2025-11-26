@@ -1,0 +1,11 @@
+@startuml
+abstract class PlasticDialog {
+}
+enum SizeToContent {
+    Manual= 0,
+    Automatic= 1,
+}
+EditorWindow <|-- PlasticDialog
+IPlasticDialogCloser <|-- PlasticDialog
+PlasticDialog +-- SizeToContent
+@enduml

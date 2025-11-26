@@ -1,0 +1,9 @@
+@startuml
+class AssetUVCSOperations {
+}
+interface IAssetSelection {
+}
+IAssetMenuUVCSOperations <|-- AssetUVCSOperations
+IAssetFilesFilterPatternsMenuOperations <|-- AssetUVCSOperations
+AssetUVCSOperations +-- IAssetSelection
+@enduml

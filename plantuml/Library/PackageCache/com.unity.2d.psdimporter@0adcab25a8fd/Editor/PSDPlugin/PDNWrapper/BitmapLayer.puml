@@ -1,0 +1,23 @@
+@startuml
+class Layer <<static>> {
+    + {static} CreateBackgroundLayer(w:int, h:int) : BitmapLayer
+}
+class BitmapLayer {
+    + LayerID : int <<get>> <<set>>
+    + IsGroup : bool <<get>> <<set>>
+    + Name : string <<get>> <<set>>
+    + Opacity : byte <<get>> <<set>>
+    + Visible : bool <<get>> <<set>>
+    + Dispose() : void
+    + BitmapLayer(documentRect:Rectangle)
+    + AddChildLayer(c:BitmapLayer) : void
+}
+class "IEnumerable`1"<T> {
+}
+BitmapLayer --> "ParentLayer" BitmapLayer
+BitmapLayer --> "ChildLayer<BitmapLayer>" "IEnumerable`1"
+BitmapLayer --> "BlendMode" LayerBlendMode
+BitmapLayer --> "Surface" Surface
+BitmapLayer --> "documentRect" Rectangle
+BitmapLayer --> "localRect" Rectangle
+@enduml

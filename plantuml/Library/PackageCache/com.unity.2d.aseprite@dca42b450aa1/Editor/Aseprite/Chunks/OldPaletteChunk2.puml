@@ -1,0 +1,6 @@
+@startuml
+class OldPaletteChunk2 {
+}
+BaseChunk <|-- OldPaletteChunk2
+OldPaletteChunk2 --> "chunkType" ChunkTypes
+@enduml

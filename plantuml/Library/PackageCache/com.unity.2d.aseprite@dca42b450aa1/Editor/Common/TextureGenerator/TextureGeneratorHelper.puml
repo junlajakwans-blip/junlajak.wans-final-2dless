@@ -1,0 +1,91 @@
+@startuml
+interface ITextureSettings {
+}
+class TextureSettings {
+    + TextureSettings()
+    + TextureSettings(assetPath:string, enablePostProcessor:bool, colorTexture:bool, readable:bool, npotScale:TextureImporterNPOTScale, filterMode:FilterMode, aniso:int, sourceContainsAlpha:bool, sourceWasHDR:bool)
+    + colorTexture : bool <<get>> <<set>>
+    + readable : bool <<get>> <<set>>
+    + aniso : int <<get>> <<set>>
+    + enablePostProcessor : bool <<get>> <<set>>
+    + assetPath : string <<get>> <<set>>
+    + containsAlpha : bool <<get>> <<set>>
+    + hdr : bool <<get>> <<set>>
+}
+class TextureSpriteSettings {
+    + packingTag : string <<get>> <<set>>
+    + pixelsPerUnit : float <<get>> <<set>>
+    + extrudeEdges : uint <<get>> <<set>>
+    + qualifyForPacking : bool <<get>> <<set>>
+    + TextureSpriteSettings()
+    + TextureSpriteSettings(packingTag:string, pixelsPerUnit:int, meshType:SpriteMeshType, extrudeEdges:uint, qualifyForPacking:bool, spriteSheetData:SpriteImportData[])
+}
+class TextureWrapSettings {
+    + TextureWrapSettings()
+    + TextureWrapSettings(wrapMpde:TextureWrapMode, wrapModeU:TextureWrapMode, wrapModeV:TextureWrapMode, wrapModeW:TextureWrapMode)
+}
+class TextureAlphaSettings {
+    + alphaTolerance : float <<get>> <<set>>
+    + TextureAlphaSettings()
+    + TextureAlphaSettings(alphaSource:TextureImporterAlphaSource, alphaTolerance:float)
+}
+class TextureMipmapSettings {
+    + bias : float <<get>> <<set>>
+    + borderMipmap : bool <<get>> <<set>>
+    + fadeout : bool <<get>> <<set>>
+    + preserveCoverage : bool <<get>> <<set>>
+    + fadeDistanceStart : int <<get>> <<set>>
+    + fadeDistanceEnd : int <<get>> <<set>>
+    + streamingMipmaps : bool <<get>> <<set>>
+    + streamingMipmapsPriority : int <<get>> <<set>>
+    + TextureMipmapSettings()
+    + TextureMipmapSettings(filter:TextureImporterMipFilter, bias:float, borderMipmap:bool, fadeout:bool, preserveCoverage:bool, fadeDistanceStart:int, fadeDistanceEnd:int, streamingMipmaps:bool, streamingMipmapsPriority:int)
+}
+class TextureNormalSettings {
+    + generateFromGrayScale : bool <<get>> <<set>>
+    + bumpiness : float <<get>> <<set>>
+    + TextureNormalSettings()
+    + TextureNormalSettings(filter:TextureImporterNormalFilter, generateFromGrayScale:bool, bumpiness:float)
+}
+class TextureCubemapSettings {
+    + seamless : bool <<get>> <<set>>
+    + TextureCubemapSettings()
+    + TextureCubemapSettings(convolution:TextureImporterCubemapConvolution, mode:TextureImporterGenerateCubemap, seamless:bool)
+}
+class TextureGeneratorHelper <<static>> {
+    + {static} GenerateTextureSprite(buffer:NativeArray<Color32>, bufferWidth:int, bufferHeight:int, settings:TextureSettings, platformSettings:TextureImporterPlatformSettings, spriteSettings:TextureSpriteSettings, alphaSettings:TextureAlphaSettings, mipmapSettings:TextureMipmapSettings, wrapSettings:TextureWrapSettings) : TextureGenerationOutput
+    + {static} GenerateLightmap(buffer:NativeArray<Color32>, bufferWidth:int, bufferHeight:int, settings:TextureSettings, platformSettings:TextureImporterPlatformSettings, mipmapSettings:TextureMipmapSettings, wrapSettings:TextureWrapSettings) : TextureGenerationOutput
+    + {static} GenerateCookie(buffer:NativeArray<Color32>, bufferWidth:int, bufferHeight:int, settings:TextureSettings, platformSettings:TextureImporterPlatformSettings, alphaSettings:TextureAlphaSettings, mipmapSettings:TextureMipmapSettings, cubemapSettings:TextureCubemapSettings, wrapSettings:TextureWrapSettings) : TextureGenerationOutput
+    + {static} GenerateNormalMap(buffer:NativeArray<Color32>, bufferWidth:int, bufferHeight:int, settings:TextureSettings, platformSettings:TextureImporterPlatformSettings, normalSettings:TextureNormalSettings, mipmapSettings:TextureMipmapSettings, cubemapSettings:TextureCubemapSettings, wrapSettings:TextureWrapSettings) : TextureGenerationOutput
+    + {static} GenerateTextureGUI(buffer:NativeArray<Color32>, bufferWidth:int, bufferHeight:int, settings:TextureSettings, platformSettings:TextureImporterPlatformSettings, alphaSettings:TextureAlphaSettings, mipmapSettings:TextureMipmapSettings, wrapSettings:TextureWrapSettings) : TextureGenerationOutput
+    + {static} GenerateTextureSingleChannel(buffer:NativeArray<Color32>, bufferWidth:int, bufferHeight:int, settings:TextureSettings, platformSettings:TextureImporterPlatformSettings, alphaSettings:TextureAlphaSettings, mipmapSettings:TextureMipmapSettings, cubemapSettings:TextureCubemapSettings, wrapSettings:TextureWrapSettings) : TextureGenerationOutput
+    + {static} GenerateTextureCursor(buffer:NativeArray<Color32>, bufferWidth:int, bufferHeight:int, settings:TextureSettings, platformSettings:TextureImporterPlatformSettings, alphaSettings:TextureAlphaSettings, mipmapSettings:TextureMipmapSettings, wrapSettings:TextureWrapSettings) : TextureGenerationOutput
+    + {static} GenerateTextureDefault(buffer:NativeArray<Color32>, bufferWidth:int, bufferHeight:int, settings:TextureSettings, platformSettings:TextureImporterPlatformSettings, alphaSettings:TextureAlphaSettings, mipmapSettings:TextureMipmapSettings, cubemapSettings:TextureCubemapSettings, wrapSettings:TextureWrapSettings) : TextureGenerationOutput
+    + {static} ExtractTextureSettings(tis:TextureImporterSettings) : TextureSettings
+    + {static} ExtractTextureSpriteSettings(tis:TextureImporterSettings) : TextureSpriteSettings
+    + {static} ExtractTextureWrapSettings(tis:TextureImporterSettings) : TextureWrapSettings
+    + {static} ExtractTextureAlphaSettings(settings:TextureImporterSettings) : TextureAlphaSettings
+    + {static} ExtractTextureMipmapSettings(settings:TextureImporterSettings) : TextureMipmapSettings
+    + {static} ExtractTextureNormalSettings(settings:TextureImporterSettings) : TextureNormalSettings
+    + {static} ExtractTextureCubemapSettings(settings:TextureImporterSettings) : TextureCubemapSettings
+}
+ITextureSettings <|-- TextureSettings
+TextureSettings --> "npotScale" TextureImporterNPOTScale
+TextureSettings --> "filterMode" FilterMode
+ITextureSettings <|-- TextureSpriteSettings
+TextureSpriteSettings --> "meshType" SpriteMeshType
+ITextureSettings <|-- TextureWrapSettings
+TextureWrapSettings --> "wrapMode" TextureWrapMode
+TextureWrapSettings --> "wrapModeU" TextureWrapMode
+TextureWrapSettings --> "wrapModeV" TextureWrapMode
+TextureWrapSettings --> "wrapModeW" TextureWrapMode
+ITextureSettings <|-- TextureAlphaSettings
+TextureAlphaSettings --> "alphaSource" TextureImporterAlphaSource
+ITextureSettings <|-- TextureMipmapSettings
+TextureMipmapSettings --> "filter" TextureImporterMipFilter
+ITextureSettings <|-- TextureNormalSettings
+TextureNormalSettings --> "filter" TextureImporterNormalFilter
+ITextureSettings <|-- TextureCubemapSettings
+TextureCubemapSettings --> "convolution" TextureImporterCubemapConvolution
+TextureCubemapSettings --> "mode" TextureImporterGenerateCubemap
+@enduml

@@ -1,0 +1,7 @@
+@startuml
+struct SendBufferedHapticCommand {
+    + {static} Create(rumbleBuffer:byte[]) : SendBufferedHapticCommand
+}
+IInputDeviceCommandInfo <|-- SendBufferedHapticCommand
+SendBufferedHapticCommand --> "typeStatic" FourCC
+@enduml

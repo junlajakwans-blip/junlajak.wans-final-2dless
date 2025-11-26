@@ -1,0 +1,5 @@
+@startuml
+class ImportInProjectDialog {
+}
+PlasticDialog <|-- ImportInProjectDialog
+@enduml

@@ -1,0 +1,10 @@
+@startuml
+interface ICloudWorkspacesOperations {
+}
+class DirectoryContentPanel {
+}
+interface ICloudWorkspacesTreeView {
+}
+IDirectoryContentMenuOperations <|-- DirectoryContentPanel
+DirectoryContentPanel +-- ICloudWorkspacesTreeView
+@enduml

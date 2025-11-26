@@ -1,0 +1,17 @@
+@startuml
+class AutoTileTemplate {
+    + width : int
+    + height : int
+    + <<override>> CreateTileAssets(texture2D:Texture2D, sprites:IEnumerable<Sprite>, tilesToAdd:List<TileChangeData>) : void
+}
+struct SpriteData {
+    + x : float
+    + y : float
+    + mask : uint
+}
+class "List`1"<T> {
+}
+TileTemplate <|-- AutoTileTemplate
+AutoTileTemplate --> "sprites<SpriteData>" "List`1"
+AutoTileTemplate +-- SpriteData
+@enduml

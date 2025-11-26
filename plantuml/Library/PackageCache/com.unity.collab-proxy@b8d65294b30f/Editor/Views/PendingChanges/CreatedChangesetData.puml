@@ -1,0 +1,9 @@
+@startuml
+class CreatedChangesetData {
+}
+enum Type {
+    Checkin,
+    Shelve,
+}
+CreatedChangesetData +-- Type
+@enduml

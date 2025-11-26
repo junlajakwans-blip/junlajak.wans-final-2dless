@@ -1,0 +1,9 @@
+@startuml
+class FogNode {
+    + FogNode()
+    + <<override>> hasPreview : bool <<get>>
+    + RequiresTransform(stageCapability:ShaderStageCapability) : NeededTransform[]
+}
+CodeFunctionNode <|-- FogNode
+IMayRequireTransform <|-- FogNode
+@enduml

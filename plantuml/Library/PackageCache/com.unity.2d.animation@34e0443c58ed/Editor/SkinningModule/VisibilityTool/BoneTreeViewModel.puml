@@ -1,0 +1,33 @@
+@startuml
+class BoneVisibilityToolData {
+    + allVisibility : bool <<get>> <<set>>
+    + previousVisiblity : bool <<get>> <<set>>
+}
+class BoneTreeWidgetModel {
+    + <<virtual>> GetAllVisibility() : bool
+    + GetBoneSelection() : SkeletonSelection
+    + GetExpandedBones() : BoneCache[]
+    + GetDepth(bone:BoneCache) : int
+    + GetBoneColor(bone:BoneCache) : Color
+    + GetSelectedSkeleton() : SkeletonCache
+    + GetVisibility(bone:BoneCache) : bool
+    + SelectBones(bones:BoneCache[]) : void
+    + SetExpandedBones(bones:BoneCache[]) : void
+    + <<virtual>> SetAllVisibility(skeleton:SkeletonCache, visibility:bool) : void
+    + {static} SetAllBoneVisibility(skeleton:SkeletonCache, visibility:bool) : void
+    + SetBoneParent(newParent:BoneCache, bone:BoneCache, insertAtIndex:int) : void
+    + SetDepth(bone:BoneCache, depth:int) : void
+    + SetBoneColor(bone:BoneCache, color:Color) : void
+    + SetName(bone:BoneCache, name:string) : void
+    + SetVisibility(bone:BoneCache, visibility:bool) : void
+    + UndoScope(value:string) : UndoScope
+    + hasCharacter : bool <<get>>
+}
+interface IBoneTreeViewModel {
+}
+CacheObject <|-- BoneVisibilityToolData
+IBoneTreeViewModel <|-- BoneTreeWidgetModel
+BoneTreeWidgetModel --> "skinningCache" SkinningCache
+BoneTreeWidgetModel --> "view" IBoneVisibilityToolView
+BoneTreeWidgetModel --> "mode" SkinningMode
+@enduml

@@ -1,0 +1,32 @@
+@startuml
+class TransformAccessJob {
+    + TransformAccessJob()
+    + Destroy() : void
+    + ResetCache() : void
+    + AddTransform(t:Transform) : void
+    + StartLocalToWorldJob() : JobHandle
+    + StartWorldToLocalJob() : JobHandle
+}
+struct LocalToWorldTransformAccessJob {
+    + Execute(index:int, transform:TransformAccess) : void
+}
+struct WorldToLocalTransformAccessJob {
+    + Execute(index:int, transform:TransformAccess) : void
+}
+struct TransformData {
+    + transformIndex : int
+    + refCount : int
+    + TransformData(index:int)
+}
+class "NativeHashMap`2"<T1,T2> {
+}
+class "NativeArray`1"<T> {
+}
+TransformAccessJob --> "transformData<int,TransformData>" "NativeHashMap`2"
+TransformAccessJob --> "transformMatrix<float4x4>" "NativeArray`1"
+IJobParallelForTransform <|-- LocalToWorldTransformAccessJob
+LocalToWorldTransformAccessJob --> "outMatrix<float4x4>" "NativeArray`1"
+IJobParallelForTransform <|-- WorldToLocalTransformAccessJob
+WorldToLocalTransformAccessJob --> "outMatrix<float4x4>" "NativeArray`1"
+TransformAccessJob +-- TransformData
+@enduml

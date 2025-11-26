@@ -1,0 +1,16 @@
+@startuml
+class SpriteResolverSelector {
+    + SpriteResolverSelector(categoryContainer:INavigableElement, labelContainer:INavigableElement)
+    + Select() : void
+    + SceneUpdate() : void
+    + SetSpriteResolver(newSpriteResolver:SpriteResolver) : void
+}
+class Styles <<static>> {
+    + <<const>> spriteResolverNameLabel : string
+    + <<const>> categoryAndLabelNameContainer : string
+    + <<const>> selector : string
+    + <<const>> descriptionLabel : string
+}
+VisualElement <|-- SpriteResolverSelector
+SpriteResolverSelector +-- Styles
+@enduml

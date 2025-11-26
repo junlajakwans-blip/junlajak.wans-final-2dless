@@ -1,0 +1,8 @@
+@startuml
+class CardUI {
+    + SetCareerData(data:DuckCareerData) : void
+    + GetID() : string
+    + GetCardType() : CardType
+}
+MonoBehaviour <|-- CardUI
+@enduml

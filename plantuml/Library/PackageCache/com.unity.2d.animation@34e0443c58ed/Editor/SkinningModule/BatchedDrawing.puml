@@ -1,0 +1,19 @@
+@startuml
+class BatchedDrawing <<static>> {
+    + {static} <<unsafe>> RegisterLine(p1:float3, p2:float3, normal:float3, widthP1:float, widthP2:float, color:Color) : void
+    + {static} RegisterSolidDisc(center:float3, normal:float3, radius:float, color:Color) : void
+    + {static} <<unsafe>> RegisterSolidArc(center:float3, normal:float3, from:float3, angle:float, radius:float, color:Color, numSamples:int) : void
+    + {static} <<unsafe>> RegisterSolidArcWithOutline(center:float3, normal:float3, from:float3, angle:float, radius:float, outlineScale:float, color:Color, numSamples:int) : void
+    + {static} Draw() : void
+}
+class Batch {
+    + Batch()
+    + Clear() : void
+}
+class "UnsafeList`1"<T> {
+}
+BatchedDrawing +-- Batch
+Batch --> "vertices<float3>" "UnsafeList`1"
+Batch --> "vertexColors<Color>" "UnsafeList`1"
+Batch --> "indices<int>" "UnsafeList`1"
+@enduml

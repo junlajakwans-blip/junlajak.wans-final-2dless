@@ -1,0 +1,6 @@
+@startuml
+class RenameableLabel {
+    + {static} <<readonly>> ussClassName : string = "u2d-renameable-label"
+}
+VisualElement <|-- RenameableLabel
+@enduml

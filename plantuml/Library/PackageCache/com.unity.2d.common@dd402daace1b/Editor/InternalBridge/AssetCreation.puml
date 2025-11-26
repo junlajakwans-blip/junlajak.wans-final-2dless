@@ -1,0 +1,5 @@
+@startuml
+class AssetCreationUtility <<static>> {
+    + {static} CreateAssetObjectFromTemplate(sourcePath:string) : void
+}
+@enduml

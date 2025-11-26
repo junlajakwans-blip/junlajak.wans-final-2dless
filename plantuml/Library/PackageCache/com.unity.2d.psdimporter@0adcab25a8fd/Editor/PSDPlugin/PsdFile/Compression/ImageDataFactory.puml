@@ -1,0 +1,5 @@
+@startuml
+class ImageDataFactory <<static>> {
+    + {static} Create(channel:Channel, data:byte[]) : ImageData
+}
+@enduml

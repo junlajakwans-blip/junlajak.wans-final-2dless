@@ -1,0 +1,25 @@
+@startuml
+abstract class UndoObject {
+    + {static} BeginUndo() : void
+    + {static} EndUndo() : void
+    + {static} undoing : bool <<get>>
+    + {static} Create(data:T1, undoSystem:IUndoSystem) : T
+    + {static} Dispose(undoObject:UndoObject) : void
+    + {abstract} Dispose() : void
+}
+class "UndoObject`1"<T> {
+    + Init(data:T) : void
+    + SetData(data:T, actionName:string) : void
+    + data : T <<get>>
+    + SetData(data:T) : void
+    + VersionChanged(resetVersion:bool) : bool
+    + <<override>> Dispose() : void
+    + OnBeforeSerialize() : void
+    + OnAfterDeserialize() : void
+}
+class "IEquatable`1"<T> {
+}
+ScriptableObject <|-- UndoObject
+UndoObject <|-- "UndoObject`1"
+ISerializationCallbackReceiver <|-- "UndoObject`1"
+@enduml

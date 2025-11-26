@@ -1,0 +1,5 @@
+@startuml
+class PendingChangesStatusSuccessNotificationContent {
+}
+INotificationContent <|-- PendingChangesStatusSuccessNotificationContent
+@enduml

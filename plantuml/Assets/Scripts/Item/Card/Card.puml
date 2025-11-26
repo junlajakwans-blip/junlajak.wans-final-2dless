@@ -1,0 +1,13 @@
+@startuml
+class Card {
+    + CardID : string <<get>>
+    + Rarity : string <<get>>
+    + SkillName : string <<get>>
+    + Card(cardID:string, careerData:DuckCareerData)
+    + <<virtual>> ActivateEffect(player:Player) : void
+    + <<virtual>> GetDescription() : string
+}
+Card --> "Type" CardType
+Card --> "Icon" Sprite
+Card --> "CareerData" DuckCareerData
+@enduml

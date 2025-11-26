@@ -1,0 +1,17 @@
+@startuml
+class RuleTileTemplate {
+    + textureWidth : int
+    + textureHeight : int
+    + <<override>> CreateTileAssets(texture2D:Texture2D, sprites:IEnumerable<Sprite>, tilesToAdd:List<TileChangeData>) : void
+}
+struct RuleData {
+}
+class "List`1"<T> {
+}
+TileTemplate <|-- RuleTileTemplate
+RuleTileTemplate --> "rules<RuleData>" "List`1"
+RuleTileTemplate --> "defaultSprite" Sprite
+RuleTileTemplate --> "defaultGameObject" GameObject
+RuleTileTemplate +-- RuleData
+RuleData --> "spritePositions<Vector2>" "List`1"
+@enduml

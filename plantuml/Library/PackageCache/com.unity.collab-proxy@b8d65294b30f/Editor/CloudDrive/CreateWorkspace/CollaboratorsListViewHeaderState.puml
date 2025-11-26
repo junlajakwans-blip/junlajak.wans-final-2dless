@@ -1,0 +1,9 @@
+@startuml
+enum CollaboratorsListColumn {
+    User,
+}
+class CollaboratorsListViewHeaderState {
+}
+MultiColumnHeaderState <|-- CollaboratorsListViewHeaderState
+ISerializationCallbackReceiver <|-- CollaboratorsListViewHeaderState
+@enduml

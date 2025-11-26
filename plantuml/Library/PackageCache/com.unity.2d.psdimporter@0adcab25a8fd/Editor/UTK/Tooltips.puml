@@ -1,0 +1,11 @@
+@startuml
+class Tooltips <<static>> {
+    + {static} <<readonly>> importToggleToolTip : string
+    + {static} <<readonly>> collapseToggleTooltip : string
+    + {static} <<readonly>> layerHiddenToolTip : string
+    + {static} <<readonly>> hiddenLayerNotImportWarning : string
+    + {static} <<readonly>> groupSeparatedToolTip : string
+    + {static} <<readonly>> groupMergedToolTip : string
+    + {static} <<readonly>> groupMixedToolTip : string
+}
+@enduml

@@ -1,0 +1,18 @@
+@startuml
+enum TileSetFlags {
+    IncludesLinkToExternal= 1,
+    IncludesTilesInFile= 2,
+    Misc= 4,
+}
+class TilesetChunk {
+    + tileSetId : uint <<get>>
+    + noOfTiles : uint <<get>>
+    + width : ushort <<get>>
+    + height : ushort <<get>>
+    + tileSetName : string <<get>>
+    + <<override>> Dispose() : void
+}
+BaseChunk <|-- TilesetChunk
+TilesetChunk --> "chunkType" ChunkTypes
+TilesetChunk --> "tileSetFlags" TileSetFlags
+@enduml

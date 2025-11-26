@@ -1,0 +1,108 @@
+@startuml
+class PSDImporterEditor {
+    + <<override>> OnEnable() : void
+    + <<override>> OnDisable() : void
+    + <<override>> RequiresConstantRepaint() : bool
+    + <<override>> CreateInspectorGUI() : VisualElement
+    + <<override>> SaveChanges() : void
+    + <<override>> DiscardChanges() : void
+    + GetBuildTargetName(sp:SerializedProperty) : string
+    + <<override>> showImportedObject : bool <<get>>
+    + <<override>> HasModified() : bool
+    + <<override>> OnPreviewSettings() : void
+    + <<override>> DrawPreview(r:Rect) : void
+}
+class PSDImporterEditorFoldOutState {
+    + PSDImporterEditorFoldOutState()
+    + DoGeneralUI(title:GUIContent) : bool
+    + DoLayerImportUI(title:GUIContent) : bool
+    + DoCharacterRigUI(title:GUIContent) : bool
+    + DoTilePaletteUI(title:GUIContent) : bool
+    + DoAdvancedUI(title:GUIContent) : bool
+    + DoPlatformSettingsUI(title:GUIContent) : bool
+    + DoTextureUI(title:GUIContent) : bool
+}
+struct InspectorGUI {
+    + needsRepaint : bool
+}
+class Styles {
+    + Styles()
+}
+class SavedBool {
+    + SavedBool(name:string, value:bool)
+    + value : bool <<get>> <<set>>
+}
+class "Dictionary`2"<T1,T2> {
+}
+ScriptedImporterEditor <|-- PSDImporterEditor
+ITexturePlatformSettingsDataProvider <|-- PSDImporterEditor
+PSDImporterEditor --> "platformSettingsArray" SerializedProperty
+PSDImporterEditor +-- InspectorGUI
+InspectorGUI --> "container" VisualElement
+InspectorGUI --> "onUpdate" Action
+InspectorGUI --> "onUIActivated" Action
+PSDImporterEditor +-- Styles
+Styles o-> "padding" GUIContent
+Styles o-> "spriteSizeExpand" GUIContent
+Styles o-> "previewPivotButtonContent" GUIContent
+Styles o-> "textureTypeTitle" GUIContent
+Styles o-> "textureShapeOptionsDictionnary<TextureImporterShape,GUIContent[]>" "Dictionary`2"
+Styles o-> "textureShapeValuesDictionnary<TextureImporterShape,int[]>" "Dictionary`2"
+Styles o-> "filterMode" GUIContent
+Styles o-> "mipmapFadeOutToggle" GUIContent
+Styles o-> "mipmapFadeOut" GUIContent
+Styles o-> "readWrite" GUIContent
+Styles o-> "alphaSource" GUIContent
+Styles o-> "generateMipMaps" GUIContent
+Styles o-> "sRGBTexture" GUIContent
+Styles o-> "borderMipMaps" GUIContent
+Styles o-> "mipMapsPreserveCoverage" GUIContent
+Styles o-> "alphaTestReferenceValue" GUIContent
+Styles o-> "mipMapFilter" GUIContent
+Styles o-> "npot" GUIContent
+Styles o-> "spriteMode" GUIContent
+Styles o-> "spritePixelsPerUnit" GUIContent
+Styles o-> "spriteExtrude" GUIContent
+Styles o-> "spriteMeshType" GUIContent
+Styles o-> "spriteAlignment" GUIContent
+Styles o-> "characterAlignment" GUIContent
+Styles o-> "warpNotSupportWarning" GUIContent
+Styles o-> "anisoLevelLabel" GUIContent
+Styles o-> "anisotropicDisableInfo" GUIContent
+Styles o-> "anisotropicForceEnableInfo" GUIContent
+Styles o-> "unappliedSettingsDialogTitle" GUIContent
+Styles o-> "unappliedSettingsDialogContent" GUIContent
+Styles o-> "applyButtonLabel" GUIContent
+Styles o-> "cancelButtonLabel" GUIContent
+Styles o-> "spriteEditorButtonLabel" GUIContent
+Styles o-> "resliceFromLayerWarning" GUIContent
+Styles o-> "alphaIsTransparency" GUIContent
+Styles o-> "advancedHeaderText" GUIContent
+Styles o-> "platformSettingsHeaderText" GUIContent
+Styles o-> "wrapModeLabel" GUIContent
+Styles o-> "wrapU" GUIContent
+Styles o-> "wrapV" GUIContent
+Styles o-> "wrapW" GUIContent
+Styles o-> "layerMapping" GUIContent
+Styles o-> "generatePhysicsShape" GUIContent
+Styles o-> "generateTileAssets" GUIContent
+Styles o-> "importHiddenLayer" GUIContent
+Styles o-> "mosaicLayers" GUIContent
+Styles o-> "characterMode" GUIContent
+Styles o-> "layerGroupLabel" GUIContent
+Styles o-> "resliceFromLayer" GUIContent
+Styles o-> "paperDollMode" GUIContent
+Styles o-> "keepDuplicateSpriteName" GUIContent
+Styles o-> "mainSkeletonName" GUIContent
+Styles o-> "generalHeaderText" GUIContent
+Styles o-> "layerImportHeaderText" GUIContent
+Styles o-> "textureHeaderText" GUIContent
+Styles o-> "multiEditLayerManagementNotSupported" GUIContent
+Styles o-> "characterRigHeaderText" GUIContent
+Styles o-> "tilePaletteHeaderText" GUIContent
+Styles o-> "tilePaletteHexagonLabel" GUIContent
+Styles o-> "tilePaletteCellSizeLabel" GUIContent
+Styles o-> "tilePaletteTransparencySortAxisLabel" GUIContent
+Styles o-> "swizzle" GUIContent
+PSDImporterEditorFoldOutState +-- SavedBool
+@enduml

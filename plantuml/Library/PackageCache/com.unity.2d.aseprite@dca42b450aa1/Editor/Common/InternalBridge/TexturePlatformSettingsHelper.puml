@@ -1,0 +1,10 @@
+@startuml
+class TexturePlatformSettingsHelper {
+    + {static} defaultPlatformName : string <<get>>
+    + TexturePlatformSettingsHelper(dataProvider:ITexturePlatformSettingsDataProvider)
+    + ShowPlatformSpecificSettings() : void
+    + HasModified() : bool
+    + Apply() : void
+    + {static} GetBuildTargetGroupName(target:BuildTarget) : string
+}
+@enduml

@@ -1,0 +1,14 @@
+@startuml
+class SpriteSelectorWidget {
+    + Initialize(clientId:int) : void
+    + Dispose() : void
+    + UpdateContents(sprites:Sprite[]) : void
+    + ShowGUI(selectedIndex:int) : int
+    + UpdateSpritePreviews() : bool
+}
+class Styles {
+    + Styles()
+}
+SpriteSelectorWidget +-- Styles
+Styles --> "gridListStyle" GUIStyle
+@enduml

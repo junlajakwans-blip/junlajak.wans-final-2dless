@@ -1,0 +1,11 @@
+@startuml
+class MapGeneratorSchool {
+    + <<override>> GenerateMap() : void
+    + <<override>> SetupBackground() : void
+    + <<override>> SpawnEnemies() : void
+    + <<override>> SpawnCollectibles() : void
+    + <<override>> SpawnAssets() : void
+    + <<override>> SpawnThrowables() : void
+}
+MapGeneratorBase <|-- MapGeneratorSchool
+@enduml

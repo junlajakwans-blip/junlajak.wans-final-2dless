@@ -1,0 +1,15 @@
+@startuml
+class ThrowableSpawner {
+    + CanInteract : bool <<get>>
+    + Initialize(pivot:Transform, enemySpawner:EnemySpawner) : void
+    + Interact(player:Player) : void
+    + ShowPrompt() : void
+    + Spawn() : void
+    + SpawnAtPosition(position:Vector3) : GameObject
+    + Despawn(obj:GameObject) : void
+    + GetSpawnCount() : int
+}
+MonoBehaviour <|-- ThrowableSpawner
+ISpawn <|-- ThrowableSpawner
+IInteractable <|-- ThrowableSpawner
+@enduml

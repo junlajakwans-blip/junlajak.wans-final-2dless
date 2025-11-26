@@ -1,0 +1,4 @@
+@startuml
+class LabelsTab <<partial>> {
+}
+@enduml

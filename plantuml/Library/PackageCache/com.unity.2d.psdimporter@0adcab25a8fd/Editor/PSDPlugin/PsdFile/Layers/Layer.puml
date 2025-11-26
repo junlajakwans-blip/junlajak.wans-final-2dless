@@ -1,0 +1,25 @@
+@startuml
+class Layer {
+    + IsGroup : bool <<get>> <<set>>
+    + IsEndGroupMarker : bool <<get>> <<set>>
+    + LayerID : int <<get>> <<set>>
+    + BlendModeKey : string <<get>> <<set>>
+    + Opacity : byte <<get>> <<set>>
+    + Clipping : bool <<get>> <<set>>
+    + Visible : bool <<get>> <<set>>
+    + ProtectTrans : bool <<get>> <<set>>
+    + Name : string <<get>> <<set>>
+    + Layer(psdFile:PsdFile)
+    + Layer(reader:PsdBinaryReader, psdFile:PsdFile)
+    + CreateMissingChannels() : void
+}
+class "List`1"<T> {
+}
+Layer --> "Rect" Rectangle
+Layer --> "ParentLayer" Layer
+Layer --> "Channels" ChannelList
+Layer --> "AlphaChannel" Channel
+Layer --> "BlendingRangesData" BlendingRanges
+Layer --> "Masks" MaskInfo
+Layer --> "AdditionalInfo<LayerInfo>" "List`1"
+@enduml

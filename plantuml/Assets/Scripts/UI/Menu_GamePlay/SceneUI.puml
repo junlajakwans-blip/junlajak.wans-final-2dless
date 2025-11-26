@@ -1,0 +1,6 @@
+@startuml
+class GameUI {
+}
+MonoBehaviour <|-- GameUI
+GameUI --> "Instance" GameUI
+@enduml

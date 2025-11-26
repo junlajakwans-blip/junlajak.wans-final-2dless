@@ -1,0 +1,9 @@
+@startuml
+enum GeneratorStyle {
+    SDK= 1,
+    Legacy= 2,
+}
+class GeneratorFactory <<static>> {
+    + {static} GetInstance(style:GeneratorStyle) : IGenerator
+}
+@enduml

@@ -1,0 +1,63 @@
+@startuml
+class DebugDisplaySettingsVolume {
+    + selectedComponent : int <<get>> <<set>>
+    + GetVolumeWeight(volume:Volume) : float
+    + GetVolumesList() : ObservableList<Volume>
+    + DebugDisplaySettingsVolume(volumeDebugSettings:IVolumeDebugSettings)
+    + DebugDisplaySettingsVolume()
+    + AreAnySettingsActive : bool <<get>>
+    + CreatePanel() : IDebugDisplaySettingsPanelDisposable
+}
+class "List`1"<T> {
+}
+class Styles <<static>> {
+}
+class Strings <<static>> {
+    + {static} <<readonly>> cameraNeedsRendering : string = "Values might not be fully updated if the camera you are inspecting is not rendered."
+    + {static} <<readonly>> none : string = "None"
+    + {static} <<readonly>> parameter : string = "Parameter"
+    + {static} <<readonly>> component : string = "Component"
+    + {static} <<readonly>> debugViewNotSupported : string = "N/A"
+    + {static} <<readonly>> volumeInfo : string = "Volume Info"
+    + {static} <<readonly>> gameObject : string = "GameObject"
+    + {static} <<readonly>> priority : string = "Priority"
+    + {static} <<readonly>> resultValue : string = "Result"
+    + {static} <<readonly>> resultValueTooltip : string = "The interpolated result value of the parameter. This value is used to render the camera."
+    + {static} <<readonly>> globalDefaultValue : string = "Graphics Settings"
+    + {static} <<readonly>> globalDefaultValueTooltip : string = "Default value for this parameter, defined by the Default Volume Profile in Global Settings."
+    + {static} <<readonly>> qualityLevelValue : string = "Quality Settings"
+    + {static} <<readonly>> qualityLevelValueTooltip : string = "Override value for this parameter, defined by the Volume Profile in the current SRP Asset."
+    + {static} <<readonly>> global : string = "Global"
+    + {static} <<readonly>> local : string = "Local"
+    + {static} <<readonly>> volumeProfile : string = "Volume Profile"
+    + {static} <<readonly>> parameterNotCalculated : string = "N/A"
+}
+class WidgetFactory <<static>> {
+    + {static} CreateComponentSelector(panel:SettingsPanel, refresh:Action<DebugUI.Field<int>, int>) : DebugUI.EnumField
+    + {static} CreateCameraSelector(panel:SettingsPanel, refresh:Action<DebugUI.Field<Object>, Object>) : DebugUI.ObjectPopupField
+    + {static} CreateVolumeTable(data:DebugDisplaySettingsVolume) : DebugUI.Table
+}
+class SettingsPanel {
+    + <<override>> Dispose() : void
+    + SettingsPanel(data:DebugDisplaySettingsVolume)
+}
+struct VolumeParameterChain {
+}
+class "DebugDisplaySettingsPanel`1"<T> {
+}
+IDebugDisplaySettingsData <|-- DebugDisplaySettingsVolume
+DebugDisplaySettingsVolume --> "volumeDebugSettings" IVolumeDebugSettings
+DebugDisplaySettingsVolume --> "selectedComponentType" Type
+DebugDisplaySettingsVolume --> "volumeComponentsPathAndType<(string, Type)>" "List`1"
+DebugDisplaySettingsVolume --> "selectedCamera" Camera
+DebugDisplaySettingsVolume +-- Styles
+Styles o-> "none" GUIContent
+DebugDisplaySettingsVolume +-- Strings
+DebugDisplaySettingsVolume +-- WidgetFactory
+DebugDisplaySettingsVolume +-- SettingsPanel
+"DebugDisplaySettingsPanel`1" "<DebugDisplaySettingsVolume>" <|-- SettingsPanel
+WidgetFactory +-- VolumeParameterChain
+VolumeParameterChain --> "volumeProfile" VolumeProfile
+VolumeParameterChain --> "volumeComponent" VolumeComponent
+VolumeParameterChain --> "volume" Volume
+@enduml

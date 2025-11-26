@@ -1,0 +1,7 @@
+@startuml
+class WelcomeView {
+}
+interface ICloudDriveWindow {
+}
+WelcomeView +-- ICloudDriveWindow
+@enduml

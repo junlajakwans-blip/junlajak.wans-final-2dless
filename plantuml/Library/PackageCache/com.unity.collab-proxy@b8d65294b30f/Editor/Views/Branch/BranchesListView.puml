@@ -1,0 +1,9 @@
+@startuml
+class BranchesListView {
+    + <<override>> OnGUI(rect:Rect) : void
+}
+class "IPlasticTree`1"<T> {
+}
+PlasticTreeView <|-- BranchesListView
+"IPlasticTree`1" "<BranchTreeNode>" <|-- BranchesListView
+@enduml

@@ -1,0 +1,7 @@
+@startuml
+struct BufferedRumble {
+    + BufferedRumble(device:InputDevice)
+    + EnqueueRumble(samples:byte[]) : void
+}
+BufferedRumble --> "capabilities" HapticCapabilities
+@enduml

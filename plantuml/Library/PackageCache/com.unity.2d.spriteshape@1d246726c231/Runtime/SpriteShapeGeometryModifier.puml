@@ -1,0 +1,7 @@
+@startuml
+abstract class SpriteShapeGeometryModifier {
+    + {abstract} MakeModifierJob(generator:JobHandle, spriteShapeController:SpriteShapeController, indices:NativeArray<ushort>, positions:NativeSlice<Vector3>, texCoords:NativeSlice<Vector2>, tangents:NativeSlice<Vector4>, segments:NativeArray<SpriteShapeSegment>, colliderData:NativeArray<float2>) : JobHandle
+    + <<virtual>> GetVersion() : int
+}
+ScriptableObject <|-- SpriteShapeGeometryModifier
+@enduml

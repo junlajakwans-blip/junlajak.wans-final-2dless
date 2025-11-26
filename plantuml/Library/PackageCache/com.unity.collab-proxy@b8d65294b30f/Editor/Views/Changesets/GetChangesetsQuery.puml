@@ -1,0 +1,4 @@
+@startuml
+class GetChangesetsQuery <<static>> {
+}
+@enduml

@@ -1,0 +1,5 @@
+@startuml
+class TextureGeneration <<static>> {
+    + {static} Generate(ctx:AssetImportContext, imageData:NativeArray<Color32>, textureWidth:int, textureHeight:int, sprites:SpriteMetaData[], allPlatformSettings:List<TextureImporterPlatformSettings>, textureImporterSettings:TextureImporterSettings, spritePackingTag:string, secondarySpriteTextures:SecondarySpriteTexture[]) : TextureGenerationOutput
+}
+@enduml

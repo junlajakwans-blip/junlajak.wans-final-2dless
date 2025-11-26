@@ -1,0 +1,11 @@
+@startuml
+class TilePaletteActivePaletteDropdownMenu {
+    + TilePaletteActivePaletteDropdownMenu()
+    + AddItem(itemName:string, isChecked:bool, action:System.Action) : void
+    + AddItem(itemName:string, isChecked:bool, action:System.Action<object>, data:object) : void
+    + AddDisabledItem(itemName:string, isChecked:bool) : void
+    + AddSeparator(path:string) : void
+    + DropDown(position:Rect, targetElement:VisualElement, anchored:bool) : void
+}
+IGenericMenu <|-- TilePaletteActivePaletteDropdownMenu
+@enduml

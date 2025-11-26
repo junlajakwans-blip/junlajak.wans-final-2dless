@@ -1,0 +1,13 @@
+@startuml
+class TilePaletteBrushInspectorPopup {
+    + CreateGUI() : void
+}
+class TilePaletteBrushInspectorLockToggle <<sealed>> {
+    + TilePaletteBrushInspectorLockToggle()
+}
+class "Action`1"<T> {
+}
+BoolFieldOverlayPopupWindow <|-- TilePaletteBrushInspectorPopup
+EditorToolbarToggle <|-- TilePaletteBrushInspectorLockToggle
+TilePaletteBrushInspectorLockToggle --> "ToggleChanged<bool>" "Action`1"
+@enduml

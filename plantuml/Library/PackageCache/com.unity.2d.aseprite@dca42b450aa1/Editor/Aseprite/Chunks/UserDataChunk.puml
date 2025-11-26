@@ -1,0 +1,12 @@
+@startuml
+enum UserDataFlags {
+    HasText= 1,
+    HasColor= 2,
+}
+class UserDataChunk {
+    + text : string <<get>>
+}
+BaseChunk <|-- UserDataChunk
+UserDataChunk --> "chunkType" ChunkTypes
+UserDataChunk --> "color" Color32
+@enduml

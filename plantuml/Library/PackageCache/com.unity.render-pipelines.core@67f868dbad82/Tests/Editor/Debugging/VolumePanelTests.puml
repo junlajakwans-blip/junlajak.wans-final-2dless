@@ -1,0 +1,9 @@
+@startuml
+class RenderingDebuggerTests <<partial>> {
+}
+class Volumes {
+    + ExtractResult(parameter:VolumeParameter) : string
+    + CreateParameterWidget(parameter:VolumeParameter) : string
+}
+RenderingDebuggerTests +-- Volumes
+@enduml

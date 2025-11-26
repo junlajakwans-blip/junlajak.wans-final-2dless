@@ -1,0 +1,4 @@
+@startuml
+class CloudDriveMenuItem <<static>> {
+}
+@enduml

@@ -1,0 +1,18 @@
+@startuml
+class SpriteResolverInspector {
+    + OnEnable() : void
+    + <<override>> OnInspectorGUI() : void
+}
+class Style <<static>> {
+}
+struct SpriteCategorySelectionList {
+    + categoryName : string
+}
+Editor <|-- SpriteResolverInspector
+SpriteResolverInspector +-- Style
+Style o-> "categoryLabel" GUIContent
+Style o-> "labelLabel" GUIContent
+Style o-> "categoryIsEmptyLabel" GUIContent
+Style o-> "noCategory" GUIContent
+SpriteResolverInspector +-- SpriteCategorySelectionList
+@enduml

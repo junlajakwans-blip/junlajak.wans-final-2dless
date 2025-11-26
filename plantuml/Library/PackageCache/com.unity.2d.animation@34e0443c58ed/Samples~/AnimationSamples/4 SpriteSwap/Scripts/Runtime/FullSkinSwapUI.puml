@@ -1,0 +1,5 @@
+@startuml
+class FullSkinSwapUI {
+}
+MonoBehaviour <|-- FullSkinSwapUI
+@enduml

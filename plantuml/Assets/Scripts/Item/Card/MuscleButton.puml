@@ -1,0 +1,8 @@
+@startuml
+class MuscleButton {
+    + Show() : void
+    + Hide() : void
+}
+MonoBehaviour <|-- MuscleButton
+MuscleButton --> "Instance" MuscleButton
+@enduml

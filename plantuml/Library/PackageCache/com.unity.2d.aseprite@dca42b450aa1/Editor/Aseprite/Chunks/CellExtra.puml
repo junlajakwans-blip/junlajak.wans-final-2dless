@@ -1,0 +1,6 @@
+@startuml
+class CellExtra {
+}
+BaseChunk <|-- CellExtra
+CellExtra --> "chunkType" ChunkTypes
+@enduml

@@ -1,0 +1,10 @@
+@startuml
+class LayerUnicodeName {
+    + <<override>> Signature : string <<get>>
+    + <<override>> Key : string <<get>>
+    + Name : string <<get>> <<set>>
+    + LayerUnicodeName(name:string)
+    + LayerUnicodeName(reader:PsdBinaryReader)
+}
+LayerInfo <|-- LayerUnicodeName
+@enduml

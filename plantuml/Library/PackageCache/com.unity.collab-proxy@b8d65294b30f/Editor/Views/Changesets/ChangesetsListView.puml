@@ -1,0 +1,9 @@
+@startuml
+class ChangesetsListView {
+    + <<override>> OnGUI(rect:Rect) : void
+}
+class "IPlasticTable`1"<T> {
+}
+PlasticTreeView <|-- ChangesetsListView
+"IPlasticTable`1" "<object>" <|-- ChangesetsListView
+@enduml

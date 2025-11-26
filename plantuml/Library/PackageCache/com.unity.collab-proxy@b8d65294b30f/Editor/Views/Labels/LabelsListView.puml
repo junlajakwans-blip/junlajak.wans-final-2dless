@@ -1,0 +1,9 @@
+@startuml
+class LabelsListView {
+    + <<override>> OnGUI(rect:Rect) : void
+}
+class "IPlasticTable`1"<T> {
+}
+PlasticTreeView <|-- LabelsListView
+"IPlasticTable`1" "<object>" <|-- LabelsListView
+@enduml

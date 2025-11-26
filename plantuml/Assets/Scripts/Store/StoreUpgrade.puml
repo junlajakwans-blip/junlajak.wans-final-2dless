@@ -1,0 +1,16 @@
+@startuml
+class StoreUpgrade {
+    + <<override>> StoreName : string <<get>>
+    + <<override>> Initialize(manager:StoreManager, injectedItems:List<StoreItem>) : void
+    + RenderToUI(slots:List<SlotUI>) : void
+    + <<override>> Purchase(item:StoreItem) : bool
+    + <<override>> IsUnlocked(item:StoreItem) : bool
+    + GetLevel(item:StoreItem) : int
+    + SetLevel(item:StoreItem, newLevel:int) : void
+    + GetPrice(item:StoreItem) : int
+    + GetTotalHPBonus() : int
+    + SyncWithSave() : void
+}
+StoreBase <|-- StoreUpgrade
+StoreUpgrade --> "StoreType" StoreType
+@enduml

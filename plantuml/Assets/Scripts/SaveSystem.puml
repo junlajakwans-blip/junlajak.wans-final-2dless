@@ -1,0 +1,15 @@
+@startuml
+class SaveSystem {
+    + Initialize() : void
+    + GetProgressData() : GameProgressData
+    + SaveData() : void
+    + LoadData() : void
+    + SetGlobalHighScore(newScore:int) : void
+    + GetGlobalHighScore() : int
+    + ResetData() : void
+    + DeleteSave() : void
+    + BackupSaveFile() : void
+}
+MonoBehaviour <|-- SaveSystem
+SaveSystem --> "Instance" SaveSystem
+@enduml

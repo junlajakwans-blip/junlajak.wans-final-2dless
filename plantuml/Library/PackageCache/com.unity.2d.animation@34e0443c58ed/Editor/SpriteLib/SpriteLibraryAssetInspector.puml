@@ -1,0 +1,19 @@
+@startuml
+class SpriteLibraryAssetInspector {
+    + {static} ExecuteOpenSpriteLibraryAsset(instanceID:int) : bool
+    + OnEnable() : void
+    + OnDisable() : void
+    + <<override>> OnInspectorGUI() : void
+}
+class Style <<static>> {
+    + {static} categoryListLabel : string
+    + {static} <<readonly>> UpgradeHelpBox : string
+    + {static} <<readonly>> UpgradeButton : string
+    + {static} lineSpacing : int = 3
+}
+Editor <|-- SpriteLibraryAssetInspector
+SpriteLibraryAssetInspector +-- Style
+Style o-> "duplicateWarningText" GUIContent
+Style o-> "duplicateWarning" GUIContent
+Style o-> "nameLabel" GUIContent
+@enduml

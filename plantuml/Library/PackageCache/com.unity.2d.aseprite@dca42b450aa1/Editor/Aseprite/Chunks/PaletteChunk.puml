@@ -1,0 +1,17 @@
+@startuml
+struct PaletteEntry {
+    + name : string <<get>>
+}
+class PaletteChunk {
+    + noOfEntries : uint <<get>>
+    + firstColorIndex : uint <<get>>
+    + lastColorIndex : uint <<get>>
+}
+class "ReadOnlyCollection`1"<T> {
+}
+PaletteEntry --> "color" Color32
+BaseChunk <|-- PaletteChunk
+IPaletteProvider <|-- PaletteChunk
+PaletteChunk --> "chunkType" ChunkTypes
+PaletteChunk --> "entries<PaletteEntry>" "ReadOnlyCollection`1"
+@enduml

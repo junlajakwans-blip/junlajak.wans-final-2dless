@@ -1,0 +1,9 @@
+@startuml
+class CullingManager {
+    + AddCullingStrategy(newCullingStrategy:BaseCullingStrategy) : void
+    + RemoveCullingStrategy(strategyToRemove:BaseCullingStrategy) : void
+    + GetCullingStrategy() : T
+}
+MonoBehaviour <|-- CullingManager
+CullingManager --> "instance" CullingManager
+@enduml

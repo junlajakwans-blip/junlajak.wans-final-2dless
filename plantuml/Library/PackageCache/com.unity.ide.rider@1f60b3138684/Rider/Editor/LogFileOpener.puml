@@ -1,0 +1,5 @@
+@startuml
+class LogFileOpener {
+    + {static} OpenFileAtLineExternal(filePath:string) : void
+}
+@enduml

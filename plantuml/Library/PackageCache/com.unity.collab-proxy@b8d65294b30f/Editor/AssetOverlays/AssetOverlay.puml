@@ -1,0 +1,4 @@
+@startuml
+class AssetOverlay <<static>> {
+}
+@enduml

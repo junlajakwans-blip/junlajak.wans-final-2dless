@@ -1,0 +1,24 @@
+@startuml
+class TilePaletteActivePalettePopup <<sealed>> <<partial>> {
+    + TilePaletteActivePalettePopup()
+    + TilePaletteActivePalettePopup(label:string)
+}
+class TilePaletteActivePalettePopupIcon {
+    + {static} <<readonly>> ussClassName : string = "unity-tilepalette-activepalette-icon"
+    + TilePaletteActivePalettePopupIcon()
+}
+class "PopupField`1"<T> {
+}
+class TilePaletteActivePalettePopupFactory {
+}
+class TilePaletteActivePalettePopupUxmlTraits {
+}
+class "UxmlFactory`2"<T1,T2> {
+}
+"PopupField`1" "<GameObject>" <|-- TilePaletteActivePalettePopup
+VisualElement <|-- TilePaletteActivePalettePopupIcon
+TilePaletteActivePalettePopup +-- TilePaletteActivePalettePopupFactory
+"UxmlFactory`2" "<TilePaletteActivePalettePopup,TilePaletteActivePalettePopupUxmlTraits>" <|-- TilePaletteActivePalettePopupFactory
+TilePaletteActivePalettePopup +-- TilePaletteActivePalettePopupUxmlTraits
+UxmlTraits <|-- TilePaletteActivePalettePopupUxmlTraits
+@enduml

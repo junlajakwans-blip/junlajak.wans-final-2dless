@@ -1,0 +1,6 @@
+@startuml
+class TilemapEditorToolbarStrip {
+    + TilemapEditorToolbarStrip()
+}
+VisualElement <|-- TilemapEditorToolbarStrip
+@enduml

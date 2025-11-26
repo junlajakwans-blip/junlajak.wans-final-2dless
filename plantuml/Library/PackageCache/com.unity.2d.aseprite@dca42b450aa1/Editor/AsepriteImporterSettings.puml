@@ -1,0 +1,25 @@
+@startuml
+struct AsepriteImporterSettings {
+    + importHiddenLayers : bool <<get>> <<set>>
+    + mosaicPadding : uint <<get>> <<set>>
+    + spritePadding : uint <<get>> <<set>>
+    + generateModelPrefab : bool <<get>> <<set>>
+    + generateAnimationClips : bool <<get>> <<set>>
+    + addSortingGroup : bool <<get>> <<set>>
+    + addShadowCasters : bool <<get>> <<set>>
+    + generateIndividualEvents : bool <<get>> <<set>>
+    + generateSpriteAtlas : bool <<get>> <<set>>
+    + IsDefault() : bool
+    + Equals(other:AsepriteImporterSettings) : bool
+    + <<override>> Equals(obj:object) : bool
+    + <<override>> GetHashCode() : int
+}
+class "IEquatable`1"<T> {
+}
+"IEquatable`1" "<AsepriteImporterSettings>" <|-- AsepriteImporterSettings
+AsepriteImporterSettings --> "fileImportMode" FileImportModes
+AsepriteImporterSettings --> "layerImportMode" LayerImportModes
+AsepriteImporterSettings --> "defaultPivotSpace" PivotSpaces
+AsepriteImporterSettings --> "defaultPivotAlignment" SpriteAlignment
+AsepriteImporterSettings --> "customPivotPosition" Vector2
+@enduml

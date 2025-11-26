@@ -1,0 +1,5 @@
+@startuml
+class PrefabGeneration <<static>> {
+    + {static} Generate(ctx:AssetImportContext, output:TextureGenerationOutput, layers:List<Layer>, layerIdToGameObject:Dictionary<int, GameObject>, canvasSize:Vector2Int, importSettings:AsepriteImporterSettings, mainAsset:UnityEngine.Object, rootGameObject:GameObject) : void
+}
+@enduml

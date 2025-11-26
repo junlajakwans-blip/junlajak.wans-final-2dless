@@ -1,0 +1,14 @@
+@startuml
+class ImageTests {
+    + SetUp() : void
+    + TightMeshSpritePopulatedVertexHelperProperly() : void
+    + CanvasCustomRefPixPerUnitToggleWillUpdateImageMesh() : IEnumerator
+    + Sprite_Layout() : IEnumerator
+    + Sprite_Material() : IEnumerator
+    + Sprite_NoSecondaryTextures() : IEnumerator
+    + Sprite_SecondaryTextures() : IEnumerator
+    + Sprite_SecondaryTexturesUpdatedAfterSpriteChanged() : IEnumerator
+    + DestroyImmediate_OnDefaultMaterial_LogError() : void
+    + TearDown() : void
+}
+@enduml

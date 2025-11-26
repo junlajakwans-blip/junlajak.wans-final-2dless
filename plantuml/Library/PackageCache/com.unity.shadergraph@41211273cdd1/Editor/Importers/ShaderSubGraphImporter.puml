@@ -1,0 +1,8 @@
+@startuml
+class ShaderSubGraphImporter {
+    + <<const>> Extension : string = "shadersubgraph"
+    + {static} GetIcon() : Texture2D
+    + <<override>> OnImportAsset(ctx:AssetImportContext) : void
+}
+ScriptedImporter <|-- ShaderSubGraphImporter
+@enduml

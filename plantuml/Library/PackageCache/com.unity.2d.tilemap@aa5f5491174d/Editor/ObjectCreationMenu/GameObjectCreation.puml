@@ -1,0 +1,25 @@
+@startuml
+class GameObjectCreation <<static>> {
+}
+class Styles <<static>> {
+    + {static} <<readonly>> rectangularCreateUndo : string
+    + {static} <<readonly>> pointTopHexagonCreateUndo : string
+    + {static} <<readonly>> flatTopHexagonCreateUndo : string
+    + {static} <<readonly>> isometricCreateUndo : string
+    + {static} <<readonly>> isometricZAsYCreateUndo : string
+    + {static} <<readonly>> copyFromTilePaletteUndo : string
+    + {static} <<readonly>> modifyExistingGridTitle : string
+    + {static} <<readonly>> modifyExistingGridMessage : string
+    + {static} <<readonly>> continueText : string
+    + {static} <<readonly>> cancelText : string
+}
+enum TilemapMenuPriority {
+    Rectangular= 3,
+    HexagonalFlatTop,
+    HexagonalPointTop,
+    Isometric,
+    IsometricZasY,
+}
+GameObjectCreation +-- Styles
+GameObjectCreation +-- TilemapMenuPriority
+@enduml

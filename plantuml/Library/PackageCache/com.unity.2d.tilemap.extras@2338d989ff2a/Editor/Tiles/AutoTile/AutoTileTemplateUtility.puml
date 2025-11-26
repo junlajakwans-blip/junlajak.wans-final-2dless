@@ -1,0 +1,8 @@
+@startuml
+class AutoTileTemplateUtility <<static>> {
+    + {static} LoadTemplateFromFile() : AutoTileTemplate
+    + {static} ApplyTemplateToAutoTile(template:AutoTileTemplate, texture:Texture2D, sprites:IEnumerable<Sprite>, autoTile:AutoTile, matchExact:bool) : void
+    + {static} CreateTemplate(imageWidth:int, imageHeight:int, maskType:AutoTile.AutoTileMaskType, spriteData:List<AutoTileTemplate.SpriteData>) : AutoTileTemplate
+    + {static} SaveTemplateToFile(imageWidth:int, imageHeight:int, maskType:AutoTile.AutoTileMaskType, spriteData:List<AutoTileTemplate.SpriteData>) : void
+}
+@enduml

@@ -1,0 +1,14 @@
+@startuml
+abstract class StoreBase {
+    + {abstract} StoreName : string <<get>>
+    + <<virtual>> Initialize(manager:StoreManager, injectedItems:List<StoreItem>) : void
+    + <<virtual>> GetItem(id:string) : StoreItem
+    + {abstract} Purchase(item:StoreItem) : bool
+    + <<virtual>> IsUnlocked(item:StoreItem) : bool
+}
+class "IReadOnlyList`1"<T> {
+}
+MonoBehaviour <|-- StoreBase
+StoreBase --> "StoreType" StoreType
+StoreBase --> "Items<StoreItem>" "IReadOnlyList`1"
+@enduml

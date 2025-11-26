@@ -1,0 +1,6 @@
+@startuml
+class FilterTestTreeTask {
+    + <<override>> Execute(testJobData:TestJobData) : IEnumerator
+}
+TestTaskBase <|-- FilterTestTreeTask
+@enduml

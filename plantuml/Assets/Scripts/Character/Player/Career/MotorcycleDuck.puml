@@ -1,0 +1,12 @@
+@startuml
+class MotorcycleSkill {
+    + HasJumpBuff : bool <<get>>
+    + <<override>> Initialize(player:Player) : void
+    + <<override>> UseCareerSkill(player:Player) : void
+    + <<override>> PerformAttack(player:Player) : void
+    + <<override>> PerformChargeAttack(player:Player) : void
+    + <<override>> OnTakeDamage(player:Player, dmg:int) : void
+    + <<override>> Cleanup(player:Player) : void
+}
+CareerSkillBase <|-- MotorcycleSkill
+@enduml

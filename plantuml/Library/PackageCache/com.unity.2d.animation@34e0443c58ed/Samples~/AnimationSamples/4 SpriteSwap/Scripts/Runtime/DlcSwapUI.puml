@@ -1,0 +1,5 @@
+@startuml
+class DlcSwapUI {
+}
+MonoBehaviour <|-- DlcSwapUI
+@enduml

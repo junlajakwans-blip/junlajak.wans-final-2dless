@@ -1,0 +1,6 @@
+@startuml
+class PerformanceTestRunSaver {
+}
+ScriptableObject <|-- PerformanceTestRunSaver
+ICallbacks <|-- PerformanceTestRunSaver
+@enduml

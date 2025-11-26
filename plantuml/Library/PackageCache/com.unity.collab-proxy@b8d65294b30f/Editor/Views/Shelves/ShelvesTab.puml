@@ -1,0 +1,14 @@
+@startuml
+class ShelvesTab <<partial>> {
+    + RefreshAndSelect(repObj:RepObjectInfo) : void
+}
+enum OwnerFilter {
+    MyShelves,
+    AllShelves,
+}
+IRefreshableView <|-- ShelvesTab
+IShelveMenuOperations <|-- ShelvesTab
+IGetQueryText <|-- ShelvesTab
+IGetFilter <|-- ShelvesTab
+ShelvesTab +-- OwnerFilter
+@enduml

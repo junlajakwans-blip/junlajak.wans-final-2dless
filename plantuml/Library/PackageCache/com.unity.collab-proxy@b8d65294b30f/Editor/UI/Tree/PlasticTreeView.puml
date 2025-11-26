@@ -1,0 +1,6 @@
+@startuml
+class PlasticTreeView {
+    + <<override>> GetRows() : IList<TreeViewItem>
+}
+TreeView <|-- PlasticTreeView
+@enduml

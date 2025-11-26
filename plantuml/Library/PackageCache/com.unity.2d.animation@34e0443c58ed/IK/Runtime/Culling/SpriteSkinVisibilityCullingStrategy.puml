@@ -1,0 +1,11 @@
+@startuml
+class SpriteSkinVisibilityCullingStrategy {
+    + <<override>> AreBonesVisible(boneTransformIds:IList<int>) : bool
+}
+class SpriteSkinRegistry {
+    + isVisible : bool
+    + SpriteSkinRegistry(boneIds:int[], isSkinVisible:bool)
+}
+BaseCullingStrategy <|-- SpriteSkinVisibilityCullingStrategy
+SpriteSkinVisibilityCullingStrategy +-- SpriteSkinRegistry
+@enduml

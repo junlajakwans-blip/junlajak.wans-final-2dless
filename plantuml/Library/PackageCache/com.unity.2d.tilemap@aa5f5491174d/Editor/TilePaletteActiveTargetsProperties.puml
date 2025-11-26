@@ -1,0 +1,19 @@
+@startuml
+class TilePaletteActiveTargetsProperties {
+    + {static} <<readonly>> targetEditModeDialogTitle : string
+    + {static} <<readonly>> targetEditModeDialogMessage : string
+    + {static} <<readonly>> targetEditModeDialogYes : string
+    + {static} <<readonly>> targetEditModeDialogChange : string
+    + {static} <<readonly>> targetEditModeDialogNo : string
+    + {static} <<readonly>> targetEditModeEditorPref : string = "TilePalette.TargetEditMode"
+    + {static} <<readonly>> targetEditModeLookup : string = "Target Edit Mode"
+    + {static} <<readonly>> tilePalettePreferencesLookup : string = "Tile Palette"
+}
+enum PrefabEditModeSettings {
+    EnableDialog= 0,
+    EditInPrefabMode= 1,
+    EditInScene= 2,
+}
+TilePaletteActiveTargetsProperties o-> "targetEditModeDialogLabel" GUIContent
+TilePaletteActiveTargetsProperties +-- PrefabEditModeSettings
+@enduml

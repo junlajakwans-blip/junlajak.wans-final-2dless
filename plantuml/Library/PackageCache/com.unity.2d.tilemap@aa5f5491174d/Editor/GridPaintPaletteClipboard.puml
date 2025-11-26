@@ -1,0 +1,75 @@
+@startuml
+class GridPaintPaletteClipboard {
+    +  <<event>> onBrushPicked : Action 
+    + activeDragAndDrop : bool <<get>>
+    + invalidDragAndDrop : bool <<get>>
+    + unlocked : bool <<get>> <<set>>
+    +  <<event>> unlockedChanged : Action<bool> 
+    + isReceivingDragAndDrop : bool <<get>>
+    + isInvalidDragAndDrop : bool <<get>>
+    + ShowNewEmptyClipboardInfo(palette:GameObject) : bool
+    + isModified : bool <<get>>
+    + OnBeforePaletteSelectionChanged() : void
+    + OnAfterPaletteSelectionChanged() : void
+    + SetupPreviewCameraOnInit() : void
+    + InitPreviewUtility() : void
+    + ResetPreviewInstance() : void
+    + CreateTemporaryPreviewInstance() : void
+    + DestroyPreviewInstance() : void
+    + FrameEntirePalette() : void
+    + HandleIMGUI() : Texture
+    + HandleExecuteCommandEvent(evt:ExecuteCommandEvent) : void
+    + HandleValidateCommandEvent(evt:ValidateCommandEvent) : void
+    + HandlePointerDownEvent(evt:PointerDownEvent, button:int, alt:bool, control:bool, localMousePosition:Vector3) : void
+    + HandlePointerMoveEvent(evt:PointerMoveEvent, button:int, alt:bool, localMousePosition:Vector3, deltaPosition:Vector3) : void
+    + HandlePointerUpEvent(evt:PointerUpEvent) : void
+    + HandlePointerEnterEvent(evt:PointerEnterEvent) : void
+    + HandlePointerLeaveEvent(evt:PointerLeaveEvent) : void
+    + HandleKeyDownEvent(evt:KeyDownEvent) : void
+    + HandleKeyUpEvent() : void
+    + HandleWheelEvent(delta:Vector3, currentMousePosition:Vector2, shift:bool) : void
+    + HandleDragEnterEvent(evt:DragEnterEvent) : void
+    + HandleDragUpdatedEvent(evt:DragUpdatedEvent) : void
+    + HandleDragPerformEvent(evt:DragPerformEvent) : void
+    + HandleDragLeaveEvent(evt:DragLeaveEvent) : void
+    + HandleDragExitedEvent(evt:DragExitedEvent) : void
+    + RenderTexture() : Texture
+    + <<override>> Repaint() : void
+    + <<override>> isActive : bool <<get>>
+    + CheckRevertIfChanged(paths:string[]) : void
+    + SavePaletteIfNecessary() : bool
+    + GridToScreen(gridPosition:Vector2) : Vector2
+    + ScreenToLocal(screenPosition:Vector2) : Vector2
+    + UnlockAndEdit() : void
+}
+class "List`1"<T> {
+}
+enum ClipboardParentSource {
+    None= 0,
+    Window= 1,
+    Overlay= 2,
+}
+class PreviewInstanceScope {
+    + PreviewInstanceScope(guiRect:Rect, previewRenderUtility:PreviewRenderUtility, paletteInstance:GameObject, backgroundColor:Color, drawGizmos:bool)
+    + Dispose() : void
+}
+class AssetProcessor {
+    + <<override>> GetPostprocessOrder() : int
+}
+class PaletteAssetModificationProcessor {
+}
+PaintableGrid <|-- GridPaintPaletteClipboard
+GridPaintPaletteClipboard --> "instances<GridPaintPaletteClipboard>" "List`1"
+GridPaintPaletteClipboard --> "guiRect" Rect
+GridPaintPaletteClipboard --> "activeTile" TileBase
+GridPaintPaletteClipboard --> "clipboardParentSource" ClipboardParentSource
+GridPaintPaletteClipboard --> "rectPosition" Rect
+GridPaintPaletteClipboard --> "windowRoot" VisualElement
+GridPaintPaletteClipboard +-- ClipboardParentSource
+GridPaintPaletteClipboard +-- PreviewInstanceScope
+IDisposable <|-- PreviewInstanceScope
+GridPaintPaletteClipboard +-- AssetProcessor
+AssetPostprocessor <|-- AssetProcessor
+GridPaintPaletteClipboard +-- PaletteAssetModificationProcessor
+AssetModificationProcessor <|-- PaletteAssetModificationProcessor
+@enduml

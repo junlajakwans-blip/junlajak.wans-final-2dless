@@ -1,0 +1,69 @@
+@startuml
+class SpriteOutline {
+    + Add(point:Vector2) : void
+    + Insert(index:int, point:Vector2) : void
+    + RemoveAt(index:int) : void
+    + Count : int <<get>>
+    + AddRange(addRange:IEnumerable<Vector2>) : void
+}
+class SpriteOutlineList {
+    + tessellationDetail : float <<get>> <<set>>
+    + SpriteOutlineList(guid:GUID)
+    + SpriteOutlineList(guid:GUID, list:List<Vector2[]>)
+    + SpriteOutlineList(guid:GUID, list:List<SpriteOutline>)
+    + ToListVector() : List<Vector2[]>
+    + ToListVectorCapped(rect:Rect) : List<Vector2[]>
+    + Count : int <<get>>
+}
+class SpriteOutlineModel {
+    + AddListVector2(guid:GUID, outline:List<Vector2[]>) : void
+    + Count : int <<get>>
+}
+class SpriteOutlineModule {
+    + SpriteOutlineModule(sem:ISpriteEditor, es:IEventSystem, us:IUndoSystem, ad:IAssetDatabase, gu:IGUIUtility, sef:IShapeEditorFactory, outlineTexture:ITexture2D)
+    + <<override>> moduleName : string <<get>>
+    + <<override>> ApplyRevert(apply:bool) : bool
+    + <<override>> OnModuleActivate() : void
+    + <<override>> OnModuleDeactivate() : void
+    + <<override>> DoMainGUI() : void
+    + <<override>> DoToolbarGUI(drawArea:Rect) : void
+    + <<override>> DoPostGUI() : void
+    + <<override>> CanBeActivated() : bool
+    + CreateNewOutline(rectOutline:Rect) : void
+    + UpdateShapeEditors() : void
+    + SetupShapeEditor() : void
+    + SnapPoint(position:Vector3) : Vector3
+    + GetPointPosition(outlineIndex:int, pointIndex:int) : Vector3
+    + SetPointPosition(outlineIndex:int, pointIndex:int, position:Vector3) : void
+    + InsertPointAt(outlineIndex:int, pointIndex:int, position:Vector3) : void
+    + RemovePointAt(outlineIndex:int, i:int) : void
+    + GetPointsCount(outlineIndex:int) : int
+    + Copy() : void
+    + Paste() : void
+    + PasteAll() : void
+    + PasteFromAlternate() : void
+    + PasteAllFromAlternate() : void
+}
+class SpriteOutlineModulePreference {
+    + <<const>> kSettingsUniqueKey : string = "UnityEditor.U2D.Sprites/SpriteOutlineModule"
+    + <<const>> kUseClipper : string
+    + <<const>> kAlphaTolerance : string
+    + <<const>> kPhysicsAlphaTolerance : string
+    + {static} useClipper : bool <<get>> <<set>>
+    + {static} alphaTolerance : int <<get>> <<set>>
+    + {static} physicsAlphaTolerance : int <<get>> <<set>>
+}
+class "List`1"<T> {
+}
+class Styles {
+}
+SpriteOutline o-> "m_Path<Vector2>" "List`1"
+SpriteOutlineList --> "spriteOutlines<SpriteOutline>" "List`1"
+SpriteOutlineList --> "spriteID" GUID
+ScriptableObject <|-- SpriteOutlineModel
+SpriteEditorModuleBase <|-- SpriteOutlineModule
+SpriteOutlineModule +-- Styles
+Styles o-> "generatingOutlineDialogTitle" GUIContent
+Styles o-> "generatingOutlineDialogContent" GUIContent
+Styles o-> "spriteBorderColor" Color
+@enduml

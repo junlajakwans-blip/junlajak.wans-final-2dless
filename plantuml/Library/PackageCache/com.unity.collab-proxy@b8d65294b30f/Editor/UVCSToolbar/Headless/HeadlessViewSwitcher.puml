@@ -1,0 +1,5 @@
+@startuml
+class HeadlessViewSwitcher {
+}
+IViewSwitcher <|-- HeadlessViewSwitcher
+@enduml

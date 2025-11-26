@@ -1,0 +1,24 @@
+@startuml
+struct HapticCapabilities {
+    + HapticCapabilities(numChannels:uint, supportsImpulse:bool, supportsBuffer:bool, frequencyHz:uint, maxBufferSize:uint, optimalBufferSize:uint)
+    + HapticCapabilities(numChannels:uint, frequencyHz:uint, maxBufferSize:uint)
+    + numChannels : uint <<get>>
+    + supportsImpulse : bool <<get>>
+    + supportsBuffer : bool <<get>>
+    + frequencyHz : uint <<get>>
+    + maxBufferSize : uint <<get>>
+    + optimalBufferSize : uint <<get>>
+}
+struct GetHapticCapabilitiesCommand {
+    + numChannels : uint
+    + supportsImpulse : bool
+    + supportsBuffer : bool
+    + frequencyHz : uint
+    + maxBufferSize : uint
+    + optimalBufferSize : uint
+    + {static} Create() : GetHapticCapabilitiesCommand
+}
+IInputDeviceCommandInfo <|-- GetHapticCapabilitiesCommand
+GetHapticCapabilitiesCommand --> "typeStatic" FourCC
+GetHapticCapabilitiesCommand --> "capabilities" HapticCapabilities
+@enduml

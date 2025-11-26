@@ -1,0 +1,8 @@
+@startuml
+class MinMaxSliderAttribute {
+    + min : float
+    + max : float
+    + MinMaxSliderAttribute(min:float, max:float)
+}
+PropertyAttribute <|-- MinMaxSliderAttribute
+@enduml

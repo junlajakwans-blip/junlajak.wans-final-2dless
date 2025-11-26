@@ -1,0 +1,13 @@
+@startuml
+enum SpriteSourceType {
+    Sprite,
+    Psb,
+}
+struct DragAndDropData {
+    + name : string
+}
+class "List`1"<T> {
+}
+DragAndDropData --> "spriteSourceType" SpriteSourceType
+DragAndDropData --> "sprites<Sprite>" "List`1"
+@enduml

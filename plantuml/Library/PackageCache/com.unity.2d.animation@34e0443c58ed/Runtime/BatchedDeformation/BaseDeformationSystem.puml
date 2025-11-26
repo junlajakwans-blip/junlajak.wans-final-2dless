@@ -1,0 +1,13 @@
+@startuml
+abstract class BaseDeformationSystem {
+}
+class Profiling <<static>> {
+}
+BaseDeformationSystem --> "deformationMethod" DeformationMethods
+BaseDeformationSystem +-- Profiling
+Profiling o-> "transformAccessJob" ProfilerMarker
+Profiling o-> "getSpriteSkinBatchData" ProfilerMarker
+Profiling o-> "scheduleJobs" ProfilerMarker
+Profiling o-> "setBatchDeformableBufferAndLocalAABB" ProfilerMarker
+Profiling o-> "setBoneTransformsArray" ProfilerMarker
+@enduml

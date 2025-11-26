@@ -1,0 +1,26 @@
+@startuml
+abstract class SpriteFrameModuleBase <<partial>> {
+    + EnableSpriteFrameInspector(value:bool) : void
+    + <<override>> DoMainGUI() : void
+    + <<override>> DoPostGUI() : void
+}
+enum GizmoMode {
+    BorderEditing,
+    RectEditing,
+}
+class Styles {
+    + <<readonly>> lockToolTip : string = "Editing is disabled. Go to the Lock dropdown at the toolbar above to change this."
+    + Styles()
+}
+SpriteEditorModuleModeSupportBase <|-- SpriteFrameModuleBase
+SpriteFrameModuleBase +-- GizmoMode
+SpriteFrameModuleBase +-- Styles
+Styles o-> "dragdot" GUIStyle
+Styles o-> "dragdotactive" GUIStyle
+Styles o-> "createRect" GUIStyle
+Styles o-> "pivotdotactive" GUIStyle
+Styles o-> "pivotdot" GUIStyle
+Styles o-> "dragBorderdot" GUIStyle
+Styles o-> "dragBorderDotActive" GUIStyle
+Styles --> "toolbar" GUIStyle
+@enduml

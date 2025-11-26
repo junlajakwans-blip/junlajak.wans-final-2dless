@@ -1,0 +1,9 @@
+@startuml
+class TileSetImporterElement {
+    + TileSetImporterElement(inImporter:SerializedObject)
+    + Bind(inAsset:SerializedObject, inAtlas:SpriteAtlas) : void
+}
+VisualElement <|-- TileSetImporterElement
+TileSetImporterElement --> "onRevert" Action
+TileSetImporterElement --> "onApply" Action
+@enduml

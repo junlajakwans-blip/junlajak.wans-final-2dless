@@ -1,0 +1,6 @@
+@startuml
+class InstanceCullingBatcherBurst <<static>> {
+    + {static} <<unsafe>> RemoveDrawInstanceIndices(drawInstanceIndices:NativeArray<int>, drawInstances:NativeList<DrawInstance>, rangeHash:NativeParallelHashMap<RangeKey, int>, batchHash:NativeParallelHashMap<DrawKey, int>, drawRanges:NativeList<DrawRange>, drawBatches:NativeList<DrawBatch>) : void
+    + {static} CreateDrawBatches(implicitInstanceIndices:bool, instances:NativeArray<InstanceHandle>, rendererData:GPUDrivenRendererGroupData, batchMeshHash:NativeParallelHashMap<int, BatchMeshID>, batchMaterialHash:NativeParallelHashMap<int, BatchMaterialID>, packedMaterialDataHash:NativeParallelHashMap<int, GPUDrivenPackedMaterialData>, rangeHash:NativeParallelHashMap<RangeKey, int>, drawRanges:NativeList<DrawRange>, batchHash:NativeParallelHashMap<DrawKey, int>, drawBatches:NativeList<DrawBatch>, drawInstances:NativeList<DrawInstance>) : void
+}
+@enduml

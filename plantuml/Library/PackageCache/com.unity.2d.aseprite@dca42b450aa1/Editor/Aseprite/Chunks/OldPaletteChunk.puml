@@ -1,0 +1,10 @@
+@startuml
+class OldPaletteChunk {
+}
+class "ReadOnlyCollection`1"<T> {
+}
+BaseChunk <|-- OldPaletteChunk
+IPaletteProvider <|-- OldPaletteChunk
+OldPaletteChunk --> "chunkType" ChunkTypes
+OldPaletteChunk --> "entries<PaletteEntry>" "ReadOnlyCollection`1"
+@enduml

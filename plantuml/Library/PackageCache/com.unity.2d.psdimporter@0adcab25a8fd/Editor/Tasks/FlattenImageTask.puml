@@ -1,0 +1,23 @@
+@startuml
+class FlattenImageTask <<static>> {
+    + {static} <<unsafe>> Execute(layer:PSDExtractLayerData[], output:NativeArray<Color32>, importHiddenLayer:bool, documentSize:Vector2Int) : void
+}
+struct LayerData {
+}
+struct FlattenImageInternalJob {
+    + layersPerJob : int
+    + flipY : bool
+    + <<unsafe>> Execute(index:int) : void
+}
+class "NativeArray`1"<T> {
+}
+FlattenImageTask +-- LayerData
+LayerData --> "layerBuffer" IntPtr
+LayerData --> "layerRect" int4
+FlattenImageTask +-- FlattenImageInternalJob
+IJobParallelFor <|-- FlattenImageInternalJob
+FlattenImageInternalJob --> "inputTextures<IntPtr>" "NativeArray`1"
+FlattenImageInternalJob --> "inputTextureRects<int4>" "NativeArray`1"
+FlattenImageInternalJob --> "outputTextureSizes<int2>" "NativeArray`1"
+FlattenImageInternalJob --> "outputTextures<IntPtr>" "NativeArray`1"
+@enduml

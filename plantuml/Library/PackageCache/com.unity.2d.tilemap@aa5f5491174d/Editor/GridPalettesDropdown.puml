@@ -1,0 +1,29 @@
+@startuml
+class GridPalettesDropdown {
+    + selectedIndex : int <<get>> <<set>>
+    + GridPalettesDropdown(itemProvider:IFlexibleMenuItemProvider, selectionIndex:int, modifyItemUi:FlexibleMenuModifyItemUI, itemClickedCallback:Action<int, object>, itemHoveredCallback:Action<int, Rect>, minWidth:float)
+    + <<override>> GetWindowSize() : Vector2
+    + <<override>> OnGUI(rect:Rect) : void
+}
+class Styles {
+}
+class MenuItemProvider {
+    + Count() : int
+    + GetItem(index:int) : object
+    + Add(obj:object) : int
+    + Replace(index:int, newPresetObject:object) : void
+    + Remove(index:int) : void
+    + Create() : object
+    + Move(index:int, destIndex:int, insertAfterDestIndex:bool) : void
+    + GetName(index:int) : string
+    + IsModificationAllowed(index:int) : bool
+    + GetSeperatorIndices() : int[]
+}
+PopupWindowContent <|-- GridPalettesDropdown
+GridPalettesDropdown +-- Styles
+Styles o-> "menuItem" GUIStyle
+Styles o-> "backIcon" GUIContent
+Styles o-> "sceneVisibilityStyle" GUIStyle
+GridPalettesDropdown +-- MenuItemProvider
+IFlexibleMenuItemProvider <|-- MenuItemProvider
+@enduml

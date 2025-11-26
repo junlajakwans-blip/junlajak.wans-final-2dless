@@ -1,0 +1,15 @@
+@startuml
+enum DuckCareer {
+    None= 0,
+    Duckling= 1,
+    Chef= 2,
+    Dancer= 3,
+    Detective= 4,
+    Doctor= 5,
+    Firefighter= 6,
+    Motorcycle= 7,
+    Programmer= 8,
+    Singer= 9,
+    Muscle= 10,
+}
+@enduml

@@ -1,0 +1,7 @@
+@startuml
+class CloudWorkspacesTreeView {
+    + <<override>> OnGUI(rect:Rect) : void
+}
+PlasticTreeView <|-- CloudWorkspacesTreeView
+ICloudWorkspacesTreeMenuOperations <|-- CloudWorkspacesTreeView
+@enduml

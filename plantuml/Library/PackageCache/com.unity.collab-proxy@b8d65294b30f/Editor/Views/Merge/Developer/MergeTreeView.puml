@@ -1,0 +1,6 @@
+@startuml
+class MergeTreeView {
+    + <<override>> OnGUI(rect:Rect) : void
+}
+PlasticTreeView <|-- MergeTreeView
+@enduml

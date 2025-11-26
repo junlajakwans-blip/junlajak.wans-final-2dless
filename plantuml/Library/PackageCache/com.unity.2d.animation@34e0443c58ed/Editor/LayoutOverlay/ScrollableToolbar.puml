@@ -1,0 +1,12 @@
+@startuml
+class ScrollableToolbar <<partial>> {
+    + isHorizontal : bool <<get>> <<set>>
+    + ScrollableToolbar()
+    + ScrollableToolbar(isHorizontal:bool)
+    + AddToContainer(element:VisualElement) : void
+    + Collapse(collapse:bool) : void
+}
+VisualElement <|-- ScrollableToolbar
+ScrollableToolbar --> "verticalScrollerVisibility" ScrollerVisibility
+ScrollableToolbar --> "horizontalScrollerVisibility" ScrollerVisibility
+@enduml

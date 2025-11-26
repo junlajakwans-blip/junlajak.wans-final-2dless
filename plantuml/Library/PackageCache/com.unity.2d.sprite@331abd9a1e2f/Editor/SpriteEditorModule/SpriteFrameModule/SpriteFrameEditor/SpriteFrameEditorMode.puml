@@ -1,0 +1,20 @@
+@startuml
+class SpriteFrameEditorMode {
+    + SpriteFrameEditorMode()
+    + ActivateMode() : bool
+    + DeactivateMode() : void
+    + OnAddToModule(module:SpriteEditorModuleModeSupportBase) : void
+    + OnRemoveFromModule(module:SpriteEditorModuleModeSupportBase) : void
+    + RequestModeToActivate() : void
+    + ApplyModeData(apply:bool, dataProviderTypes:HashSet<Type>) : bool
+    + CanBeActivated() : bool
+    + DoMainGUI() : void
+    + DoToolbarGUI(drawArea:Rect) : void
+    + DoPostGUI() : void
+    + GetSupportedModuleTypes() : Type[]
+}
+class "Action`1"<T> {
+}
+ISpriteEditorModuleMode <|-- SpriteFrameEditorMode
+SpriteFrameEditorMode --> "spriteEditor" ISpriteEditor
+@enduml

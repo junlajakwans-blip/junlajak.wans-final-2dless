@@ -1,0 +1,27 @@
+@startuml
+class ResolutionInfo {
+    + ResolutionInfo()
+    + ResolutionInfo(reader:PsdBinaryReader, name:string)
+}
+enum ResUnit {
+    PxPerInch= 1,
+    PxPerCm= 2,
+}
+enum Unit {
+    Inches= 1,
+    Centimeters= 2,
+    Points= 3,
+    Picas= 4,
+    Columns= 5,
+}
+ImageResource <|-- ResolutionInfo
+ResolutionInfo --> "ID" ResourceID
+ResolutionInfo --> "HDpi" UFixed16_16
+ResolutionInfo --> "VDpi" UFixed16_16
+ResolutionInfo --> "HResDisplayUnit" ResUnit
+ResolutionInfo --> "VResDisplayUnit" ResUnit
+ResolutionInfo --> "WidthDisplayUnit" Unit
+ResolutionInfo --> "HeightDisplayUnit" Unit
+ResolutionInfo +-- ResUnit
+ResolutionInfo +-- Unit
+@enduml

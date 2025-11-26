@@ -1,0 +1,24 @@
+@startuml
+class ExtractLayerTask <<static>> {
+    + {static} <<unsafe>> Execute(psdExtractLayerData:PSDExtractLayerData[], outputLayers:List<PSDLayer>, importHiddenLayer:bool, canvasSize:Vector2Int) : void
+}
+struct LayerGroupData {
+    + startIndex : int <<get>> <<set>>
+    + endIndex : int <<get>> <<set>>
+}
+struct ConvertBufferJob {
+    + <<unsafe>> Execute(groupIndex:int) : void
+}
+class "NativeArray`1"<T> {
+}
+ExtractLayerTask +-- LayerGroupData
+LayerGroupData --> "documentRect" int4
+ExtractLayerTask +-- ConvertBufferJob
+IJobParallelFor <|-- ConvertBufferJob
+ConvertBufferJob --> "inputTextureBufferSizes<int>" "NativeArray`1"
+ConvertBufferJob --> "inputTextures<IntPtr>" "NativeArray`1"
+ConvertBufferJob --> "inputLayerRects<int4>" "NativeArray`1"
+ConvertBufferJob --> "layerGroupDataData<LayerGroupData>" "NativeArray`1"
+ConvertBufferJob --> "outputLayerRect<int4>" "NativeArray`1"
+ConvertBufferJob --> "outputTextures<IntPtr>" "NativeArray`1"
+@enduml

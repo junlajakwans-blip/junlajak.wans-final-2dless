@@ -1,0 +1,5 @@
+@startuml
+class CollaboratorsMultiColumnHeader {
+}
+MultiColumnHeader <|-- CollaboratorsMultiColumnHeader
+@enduml

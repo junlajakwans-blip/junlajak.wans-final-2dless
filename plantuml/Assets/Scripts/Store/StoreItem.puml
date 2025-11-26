@@ -1,0 +1,23 @@
+@startuml
+enum StoreCurrency {
+    Coin,
+    Token,
+    KeyMap,
+}
+class StoreItem {
+    + ID : string
+    + DisplayName : string
+    + Price : int = 1
+    + RewardAmount : int = 1
+    + UnlockedByDefault : bool = false
+    + UseLevelScaling : bool = false
+    + MaxLevel : int = 5
+    + PriceMultiplier : float = 1.5f
+}
+ScriptableObject <|-- StoreItem
+StoreItem --> "StoreType" StoreType
+StoreItem --> "Icon" Sprite
+StoreItem --> "SpendCurrency" StoreCurrency
+StoreItem --> "RewardCurrency" StoreCurrency
+StoreItem --> "mapType" MapType
+@enduml

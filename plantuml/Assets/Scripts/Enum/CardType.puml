@@ -1,0 +1,7 @@
+@startuml
+enum CardType {
+    None= 0,
+    Career= 1,
+    Berserk= 2,
+}
+@enduml

@@ -1,0 +1,25 @@
+@startuml
+interface IEvent {
+}
+class Event {
+    + Event()
+    + commandName : string <<get>>
+    + control : bool <<get>>
+    + alt : bool <<get>>
+    + shift : bool <<get>>
+    + button : int <<get>>
+    + Use() : void
+    + GetTypeForControl(id:int) : EventType
+}
+interface IEventSystem {
+}
+class EventSystem {
+}
+IEvent <|-- Event
+Event --> "type" EventType
+Event --> "keyCode" KeyCode
+Event --> "mousePosition" Vector2
+Event --> "modifiers" EventModifiers
+IEventSystem <|-- EventSystem
+EventSystem --> "current" IEvent
+@enduml

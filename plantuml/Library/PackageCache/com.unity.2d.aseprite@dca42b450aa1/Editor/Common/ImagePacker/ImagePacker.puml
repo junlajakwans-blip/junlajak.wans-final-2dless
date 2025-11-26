@@ -1,0 +1,16 @@
+@startuml
+class ImagePacker <<static>> {
+    + {static} Pack(rects:RectInt[], padding:int, requireSquarePOT:bool, outPackedRects:RectInt[], outPackedWidth:int, outPackedHeight:int) : void
+    + {static} Pack(buffers:NativeArray<Color32>[], size:int2[], padding:int, spriteSizeExpand:uint, requireSquarePOT:bool, outPackedBuffer:NativeArray<Color32>, outPackedBufferWidth:int, outPackedBufferHeight:int, outPackedRect:RectInt[], outUVTransform:Vector2Int[]) : void
+    + {static} Blit(buffer:NativeArray<Color32>, blitToArea:RectInt[], bufferBytesPerRow:int, originalBuffer:NativeArray<Color32>[], blitFromArea:RectInt[], size:int2[], padding:int) : void
+}
+class ImagePackRect {
+    + index : int
+    + CompareTo(obj:ImagePackRect) : int
+}
+class "IComparable`1"<T> {
+}
+ImagePacker +-- ImagePackRect
+"IComparable`1" "<ImagePackRect>" <|-- ImagePackRect
+ImagePackRect --> "rect" RectInt
+@enduml

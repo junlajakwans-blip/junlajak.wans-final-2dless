@@ -1,0 +1,52 @@
+@startuml
+struct InstanceCullerViewStats {
+    + viewInstanceID : int
+    + splitIndex : int
+    + visibleInstancesOnCPU : int
+    + visibleInstancesOnGPU : int
+    + visiblePrimitivesOnCPU : int
+    + visiblePrimitivesOnGPU : int
+    + drawCommands : int
+}
+enum InstanceOcclusionEventType {
+    OcclusionTest,
+    OccluderUpdate,
+}
+struct InstanceOcclusionEventStats {
+    + viewInstanceID : int
+    + occluderVersion : int
+    + subviewMask : int
+    + visibleInstances : int
+    + culledInstances : int
+    + visiblePrimitives : int
+    + culledPrimitives : int
+}
+struct DebugOccluderStats {
+    + viewInstanceID : int
+    + subviewCount : int
+}
+class DebugRendererBatcherStats {
+    + enabled : bool
+    + occlusionOverlayEnabled : bool
+    + occlusionOverlayCountVisible : bool
+    + overrideOcclusionTestToAlwaysPass : bool
+    + DebugRendererBatcherStats()
+    + FinalizeInstanceCullerViewStats() : void
+    + Dispose() : void
+}
+struct OcclusionCullingDebugOutput {
+}
+class "NativeList`1"<T> {
+}
+InstanceCullerViewStats --> "viewType" BatchCullingViewType
+InstanceOcclusionEventStats --> "eventType" InstanceOcclusionEventType
+InstanceOcclusionEventStats --> "occlusionTest" OcclusionTest
+DebugOccluderStats --> "occluderMipLayoutSize" Vector2Int
+IDisposable <|-- DebugRendererBatcherStats
+DebugRendererBatcherStats --> "instanceCullerStats<InstanceCullerViewStats>" "NativeList`1"
+DebugRendererBatcherStats --> "instanceOcclusionEventStats<InstanceOcclusionEventStats>" "NativeList`1"
+DebugRendererBatcherStats --> "occluderStats<DebugOccluderStats>" "NativeList`1"
+OcclusionCullingDebugOutput --> "occluderDepthPyramid" RTHandle
+OcclusionCullingDebugOutput --> "occlusionDebugOverlay" GraphicsBuffer
+OcclusionCullingDebugOutput --> "cb" OcclusionCullingDebugShaderVariables
+@enduml

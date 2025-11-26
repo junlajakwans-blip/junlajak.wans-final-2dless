@@ -1,0 +1,14 @@
+@startuml
+class ObjectPoolManager {
+    + IsInitialized : bool <<get>> = false
+    + <<virtual>> InitializePool() : void
+    + <<virtual>> SpawnFromPool(objectTag:string, position:Vector3, rotation:Quaternion) : GameObject
+    + <<virtual>> ReturnToPool(objectTag:string, obj:GameObject) : void
+    + <<virtual>> ClearPool() : void
+    + <<virtual>> ExpandPool(objectTag:string, additionalCount:int) : void
+    + GetAllTags() : List<string>
+}
+MonoBehaviour <|-- ObjectPoolManager
+IObjectPool <|-- ObjectPoolManager
+ObjectPoolManager --> "Instance" ObjectPoolManager
+@enduml

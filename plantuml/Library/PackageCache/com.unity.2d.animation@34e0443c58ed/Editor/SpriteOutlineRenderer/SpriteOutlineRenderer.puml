@@ -1,0 +1,11 @@
+@startuml
+class SpriteOutlineRenderer {
+    + SpriteOutlineRenderer(eventSystem:SkinningEvents)
+    + Dispose() : void
+}
+class OutlineRenderTexture {
+    + dirty : bool
+}
+SpriteOutlineRenderer +-- OutlineRenderTexture
+OutlineRenderTexture --> "outlineTexture" Texture
+@enduml

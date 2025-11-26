@@ -1,0 +1,32 @@
+@startuml
+class TilePaletteBrushPickOverlay {
+    + <<const>> k_OverlayId : string = "Scene View/Tile Palette Brush Pick"
+    + visible : bool <<get>>
+    + TilePaletteBrushPickOverlay()
+    + <<override>> OnWillBeDestroyed() : void
+    + Hide() : void
+    + Show() : void
+    + TogglePopup() : void
+    + TogglePopup(mousePosition:Vector2) : void
+    + Repaint() : void
+    + <<override>> CreatePanelContent() : VisualElement
+    + CreateHorizontalToolbarContent() : OverlayToolbar
+    + CreateVerticalToolbarContent() : OverlayToolbar
+}
+class TilePaletteBrushPickToggle {
+    + TilePaletteBrushPickToggle()
+    + <<override>> value : bool <<get>> <<set>>
+    + <<override>> SetValueWithoutNotify(newValue:bool) : void
+}
+class TilePaletteBrushPickDropdownToggle {
+    + TilePaletteBrushPickDropdownToggle()
+    + <<override>> value : bool <<get>> <<set>>
+    + <<override>> SetValueWithoutNotify(newValue:bool) : void
+}
+Overlay <|-- TilePaletteBrushPickOverlay
+ICreateHorizontalToolbar <|-- TilePaletteBrushPickOverlay
+ICreateVerticalToolbar <|-- TilePaletteBrushPickOverlay
+ITransientOverlay <|-- TilePaletteBrushPickOverlay
+EditorToolbarToggle <|-- TilePaletteBrushPickToggle
+EditorToolbarDropdownToggle <|-- TilePaletteBrushPickDropdownToggle
+@enduml

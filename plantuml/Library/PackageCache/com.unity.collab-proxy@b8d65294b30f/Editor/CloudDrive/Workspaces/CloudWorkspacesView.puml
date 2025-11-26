@@ -1,0 +1,10 @@
+@startuml
+interface IDragAndDrop {
+}
+class CloudWorkspacesView {
+}
+IRefreshableView <|-- CloudWorkspacesView
+INotifyUpdatePaths <|-- CloudWorkspacesView
+ICloudWorkspacesOperations <|-- CloudWorkspacesView
+IDragAndDrop <|-- CloudWorkspacesView
+@enduml

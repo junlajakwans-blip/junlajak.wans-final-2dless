@@ -1,0 +1,27 @@
+@startuml
+class OverlayToggle {
+    + OverlayToggle(icon:Texture2D, styleName:string)
+}
+class OverlayToolbar {
+    +  <<event>> onFilterToggled : Action<bool> 
+    +  <<event>> onLockToggled : Action<bool> 
+    +  <<event>> onResetSliderValue : Action 
+    +  <<event>> onSliderValueChanged : Action<float> 
+    + OverlayToolbar()
+}
+class Styles <<static>> {
+    + <<const>> toolbar : string
+    + <<const>> thumbnailSettings : string
+    + <<const>> slider : string
+    + <<const>> toggle : string
+}
+class Icons <<static>> {
+    + <<const>> filter : string = "EditorUI.Filter"
+    + <<const>> locked : string = "Locked"
+    + <<const>> zoom : string = "ViewToolZoom"
+}
+BaseBoolField <|-- OverlayToggle
+VisualElement <|-- OverlayToolbar
+OverlayToolbar +-- Styles
+OverlayToolbar +-- Icons
+@enduml

@@ -1,0 +1,7 @@
+@startuml
+class SpriteLibraryUtilitiesEditor <<static>> {
+    + {static} ExportSpriteLibraryToAssetFile(spriteLibrary:SpriteLibrary, savePath:string) : void
+    + {static} CopySpriteLibraryToOverride(destination:IList<SpriteLibCategoryOverride>, library:SerializedProperty) : void
+    + {static} UpdateLibraryWithNewMainLibrary(newMainLibrary:SpriteLibraryAsset, destLibrary:SerializedProperty) : void
+}
+@enduml

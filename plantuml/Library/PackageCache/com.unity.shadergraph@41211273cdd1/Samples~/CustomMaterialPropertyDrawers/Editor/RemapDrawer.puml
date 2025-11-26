@@ -1,0 +1,10 @@
+@startuml
+class RemapDrawer {
+    + RemapDrawer()
+    + RemapDrawer(min:float, max:float)
+    + RemapDrawer(min:float, max:float, negativeOffset:float)
+    + <<override>> GetPropertyHeight(prop:MaterialProperty, label:string, editor:MaterialEditor) : float
+    + <<override>> OnGUI(position:Rect, prop:MaterialProperty, label:String, editor:MaterialEditor) : void
+}
+MaterialPropertyDrawer <|-- RemapDrawer
+@enduml

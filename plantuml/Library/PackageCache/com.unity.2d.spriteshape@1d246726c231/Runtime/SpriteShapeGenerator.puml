@@ -1,0 +1,94 @@
+@startuml
+enum SpriteShapeGeneratorResult {
+    ErrorDefaultQuadCreated= -5,
+    ErrorNativeDataOverflow= -4,
+    ErrorSpritesWrongBorder= -3,
+    ErrorSpritesTightPacked= -2,
+    ErrorVertexLimitReached= -1,
+    Success= 0,
+}
+struct SpriteShapeGeneratorStats {
+}
+struct SpriteShapeGenerator {
+    + Prepare(controller:UnityEngine.U2D.SpriteShapeController, shapeParams:SpriteShapeParameters, maxArrayCount:int, shapePoints:NativeArray<ShapeControlPoint>, metaData:NativeArray<SpriteShapeMetaData>, angleRanges:AngleRangeInfo[], segmentSprites:Sprite[], cornerSprites:Sprite[]) : void
+    + Execute() : void
+    + Cleanup() : void
+}
+struct JobParameters {
+}
+struct JobSpriteInfo {
+}
+struct JobAngleRange {
+}
+struct JobControlPoint {
+}
+struct JobContourPoint {
+}
+struct JobIntersectPoint {
+}
+struct JobSegmentInfo {
+}
+struct JobCornerInfo {
+}
+struct JobShapeVertex {
+}
+class "NativeArray`1"<T> {
+}
+class "NativeSlice`1"<T> {
+}
+SpriteShapeGeneratorStats --> "status" SpriteShapeGeneratorResult
+IJob <|-- SpriteShapeGenerator
+SpriteShapeGenerator --> "generateGeometry" ProfilerMarker
+SpriteShapeGenerator --> "generateCollider" ProfilerMarker
+SpriteShapeGenerator --> "m_IndexArray<ushort>" "NativeArray`1"
+SpriteShapeGenerator --> "m_PosArray<Vector3>" "NativeSlice`1"
+SpriteShapeGenerator --> "m_Uv0Array<Vector2>" "NativeSlice`1"
+SpriteShapeGenerator --> "m_TanArray<Vector4>" "NativeSlice`1"
+SpriteShapeGenerator --> "m_GeomArray<SpriteShapeSegment>" "NativeArray`1"
+SpriteShapeGenerator --> "m_ColliderPoints<float2>" "NativeArray`1"
+SpriteShapeGenerator --> "m_ShadowPoints<float2>" "NativeArray`1"
+SpriteShapeGenerator --> "m_Bounds<Bounds>" "NativeArray`1"
+SpriteShapeGenerator --> "m_Stats<SpriteShapeGeneratorStats>" "NativeArray`1"
+SpriteShapeGenerator +-- JobParameters
+JobParameters --> "shapeData" int4
+JobParameters --> "splineData" int4
+JobParameters --> "curveData" float4
+JobParameters --> "fillData" float4
+SpriteShapeGenerator +-- JobSpriteInfo
+JobSpriteInfo --> "texRect" float4
+JobSpriteInfo --> "texData" float4
+JobSpriteInfo --> "uvInfo" float4
+JobSpriteInfo --> "metaInfo" float4
+JobSpriteInfo --> "border" float4
+SpriteShapeGenerator +-- JobAngleRange
+JobAngleRange --> "spriteAngles" float4
+JobAngleRange --> "spriteData" int4
+SpriteShapeGenerator +-- JobControlPoint
+JobControlPoint --> "cpData" int4
+JobControlPoint --> "exData" int4
+JobControlPoint --> "cpInfo" float2
+JobControlPoint --> "position" float2
+JobControlPoint --> "tangentLt" float2
+JobControlPoint --> "tangentRt" float2
+SpriteShapeGenerator +-- JobContourPoint
+JobContourPoint --> "position" float2
+JobContourPoint --> "ptData" float2
+SpriteShapeGenerator +-- JobIntersectPoint
+JobIntersectPoint --> "top" float2
+JobIntersectPoint --> "bottom" float2
+SpriteShapeGenerator +-- JobSegmentInfo
+JobSegmentInfo --> "sgInfo" int4
+JobSegmentInfo --> "spriteInfo" float4
+SpriteShapeGenerator +-- JobCornerInfo
+JobCornerInfo --> "bottom" float2
+JobCornerInfo --> "top" float2
+JobCornerInfo --> "left" float2
+JobCornerInfo --> "right" float2
+JobCornerInfo --> "cornerData" int2
+SpriteShapeGenerator +-- JobShapeVertex
+JobShapeVertex --> "pos" float2
+JobShapeVertex --> "uv" float2
+JobShapeVertex --> "tan" float4
+JobShapeVertex --> "meta" float2
+JobShapeVertex --> "sprite" int4
+@enduml

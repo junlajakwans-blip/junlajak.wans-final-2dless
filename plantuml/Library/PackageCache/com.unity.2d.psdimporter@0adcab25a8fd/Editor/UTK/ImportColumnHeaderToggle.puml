@@ -1,0 +1,7 @@
+@startuml
+class ImportColumnHeaderToggle {
+    + ImportColumnHeaderToggle(dropdownClickEvent:Action, importToggleChange:Action<bool>)
+    + SetHeaderImportToggleValue(b:bool) : void
+}
+VisualElement <|-- ImportColumnHeaderToggle
+@enduml

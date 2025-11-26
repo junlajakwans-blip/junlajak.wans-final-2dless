@@ -1,0 +1,14 @@
+@startuml
+class MeshCache {
+    + <<override>> spriteName : string <<get>>
+    + <<override>> boneCount : int <<get>>
+    + <<override>> GetBoneData(index:int) : SpriteBoneData
+    + <<override>> GetBoneDepth(index:int) : float
+    + ContainsBone(bone:BoneCache) : bool
+    + SetCompatibleBoneSet(boneCache:BoneCache[]) : void
+}
+BaseSpriteMeshData <|-- MeshCache
+MeshCache --> "frame" Rect
+MeshCache --> "textureDataProvider" ITextureDataProvider
+MeshCache --> "sprite" SpriteCache
+@enduml

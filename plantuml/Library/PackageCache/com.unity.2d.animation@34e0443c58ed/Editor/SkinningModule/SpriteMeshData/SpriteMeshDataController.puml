@@ -1,0 +1,47 @@
+@startuml
+struct WeightedTriangle {
+    + p1 : int
+    + p2 : int
+    + p3 : int
+    + weight : float
+    + CompareTo(other:WeightedTriangle) : int
+}
+struct SpriteJobData {
+}
+class SpriteMeshDataController {
+    + CreateVertex(position:Vector2) : void
+    + CreateVertex(position:Vector2, edgeIndex:int) : void
+    + CreateEdge(index1:int, index2:int) : void
+    + RemoveVertex(index:int) : void
+    + RemoveVertex(indices:IEnumerable<int>) : void
+    + CreateQuad() : void
+    + TriangulateJob(triangulator:ITriangulator, spriteData:SpriteJobData) : JobHandle
+    + Triangulate(triangulator:ITriangulator) : void
+    + Subdivide(triangulator:ITriangulator, spriteData:SpriteJobData, largestAreaFactor:float, areaThreshold:float) : JobHandle
+    + ClearWeights(selection:ISelection<int>) : void
+    + OutlineFromAlpha(outlineGenerator:IOutlineGenerator, textureDataProvider:ITextureDataProvider, outlineDetail:float, alphaTolerance:byte) : void
+    + NormalizeWeights(selection:ISelection<int>) : void
+    + CalculateWeightsJob(weightsGenerator:IWeightsGenerator, selection:ISelection<int>, filterTolerance:float, sd:SpriteJobData) : JobHandle
+    + CalculateWeights(weightsGenerator:IWeightsGenerator, selection:ISelection<int>, filterTolerance:float) : void
+    + CalculateWeightsSafe(weightsGenerator:IWeightsGenerator, selection:ISelection<int>, filterTolerance:float) : void
+    + SmoothWeights(iterations:int, selection:ISelection<int>) : void
+    + FindTriangle(point:Vector2, indices:Vector3Int, barycentricCoords:Vector3) : bool
+    + SortTrianglesByDepth() : void
+    + GetMultiEditChannelData(selection:ISelection<int>, channel:int, enabled:bool, boneIndex:int, weight:float, isEnabledMixed:bool, isBoneIndexMixed:bool, isWeightMixed:bool) : void
+    + SetMultiEditChannelData(selection:ISelection<int>, channel:int, oldEnabled:bool, newEnabled:bool, oldBoneIndex:int, newBoneIndex:int, oldWeight:float, newWeight:float) : void
+    + GetControlPoints(points:float2[], edges:int2[], pins:int[]) : void
+    + SmoothFill() : void
+}
+class "IComparable`1"<T> {
+}
+class "NativeArray`1"<T> {
+}
+"IComparable`1" "<WeightedTriangle>" <|-- WeightedTriangle
+SpriteJobData --> "spriteMesh" BaseSpriteMeshData
+SpriteJobData --> "vertices<float2>" "NativeArray`1"
+SpriteJobData --> "edges<int2>" "NativeArray`1"
+SpriteJobData --> "indices<int>" "NativeArray`1"
+SpriteJobData --> "weights<BoneWeight>" "NativeArray`1"
+SpriteJobData --> "result<int4>" "NativeArray`1"
+SpriteMeshDataController --> "spriteMeshData" BaseSpriteMeshData
+@enduml

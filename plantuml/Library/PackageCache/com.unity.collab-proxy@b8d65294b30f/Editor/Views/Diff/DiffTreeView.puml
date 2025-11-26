@@ -1,0 +1,6 @@
+@startuml
+class DiffTreeView {
+    + <<override>> OnGUI(rect:Rect) : void
+}
+PlasticTreeView <|-- DiffTreeView
+@enduml

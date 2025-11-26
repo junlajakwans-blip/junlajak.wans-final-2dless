@@ -1,0 +1,6 @@
+@startuml
+class LocksListView <<sealed>> {
+    + <<override>> OnGUI(rect:Rect) : void
+}
+PlasticTreeView <|-- LocksListView
+@enduml

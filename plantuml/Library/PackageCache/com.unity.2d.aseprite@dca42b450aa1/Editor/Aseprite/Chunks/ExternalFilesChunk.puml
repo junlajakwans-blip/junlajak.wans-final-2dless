@@ -1,0 +1,6 @@
+@startuml
+class ExternalFilesChunk {
+}
+BaseChunk <|-- ExternalFilesChunk
+ExternalFilesChunk --> "chunkType" ChunkTypes
+@enduml

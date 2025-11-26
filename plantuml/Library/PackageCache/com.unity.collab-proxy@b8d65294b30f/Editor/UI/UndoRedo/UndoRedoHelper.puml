@@ -1,0 +1,7 @@
+@startuml
+class UndoRedoHelper {
+}
+interface IUndoRedoHost {
+}
+UndoRedoHelper +-- IUndoRedoHost
+@enduml

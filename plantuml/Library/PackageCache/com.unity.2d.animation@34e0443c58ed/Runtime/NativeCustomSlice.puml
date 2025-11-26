@@ -1,0 +1,25 @@
+@startuml
+struct "NativeCustomSlice`1"<T> {
+    + length : int
+    + stride : int
+    + {static} Default() : NativeCustomSlice<T>
+    + <<unsafe>> NativeCustomSlice(nativeSlice:NativeSlice<T>)
+    + <<unsafe>> NativeCustomSlice(slice:NativeSlice<byte>, length:int, stride:int)
+    + Length : int <<get>>
+}
+struct "NativeCustomSliceEnumerator`1"<T> {
+    + GetEnumerator() : IEnumerator<T>
+    + MoveNext() : bool
+    + Reset() : void
+    + Current : T <<get>>
+}
+class "ReadArrayElementWithStride`1"<T> {
+}
+class "IEnumerable`1"<T> {
+}
+class "IEnumerator`1"<T> {
+}
+"NativeCustomSlice`1" --> "data" IntPtr
+"IEnumerable`1" "<T>" <|-- "NativeCustomSliceEnumerator`1"
+"IEnumerator`1" "<T>" <|-- "NativeCustomSliceEnumerator`1"
+@enduml

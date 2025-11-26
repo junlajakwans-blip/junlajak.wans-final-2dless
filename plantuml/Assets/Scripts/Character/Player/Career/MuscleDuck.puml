@@ -1,0 +1,12 @@
+@startuml
+class MuscleSkill {
+    + <<override>> Initialize(player:Player) : void
+    + <<override>> UseCareerSkill(player:Player) : void
+    + <<override>> PerformAttack(player:Player) : void
+    + <<override>> PerformChargeAttack(player:Player) : void
+    + <<override>> OnTakeDamage(player:Player, dmg:int) : void
+    + <<override>> OnBeforeDie(player:Player) : bool
+    + <<override>> Cleanup(player:Player) : void
+}
+CareerSkillBase <|-- MuscleSkill
+@enduml

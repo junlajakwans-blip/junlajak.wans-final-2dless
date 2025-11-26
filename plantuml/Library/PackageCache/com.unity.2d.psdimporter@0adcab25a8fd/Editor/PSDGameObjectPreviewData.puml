@@ -1,0 +1,9 @@
+@startuml
+class PSDGameObjectPreviewData {
+    + PSDGameObjectPreviewData(assetPrefab:GameObject, showPivot:bool, documentPivot:Rect)
+    + DrawPreview(r:Rect, background:GUIStyle, offset:Vector2, showPivot:bool) : void
+    + {static} GetRenderableBounds(go:GameObject) : Bounds
+    + Dispose() : void
+}
+IDisposable <|-- PSDGameObjectPreviewData
+@enduml

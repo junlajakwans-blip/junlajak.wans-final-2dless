@@ -1,0 +1,10 @@
+@startuml
+class StencilCrossFadeRenderPass <<sealed>> {
+    + Dispose() : void
+    + Render(renderGraph:RenderGraph, context:ScriptableRenderContext, depthTarget:TextureHandle) : void
+}
+class PassData {
+}
+StencilCrossFadeRenderPass +-- PassData
+PassData --> "depthTarget" TextureHandle
+@enduml

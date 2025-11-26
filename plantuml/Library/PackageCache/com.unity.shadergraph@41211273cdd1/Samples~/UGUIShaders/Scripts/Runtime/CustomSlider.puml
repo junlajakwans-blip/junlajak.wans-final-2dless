@@ -1,0 +1,36 @@
+@startuml
+class CustomSlider {
+    + Value : float <<get>>
+    + <<virtual>> GetModifiedMaterial(baseMaterial:Material) : Material
+    + <<override>> OnPointerDown(eventData:PointerEventData) : void
+    + <<virtual>> OnDrag(eventData:PointerEventData) : void
+    + <<override>> OnMove(eventData:AxisEventData) : void
+    + <<override>> FindSelectableOnLeft() : Selectable
+    + <<override>> FindSelectableOnRight() : Selectable
+    + <<override>> FindSelectableOnUp() : Selectable
+    + <<override>> FindSelectableOnDown() : Selectable
+    + <<virtual>> OnInitializePotentialDrag(eventData:PointerEventData) : void
+}
+enum Direction {
+    LeftToRight,
+    RightToLeft,
+    BottomToTop,
+    TopToBottom,
+}
+class "UnityEvent`1"<T> {
+}
+enum Axis {
+    Horizontal= 0,
+    Vertical= 1,
+}
+Selectable <|-- CustomSlider
+IDragHandler <|-- CustomSlider
+IInitializePotentialDragHandler <|-- CustomSlider
+IMaterialModifier <|-- CustomSlider
+CustomSlider --> "onStateChanged<int>" "UnityEvent`1"
+CustomSlider --> "onValueChanged<float>" "UnityEvent`1"
+CustomSlider --> "direction" Direction
+CustomSlider --> "Graphic" Graphic
+CustomSlider +-- Direction
+CustomSlider +-- Axis
+@enduml

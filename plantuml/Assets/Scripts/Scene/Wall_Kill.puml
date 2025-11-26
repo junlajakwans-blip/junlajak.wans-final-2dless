@@ -1,0 +1,7 @@
+@startuml
+class WallPushController {
+    + SetPushState(speed:float, enabled:bool) : void
+    + {static}  <<event>> OnWallSpeedChanged : Action<float> 
+}
+MonoBehaviour <|-- WallPushController
+@enduml

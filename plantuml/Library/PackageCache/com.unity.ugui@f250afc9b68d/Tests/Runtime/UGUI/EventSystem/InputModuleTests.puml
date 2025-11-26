@@ -1,0 +1,15 @@
+@startuml
+class InputModuleTests {
+    + TestSetup() : void
+    + DragCallbacksDoGetCalled() : IEnumerator
+    + MouseOutsideMaskRectTransform_WhileInsidePaddedArea_PerformsClick() : IEnumerator
+    + PointerEnterChildShouldNotFullyExit_NotSendPointerEventToParent() : IEnumerator
+    + PointerEnterChildShouldNotExit_SendPointerEventToParent() : IEnumerator
+    + PointerEnterChildShouldNotReenter() : IEnumerator
+    + PointerExitChildShouldReenter_NotSendPointerEventToParent() : IEnumerator
+    + PointerExitChildShouldNotSendEnter_SendPointerEventToParent() : IEnumerator
+    + PointerExitChildShouldFullyExit() : IEnumerator
+    + AllDragsAreReleasedOnLoseFocus() : IEnumerator
+    + TearDown() : void
+}
+@enduml

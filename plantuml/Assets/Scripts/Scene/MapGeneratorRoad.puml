@@ -1,0 +1,7 @@
+@startuml
+class MapGeneratorRoad {
+    + <<override>> GenerateMap() : void
+    + <<override>> SetupBackground() : void
+}
+MapGeneratorBase <|-- MapGeneratorRoad
+@enduml

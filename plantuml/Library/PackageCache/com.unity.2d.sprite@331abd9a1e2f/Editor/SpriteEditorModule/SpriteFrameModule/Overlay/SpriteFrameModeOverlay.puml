@@ -1,0 +1,18 @@
+@startuml
+class SpriteFrameModeOverlay {
+    + <<const>> k_OverlayId : string = "com.unity.2d.sprite/SpriteFrameModeOverlay"
+    + <<override>> OnCreated() : void
+    + <<override>> OnWillBeDestroyed() : void
+    + <<override>> CreatePanelContent() : VisualElement
+    + visible : bool <<get>>
+    + CreateVerticalToolbarContent() : OverlayToolbar
+    + CreateHorizontalToolbarContent() : OverlayToolbar
+    + Activate(spriteFrameModule:SpriteFrameModule) : void
+    + OnOverlayToggleCallback(arg2:SpriteFrameModeToolStripBase) : void
+    + GetSpriteFrameModeToolStrip(type:Type) : SpriteFrameModeToolStripBase
+    + Deactivate() : void
+}
+ICreateVerticalToolbar <|-- SpriteFrameModeOverlay
+ICreateHorizontalToolbar <|-- SpriteFrameModeOverlay
+ITransientOverlay <|-- SpriteFrameModeOverlay
+@enduml

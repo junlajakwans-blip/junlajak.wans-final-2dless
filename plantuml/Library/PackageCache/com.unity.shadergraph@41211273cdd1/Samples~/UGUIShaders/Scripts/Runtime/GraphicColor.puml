@@ -1,0 +1,6 @@
+@startuml
+class GraphicColor {
+    + SetColor(state:int) : void
+}
+UIBehaviour <|-- GraphicColor
+@enduml

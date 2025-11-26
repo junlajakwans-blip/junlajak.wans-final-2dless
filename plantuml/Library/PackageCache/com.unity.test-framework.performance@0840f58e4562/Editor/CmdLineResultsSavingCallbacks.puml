@@ -1,0 +1,7 @@
+@startuml
+class CmdLineResultsSavingCallbacks {
+    + SetResultsLocation(perfTestResultsPath:string) : void
+}
+ScriptableObject <|-- CmdLineResultsSavingCallbacks
+ICallbacks <|-- CmdLineResultsSavingCallbacks
+@enduml

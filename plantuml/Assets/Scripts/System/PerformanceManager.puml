@@ -1,0 +1,11 @@
+@startuml
+class PerformanceManager {
+    + GetTotalPooledObjects() : int
+    + GetActiveEnemyCount() : int
+    + GetActiveCollectibleCount() : int
+    + LogPerformanceData() : void
+    + ToggleDebugLog(enable:bool) : void
+}
+MonoBehaviour <|-- PerformanceManager
+PerformanceManager --> "Instance" PerformanceManager
+@enduml

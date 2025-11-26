@@ -1,0 +1,12 @@
+@startuml
+class ChangesetsTab <<partial>> {
+}
+interface IRevertToChangesetListener {
+}
+IRefreshableView <|-- ChangesetsTab
+IChangesetMenuOperations <|-- ChangesetsTab
+ILaunchCodeReviewWindow <|-- ChangesetsTab
+IGetQueryText <|-- ChangesetsTab
+IGetFilterText <|-- ChangesetsTab
+ChangesetsTab +-- IRevertToChangesetListener
+@enduml

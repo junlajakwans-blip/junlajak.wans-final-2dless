@@ -1,0 +1,9 @@
+@startuml
+class PlayerLauncherBuildOptions {
+    + PlayerDirectory : string
+    + <<override>> ToString() : string
+    + GetCurrentBuildOptions() : BuildOptions
+    + GetCurrentLocationPath() : string
+}
+PlayerLauncherBuildOptions --> "BuildPlayerOptions" BuildPlayerOptions
+@enduml

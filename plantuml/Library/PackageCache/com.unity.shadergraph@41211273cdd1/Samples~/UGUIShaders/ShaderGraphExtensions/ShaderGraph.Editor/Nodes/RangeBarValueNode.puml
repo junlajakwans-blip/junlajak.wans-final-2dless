@@ -1,0 +1,11 @@
+@startuml
+class RangeBarNode {
+    + RangeBarNode()
+    + <<override>> hasPreview : bool <<get>>
+    + <<sealed>> <<override>> UpdateNodeAfterDeserialization() : void
+    + <<override>> CollectShaderProperties(properties:PropertyCollector, generationMode:GenerationMode) : void
+    + GenerateNodeCode(sb:ShaderStringBuilder, generationMode:GenerationMode) : void
+}
+AbstractMaterialNode <|-- RangeBarNode
+IGeneratesBodyCode <|-- RangeBarNode
+@enduml

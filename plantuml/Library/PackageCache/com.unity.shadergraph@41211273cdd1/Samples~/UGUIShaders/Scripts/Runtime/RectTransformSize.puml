@@ -1,0 +1,9 @@
+@startuml
+class RectTransformSize {
+    + UpdateMaterial() : void
+    + GetModifiedMaterial(baseMaterial:Material) : Material
+}
+UIBehaviour <|-- RectTransformSize
+IMaterialModifier <|-- RectTransformSize
+RectTransformSize --> "Graphic" Graphic
+@enduml

@@ -1,0 +1,15 @@
+@startuml
+class TilePaletteClipboardFirstUserElement <<partial>> {
+    + TilePaletteClipboardFirstUserElement()
+}
+class Styles <<static>> {
+    + {static} <<readonly>> emptyProjectTopInfo : string
+    + {static} <<readonly>> emptyProjectLeftInfo : string
+    + {static} <<readonly>> emptyProjectRightInfo : string
+    + {static} <<readonly>> whiteboxDropdownInfo : string
+    + {static} <<readonly>> whiteboxAlternateInfo : string
+    + {static} <<readonly>> whiteboxButtonInfo : string
+}
+VisualElement <|-- TilePaletteClipboardFirstUserElement
+TilePaletteClipboardFirstUserElement +-- Styles
+@enduml

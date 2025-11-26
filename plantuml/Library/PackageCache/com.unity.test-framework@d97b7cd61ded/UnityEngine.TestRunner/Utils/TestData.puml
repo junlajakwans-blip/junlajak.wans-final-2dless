@@ -1,0 +1,9 @@
+@startuml
+class TestData <<record>> {
+}
+class "IEnumerable`1"<T> {
+}
+TestData --> "TestMode" TestMode
+TestData --> "TestPlatform" RuntimePlatform
+TestData --> "TestList<ITest>" "IEnumerable`1"
+@enduml

@@ -1,0 +1,108 @@
+@startuml
+enum AnimationToolType {
+    UnknownTool= 0,
+    Visibilility= 6,
+    PreviewPose= 7,
+    EditPose= 8,
+    CreateBone= 9,
+    SplitBone= 10,
+    ReparentBone= 11,
+    EditGeometry= 12,
+    CreateVertex= 13,
+    CreateEdge= 14,
+    SplitEdge= 15,
+    GenerateGeometry= 16,
+    WeightSlider= 17,
+    WeightBrush= 18,
+    BoneInfluence= 19,
+    GenerateWeights= 20,
+    SpriteInfluence= 21,
+}
+enum AnimationEventType {
+    Truncated= -1,
+    SelectedSpriteChanged= 0,
+    SkeletonPreviewPoseChanged= 1,
+    SkeletonBindPoseChanged= 2,
+    SkeletonTopologyChanged= 3,
+    MeshChanged= 4,
+    MeshPreviewChanged= 5,
+    SkinningModuleModeChanged= 6,
+    BoneSelectionChanged= 7,
+    BoneNameChanged= 8,
+    CharacterPartChanged= 9,
+    ToolChanged= 10,
+    RestoreBindPose= 11,
+    Copy= 12,
+    Paste= 13,
+    BoneDepthChanged= 14,
+    Shortcut= 15,
+    Visibility= 16,
+}
+struct AnimationEvent {
+    + repeated_event : int
+    + data : string
+}
+struct AnimationToolUsageEvent {
+    + <<const>> name : string = "u2dAnimationToolUsage"
+    + instance_id : int
+    + character_mode : bool
+    + time_start_s : int
+    + time_end_s : int
+}
+struct AnimationToolApplyEvent {
+    + <<const>> name : string = "u2dAnimationToolApply"
+    + character_mode : bool
+    + instance_id : int
+    + sprite_count : int
+    + bone_root_count : int
+}
+interface IAnimationAnalyticsModel {
+}
+class SkinningModuleAnalyticsModel {
+    + hasCharacter : bool <<get>>
+    + GetTool(tool:Tools) : ITool
+    + selectedBoneCount : int <<get>>
+    + applicationElapseTime : int <<get>>
+    + SkinningModuleAnalyticsModel(s:SkinningCache)
+}
+class AnimationAnalytics {
+    + AnimationAnalytics(analyticsStorage:IAnalyticsStorage, eventBus:SkinningEvents, model:IAnimationAnalyticsModel, instanceId:int)
+    + Dispose() : void
+    + FlushEvent() : void
+    + SendApplyEvent(spriteCount:int, spriteBoneCount:int[], bones:BoneCache[]) : void
+}
+interface IAnalyticsStorage {
+}
+class AnalyticConstant <<static>> {
+    + <<const>> k_MaxEventsPerHour : int = 1000
+    + <<const>> k_MaxNumberOfElements : int = 1000
+}
+class AnalyticsJsonStorage {
+    + SendUsageEvent(evt:AnimationToolUsageEvent) : AnalyticsResult
+    + SendApplyEvent(evt:AnimationToolApplyEvent) : AnalyticsResult
+    + Dispose() : void
+}
+class UnityAnalyticsStorage {
+    + <<const>> vendorKey : string = "unity.2d.animation"
+    + <<const>> version : int = 1
+    + SendUsageEvent(evt:AnimationToolUsageEvent) : AnalyticsResult
+    + SendApplyEvent(evt:AnimationToolApplyEvent) : AnalyticsResult
+    + Dispose() : void
+}
+class "List`1"<T> {
+}
+struct AnimationToolEvents {
+}
+AnimationEvent --> "sub_type" AnimationEventType
+AnimationToolUsageEvent --> "animation_tool" AnimationToolType
+AnimationToolUsageEvent --> "animation_events<AnimationEvent>" "List`1"
+IAnimationAnalyticsModel <|-- SkinningModuleAnalyticsModel
+SkinningModuleAnalyticsModel --> "skinningCache" SkinningCache
+SkinningModuleAnalyticsModel --> "mode" SkinningMode
+SkinningModuleAnalyticsModel --> "selectedTool" ITool
+IAnalyticsStorage <|-- AnalyticsJsonStorage
+IAnalyticsStorage <|-- UnityAnalyticsStorage
+AnalyticsJsonStorage +-- AnimationToolEvents
+AnimationToolEvents --> "events<AnimationToolUsageEvent>" "List`1"
+AnimationToolEvents --> "applyEvent" AnimationToolApplyEvent
+@enduml

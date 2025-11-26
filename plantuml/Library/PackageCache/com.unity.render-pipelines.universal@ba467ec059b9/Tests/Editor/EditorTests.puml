@@ -1,0 +1,11 @@
+@startuml
+class EditorTests {
+    + ValidateBuiltinResourceFiles() : void
+    + ValidateShaderResources(shaderPathID:ShaderPathID) : void
+    + ValidateNewAssetResources() : void
+    + ValidateAssetSettings() : void
+    + UniversalSpeedTree8Upgrader_ShouldntThrowExceptionWhenImportingSpeedTree7Assets() : void
+    + UseReAllocateIfNeededWithoutTextureLeak() : void
+    + UseDynamicBranchFogKeyword(shaderPathID:ShaderPathID) : void
+}
+@enduml

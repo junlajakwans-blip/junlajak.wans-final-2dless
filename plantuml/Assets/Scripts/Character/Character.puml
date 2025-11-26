@@ -1,0 +1,15 @@
+@startuml
+abstract class Character {
+    + CurrentHealth : int <<get>>
+    + MaxHealth : int <<get>>
+    + IsDead : bool <<get>>
+    + <<virtual>> Initialize(maxHealth:int) : void
+    + <<virtual>> TakeDamage(amount:int) : void
+    + <<virtual>> Heal(amount:int) : void
+    + {abstract} Die() : void
+    + <<virtual>> Move(direction:Vector2) : void
+    + {abstract} Attack() : void
+}
+MonoBehaviour <|-- Character
+IDamageable <|-- Character
+@enduml

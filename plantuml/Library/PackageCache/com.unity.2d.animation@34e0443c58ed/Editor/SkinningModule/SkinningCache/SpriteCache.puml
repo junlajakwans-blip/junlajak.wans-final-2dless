@@ -1,0 +1,8 @@
+@startuml
+class SpriteCache {
+    + id : string <<get>> <<internal set>>
+}
+TransformCache <|-- SpriteCache
+SpriteCache --> "textureRect" Rect
+SpriteCache --> "pivotRectSpace" Vector2
+@enduml

@@ -1,0 +1,7 @@
+@startuml
+class BlendingRanges {
+    + BlendingRanges(layer:Layer)
+    + BlendingRanges(reader:PsdBinaryReader, layer:Layer)
+}
+BlendingRanges --> "Layer" Layer
+@enduml

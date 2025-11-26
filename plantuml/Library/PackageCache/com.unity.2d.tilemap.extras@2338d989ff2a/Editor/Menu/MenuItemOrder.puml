@@ -1,0 +1,23 @@
+@startuml
+enum ETilesMenuItemOrder {
+    AnimatedTile= 2,
+    AutoTile,
+    RuleTile= 100,
+    IsometricRuleTile,
+    HexagonalRuleTile,
+    RuleOverrideTile,
+    AdvanceRuleOverrideTile,
+    CustomRuleTile,
+    RandomTile= 200,
+    WeightedRandomTile,
+    PipelineTile,
+    TerrainTile,
+}
+enum EBrushMenuItemOrder {
+    RandomBrush= 3,
+    PrefabBrush,
+    PrefabRandomBrush,
+}
+class AssetCreation <<static>> <<partial>> {
+}
+@enduml

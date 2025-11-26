@@ -1,0 +1,5 @@
+@startuml
+class UnityOneTimeSetUpAttribute {
+}
+NUnitAttribute <|-- UnityOneTimeSetUpAttribute
+@enduml

@@ -1,0 +1,10 @@
+@startuml
+class VrsRenderPipelineRuntimeResources <<sealed>> {
+    + version : int <<get>>
+}
+IRenderPipelineResources <|-- VrsRenderPipelineRuntimeResources
+VrsRenderPipelineRuntimeResources --> "textureComputeShader" ComputeShader
+VrsRenderPipelineRuntimeResources --> "visualizationShader" Shader
+VrsRenderPipelineRuntimeResources --> "visualizationLookupTable" VrsLut
+VrsRenderPipelineRuntimeResources --> "conversionLookupTable" VrsLut
+@enduml

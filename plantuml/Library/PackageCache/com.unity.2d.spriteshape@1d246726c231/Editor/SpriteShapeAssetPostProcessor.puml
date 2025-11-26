@@ -1,0 +1,5 @@
+@startuml
+class SpriteShapeAssetPostProcessor {
+}
+AssetPostprocessor <|-- SpriteShapeAssetPostProcessor
+@enduml
