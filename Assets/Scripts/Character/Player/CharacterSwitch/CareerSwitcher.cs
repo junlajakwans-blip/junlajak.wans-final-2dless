@@ -13,6 +13,7 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
     {
         public DuckCareer careerID;
         public GameObject bodyPrefab;
+        public CareerEffectProfile fxProfile; 
     }
 
     #region Fields
@@ -34,6 +35,8 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
     [Header("Dependencies")] // เพิ่มส่วนนี้ถ้ายังไม่มี
     [SerializeField] private SpriteRenderer _ducklingRenderer; 
     [SerializeField] private Animator _ducklingAnimator;
+    [SerializeField] private ComicEffectPlayer _fxPlayer;
+
 
     [Header("Timing Settings")]
     [SerializeField, Tooltip("Cooldown (seconds) after reverting to default before switching again")]
@@ -100,6 +103,16 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
 
     public void OnCareerChanged(DuckCareerData newCareer)
     {
+        var player = GetComponent<Player>();
+
+        // cleanup ของอาชีพก่อนหน้า
+        _currentCareer?.CareerSkill?.Cleanup(player);
+
+        _currentCareer = newCareer;
+
+        // init อาชีพใหม่
+        newCareer?.CareerSkill?.Initialize(player);
+
         Debug.Log($"[CareerSwitcher] Changed to career: {newCareer.DisplayName}");
         ApplyCareerAppearance();
         OnCareerChangedEvent?.Invoke(newCareer);
@@ -136,6 +149,13 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
             _activeBody = null; 
         }
 
+        //Player FX
+        if (_fxPlayer == null)
+            _fxPlayer = GetComponentInChildren<ComicEffectPlayer>();
+
+        if (_fxPlayer != null && mapEntry.fxProfile != null)
+            _fxPlayer.SetFXProfile(mapEntry.fxProfile);
+
         bool isDefault = _currentCareer.CareerID == DuckCareer.Duckling;
 
         if (isDefault)
@@ -145,7 +165,7 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
             if (_ducklingAnimator != null) _ducklingAnimator.enabled = true;
             
             Debug.Log($"[CareerSwitcher] Reverted to default Duckling appearance.");
-            return; // ⭐️ หยุดการทำงาน: Duckling ไม่ใช่ Prefab ที่ถูก Instantiate
+            return; // หยุดการทำงาน: Duckling ไม่ใช่ Prefab ที่ถูก Instantiate
         }
         
         // 3. ถ้าเป็นอาชีพอื่น: ซ่อน Duckling ดั้งเดิม (Parent) และสร้างร่างใหม่ (Child)
@@ -191,6 +211,10 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
             return;
         }
 
+        // Cleanup Skill ของอาชีพปัจจุบัน ก่อน revert
+        var player = GetComponent<Player>();
+        _currentCareer?.CareerSkill?.Cleanup(player);
+
         // แจ้ง CardManager reset cycle & unlock cards
         OnResetCareerCycle?.Invoke();
 
@@ -198,9 +222,13 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
         ApplyCareerAppearance();
         OnCareerChanged(_defaultCareer);
 
-        StartCoroutine(CooldownRoutine());
-        OnRevertToDefaultEvent?.Invoke(); // แจ้ง revert สำหรับ UI 
+        // เซ็ต FX Profile กลับเป็น Duckling
+        var mapEntry = _careerBodyMaps.Find(m => m.careerID == DuckCareer.Duckling);
+        if (_fxPlayer != null && mapEntry != null && mapEntry.fxProfile != null)
+            _fxPlayer.SetFXProfile(mapEntry.fxProfile);
 
+        StartCoroutine(CooldownRoutine());
+        OnRevertToDefaultEvent?.Invoke(); // แจ้ง revert ให้ UI
     }
 
 

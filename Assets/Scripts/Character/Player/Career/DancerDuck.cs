@@ -1,104 +1,89 @@
 using UnityEngine;
 using System.Collections;
 
-/// <summary>
-/// DancerDuck – Evasion / Crowd Control career (ID 3, Tier B)
-/// StepDance: temporarily undetectable by enemies (2s) + stop moving/damage enemies within 3–4 blocks.
-/// 
-/// BuffMon: (None) [cite: 3]
-/// BuffMap: (None) [cite: 3]
-/// </summary>
-public class DancerDuck : Player
+[CreateAssetMenu(menuName = "DUFFDUCK/Skill/DancerSkill_Full")]
+public class DancerSkill : CareerSkillBase
 {
-    #region Fields
-    [Header("DancerDuck Settings")]
+    #region 🔹 Fields (คัดจาก DancerDuck เดิม)
+    [Header("Dancer Settings (Copied from DancerDuck.cs)")]
     [SerializeField] private GameObject _danceEffect;
     [SerializeField] private float _speedBoost = 1.75f;
-    [SerializeField] private float _hideDuration = 2f;    // StepDance no take any damage 2 sec [cite: 3]
-    [SerializeField] private float _stopRange = 3.5f;     // StepDance 3-4 Block [cite: 3]
-    [SerializeField] private float _skillDuration = 22f;  // 22 Sec [cite: 3]
-    [SerializeField] private float _skillCooldown = 18f;  // 18 Sec [cite: 3]
-    [SerializeField] private int _stepDanceDamage = 15; // Damage for the StepDance AOE
+    [SerializeField] private float _hideDuration = 2f;   // No take any damage 2 sec
+    [SerializeField] private float _stopRange = 3.5f;    // StepDance range 3–4 blocks
+    [SerializeField] private float _skillDuration = 22f;
+    [SerializeField] private float _skillCooldown = 18f;
+    [SerializeField] private int _stepDanceDamage = 15;
 
     private bool _isSkillActive;
     private bool _isCooldown;
-    // NOTE: Removed private _rb and _jumpBounceForce as they are redundant.
-    // The base Player class already handles the Rigidbody.
+    private Coroutine _routine;
     #endregion
 
-    #region Buffs (Map & Monster)
 
-    /// <summary>
-    /// (Override) Applies DancerDuck-specific buffs when the career is initialized.
-    /// This method is called by the base Player.Initialize() method.
-    /// </summary>
-    protected override void InitializeCareerBuffs()
+    #region 🔹 Skill Logic (UseSkill → StepDance)
+    public override void UseCareerSkill(Player player)
     {
-        // PDF (Page 3) confirms Dancer has no BuffMap or BuffMon.
-        // This override is intentionally left blank.
-        Debug.Log($"[DancerDuck] No BuffMon or BuffMap to initialize.");
-    }
-    #endregion
+        if (_isSkillActive || _isCooldown)
+        {
+            Debug.Log($"[{player.PlayerName}] Skill not ready");
+            return;
+        }
 
-    #region ISkillUser Implementation
-    public override void UseSkill()
-    {
-        if (_isSkillActive || _isCooldown) return;
-        Debug.Log($"{PlayerName} uses StepDance!");
-        StartCoroutine(StepDanceRoutine());
+        Debug.Log($"[{player.PlayerName}] uses StepDance!");
+        _routine = player.StartCoroutine(StepDanceRoutine(player));
     }
 
-    /// <summary>
-    /// StepDance -> no take any damage -> Stun Enemy in Range [cite: 3]
-    /// </summary>
-    private IEnumerator StepDanceRoutine()
+    private IEnumerator StepDanceRoutine(Player player)
     {
         _isSkillActive = true;
 
+        // FX
         if (_danceEffect != null)
-            Instantiate(_danceEffect, transform.position, Quaternion.identity);
+            Object.Instantiate(_danceEffect, player.transform.position, Quaternion.identity);
 
-        // 1. Apply "no take any damage" (by hiding from enemies) for 2s
-        HideFromEnemies(_hideDuration);
-        
-        // 2. Apply Stun (Stop) and Damage (RangeAttack 3-4 Block) [cite: 3]
-        AffectNearbyEnemies(); 
-        
-        // 3. Apply speed boost for the *full skill duration*
-        ApplySpeedModifier(_speedBoost, _skillDuration);
+        // 1) Hide from enemies (no damage taken)
+        HideFromEnemies(player, _hideDuration);
+
+        // 2) Stun & damage nearby enemies
+        AffectNearbyEnemies(player);
+
+        // 3) Speed boost for full duration
+        player.ApplySpeedModifier(_speedBoost, _skillDuration);
 
         yield return new WaitForSeconds(_skillDuration);
-        _isSkillActive = false;
-        OnSkillCooldown(); // Call the base override
-    }
 
-    public override void OnSkillCooldown()
+        _isSkillActive = false;
+        StartCooldown(player);
+    }
+    #endregion
+
+
+    #region 🔹 Cooldown
+    private void StartCooldown(Player player)
     {
-        StartCoroutine(CooldownRoutine());
+        player.StartCoroutine(CooldownRoutine());
     }
 
     private IEnumerator CooldownRoutine()
     {
         _isCooldown = true;
+        Debug.Log($"💃 DancerSkill cooldown {_skillCooldown}s");
         yield return new WaitForSeconds(_skillCooldown);
         _isCooldown = false;
-        Debug.Log("[DancerDuck] Cooldown finished!");
+        Debug.Log($"💃 DancerSkill READY");
     }
     #endregion
 
-    #region Enemy Interaction
-    /// <summary>
-    /// Makes the player undetectable by enemies for a short duration.
-    /// </summary>
-    private void HideFromEnemies(float time)
+
+    #region 🔹 Enemy Interaction Logic
+    private void HideFromEnemies(Player player, float time)
     {
-        Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
-        StartCoroutine(TemporarilyHide(enemies, time));
+        Enemy[] enemies = Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None);
+        player.StartCoroutine(TemporarilyHideRoutine(enemies, time));
     }
 
-    private IEnumerator TemporarilyHide(Enemy[] enemies, float time)
+    private IEnumerator TemporarilyHideRoutine(Enemy[] enemies, float time)
     {
-        // Set CanDetectOverride to false to proxy "no take any damage" [cite: 3]
         foreach (var enemy in enemies)
             enemy.CanDetectOverride = false;
 
@@ -108,78 +93,70 @@ public class DancerDuck : Player
             enemy.CanDetectOverride = true;
     }
 
-    /// <summary>
-    /// Applies Stun (Stop) and Damage to nearby enemies (3-4 Block range) [cite: 3]
-    /// </summary>
-    private void AffectNearbyEnemies()
+    private void AffectNearbyEnemies(Player player)
     {
-        Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
-        Vector3 playerPos = transform.position;
+        Enemy[] enemies = Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None);
+        Vector3 pos = player.transform.position;
 
         foreach (var enemy in enemies)
         {
-            if (enemy.DetectPlayer(playerPos))
+            float distance = Vector2.Distance(pos, enemy.transform.position);
+            if (distance <= _stopRange)
             {
-                float distance = Vector2.Distance(playerPos, enemy.transform.position);
-                
-                // Check if enemy is in the 3.5f (3-4 block) range
-                if (distance <= _stopRange)
-                {
-                    // FIX: Added damage logic to match PDF "RangeAttack StepDance 3-4 Block" [cite: 3]
-                    if (enemy.TryGetComponent<IDamageable>(out var target))
-                        ApplyDamage(target, _stepDanceDamage);
+                // Damage
+                if (enemy.TryGetComponent<IDamageable>(out var target))
+                    player.ApplyDamage(target, _stepDanceDamage);
 
-                    // Apply Stun (Stop) [cite: 3]
-                    if (enemy is IMoveable moveableEnemy)
-                        moveableEnemy.Stop();
-                }
+                // Stun / Stop movement
+                if (enemy is IMoveable moveableEnemy)
+                    moveableEnemy.Stop();
             }
         }
     }
     #endregion
 
-    #region IAttackable Implementation
-    public override void Attack()
+
+    #region 🔹 Attack Overrides
+    public override void PerformAttack(Player player)
     {
-        // Waving Fan – 2 block attack (ground use) [cite: 3]
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 2f);
+        // Ground Waving Fan — 2 Block AoE
+        Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, 2f);
         foreach (var hit in hits)
-        {
-            if (hit.TryGetComponent<IDamageable>(out var target) && hit.GetComponent<Player>() == null)
-                ApplyDamage(target, 15);
-        }
+            if (hit.TryGetComponent<IDamageable>(out var t) && hit.GetComponent<Player>() == null)
+                player.ApplyDamage(t, 15);
     }
 
-    public override void ChargeAttack(float power)
+    public override void PerformChargeAttack(Player player)
     {
-        // Waving Fan (Charged Spin) – extend range to 4 blocks
+        // Charged Fan Spin — 4 Block AoE
         float attackRange = 4f;
         int baseDamage = 20;
-        int scaledDamage = Mathf.RoundToInt(baseDamage * Mathf.Clamp(power, 1f, 2f));
+        int scaledDamage = Mathf.RoundToInt(baseDamage * Mathf.Clamp(player.GetChargePower(), 1f, 2f));
 
-        Debug.Log($"[{PlayerName}] performs Charged Fan Spin! Range: {attackRange} blocks, Damage: {scaledDamage}");
-
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, attackRange);
+        Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, attackRange);
         foreach (var hit in hits)
-        {
-            if (hit.TryGetComponent<IDamageable>(out var target) && hit.GetComponent<Player>() == null)
-                ApplyDamage(target, scaledDamage);
-        }
+            if (hit.TryGetComponent<IDamageable>(out var t) && hit.GetComponent<Player>() == null)
+                player.ApplyDamage(t, scaledDamage);
     }
 
-    public override void RangeAttack(Transform target)
+    public override void PerformRangeAttack(Player player, Transform target)
     {
         if (target == null) return;
-        if (Vector2.Distance(transform.position, target.position) <= 3f)
-        {
+        if (Vector2.Distance(player.transform.position, target.position) <= 3f)
             if (target.TryGetComponent<IDamageable>(out var enemy))
-                ApplyDamage(enemy, 15);
-        }
+                player.ApplyDamage(enemy, 15);
     }
+    #endregion
 
-    public override void ApplyDamage(IDamageable target, int amount)
+
+    #region 🔹 Cleanup (เมื่อ revert → Duckling)
+    public override void Cleanup(Player player)
     {
-        target.TakeDamage(amount);
+        if (_routine != null)
+            player.StopCoroutine(_routine);
+
+        _isSkillActive = false;
+        _isCooldown = false;
     }
     #endregion
 }

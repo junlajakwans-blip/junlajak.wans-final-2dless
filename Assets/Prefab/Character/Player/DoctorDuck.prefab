@@ -357,80 +357,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6145297030757921140, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7051339253819384350}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5999967935324284092, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: -3062002027910091243}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
 --- !u!1 &201241482764077957 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5999967935324284092, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   m_PrefabInstance: {fileID: 5876879770939371321}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &-3062002027910091243
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 201241482764077957}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6029e209fe97abb4a8b334a7664c1a17, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DoctorDuck
-  _maxHealth: 100
-  _currentHealth: 0
-  _moveSpeed: 3.5
-  _rigidbody: {fileID: 7831133287600704495}
-  _animator: {fileID: 0}
-  _visualRoot: {fileID: 0}
-  _facingRight: 1
-  _playerData:
-    _playerName: 
-    _selectedCareer: 
-    _maxHealth: 0
-    _speed: 0
-    _attackPower: 0
-    _defense: 0
-    _currency:
-      _coin: 0
-      _token: 0
-      _keyMap: 0
-    _progress:
-      _unlockedMaps: []
-      _unlockedCareers: []
-      _totalCoins: 0
-      _totalTokens: 0
-      _totalKeyMaps: 0
-      _bestScore: 0
-      _playTime: 0
-      GlobalHighScore: 0
-    _isDefaultDuckling: 0
-  _rigAnimator: {fileID: 0}
-  _jumpForce: 5
-  _isGrounded: 0
-  _currentMapType: 0
-  _hasMapBuff: 0
-  _buffMultiplier: 1
-  _healthBarUI: {fileID: 0}
-  _medicBagPrefab: {fileID: 0}
-  _healEffect: {fileID: 0}
-  _healRadius: 3
-  _healAmount: 8
-  _healInterval: 2
-  _reviveHealthPercent: 0.5
-  _reviveDuration: 30
-  _skillDuration: 30
-  _skillCooldown: 25
-  _buffMonDuration: 5
 --- !u!4 &344142830082694733 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6145297030757921140, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
-  m_PrefabInstance: {fileID: 5876879770939371321}
-  m_PrefabAsset: {fileID: 0}
---- !u!50 &7831133287600704495 stripped
-Rigidbody2D:
-  m_CorrespondingSourceObject: {fileID: -4817979446526450474, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   m_PrefabInstance: {fileID: 5876879770939371321}
   m_PrefabAsset: {fileID: 0}

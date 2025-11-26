@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class ComicEffectPlayer : MonoBehaviour
 {
+    [SerializeField] private CareerEffectProfile _profile;
+    public CareerEffectProfile Profile => _profile;
+
     private SpriteRenderer _sr;
     private float _timer;
     private ComicEffectData _data;
@@ -54,4 +57,10 @@ public class ComicEffectPlayer : MonoBehaviour
         }
         _timer -= Time.deltaTime;
     }
+
+    public void SetFXProfile(CareerEffectProfile profile)
+    {
+        _profile = profile;
+    }
+
 }

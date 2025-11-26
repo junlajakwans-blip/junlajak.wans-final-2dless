@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b5ac1624e353c04280a7c5dd53d84f0, type: 3}
+  m_Name: New Programmer Skill
+  m_EditorClassIdentifier: Assembly-CSharp::ProgrammerSkill
+  _codeEffect: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
+  _stunRadius: 4
+  _stunDuration: 3
+  _skillDuration: 27
+  _skillCooldown: 23
+  _bugBombEffect: {fileID: 0}
+  _bugBombRange: 4
+  _chargeRange: 6

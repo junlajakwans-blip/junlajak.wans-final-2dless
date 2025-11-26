@@ -341,10 +341,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6145297030757921140, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1549586817952020546}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5999967935324284092, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 3507661972921431564}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
 --- !u!4 &1734177370062741442 stripped
 Transform:
@@ -354,64 +351,5 @@ Transform:
 --- !u!1 &2169988701595503114 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5999967935324284092, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
-  m_PrefabInstance: {fileID: 5573611591536668342}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &3507661972921431564
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2169988701595503114}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2986a3d589a57ea4084d04916328a871, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DetectiveDuck
-  _maxHealth: 100
-  _currentHealth: 0
-  _moveSpeed: 3.5
-  _rigidbody: {fileID: 8104908187534264928}
-  _animator: {fileID: 0}
-  _visualRoot: {fileID: 0}
-  _facingRight: 1
-  _playerData:
-    _playerName: 
-    _selectedCareer: 
-    _maxHealth: 0
-    _speed: 0
-    _attackPower: 0
-    _defense: 0
-    _currency:
-      _coin: 0
-      _token: 0
-      _keyMap: 0
-    _progress:
-      _unlockedMaps: []
-      _unlockedCareers: []
-      _totalCoins: 0
-      _totalTokens: 0
-      _totalKeyMaps: 0
-      _bestScore: 0
-      _playTime: 0
-      GlobalHighScore: 0
-    _isDefaultDuckling: 0
-  _rigAnimator: {fileID: 0}
-  _jumpForce: 5
-  _isGrounded: 0
-  _currentMapType: 0
-  _hasMapBuff: 0
-  _buffMultiplier: 1
-  _healthBarUI: {fileID: 0}
-  _scanEffect: {fileID: 0}
-  _magnifyLightPrefab: {fileID: 0}
-  _magnifyRange: 2
-  _scanRadius: 5
-  _skillDuration: 25
-  _skillCooldown: 20
-  _noDetectDuration: 3
---- !u!50 &8104908187534264928 stripped
-Rigidbody2D:
-  m_CorrespondingSourceObject: {fileID: -4817979446526450474, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   m_PrefabInstance: {fileID: 5573611591536668342}
   m_PrefabAsset: {fileID: 0}

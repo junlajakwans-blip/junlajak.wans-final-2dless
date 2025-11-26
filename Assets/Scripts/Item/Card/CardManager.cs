@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Collections;
 using Random = UnityEngine.Random;
 
 public class CardManager : MonoBehaviour
@@ -20,13 +21,17 @@ public class CardManager : MonoBehaviour
     private int _careerCardDropCount = 0;
     private const int _maxSameCardInHand = 2;
 
-
     public static CardManager Instance { get; private set; }
     public RandomStarterCard starterPanel;
+
+    public bool IsReady { get; private set; }
+
+    private Coroutine _careerCooldownRoutine;
+    private int _muscleUseCount = 0;
     #endregion
 
 
-    public bool IsReady { get; private set; }
+
 
     #region Unity Lifecycle Card Manager
 
@@ -173,6 +178,8 @@ public class CardManager : MonoBehaviour
             if (_careerSwitcher != null && data != null && _careerSwitcher.CanChangeTo(data))
             {
                 _careerSwitcher.SwitchCareer(data);
+                _careerSwitcher.StartCareerTimer(data.CareerDuration); // ⏱ ดึงจาก ScriptableObject
+                HandleCareerCooldown(data); // ⛔ ล็อคการ์ดตาม cooldown ของอาชีพนี้
                 _uiEffectCharacter?.PlayEffect(card.SkillName);
                 success = true;
             }
@@ -244,7 +251,11 @@ public class CardManager : MonoBehaviour
         if (newCareer == null || _careerSwitcher == null) return;
 
         if (newCareer == _careerSwitcher.GetCareerData(DuckCareer.Duckling))
+        {
             UnlockCards();
+            _muscleUseCount = 0; // Reset muscle bonus stack
+        }
+
     }
     #endregion
 
@@ -366,6 +377,31 @@ public class CardManager : MonoBehaviour
         return index >= 0 && index < _collectedCards.Count;
     }
 
+    private void HandleCareerCooldown(DuckCareerData careerData)
+    {
+        if (careerData.CareerID == DuckCareer.Muscle)
+        {
+            float time = careerData.CareerDuration + 15f * _muscleUseCount;
+            _muscleUseCount++;
+            _careerSwitcher.StartCareerTimer(time);
+            LockCards();
+            return;
+        }
 
+        float extraCooldown = careerData.CareerCooldownAfterUse;
+
+        if (_careerCooldownRoutine != null)
+            StopCoroutine(_careerCooldownRoutine);
+
+        _careerCooldownRoutine = StartCoroutine(UnlockAfterCooldown(extraCooldown));
+    }
+
+    private IEnumerator UnlockAfterCooldown(float time)
+    {
+        LockCards();
+        Debug.Log($"[CardManager] Extra Career cooldown: {time}s");
+        yield return new WaitForSeconds(time);
+        UnlockCards();
+    }
     #endregion
 }

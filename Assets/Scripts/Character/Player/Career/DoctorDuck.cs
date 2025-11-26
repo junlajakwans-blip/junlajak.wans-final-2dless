@@ -3,230 +3,216 @@ using System.Collections;
 
 /// <summary>
 /// DoctorDuck – Support / Self-Healer Career (ID 5, Tier S)
-/// Implements passive heal, revive, and specific BuffMon/BuffMap logic.
+/// Passive self-heal, revive once, MedicBag skill, and BuffMon (PeterMon 30% No Attack).
+/// BuffMap: Regen ×2 (handled naturally via heal routine)
 /// </summary>
-public class DoctorDuck : Player
+[CreateAssetMenu(menuName = "DUFFDUCK/Skill/DoctorSkill_Full")]
+public class DoctorSkill : CareerSkillBase
 {
-    #region Fields
-    [Header("DoctorDuck Settings")]
+    #region 🔹 Fields (Copied from DoctorDuck.cs)
+    [Header("Doctor Settings")]
     [SerializeField] private GameObject _medicBagPrefab;
     [SerializeField] private GameObject _healEffect;
     [SerializeField] private float _healRadius = 3f;
-    [SerializeField] private int _healAmount = 8;        // +8 HP
-    [SerializeField] private float _healInterval = 2f;     // Every 2 Sec
-    [SerializeField] private float _reviveHealthPercent = 0.5f; // 50% Health
-    [SerializeField] private float _reviveDuration = 30f;    // 30 Sec
-    [SerializeField] private float _skillDuration = 30f;   // 30 Sec
-    [SerializeField] private float _skillCooldown = 25f;   // 25 Sec
-    [SerializeField] private float _buffMonDuration = 5f;  // Custom duration for BuffMon
+    [SerializeField] private int _healAmount = 8;
+    [SerializeField] private float _healInterval = 2f;
+    [SerializeField] private float _reviveHealthPercent = 0.5f;
+    [SerializeField] private float _reviveDuration = 30f;
+    [SerializeField] private float _skillDuration = 30f;
+    [SerializeField] private float _skillCooldown = 25f;
+    [SerializeField] private float _buffMonDuration = 5f;
 
     private bool _isSkillActive;
     private bool _isCooldown;
     private bool _canRevive = true;
+
+    private Coroutine _healRoutine;
+    private Coroutine _skillRoutine;
     #endregion
 
-    #region Buffs & Passives Initialization
 
-    /// <summary>
-    /// (Override) Applies DoctorDuck-specific buffs when the career is initialized.
-    /// This method is called by the base Player.Initialize() method.
-    /// </summary>
-    protected override void InitializeCareerBuffs()
+    #region 🔹 Initialize (Passive Heal + Map Buff)
+    public override void Initialize(Player player)
     {
-        // 1. Initialize Map Buff
-        InitializeCareerMapBuff();
-        
-        // 2. Start Passive Self-Heal
-        StartCoroutine(SelfHealRoutine());
+        // Map buff info only logs (x2 regen effect occurs through passive)
+        Debug.Log("[DoctorSkill] Map Buff applied → Regen ×2");
+
+        // Start passive self-heal loop
+        _healRoutine = player.StartCoroutine(SelfHealRoutine(player));
     }
 
-    /// <summary>
-    /// BuffMap -> Regen Rate ×2
-    /// </summary>
-    private void InitializeCareerMapBuff()
-    {
-        var map = GetCurrentMapType();
-        switch (map)
-        {
-            // Assuming all playable maps get the bonus
-            case MapType.Kitchen:
-            case MapType.School:
-            case MapType.RoadTraffic:
-                // Note: The actual "x2" logic is handled by SelfHealRoutine.
-                // This just logs the confirmation.
-                Debug.Log("[DoctorDuck] Map Buff applied → Regen Rate ×2 active."); 
-                break;
-            default:
-                Debug.Log($"[DoctorDuck] No map-specific buff active (Current: {map})");
-                break;
-        }
-    }
-
-    /// <summary>
-    /// Self Heal -> Every 2 Sec +8HP
-    /// </summary>
-    private IEnumerator SelfHealRoutine()
+    private IEnumerator SelfHealRoutine(Player player)
     {
         while (true)
         {
-            if (!_isDead && _currentHealth < _maxHealth)
+            if (!player.IsDead && player.CurrentHealth < player.MaxHealth)
             {
-                Heal(_healAmount); 
-                Debug.Log($"[{PlayerName}] Self-heal +{_healAmount} HP ({_currentHealth}/{_maxHealth})"); 
+                player.Heal(_healAmount);
+                Debug.Log($"[{player.PlayerName}] self-heal +{_healAmount}");
+
                 if (_healEffect != null)
-                    Instantiate(_healEffect, transform.position, Quaternion.identity);
+                    Object.Instantiate(_healEffect, player.transform.position, Quaternion.identity);
             }
-            yield return new WaitForSeconds(_healInterval); 
+            yield return new WaitForSeconds(_healInterval);
         }
     }
     #endregion
 
-    #region Revive Mechanic
-    /// <summary>
-    /// if Die Revive 1 time + 50% Health 30 sec
-    /// </summary>
-    public override void TakeDamage(int damage)
+
+    #region 🔹 Revive System
+    public override void OnTakeDamage(Player player, int incomingDamage)
     {
-        base.TakeDamage(damage);
-        // If TakeDamage resulted in death, and we can revive, start the routine
-        if (_isDead && _canRevive)
-            StartCoroutine(ReviveRoutine());
+        // Called by Player → forward damage result & detect death
+        if (player.IsDead && _canRevive)
+            player.StartCoroutine(ReviveRoutine(player));
     }
 
-    private IEnumerator ReviveRoutine()
+    private IEnumerator ReviveRoutine(Player player)
     {
-        _canRevive = false; // Use the revive
-        _isDead = false;    // Negate the death
-        _currentHealth = Mathf.RoundToInt(_maxHealth * _reviveHealthPercent); // 50% Health 
-        
-        Debug.Log($"[{PlayerName}] Revived with {_currentHealth} HP for {_reviveDuration}s!"); 
-        
-        yield return new WaitForSeconds(_reviveDuration); // Wait 30s 
-        
-        if (!_isDead)
-            Debug.Log($"[{PlayerName}] Revive window ended (can die permanently now).");
+        _canRevive = false;
+
+        player.Revive(Mathf.RoundToInt(player.MaxHealth * _reviveHealthPercent));
+        Debug.Log($"[{player.PlayerName}] Revived for {_reviveDuration}s!");
+
+        yield return new WaitForSeconds(_reviveDuration);
+        Debug.Log($"[{player.PlayerName}] revive window expired.");
+    }
+
+    public override bool OnBeforeDie(Player player)
+    {
+        if (!_canRevive) return false;
+        _canRevive = false;
+
+        int reviveHP = Mathf.RoundToInt(player.MaxHealth * 0.5f);
+        player.Revive(reviveHP);
+
+        Debug.Log($"[{player.PlayerName}] Revived with {reviveHP} HP from Doctor Skill!");
+        return true; // แจ้ง Player ว่าไม่ต้องตายต่อ
     }
     #endregion
 
-    #region ISkillUser
-    public override void UseSkill()
+
+    #region 🔹 UseSkill → MedicBag
+    public override void UseCareerSkill(Player player)
     {
-        if (_isSkillActive || _isCooldown) return;
-        StartCoroutine(MedicBagRoutine());
+        if (_isSkillActive || _isCooldown)
+        {
+            Debug.Log($"[{player.PlayerName}] Skill not ready");
+            return;
+        }
+
+        _skillRoutine = player.StartCoroutine(MedicBagRoutine(player));
     }
 
-    private IEnumerator MedicBagRoutine()
+    private IEnumerator MedicBagRoutine(Player player)
     {
         _isSkillActive = true;
-        Debug.Log($"{PlayerName} uses Skill: I'm Doctor → Throw Medic Bag!");
+
+        Debug.Log($"[{player.PlayerName}] Skill: I'm Doctor → Throw Medic Bag!");
 
         if (_medicBagPrefab != null)
-            Instantiate(_medicBagPrefab, transform.position + Vector3.up, Quaternion.identity);
+            Object.Instantiate(_medicBagPrefab, player.transform.position + Vector3.up, Quaternion.identity);
 
-        // Heal self (bonus amount from skill)
-        Heal(_healAmount * 2);
-        Debug.Log($"[{PlayerName}] healed self +{_healAmount * 2} HP from Medic Bag.");
+        // Self-heal burst
+        player.Heal(_healAmount * 2);
 
-        // Damage enemies in radius
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, _healRadius);
+        // Damage AOE
+        Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, _healRadius);
         foreach (var hit in hits)
-        {
             if (hit.TryGetComponent<IDamageable>(out var enemy) && hit.GetComponent<Player>() == null)
-                ApplyDamage(enemy, 10);
-        }
+                player.ApplyDamage(enemy, 10);
 
-        // Apply temporary monster buff
-        StartCoroutine(ApplyBuffMonRoutine());
+        // BuffMon effect (PeterMon 30% No Attack)
+        player.StartCoroutine(ApplyBuffMonRoutine());
 
         yield return new WaitForSeconds(_skillDuration);
         _isSkillActive = false;
-        OnSkillCooldown();
+        StartCooldown(player);
     }
+    #endregion
 
-    public override void OnSkillCooldown() => StartCoroutine(CooldownRoutine());
+
+    #region 🔹 Cooldown
+    private void StartCooldown(Player player)
+    {
+        player.StartCoroutine(CooldownRoutine());
+    }
 
     private IEnumerator CooldownRoutine()
     {
         _isCooldown = true;
         yield return new WaitForSeconds(_skillCooldown);
         _isCooldown = false;
-        Debug.Log("[DoctorDuck] Cooldown finished.");
+        Debug.Log("🩺 DoctorSkill READY");
     }
     #endregion
 
-    #region BuffMon
-    /// <summary>
-    /// PeterMon → 30% No Attack
-    /// </summary>
+
+    #region 🔹 BuffMon (PeterMon 30% No Attack)
     private IEnumerator ApplyBuffMonRoutine()
     {
-        Debug.Log($"[{PlayerName}] BuffMon: PeterMon -30% Attack ({_buffMonDuration}s)");
-        Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
+        Enemy[] enemies = Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None);
         foreach (var enemy in enemies)
         {
             if (enemy.EnemyType == EnemyType.PeterMon)
             {
-                // Implemented 30% chance logic
-                if (Random.value < 0.30f) // 30% chance 
+                if (Random.value < 0.30f)
                 {
                     enemy.DisableBehavior(_buffMonDuration);
-                    Debug.Log($"[{PlayerName}] BuffMon: PeterMon attack disabled for {_buffMonDuration}s (30% chance triggered).");
-                }
-                else
-                {
-                    Debug.Log($"[{PlayerName}] BuffMon: PeterMon 30% chance failed.");
+                    Debug.Log($"🩺 BuffMon Applied → PeterMon no attack for {_buffMonDuration}s");
                 }
             }
         }
         yield return new WaitForSeconds(_buffMonDuration);
-        Debug.Log($"[{PlayerName}] BuffMon ended.");
     }
     #endregion
 
-    #region IAttackable
-    public override void Attack()
+
+    #region 🔹 Attack / ChargeAttack / RangeAttack
+    public override void PerformAttack(Player player)
     {
-        // [CareerAttack] I'm Doctor -> Throw Medic Bag (Range 2 Block)
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 2f); 
+        Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, 2f);
         foreach (var hit in hits)
-        {
             if (hit.TryGetComponent<IDamageable>(out var target) && hit.GetComponent<Player>() == null)
-                ApplyDamage(target, 10);
-        }
+                player.ApplyDamage(target, 10);
 
         if (_medicBagPrefab != null)
-            Instantiate(_medicBagPrefab, transform.position + Vector3.up, Quaternion.identity);
-
-        Debug.Log($"[{PlayerName}] CareerAttack: I'm Doctor → Throw Medic Bag"); 
+            Object.Instantiate(_medicBagPrefab, player.transform.position + Vector3.up, Quaternion.identity);
     }
 
-    public override void ChargeAttack(float power)
+    public override void PerformChargeAttack(Player player)
     {
-        // Add lenght attack to 3
-        float range = Mathf.Lerp(2f, 3f, power); 
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, range);
+        float power = player.GetChargePower();
+        float range = Mathf.Lerp(2f, 3f, power);
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, range);
         foreach (var hit in hits)
-        {
             if (hit.TryGetComponent<IDamageable>(out var target) && hit.GetComponent<Player>() == null)
-                ApplyDamage(target, 15);
-        }
-        Debug.Log($"[{PlayerName}] ChargeAttack range {range:F1} blocks.");
+                player.ApplyDamage(target, 15);
     }
 
-    public override void RangeAttack(Transform target)
+    public override void PerformRangeAttack(Player player, Transform target)
     {
-        // ChargeAttack 3 Block (Using this as max range attack)
         if (target == null) return;
-        if (Vector2.Distance(transform.position, target.position) <= 3f) 
-        {
+        if (Vector2.Distance(player.transform.position, target.position) <= 3f)
             if (target.TryGetComponent<IDamageable>(out var enemy))
-                ApplyDamage(enemy, 12);
-        }
+                player.ApplyDamage(enemy, 12);
     }
+    #endregion
 
-    public override void ApplyDamage(IDamageable target, int amount)
+
+    #region 🔹 Cleanup when revert → Duckling
+    public override void Cleanup(Player player)
     {
-        target.TakeDamage(amount);
+        if (_healRoutine != null)
+            player.StopCoroutine(_healRoutine);
+
+        if (_skillRoutine != null)
+            player.StopCoroutine(_skillRoutine);
+
+        _isSkillActive = false;
+        _isCooldown = false;
+        _canRevive = true;
     }
     #endregion
 }

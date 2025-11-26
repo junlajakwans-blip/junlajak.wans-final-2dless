@@ -63,6 +63,8 @@ public abstract class Enemy : Character, IAttackable
 
     protected virtual void Update()
     {
+         UpdateFear();
+         
         if (_target == null) return;
 
         if (DetectPlayer(_target.position))
@@ -280,6 +282,42 @@ public abstract class Enemy : Character, IAttackable
         Debug.Log($"[{name}] is no longer confused.");
 
     }
+
+#region Fear System
+    private bool _isFeared = false;
+    private float _fearTimer = 0f;
+
+    /// <summary>
+    /// Force this enemy to run away from the player for a set duration.
+    /// </summary>
+    public void ApplyFear(float duration)
+    {
+        _isFeared = true;
+        _fearTimer = duration;
+        Debug.Log($"[{name}] FEARED for {duration} seconds!");
+    }
+
+    /// <summary>
+    /// Update Fear timer and flee movement
+    /// </summary>
+    private void UpdateFear()
+    {
+        if (!_isFeared) return;
+
+        _fearTimer -= Time.deltaTime;
+        if (_fearTimer <= 0f)
+        {
+            _isFeared = false;
+            return;
+        }
+
+        if (_target != null)
+        {
+            Vector3 direction = (transform.position - _target.position).normalized;
+            base.Move(direction); // move AWAY from the player
+        }
+    }
+    #endregion
 
 
 }

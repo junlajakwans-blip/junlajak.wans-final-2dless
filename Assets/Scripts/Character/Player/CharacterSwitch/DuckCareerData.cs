@@ -11,15 +11,26 @@ public class DuckCareerData : ScriptableObject
     [Header("Core Identity")]
     [SerializeField] private DuckCareer _careerID;
     [SerializeField] private string _displayName;
-    [SerializeField] private string _skillName;
-    [SerializeField] private Sprite _skillIcon;
+
+    [Header("Career Time Settings")]
+    [SerializeField] private float _careerDuration = 0f;                 // ระยะเวลาที่อยู่ในร่างอาชีพ
+    [SerializeField] private float _careerCooldownAfterUse = 0f;         // เวลาก่อนใช้การ์ดนี้ได้อีกครั้งหลังกลับเป็น Duckling
+    public float CareerDuration => _careerDuration;
+    public float CareerCooldownAfterUse => _careerCooldownAfterUse;
+
+    [Header("Skill Descripttion")]
+    [SerializeField] private string _skillName; //Skil Name
+    [SerializeField] private Sprite _skillIcon; //UI Key Input
+    [SerializeField] [TextArea(3, 5)] private string _skillDescription;
+
+    [Header("Skill Handler (ScriptableObject)")]
+    [SerializeField] private CareerSkillBase _careerSkill;
+    public CareerSkillBase CareerSkill => _careerSkill;
 
 
-    
     [Header("Base Stats")]
     [SerializeField] private int _baseHealth;
     [SerializeField] private float _baseSpeed;
-    [SerializeField] [TextArea(3, 5)] private string _skillDescription;
 
 
     [Header("Card Settings")]
@@ -48,7 +59,6 @@ public class DuckCareerData : ScriptableObject
     [SerializeField] private float _peterMonBuffDuration = 5f;
 
 
-
     [Header("ProgrammerDuck Buff Data")]
     [Tooltip("Flat coin bonus for LotteryMon (+10).")]
     [SerializeField] private int _programmerMonCoinBonusValue = 10; // ProgrammerDuck: LotteryMon
@@ -64,9 +74,9 @@ public class DuckCareerData : ScriptableObject
     public string DisplayName => _displayName;
     public int BaseHealth => _baseHealth;
     public float BaseSpeed => _baseSpeed;
-    public string SkillName => _skillName;
-    public string SkillDescription => _skillDescription;
-    public Sprite SkillIcon => _skillIcon;
+    public string SkillName => _skillName; //UI SKILL for Debug
+    public string SkillDescription => _skillDescription; //UI SKILL Input Key to use skill
+    public Sprite SkillIcon => _skillIcon; //UI SKILL Key Popup
     public CardType CardType => _cardType;
     public Sprite CareerIcon => _careerIcon;
     public Sprite CareerCard =>  _careerCard; //All Career and Berserk have card || Duckling NO Card

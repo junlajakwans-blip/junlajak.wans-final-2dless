@@ -357,10 +357,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6145297030757921140, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6839181744737490677}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5999967935324284092, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2973293410438963581}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
 --- !u!4 &4040800961554147277 stripped
 Transform:
@@ -370,66 +367,5 @@ Transform:
 --- !u!1 &4476471426711794181 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5999967935324284092, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
-  m_PrefabInstance: {fileID: 7880089918878996153}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &2973293410438963581
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4476471426711794181}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c4b2439feb9bd2245b64d42865b0a3e5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FireFighterDuck
-  _maxHealth: 100
-  _currentHealth: 0
-  _moveSpeed: 3.5
-  _rigidbody: {fileID: 5798575008586609263}
-  _animator: {fileID: 0}
-  _visualRoot: {fileID: 0}
-  _facingRight: 1
-  _playerData:
-    _playerName: 
-    _selectedCareer: 
-    _maxHealth: 0
-    _speed: 0
-    _attackPower: 0
-    _defense: 0
-    _currency:
-      _coin: 0
-      _token: 0
-      _keyMap: 0
-    _progress:
-      _unlockedMaps: []
-      _unlockedCareers: []
-      _totalCoins: 0
-      _totalTokens: 0
-      _totalKeyMaps: 0
-      _bestScore: 0
-      _playTime: 0
-      GlobalHighScore: 0
-    _isDefaultDuckling: 0
-  _rigAnimator: {fileID: 0}
-  _jumpForce: 5
-  _isGrounded: 0
-  _currentMapType: 0
-  _hasMapBuff: 0
-  _buffMultiplier: 1
-  _healthBarUI: {fileID: 0}
-  _waterBallPrefab: {fileID: 0}
-  _splashEffect: {fileID: 0}
-  _waterSplashSkillEffect: {fileID: 0}
-  _waterBallRange: 2
-  _splashAttackRange: 4
-  _skillPushRange: 5
-  _skillPushForce: 10
-  _skillDuration: 28
-  _skillCooldown: 22
---- !u!50 &5798575008586609263 stripped
-Rigidbody2D:
-  m_CorrespondingSourceObject: {fileID: -4817979446526450474, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   m_PrefabInstance: {fileID: 7880089918878996153}
   m_PrefabAsset: {fileID: 0}

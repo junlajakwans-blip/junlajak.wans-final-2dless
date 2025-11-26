@@ -1,7 +1,7 @@
 using System.Collections;
-using System.ComponentModel;
+using System;
 using UnityEngine;
-using UnityEngine.Rendering;
+
 
 
 /// <summary>
@@ -14,7 +14,14 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
 #region Fields
     [Header("Core Data")]
     [SerializeField] private PlayerData _playerData;
-    protected CareerSwitcher _careerSwitcher;
+    private CareerSwitcher _careerSwitcher;
+    public DuckCareerData CurrentCareerData => _careerSwitcher?.CurrentCareer;
+
+    public DuckCareer CurrentCareerID =>
+    _careerSwitcher != null && _careerSwitcher.CurrentCareer != null
+        ? _careerSwitcher.CurrentCareer.CareerID
+        : DuckCareer.Duckling;
+    
     private CardManager _cardManager;
      private Currency _currency;
 
@@ -30,9 +37,12 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
 
     [Header("Runtime State")]
     [SerializeField] private bool _isGrounded = false;
+    [SerializeField] private float _chargePower = 0f;
 
     [Header("Environment Awareness")]
     [SerializeField] protected MapType _currentMapType = MapType.None;
+    public MapType CurrentMapType => _currentMapType;
+
 
     [Header("Buff Settings")]
     [SerializeField] protected bool _hasMapBuff;
@@ -42,14 +52,27 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     [SerializeField] private HealthBarUI _healthBarUI;
     public event System.Action<int> OnCoinCollected;
 
+    [Header("Fx References")]
+    [SerializeField] private CareerEffectProfile _fxProfile;
+
+    public float GetChargePower() => _chargePower;
+
+
     private float _speedModifier = 1f;
     private Coroutine _speedRoutine;
     private WaitForSeconds _speedWait;
-
-    public string PlayerName => _playerData != null ? _playerData.PlayerName : "Unknown";
-    public int FaceDir { get; private set; } = 1;
     private PlayerInteract _interact;
 
+    public CareerEffectProfile FXProfile => _fxProfile;
+    public string PlayerName => _playerData != null ? _playerData.PlayerName : "Unknown";
+    public int FaceDir { get; private set; } = 1;
+
+    public CareerSkillBase CurrentCareerSkill =>
+    _careerSwitcher != null && _careerSwitcher.CurrentCareer != null
+        ? _careerSwitcher.CurrentCareer.CareerSkill
+        : null;
+        
+    public event Action<Player> OnPlayerDied;
 
     #endregion
 
@@ -235,14 +258,26 @@ public override void Move(Vector2 direction)
     {
         if (_isDead || !_isGrounded) return;
 
+        // Motorcycle Skill — Jump Higher
+        if (CurrentCareerSkill is MotorcycleSkill moto && moto.HasJumpBuff)
+        {
+            _rigidbody.AddForce(Vector2.up * (_jumpForce * 1.2f), ForceMode2D.Impulse);
+            _isGrounded = false;
 
-        _rigidbody.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse); 
+            if (_rigAnimator != null)
+                _rigAnimator.SetTrigger("Jump");
+
+            return; // ห้ามตกลงไปกระโดดปกติซ้ำ
+        }
+
+        // Default Jump (ไม่มีบัฟ)
+        _rigidbody.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse);
         _isGrounded = false;
-
 
         if (_rigAnimator != null)
             _rigAnimator.SetTrigger("Jump");
     }
+
 
     // detwect jump attack on collision
     private void OnCollisionEnter2D(Collision2D collision)
@@ -334,6 +369,9 @@ public override void Move(Vector2 direction)
 
         _healthBarUI?.UpdateHealth(_currentHealth);
         Debug.Log($"[Player] Took {amount} damage. HP: {_currentHealth}/{_maxHealth}");
+
+        if (CurrentCareerSkill != null)
+        CurrentCareerSkill?.OnTakeDamage(this, amount);
     }
 
     /// <summary>
@@ -351,9 +389,26 @@ public override void Move(Vector2 direction)
         Debug.Log($"[Player] Healed +{amount}. HP: {_currentHealth}/{_maxHealth}");
     }
 
+    public void Revive(int reviveHP)
+    {
+        _isDead = false;
+        _currentHealth = Mathf.Clamp(reviveHP, 1, _maxHealth);
+        // อัปเดต UI / animation ถ้ามี
+    }
+
+
     public override void Die()
     {
         if (_isDead) return;
+
+        
+        // ⚠ ถ้ามี Skill ป้องกันการตาย → ไม่ต้อง Die
+        if (CurrentCareerSkill != null && CurrentCareerSkill.OnBeforeDie(this))
+        {
+            Debug.Log("[Player] Death intercepted by Career Skill.");
+            return;
+        }
+
         _isDead = true;
 
         // 1) ตัด collider ตัวเอง → ศัตรูจะหยุดตี / หยุดชนทันที
@@ -454,24 +509,26 @@ public override void Move(Vector2 direction)
     {
         Debug.Log("[Player] Basic attack triggered.");
         
+        _careerSwitcher.CurrentCareer.CareerSkill?.PerformAttack(this);
         // TODO: integrate with weapon or animation
-        if (_rigAnimator != null)
-        {
+        //if (_rigAnimator != null)
+        //{
             // สมมติว่ามี Trigger "Attack"
             // _rigAnimator.SetTrigger("Attack"); 
-        }
+        //}
     }
 
     public virtual void ChargeAttack(float power)
     {
         Debug.Log($"[Player] Charge attack power: {power}");
-        // TODO: implement hold-release mechanic
+        _chargePower = power; // เก็บ power ไว้ให้ Skill อ่าน
+        _careerSwitcher.CurrentCareer.CareerSkill?.PerformChargeAttack(this);
     }
 
     public virtual void RangeAttack(Transform target)
     {
         Debug.Log($"[Player] Range attack at {target.name}");
-        // TODO: projectile or ability cast
+        _careerSwitcher.CurrentCareer.CareerSkill?.PerformRangeAttack(this, target);
     }
 
     public virtual void ApplyDamage(IDamageable target, int amount)
@@ -487,8 +544,8 @@ public override void Move(Vector2 direction)
     public virtual void UseSkill()
     {
         Debug.Log("[Player] Skill used.");
-        //TODO : Career-based skill activation
-        //_careerSwitcher?.ActivateCareerSkill();
+        var skill = _careerSwitcher.CurrentCareer.CareerSkill;
+        skill?.UseCareerSkill(this);
     }
 
     public virtual void OnSkillCooldown()
@@ -509,6 +566,21 @@ public override void Move(Vector2 direction)
 
 
     #region Career System
+    public void EnterOverdrive()
+    {
+        _careerSwitcher.CurrentCareer.CareerSkill?.OnEnterOverdrive(this);
+    }
+
+    public void ExitOverdrive()
+    {
+        _careerSwitcher.CurrentCareer.CareerSkill?.OnExitOverdrive(this);
+    }
+    public void SetFXProfile(CareerEffectProfile newProfile)
+    {
+        _fxProfile = newProfile;
+    }
+
+
     public void OnCareerChanged(DuckCareerData newCareer)
     {
         _playerData.SelectedCareer = newCareer.DisplayName;
@@ -524,6 +596,9 @@ public override void Move(Vector2 direction)
         if (_careerSwitcher != null)
             _playerData.IsDefaultDuckling = _careerSwitcher.IsDuckling;
 
+        if (_fxProfile == null)
+        _fxProfile = Resources.Load<CareerEffectProfile>("ComicFX/Data/FXProfile_Duckling");
+
         Debug.Log($"[Player] Form state updated. Duckling = {_playerData.IsDefaultDuckling}");
     }
 
@@ -531,6 +606,8 @@ public override void Move(Vector2 direction)
     {
         //Ducklng No Buff
     }
+
+    
     #endregion
 
 

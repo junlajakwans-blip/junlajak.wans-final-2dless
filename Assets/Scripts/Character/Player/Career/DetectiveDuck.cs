@@ -8,181 +8,162 @@ using System.Collections;
 /// BuffMon: None
 /// BuffMap: None
 /// </summary>
-public class DetectiveDuck : Player
+[CreateAssetMenu(menuName = "DUFFDUCK/Skill/DetectiveSkill_Full")]
+public class DetectiveSkill : CareerSkillBase
 {
-    #region Fields
-    [Header("DetectiveDuck Settings")]
+    #region 🔹 Fields (Copied from DetectiveDuck.cs)
+    [Header("Detective Settings")]
     [SerializeField] private GameObject _scanEffect;
     [SerializeField] private GameObject _magnifyLightPrefab;
-    [SerializeField] private float _magnifyRange = 2f;      // 2 Block
+    [SerializeField] private float _magnifyRange = 2f;
     [SerializeField] private float _scanRadius = 5f;
-    [SerializeField] private float _skillDuration = 25f;   // 25 Sec
-    [SerializeField] private float _skillCooldown = 20f;   // 20 Sec
-    [SerializeField] private float _noDetectDuration = 3f; // 3 Sec
+    [SerializeField] private float _skillDuration = 25f;
+    [SerializeField] private float _skillCooldown = 20f;
+    [SerializeField] private float _noDetectDuration = 3f;
 
     private bool _isSkillActive;
     private bool _isCooldown;
+    private Coroutine _routine;
     #endregion
 
-    #region Buffs (Map & Monster)
 
-    /// <summary>
-    /// (Override) Applies DetectiveDuck-specific buffs when the career is initialized.
-    /// This method is called by the base Player.Initialize() method.
-    /// </summary>
-    protected override void InitializeCareerBuffs()
+    #region 🔹 UseSkill → RevealHiddenItems
+    public override void UseCareerSkill(Player player)
     {
-        // PDF (Page 4) confirms Detective has no BuffMap or BuffMon.
-        // This override is intentionally left blank.
-        Debug.Log($"[DetectiveDuck] No BuffMon or BuffMap to initialize.");
-    }
-    #endregion
+        if (_isSkillActive || _isCooldown)
+        {
+            Debug.Log($"[{player.PlayerName}] Skill not ready");
+            return;
+        }
 
-    #region ISkillUser Implementation
-    public override void UseSkill()
-    {
-        if (_isSkillActive || _isCooldown) return;
-        StartCoroutine(RevealHiddenItemsRoutine());
+        _routine = player.StartCoroutine(RevealHiddenItemsRoutine(player));
     }
 
-    /// <summary>
-    /// Reveal HiddenItems -> Random Spawn Buff Item 3 piece
-    /// </summary>
-    private IEnumerator RevealHiddenItemsRoutine()
+    private IEnumerator RevealHiddenItemsRoutine(Player player)
     {
         _isSkillActive = true;
-        Debug.Log($"{PlayerName} uses skill: RevealHiddenItems!");
+        Debug.Log($"[{player.PlayerName}] uses skill: RevealHiddenItems!");
 
+        // FX
         if (_scanEffect != null)
-            Instantiate(_scanEffect, transform.position, Quaternion.identity);
+            Object.Instantiate(_scanEffect, player.transform.position, Quaternion.identity);
 
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, _scanRadius);
+        Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, _scanRadius);
         int buffSpawned = 0;
 
-        // 1. Reveal existing hidden items (assuming tag "HiddenItem")
+        // 1) Reveal nearby hidden items
         foreach (var hit in hits)
         {
             if (hit.CompareTag("HiddenItem") && buffSpawned < 3)
             {
                 hit.gameObject.SetActive(true);
                 buffSpawned++;
-                Debug.Log($"[{PlayerName}] Revealed hidden buff item at {hit.transform.position}");
+                Debug.Log($"[{player.PlayerName}] Revealed hidden item at {hit.transform.position}");
             }
         }
 
-        // 2. If no hidden items were found (or not enough), spawn new ones
-        // ("Random Spawn Buff Item 3 piece" - implies spawning if not found)
+        // 2) Spawn new buff items if fewer than 3 revealed
         for (int i = buffSpawned; i < 3; i++)
         {
-            Vector2 randomPos = (Vector2)transform.position + Random.insideUnitCircle * _scanRadius;
-            // Call the helper to spawn an item via the spawner
-            SpawnBuffItem(randomPos); 
+            Vector2 randomPos = (Vector2)player.transform.position + Random.insideUnitCircle * _scanRadius;
+            SpawnBuffItem(player, randomPos);
         }
-        
 
         yield return new WaitForSeconds(_skillDuration);
         _isSkillActive = false;
-        OnSkillCooldown();
+        StartCooldown(player);
     }
+    #endregion
 
-    public override void OnSkillCooldown()
+
+    #region 🔹 Cooldown
+    private void StartCooldown(Player player)
     {
-        StartCoroutine(CooldownRoutine());
+        player.StartCoroutine(CooldownRoutine());
     }
 
     private IEnumerator CooldownRoutine()
     {
         _isCooldown = true;
+        Debug.Log($"🕵 DetectiveSkill cooldown {_skillCooldown}s");
         yield return new WaitForSeconds(_skillCooldown);
         _isCooldown = false;
-        Debug.Log("[DetectiveDuck] Cooldown finished!");
+        Debug.Log($"🕵 DetectiveSkill READY");
     }
     #endregion
-    
-    #region CareerAbility: Infrared Scanner (ChargeAttack)
-    /// <summary>
-    /// Infrared Scanner -> All Mon No Detect Range 3 Sec
-    /// </summary>
-    public override void ChargeAttack(float power)
+
+
+    #region 🔹 ChargeAttack → Infrared Scanner (Disable enemy detection)
+    public override void PerformChargeAttack(Player player)
     {
-        Debug.Log($"[{PlayerName}] activates Infrared Scanner!");
-        StartCoroutine(InfraredScannerRoutine());
+        Debug.Log($"[{player.PlayerName}] activates Infrared Scanner!");
+        player.StartCoroutine(InfraredScannerRoutine(player));
     }
 
-    private IEnumerator InfraredScannerRoutine()
+    private IEnumerator InfraredScannerRoutine(Player player)
     {
-        Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
+        Enemy[] enemies = Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None);
         foreach (var enemy in enemies)
-        {
-            if (enemy != null)
-                enemy.CanDetectOverride = false;
-        }
+            enemy.CanDetectOverride = false;
 
-        Debug.Log($"[{PlayerName}] All enemies detection disabled for {_noDetectDuration}s");
         yield return new WaitForSeconds(_noDetectDuration);
 
-        // Re-enable detection
         foreach (var enemy in enemies)
-        {
-            if (enemy != null)
-                enemy.CanDetectOverride = true;
-        }
+            enemy.CanDetectOverride = true;
     }
     #endregion
 
-    #region IAttackable Implementation
-    public override void Attack()
+
+    #region 🔹 Attack & RangeAttack
+    public override void PerformAttack(Player player)
     {
-        // [CareerAttack] MagnifyLight (2 Block)
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, _magnifyRange); // _magnifyRange = 2f
+        // MagnifyLight (2 Block)
+        Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, _magnifyRange);
         foreach (var hit in hits)
-        {
             if (hit.TryGetComponent<IDamageable>(out var target) && hit.GetComponent<Player>() == null)
-                ApplyDamage(target, 15);
-        }
+                player.ApplyDamage(target, 15);
 
         if (_magnifyLightPrefab != null)
-            Instantiate(_magnifyLightPrefab, transform.position, Quaternion.identity);
+            Object.Instantiate(_magnifyLightPrefab, player.transform.position, Quaternion.identity);
 
-        Debug.Log($"[{PlayerName}] uses MagnifyLight!");
+        Debug.Log($"[{player.PlayerName}] uses MagnifyLight!");
     }
 
-    public override void RangeAttack(Transform target)
+    public override void PerformRangeAttack(Player player, Transform target)
     {
-        // MagnifyLight 2 Block [LightRay]
         if (target == null) return;
-        if (Vector2.Distance(transform.position, target.position) <= _magnifyRange) // Use _magnifyRange
-        {
+        if (Vector2.Distance(player.transform.position, target.position) <= _magnifyRange)
             if (target.TryGetComponent<IDamageable>(out var enemy))
-                ApplyDamage(enemy, 10);
-        }
-    }
-
-    public override void ApplyDamage(IDamageable target, int amount)
-    {
-        target.TakeDamage(amount);
+                player.ApplyDamage(enemy, 10);
     }
     #endregion
 
-    #region Helper
-    /// <summary>
-    /// Spawns a buff item by calling the CollectibleSpawner.
-    /// </summary>
-    private void SpawnBuffItem(Vector2 position)
+
+    #region 🔹 Helper: Spawn Buff Items
+    private void SpawnBuffItem(Player player, Vector2 position)
     {
-        // FIX: Call the actual Spawner (using the quick find method)
-        CollectibleSpawner spawner = FindFirstObjectByType<CollectibleSpawner>();
+        CollectibleSpawner spawner = Object.FindFirstObjectByType<CollectibleSpawner>();
         if (spawner != null)
         {
-            // Assuming SpawnAtPosition spawns a random item (Coin, Buff, etc.)
-            // To guarantee ONLY buff items, CollectibleSpawner would need a specific method.
             spawner.SpawnAtPosition(position);
-            Debug.Log($"[{PlayerName}] Spawned Buff Item at {position}");
+            Debug.Log($"[{player.PlayerName}] Spawned Buff Item at {position}");
         }
         else
         {
-            Debug.LogWarning($"[{PlayerName}] CollectibleSpawner not found! Cannot spawn item.");
+            Debug.LogWarning($"[{player.PlayerName}] CollectibleSpawner not found!");
         }
+    }
+    #endregion
+
+
+    #region 🔹 Cleanup when career reverted
+    public override void Cleanup(Player player)
+    {
+        if (_routine != null)
+            player.StopCoroutine(_routine);
+
+        _isSkillActive = false;
+        _isCooldown = false;
     }
     #endregion
 }

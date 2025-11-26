@@ -381,16 +381,8 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6145297030757921140, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6397622670280273173}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5999967935324284092, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: -5312122218738217743}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
---- !u!50 &2985657077056762977 stripped
-Rigidbody2D:
-  m_CorrespondingSourceObject: {fileID: -4817979446526450474, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
-  m_PrefabInstance: {fileID: 1462603844955476151}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &4684954611715908035 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6145297030757921140, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
@@ -401,59 +393,3 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 5999967935324284092, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   m_PrefabInstance: {fileID: 1462603844955476151}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &-5312122218738217743
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5118373407419659275}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 97c7fd24f94766b40b6295b795acd3c6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ChefDuck
-  _maxHealth: 100
-  _currentHealth: 0
-  _moveSpeed: 3.5
-  _rigidbody: {fileID: 2985657077056762977}
-  _animator: {fileID: 0}
-  _visualRoot: {fileID: 0}
-  _facingRight: 1
-  _playerData:
-    _playerName: 
-    _selectedCareer: 
-    _maxHealth: 0
-    _speed: 0
-    _attackPower: 0
-    _defense: 0
-    _currency:
-      _coin: 0
-      _token: 0
-      _keyMap: 0
-    _progress:
-      _unlockedMaps: []
-      _unlockedCareers: []
-      _totalCoins: 0
-      _totalTokens: 0
-      _totalKeyMaps: 0
-      _bestScore: 0
-      _playTime: 0
-      GlobalHighScore: 0
-    _isDefaultDuckling: 0
-  _rigAnimator: {fileID: 0}
-  _jumpForce: 5
-  _isGrounded: 0
-  _currentMapType: 3
-  _hasMapBuff: 0
-  _buffMultiplier: 1
-  _healthBarUI: {fileID: 0}
-  _panEffect: {fileID: 0}
-  _burnRange: 5
-  _burnDamage: 25
-  _speedMultiplier: 1.5
-  _buffTime: 5
-  _skillDuration: 26
-  _skillCooldown: 20
-  _minCoinBonus: 3
-  _maxCoinBonus: 8

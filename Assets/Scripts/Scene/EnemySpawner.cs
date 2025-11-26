@@ -146,6 +146,7 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     /// </summary>
     private void HandleEnemyDied(Enemy enemy)
     {
+        
         if (enemy == null) return;
         
         // 1: เก็บตำแหน่งไว้ในตัวแปรท้องถิ่นก่อน
@@ -157,16 +158,14 @@ public class EnemySpawner : MonoBehaviour, ISpawn
         enemy.OnEnemyDied -= HandleEnemyDied;
         
         // 2. SingerDuck BuffMap Logic (ใช้ deathPosition แทน enemy.transform.position)
-        if (_player != null && _player.TryGetComponent<SingerDuck>(out var singerDuck))
+        if (_player != null && _player.CurrentCareerID == DuckCareer.Singer)
         {
-            if (singerDuck.IsMapBuffActive())
+            // ระยะที่ player วิ่ง → ใช้คำนวณสเกลความยาก
+            float distance = Mathf.Max(0f, _player.transform.position.x);
+
+            float goldenChance = _goldenChanceCurve.Evaluate(distance);
+            if (Random.value < goldenChance)
             {
-                // ระยะที่ player วิ่ง → ใช้คำนวณสเกลความยาก
-                float distance = Mathf.Max(0f, _player.transform.position.x);
-
-                // ดึงค่าโอกาสจาก AnimationCurve
-                float goldenChance = _goldenChanceCurve.Evaluate(distance);
-
                 // Random roll
                 if (Random.value < goldenChance)
                 {

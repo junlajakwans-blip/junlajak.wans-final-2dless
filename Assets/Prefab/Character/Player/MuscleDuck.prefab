@@ -301,10 +301,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6145297030757921140, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8796463836909763351}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5999967935324284092, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: -4901806688980184994}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
 --- !u!4 &3129583373198070260 stripped
 Transform:
@@ -314,66 +311,5 @@ Transform:
 --- !u!1 &3270408707809920060 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5999967935324284092, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
-  m_PrefabInstance: {fileID: 9090226024459149440}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &-4901806688980184994
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3270408707809920060}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8d48339af085fe54eb7240e4b77717a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MuscleDuck
-  _maxHealth: 100
-  _currentHealth: 0
-  _moveSpeed: 3.5
-  _rigidbody: {fileID: 4829513910770877526}
-  _animator: {fileID: 0}
-  _visualRoot: {fileID: 0}
-  _facingRight: 1
-  _playerData:
-    _playerName: 
-    _selectedCareer: 
-    _maxHealth: 0
-    _speed: 0
-    _attackPower: 0
-    _defense: 0
-    _currency:
-      _coin: 0
-      _token: 0
-      _keyMap: 0
-    _progress:
-      _unlockedMaps: []
-      _unlockedCareers: []
-      _totalCoins: 0
-      _totalTokens: 0
-      _totalKeyMaps: 0
-      _bestScore: 0
-      _playTime: 0
-      GlobalHighScore: 0
-    _isDefaultDuckling: 0
-  _rigAnimator: {fileID: 0}
-  _jumpForce: 5
-  _isGrounded: 0
-  _currentMapType: 0
-  _hasMapBuff: 0
-  _buffMultiplier: 1
-  _healthBarUI: {fileID: 0}
-  _rageEffect: {fileID: 0}
-  _smashEffect: {fileID: 0}
-  _roarEffect: {fileID: 0}
-  _skillDuration: 35
-  _baseCooldown: 40
-  _cooldownIncrease: 15
-  _maxUsesPerRound: 2
-  _ironFistRange: 3
-  _pumpedUpRange: 8
---- !u!50 &4829513910770877526 stripped
-Rigidbody2D:
-  m_CorrespondingSourceObject: {fileID: -4817979446526450474, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   m_PrefabInstance: {fileID: 9090226024459149440}
   m_PrefabAsset: {fileID: 0}

@@ -512,6 +512,19 @@ protected virtual void TrySpawnContentOnPlatform(GameObject platform, Vector3 po
             wallController.SetPushState(_wallPushSpeed, _isWallPushEnabled);
         }
     }
+
+    // ============================================================================
+    // 10. Public API for Skill Buffs (Career → Map)
+    // ============================================================================
+    public void SetWallPushSpeed(float speed)
+    {
+        _wallPushSpeed = speed;
+    }
+
+    public void EnableWallPush(bool enabled)
+    {
+        _isWallPushEnabled = enabled;
+    }
     #endregion
 
     #region Helper Methods

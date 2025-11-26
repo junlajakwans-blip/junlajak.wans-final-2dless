@@ -14,11 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DuckCareerData
   _careerID: 8
   _displayName: 
+  _careerDuration: 0
+  _careerCooldownAfterUse: 0
   _skillName: 
   _skillIcon: {fileID: -1587751859805848946, guid: bb1ddc25d3367314893829c535b88153, type: 3}
+  _skillDescription: 
+  _careerSkill: {fileID: 11400000, guid: 2525c1e5ec2618f4ea163b267fa8e3c2, type: 2}
   _baseHealth: 100
   _baseSpeed: 0
-  _skillDescription: 
   _cardType: 1
   _careerIcon: {fileID: 2672346107716895860, guid: e0e79ea9bf4608147bfff306a3b54ce9, type: 3}
   _careerCard: {fileID: 8721757845118025297, guid: 023698647e4fa9b428c2e6e62c29c884, type: 3}

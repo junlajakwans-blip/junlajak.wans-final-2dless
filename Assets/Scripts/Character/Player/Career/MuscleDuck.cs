@@ -2,197 +2,164 @@ using UnityEngine;
 using System.Collections;
 
 /// <summary>
-/// MuscleDuck – Berserker / Special career (ID 10, Tier S+)
-/// Acquired via 5-card exchange. Max 2 uses per round.
-/// Skill (Hulk Smash): Destroy All Enemy And obstacle.
-/// Passive: Immortal (No TakeDamage), Coinx2 (AllMap).
-/// BuffMon: GoldenMon -> Drop Coinx2, Token -> Drop 1 Token (Handled by GoldenMon.Die()).
-/// BuffMap: Roar -> All Mon Fear.
+/// MuscleSkill – Hulk Smash / Berserker career (ID 10, Tier S+)
+/// Skill: Hulk Smash → Destroy all enemies and obstacles.
+/// Passive: Immortal (ignore all damage), Coin ×2 (all maps).
+/// BuffMap: Roar → All enemies fear.
+/// BuffMon: GoldenMon logic handled in GoldenMon.Die().
+/// Cooldown increases +15 sec after every use, max 2 uses per round.
 /// </summary>
-public class MuscleDuck : Player
+[CreateAssetMenu(menuName = "DUFFDUCK/Skill/MuscleSkill_Full")]
+public class MuscleSkill : CareerSkillBase
 {
-    #region Fields
+    #region Fields (Copied from MuscleDuck.cs)
     [Header("MuscleDuck Settings")]
     [SerializeField] private GameObject _rageEffect;
     [SerializeField] private GameObject _smashEffect;
     [SerializeField] private GameObject _roarEffect;
-    
+
     [Header("Career Timing")]
-    [SerializeField] private float _skillDuration = 35f;   // 35 Sec
-    [SerializeField] private float _baseCooldown = 40f;    // First use 40 sec
-    [SerializeField] private float _cooldownIncrease = 15f; // plus 15 Sec every after usetime
-    [SerializeField] private int _maxUsesPerRound = 2;       // ≤ 2 per Round
+    [SerializeField] private float _skillDuration = 35f;
+    [SerializeField] private float _baseCooldown = 40f;
+    [SerializeField] private float _cooldownIncrease = 15f;
+    [SerializeField] private int _maxUsesPerRound = 2;
 
     [Header("Attack Settings")]
-    [SerializeField] private float _ironFistRange = 3f;    // 3 Block
-    [SerializeField] private float _pumpedUpRange = 8f;    // 8 Block
+    [SerializeField] private float _ironFistRange = 3f;
+    [SerializeField] private float _pumpedUpRange = 8f;
 
     private bool _isSkillActive;
-    private bool _isCooldown;
-    private int _usesThisRound = 0;
     private float _currentCooldown;
+    private int _usesThisRound;
+    private Coroutine _skillRoutine;
     #endregion
 
-    #region Buffs & Passives Initialization
 
-    /// <summary>
-    /// (Override) Applies MuscleDuck-specific passives when the career is initialized.
-    /// This method is called by the base Player.Initialize() method.
-    /// </summary>
-    protected override void InitializeCareerBuffs()
+    #region Initialize (Passive + BuffMap)
+    public override void Initialize(Player player)
     {
-        // Set the dynamic cooldown for the first use
         _currentCooldown = _baseCooldown;
-        
-        // 1. BuffMap Logic
-        // Roar -> All Mon Fear
-        ApplyMapBuffRoar();
-        
-        // 2. Passive Logic
-        // Coinx2 [AllMap]
-        // TODO: Requires a public method in Currency.cs or Player.cs
-        // SetCoinMultiplier(2); 
-        Debug.Log("[MuscleDuck] Passive Buff applied: Coinx2 (AllMap) (TODO).");
+        _usesThisRound = 0;
 
-        // BuffMon: GoldenMon -> Drop Coinx2, Token -> Drop 1 Token
-        // This is handled by GoldenMon.Die() checking if the player is MuscleDuck.
-        Debug.Log("[MuscleDuck] BuffMon (GoldenMon) logic is active.");
+        ApplyRoarMapBuff(player);
+
+        Debug.Log("[MuscleSkill] Passive initialized: Immortal + Coin×2 (all maps).");
     }
 
-    /// <summary>
-    /// Roar -> All Mon Fear
-    /// </summary>
-    private void ApplyMapBuffRoar()
+    private void ApplyRoarMapBuff(Player player)
     {
         if (_roarEffect != null)
-            Instantiate(_roarEffect, transform.position, Quaternion.identity);
-            
-        Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
+            Object.Instantiate(_roarEffect, player.transform.position, Quaternion.identity);
+
+        Enemy[] enemies = Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None);
         foreach (var enemy in enemies)
-        {
-            // TODO: Requires a public "Flee()" or "Fear()" method on Enemy.cs
-            // enemy.ApplyFear(5f); // Example: Flee for 5 seconds
-        }
-        Debug.Log($"[MuscleDuck] ROAR! Applied Fear to {enemies.Length} enemies (TODO).");
+            enemy.ApplyFear(5f);
+
+        Debug.Log($"[MuscleSkill] Roar Fear applied to {enemies.Length} enemies.");
     }
     #endregion
 
-    #region ISkillUser Implementation
-    public override void UseSkill()
+
+    #region Use Skill – Hulk Smash
+    public override void UseCareerSkill(Player player)
     {
-        if (_isSkillActive || _isCooldown || _usesThisRound >= _maxUsesPerRound)
+        if (_isSkillActive)
         {
-            Debug.Log($"[MuscleDuck] Skill not ready! (Active: {_isSkillActive}, Cooldown: {_isCooldown}, Uses: {_usesThisRound}/{_maxUsesPerRound})");
+            Debug.Log("[MuscleSkill] Skill already active.");
             return;
         }
-        StartCoroutine(HulkSmashRoutine());
+
+        if (_usesThisRound >= _maxUsesPerRound)
+        {
+            Debug.Log("[MuscleSkill] Max uses reached this round.");
+            return;
+        }
+
+        _skillRoutine = player.StartCoroutine(HulkSmashRoutine(player));
     }
 
-    /// <summary>
-    /// Hulk Smash -> Destroy All Enemy And obstacle
-    /// </summary>
-    private IEnumerator HulkSmashRoutine()
+    private IEnumerator HulkSmashRoutine(Player player)
     {
         _isSkillActive = true;
         _usesThisRound++;
-        Debug.Log($"{PlayerName} uses skill: HULK SMASH! (Use {_usesThisRound}/{_maxUsesPerRound}). Duration: {_skillDuration}s");
 
         if (_smashEffect != null)
-            Instantiate(_smashEffect, transform.position, Quaternion.identity);
+            Object.Instantiate(_smashEffect, player.transform.position, Quaternion.identity);
 
-        // 1. Destroy All Enemies
-        Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
+        Enemy[] enemies = Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None);
         foreach (var enemy in enemies)
-        {
-            if (enemy != null)
-                enemy.TakeDamage(9999); // Instant kill
-        }
-        
-        // 2. Destroy All Obstacles
-        // TODO: Requires finding objects with "Obstacle" tag/layer
-        // var obstacles = FindObjectsByType<Obstacle>(...);
-        // foreach (var obstacle in obstacles) obstacle.Destroy();
+            enemy.TakeDamage(9999);
 
-        Debug.Log($"[MuscleDuck] Smashed {enemies.Length} enemies and 0 obstacles (TODO).");
+        Debug.Log($"[MuscleSkill] Hulk Smash destroyed {enemies.Length} enemies.");
 
         yield return new WaitForSeconds(_skillDuration);
-        
         _isSkillActive = false;
-        OnSkillCooldown();
+        StartCooldown(player);
     }
-    
-    public override void OnSkillCooldown()
+    #endregion
+
+
+    #region Cooldown Logic (+15 sec per use)
+    private void StartCooldown(Player player)
     {
-        StartCoroutine(CooldownRoutine());
+        player.StartCoroutine(CooldownRoutine());
     }
 
-    /// <summary>
-    /// CoolDown Card plus 15 Sec every after usetime
-    /// </summary>
     private IEnumerator CooldownRoutine()
     {
-        _isCooldown = true;
-        Debug.Log($"[{PlayerName}] skill on cooldown for {_currentCooldown}s.");
-        
+        Debug.Log($"[MuscleSkill] Cooldown {_currentCooldown}s.");
         yield return new WaitForSeconds(_currentCooldown);
-        
-        // Increase cooldown for the *next* use
-        _currentCooldown += _cooldownIncrease; 
-        
-        _isCooldown = false;
-        Debug.Log($"[{PlayerName}] skill ready! Next cooldown will be {_currentCooldown}s.");
+        _currentCooldown += _cooldownIncrease;
+        Debug.Log($"[MuscleSkill] Cooldown ended. Next cooldown = {_currentCooldown}s.");
     }
     #endregion
 
-    #region Immunity
-    /// <summary>
-    /// (Override) TakeDamage: No (Immortal)
-    /// </summary>
-    public override void TakeDamage(int damage)
-    {
-        // MuscleDuck is IMMORTAL while this career is active.
-        Debug.Log($"[{PlayerName}] IMMORTAL! Ignored {damage} damage.");
-        return; 
-    }
-    #endregion
 
-    #region IAttackable Implementation
-    public override void Attack()
+    #region Attack / Charge Attack
+    public override void PerformAttack(Player player)
     {
-        // [CareerAttack] Iron Fist(AOE) (3 Block)
-        Debug.Log($"[{PlayerName}] uses Iron Fist (3 Block)!");
         if (_rageEffect != null)
-            Instantiate(_rageEffect, transform.position, Quaternion.identity);
+            Object.Instantiate(_rageEffect, player.transform.position, Quaternion.identity);
 
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, _ironFistRange);
+        Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, _ironFistRange);
         foreach (var hit in hits)
-        {
             if (hit.TryGetComponent<IDamageable>(out var target) && hit.GetComponent<Player>() == null)
-                ApplyDamage(target, 50); // High damage
-        }
+                player.ApplyDamage(target, 50);
+
+        Debug.Log("[MuscleSkill] Iron Fist executed.");
     }
 
-    public override void ChargeAttack(float power)
+    public override void PerformChargeAttack(Player player)
     {
-        // Pumped Up (8 Block)
-        Debug.Log($"[{PlayerName}] uses Pumped Up (8 Block)!");
-        
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, _pumpedUpRange);
+        Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, _pumpedUpRange);
         foreach (var hit in hits)
-        {
             if (hit.TryGetComponent<IDamageable>(out var target) && hit.GetComponent<Player>() == null)
-                ApplyDamage(target, 100); // Massive damage
-        }
+                player.ApplyDamage(target, 100);
+
+        Debug.Log("[MuscleSkill] Pumped Up executed.");
+    }
+    #endregion
+
+
+    #region Passive – Immortal
+    public override void OnTakeDamage(Player player, int dmg)
+    {
+        Debug.Log("[MuscleSkill] Immortal → ignored damage.");
     }
 
-    public override void RangeAttack(Transform target)
-    {
-        // Covered by Attack() (3 Block) and ChargeAttack() (8 Block)
-    }
+    public override bool OnBeforeDie(Player player) => true;
+    #endregion
 
-    public override void ApplyDamage(IDamageable target, int amount)
+
+    #region Cleanup
+    public override void Cleanup(Player player)
     {
-        target.TakeDamage(amount);
+        _isSkillActive = false;
+
+        if (_skillRoutine != null)
+            player.StopCoroutine(_skillRoutine);
+
+        Debug.Log("[MuscleSkill] Cleanup complete.");
     }
     #endregion
 }
