@@ -226,6 +226,10 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 8322819004064401337, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8952884402048639063, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
       propertyPath: _jumpForce
       value: 6
@@ -295,7 +299,7 @@ MonoBehaviour:
   _phase1Interval: {x: 6, y: 9}
   _phase2Interval: {x: 4, y: 7}
   _phase3Interval: {x: 3, y: 5}
-  _verticalOffset: -0.7
+  _verticalOffset: -0.3
   _cachedAssetKeys: []
   _activeAssets: []
 --- !u!4 &610633208
@@ -339,7 +343,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2834084880469090607, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -7.91
+      value: -8.64
       objectReference: {fileID: 0}
     - target: {fileID: 2834084880469090607, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
       propertyPath: m_LocalPosition.y
@@ -540,7 +544,6 @@ MonoBehaviour:
   _maxYOffset: 0.05
   _collectibleOffset: 0.2
   _currentPlatformState: 0
-  _currentHeightLimit: 0
   _stepsRemaining: 0
   _floorY: -0.8
   _floorLength: 2.35
@@ -660,9 +663,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThrowableSpawner
   _dropTable: {fileID: 11400000, guid: d2d9d9a0968270848953eb9b5c46aa26, type: 2}
-  _phase1End: 700
-  _phase2End: 1600
-  _phase3DropChance: 0.15
   _spawnYOffset: 0.2
   _activeThrowables:
   - {fileID: 5607982103104544609, guid: 57f05282925e50145900e7929b2f5fb9, type: 3}
@@ -984,7 +984,6 @@ MonoBehaviour:
   _maxEnemies: 3
   _currentWaveCount: 0
   _activeEnemies: []
-  _goldenMonBonusChance: 0.02
   _cullingManager: {fileID: 2100565030}
   _player: {fileID: 8952884402048639063, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   _collectibleSpawner: {fileID: 3128689819189778724}
@@ -1091,7 +1090,6 @@ MonoBehaviour:
   _obstacleLayer:
     serializedVersion: 2
     m_Bits: 8704
-  _groundOffset: 0.5
   _coinTrailGenerator: {fileID: 2093980296}
   _coinTrailChance: 0.8
   _activeCollectibles: []

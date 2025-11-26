@@ -99,6 +99,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7205774553441620501}
+  - component: {fileID: 7349491747996955045}
+  - component: {fileID: 322562080607428330}
   m_Layer: 0
   m_Name: FXPoint
   m_TagString: Untagged
@@ -121,6 +123,77 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6145297030757921140}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7349491747996955045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 880853609079313341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff138e996d3e0134c9f0c8e693ef01c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ComicEffectPlayer
+  _profile: {fileID: 11400000, guid: 87fe319dd875b4443804c983cc645cb9, type: 2}
+--- !u!212 &322562080607428330
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 880853609079313341}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_Sprite: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 1, y: 1}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 0
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
 --- !u!1 &1526907069799846881
 GameObject:
   m_ObjectHideFlags: 0
@@ -150,7 +223,7 @@ Transform:
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3180083276177619504}
+  m_Father: {fileID: 6145297030757921140}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2971531076567058291
 GameObject:
@@ -181,7 +254,7 @@ Transform:
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3180083276177619504}
+  m_Father: {fileID: 6145297030757921140}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5460515329973955135
 GameObject:
@@ -208,11 +281,11 @@ Transform:
   m_GameObject: {fileID: 5460515329973955135}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.3818, y: 0.1, z: 0}
+  m_LocalPosition: {x: 0.32000002, y: -0.5, z: 0}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3180083276177619504}
+  m_Father: {fileID: 6145297030757921140}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5677681866667569507
 GameObject:
@@ -245,6 +318,9 @@ Transform:
   m_Children:
   - {fileID: 7171168887567512006}
   - {fileID: 7205774553441620501}
+  - {fileID: 6413461673691137256}
+  - {fileID: 6979801062742470440}
+  - {fileID: 263837660512227794}
   m_Father: {fileID: 3180083276177619504}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5999967935324284092
@@ -262,7 +338,6 @@ GameObject:
   - component: {fileID: 4658831917752918347}
   - component: {fileID: 5168628728660963583}
   - component: {fileID: 452335919761276993}
-  - component: {fileID: 8322819004064401337}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -283,9 +358,6 @@ Transform:
   m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
   m_ConstrainProportionsScale: 1
   m_Children:
-  - {fileID: 6413461673691137256}
-  - {fileID: 6979801062742470440}
-  - {fileID: 263837660512227794}
   - {fileID: 6145297030757921140}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -437,7 +509,7 @@ MonoBehaviour:
   _hasMapBuff: 0
   _buffMultiplier: 1
   _healthBarUI: {fileID: 0}
-  _fxProfile: {fileID: 0}
+  _fxProfile: {fileID: 11400000, guid: 87fe319dd875b4443804c983cc645cb9, type: 2}
 --- !u!114 &4658831917752918347
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -530,18 +602,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6feaeea2c564bfc40ac568b3acb4c2d2, type: 2}
   _ducklingRenderer: {fileID: 4980727429312497355}
   _ducklingAnimator: {fileID: 0}
-  _fxPlayer: {fileID: 8322819004064401337}
+  _fxPlayer: {fileID: 7349491747996955045}
   _careerCooldown: 3
---- !u!114 &8322819004064401337
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5999967935324284092}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ff138e996d3e0134c9f0c8e693ef01c5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ComicEffectPlayer
-  _profile: {fileID: 11400000, guid: 87fe319dd875b4443804c983cc645cb9, type: 2}

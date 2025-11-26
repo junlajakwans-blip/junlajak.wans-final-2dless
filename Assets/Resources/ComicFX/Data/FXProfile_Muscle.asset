@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 525c282a5390f494c8f2600347e33a05, type: 3}
   m_Name: FXProfile_Muscle
   m_EditorClassIdentifier: Assembly-CSharp::CareerEffectProfile
-  basicAttackFX: {fileID: 0}
-  skillFX: {fileID: 0}
+  switchFX: {fileID: 11400000, guid: 5f6f7b5188ca1004fafb27835573dcf1, type: 2}
+  basicAttackFX: {fileID: 11400000, guid: 7f0e7be1af0a3d94d8f412c38aab417f, type: 2}
+  skillFX: {fileID: 11400000, guid: d64e2354ecfe93b4b94af5912fed936e, type: 2}
   jumpAttackFX: {fileID: 0}
   hurtFX: {fileID: 0}
   deathFX: {fileID: 0}

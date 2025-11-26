@@ -85,12 +85,12 @@ public class GameManager : MonoBehaviour
         private void Start()
         {
             // ตรวจสอบ Flow การเริ่มเกม
-            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "MainMenu")
-            {
-                Debug.LogWarning("[GameManager] Not in MainMenu. Reloading to ensure correct flow.");
-                LoadScene("MainMenu");
-                return;
-            }
+            //if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "MainMenu")
+            //{
+            //    Debug.LogWarning("[GameManager] Not in MainMenu. Reloading to ensure correct flow.");
+            //    LoadScene("MainMenu");
+            //    return;
+            //}
 
             InitializeGame();
             
@@ -210,7 +210,7 @@ public class GameManager : MonoBehaviour
 /// </summary>
     private IEnumerator DelayedSceneInit(string sceneName)
     {
-        // 1. Clear Cache (ป้องกันค่าค้างจาก Scene ก่อนหน้า)
+        // 1. Clear Cache
         _player = null;
         _uiManager = null;
         SceneManager sceneLogic = null;
@@ -226,79 +226,72 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
 
-        // 3. UI Dependencies
+        // 3. Bind UI Dependencies
         _uiManager.SetDependencies(this, _currencyData, _storeManager, GetStoreList());
         _player.SetHealthBarUI(_uiManager.GetPlayerHealthBarUI());
 
-        // 4. ScoreUI — Hook ให้เสร็จตั้งแต่ตรงนี้
+        // 4. Score system + UI
         _scoreUI = _uiManager.GetScoreUI();
         if (_scoreUI != null)
         {
-            _scoreUI.DisplaySavedHighScore(_persistentProgress.BestScore); // High Score จาก Save
-            _scoreUI.InitializeScore(0);                               // Score เริ่มต้น
-            _scoreUI.UpdateCoins(0);                                   // Coin เริ่มต้น
-            _player.HookScoreUI(_scoreUI, 0);                          // Event Real-Time
+            _scoreUI.DisplaySavedHighScore(_persistentProgress.BestScore);
+            _scoreUI.InitializeScore(0);
+            _scoreUI.UpdateCoins(0);
+            _player.HookScoreUI(_scoreUI, 0);
             Debug.Log("[GM] ScoreUI initialized and linked.");
         }
-        else
-        {
-            Debug.LogError("[GM] ❌ ScoreUI NOT FOUND");
-        }
 
-        // 5. Scene Logic injection
+        // 5. Scene inject to Map + Player system
         sceneLogic.Inject(mapGen, _player);
         sceneLogic.TryInitializeScene();
 
-        // 6. Card & Career
+        // 6. Career + CardManager Dependencies
         var cardManager = FindFirstObjectByType<CardManager>();
         var careerSwitcher = FindFirstObjectByType<CareerSwitcher>();
         FindFirstObjectByType<CardSlotUI>()?.SetManager(cardManager);
-
         if (cardManager != null && careerSwitcher != null)
             cardManager.SetCareerSwitcher(careerSwitcher);
 
         // 7. StarterCard dependency
         var randomStarter = FindFirstObjectByType<RandomStarterCard>();
-        if (randomStarter != null)
-            randomStarter.SetDependencies(cardManager, this);
+        randomStarter?.SetDependencies(cardManager, this);
 
-        // 8. Player stats apply and Init
+        // 8. Player full Initialize
         PlayerData data = new PlayerData(_currencyData, _persistentProgress);
         int hpBonus = _upgradeStore != null ? _upgradeStore.GetTotalHPBonus() : 0;
         data.UpgradeStat("MaxHealth", hpBonus);
         _player.Initialize(data, cardManager, careerSwitcher);
 
-        // ================= TEST THROWABLE SPAWN HERE =================
+        // 9. Comic FX pools
+        var fxManager = FindFirstObjectByType<ComicEffectManager>();
+        fxManager?.Initialize(_player);
+
+        // 🔥 10. Notify gameplay systems READY (DevCheat, Input, Card, Attack, Interact)
+        OnGameReady?.Invoke();
+
+        // 11. Optional systems
+        FindFirstObjectByType<BuffManager>()?.Initialize(this);
+
         var throwableSpawner = FindFirstObjectByType<ThrowableSpawner>();
         if (throwableSpawner != null && _player != null)
         {
             Vector3 pos = _player.transform.position;
-            pos.x += 1.8f;  // ขยับไปด้านหน้า ไม่ทับตัวผู้เล่น
+            pos.x += 1.8f;
             throwableSpawner.SpawnAtPosition(pos);
             Debug.Log("[GM] 🔥 TEST THROWABLE SPAWNED AT START");
         }
 
+        Debug.Log("[GameManager] All Systems Ready");
 
-        // 9. Buffs
-        FindFirstObjectByType<BuffManager>()?.Initialize(this);
-
-        Debug.Log("[GameManager] All Systems Ready. Firing OnGameReady.");
-
-        // 10. Reset starter card
+        // 12. Starter card initial selection
         randomStarter?.ResetForNewGame();
-
-        // 11. HUD & Selection Panel
         _uiManager.ShowGameplayHUD();
         _uiManager.ShowCardSelectionPanel(true);
         randomStarter?.OpenPanel();
 
-        // 12. Freeze gameplay ระหว่างเลือกรากก์แรก
+        // 13. Freeze gameplay until player selects starter card
         Time.timeScale = 0f;
-
-        // 13. Notify
-        OnGameReady?.Invoke();
     }
-
 
 
     public Player PlayerRef => _player;
@@ -414,8 +407,6 @@ public void InitializeGame()
     _isPaused = false;
     _score = 0;
     _playTime = 0f;
-
-    OnGameReady?.Invoke(); 
 }
     #endregion
 
@@ -590,9 +581,6 @@ public void InitializeGame()
             _storeManager.RegisterStore(_mapStore);
             _mapStore.OnMapUnlockedEvent += HandleMapUnlocked;
         }
-
-        // สำหรับ Map Store event unlock
-        _mapStore.OnMapUnlockedEvent += HandleMapUnlocked;
 
         Debug.Log("[GameManager] All store systems initialized successfully.");
         _storesInitialized = true; 

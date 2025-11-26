@@ -57,7 +57,7 @@ public abstract class MapGeneratorBase : MonoBehaviour
         HillDown 
     }
     [SerializeField] private PlatformState _currentPlatformState = PlatformState.Normal;
-    [SerializeField] private float _currentHeightLimit = 0f; // ใช้จำกัดความสูงสูงสุดใน Pattern Hill
+    //TODO : [SerializeField] private float _currentHeightLimit = 0f; // ใช้จำกัดความสูงสูงสุดใน Pattern Hill
     [SerializeField] private int _stepsRemaining = 0; // ใช้สำหรับ Pattern Steps
     #endregion
 

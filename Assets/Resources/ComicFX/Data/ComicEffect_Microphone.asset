@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4f156c6f2b577c43953688122768907, type: 3}
   m_Name: ComicEffect_Microphone
   m_EditorClassIdentifier: Assembly-CSharp::ComicEffectData
+  prefab: {fileID: 7208645488188858175, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
   sprite: {fileID: -1080013667526075882, guid: 8fabae0b0e3ac8d44830245b6a577584, type: 3}
   color: {r: 1, g: 1, b: 1, a: 1}
   duration: 0.6

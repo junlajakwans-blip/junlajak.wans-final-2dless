@@ -1,40 +1,107 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public static class ComicEffectManager
+public class ComicEffectManager : MonoBehaviour
 {
-    private static Dictionary<string, Queue<ComicEffectPlayer>> _pool 
+    public static ComicEffectManager Instance { get; private set; }
+
+    private Dictionary<string, Queue<ComicEffectPlayer>> _pool
         = new Dictionary<string, Queue<ComicEffectPlayer>>();
 
-    public static void Register(string key, ComicEffectPlayer prefab, int preloadCount = 3)
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
+    public void Register(string key, ComicEffectPlayer prefab, int preloadCount = 3)
     {
         if (!_pool.ContainsKey(key))
             _pool[key] = new Queue<ComicEffectPlayer>();
 
         for (int i = 0; i < preloadCount; i++)
         {
-            ComicEffectPlayer obj = Object.Instantiate(prefab);
+            var obj = Instantiate(prefab, transform);
             obj.Initialize();
+            obj.SetPoolKey(key);
             obj.gameObject.SetActive(false);
             _pool[key].Enqueue(obj);
         }
     }
 
-    public static void Play(ComicEffectData data, Vector3 pos)
+    public void Play(ComicEffectData data, Vector3 pos)
     {
-        if (!_pool.ContainsKey(data.name) || _pool[data.name].Count == 0)
+        string key = data.name;
+        if (!_pool.ContainsKey(key) || _pool[key].Count == 0)
         {
-            Debug.LogWarning($"[ComicFX] Pool missing: {data.name}");
+            Debug.LogWarning($"[ComicFX] Pool missing: {key}");
             return;
         }
 
-        ComicEffectPlayer fx = _pool[data.name].Dequeue();
+        var fx = _pool[key].Dequeue();
+        fx.SetPoolKey(key);
         fx.Play(data, pos);
     }
 
-    public static void Release(ComicEffectPlayer fx)
+    public void Release(ComicEffectPlayer fx)
     {
+        if (fx == null) return;
+        string key = fx.GetPoolKey();
+        if (string.IsNullOrEmpty(key)) return;
+
         fx.gameObject.SetActive(false);
-        _pool[fx.name].Enqueue(fx);
+
+        if (!_pool.ContainsKey(key))
+            _pool[key] = new Queue<ComicEffectPlayer>();
+
+        _pool[key].Enqueue(fx);
     }
+
+    /// <summary>
+    /// Initialize FX pools from player career profiles (called by GameManager)
+    /// </summary>
+    public void Initialize(Player player)
+    {
+        if (player == null) return;
+
+        var switcher = player.GetComponent<CareerSwitcher>();
+        if (switcher == null)
+        {
+            Debug.LogWarning("[ComicFX] CareerSwitcher missing — cannot init FX pools");
+            return;
+        }
+
+        // ใช้ ComicEffectPlayer ตัวที่อยู่ใต้ Player เป็น prefab กลาง
+        var fxPrefab = player.GetComponentInChildren<ComicEffectPlayer>();
+        if (fxPrefab == null)
+        {
+            Debug.LogWarning("[ComicFX] ComicEffectPlayer prefab missing on Player — cannot init FX pools");
+            return;
+        }
+
+        foreach (var entry in switcher.CareerBodyMaps)
+        {
+            if (entry == null || entry.fxProfile == null)
+                continue;
+
+            var fxData = entry.fxProfile.switchFX;
+            if (fxData == null)
+                continue;
+
+            string key = fxData.name;
+
+            if (!_pool.ContainsKey(key))
+            {
+                Register(key, fxPrefab, 3);     // ใช้ prefab เดียว แต่คนละ key
+                Debug.Log($"[ComicFX] Registered FX pool → {key}");
+            }
+        }
+    }
+
+
 }

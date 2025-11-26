@@ -97,6 +97,7 @@ public class RandomStarterCard : MonoBehaviour
 
     private void OnClickSummon()
     {
+        Debug.Log($"[Check Duplicate] Called by Object: {gameObject.name}, Script Instance ID: {this.GetInstanceID()}");
         if (_lockInput) return;
         _lockInput = true;
 

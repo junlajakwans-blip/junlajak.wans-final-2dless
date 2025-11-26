@@ -48,7 +48,7 @@ public class ObjectPoolManager : MonoBehaviour, IObjectPool
         IsInitialized = true;
         Debug.Log($"[Pool] Initialized {_poolDictionary.Count} object pools.");
     }
-
+    
     public virtual GameObject SpawnFromPool(string objectTag, Vector3 position, Quaternion rotation)
     {
         if (!_poolDictionary.ContainsKey(objectTag))
@@ -58,7 +58,26 @@ public class ObjectPoolManager : MonoBehaviour, IObjectPool
         }
 
         var queue = _poolDictionary[objectTag];
-        var obj = queue.Count > 0 ? queue.Dequeue() : CreateNewInstance(objectTag);
+        GameObject obj = null;
+
+        // ดึงของจากคิว ถ้า null ให้วนไปหยิบใหม่
+        while (queue.Count > 0 && obj == null)
+        {
+            obj = queue.Dequeue();
+        }
+
+        // ถ้าของในคิวถูก Destroy หมด → สร้างใหม่
+        if (obj == null)
+        {
+            obj = CreateNewInstance(objectTag);
+            if (obj == null)
+            {
+                Debug.LogError($"[Pool] Failed to create instance for '{objectTag}'");
+                return null;
+            }
+        }
+
+        // ตอนนี้ obj ปลอดภัยแล้ว
         obj.transform.SetPositionAndRotation(position, rotation);
         obj.SetActive(true);
 

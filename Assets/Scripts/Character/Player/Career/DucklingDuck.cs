@@ -28,9 +28,20 @@ public class DucklingSkill : CareerSkillBase
 
     public override void PerformAttack(Player player)
     {
-        // ให้ Player ใช้ Bonk Attack มาตรฐาน
-        // ไม่ override => เผื่อในอนาคตอยากเพิ่มอะไร
-        base.PerformAttack(player);
+        // Overlap 1 block
+        float range = 1.2f;
+        Vector2 origin = player.transform.position + new Vector3(player.FaceDir * 0.8f, 0f, 0f);
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(origin, range);
+        foreach (var hit in hits)
+        {
+            if (hit.TryGetComponent<IDamageable>(out var target) && hit.GetComponent<Player>() == null)
+            {
+                player.ApplyDamage(target, 10);
+            }
+        }
+
+        Debug.Log("[Duckling] Bonk Attack!");
     }
 
     public override void PerformChargeAttack(Player player) { }

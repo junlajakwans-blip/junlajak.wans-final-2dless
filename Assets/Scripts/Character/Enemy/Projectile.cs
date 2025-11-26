@@ -1,136 +1,99 @@
 using UnityEngine;
-using System.Collections;
-using System;
 
-
-/// <summary>
-/// Handles the behavior, damage, and lifespan of a projectile (like the skewer).
-/// Requires Rigidbody2D and Collider2D (set as trigger) on the Prefab.
-/// </summary>
-/// 
-/// 
-[RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
 public class Projectile : MonoBehaviour
 {
-    private int _damageAmount;
-    [SerializeField] private float _lifetime = 3f; // How long the projectile stays active
+    [Header("Damage")]
+    [SerializeField] private int _damageAmount = 10;
 
-    // [NEW FIELDS]: References ที่ถูก Inject เข้ามา
-    private IObjectPool _poolRef; 
-    private string _poolTag;      
+    [Header("Lifetime")]
+    [SerializeField] private float _lifetime = 3f;
 
-    #region Dependencies
-    
     /// <summary>
-    /// Sets the necessary references for Object Pooling.
+    /// กลับเข้า Pool โดยอัตโนมัติ (อ่านชื่อ Prefab)
+    /// ไม่ต้อง SetPoolTag จาก Enemy อีก
     /// </summary>
-    public void SetDependencies(IObjectPool pool, string poolTag)
-    {
-        _poolRef = pool;
-        _poolTag = poolTag;
-    }
+    public string PoolTag { get; private set; }
 
-    #endregion
+    private Rigidbody2D _rb;
 
-    #region Unity Lifecycle
-    
     private void Awake()
     {
-        if (TryGetComponent<Rigidbody2D>(out var rb))
+        _rb = GetComponent<Rigidbody2D>();
+
+        if (_rb != null)
         {
-            rb.bodyType = RigidbodyType2D.Kinematic;
+            _rb.bodyType = RigidbodyType2D.Kinematic;
+            _rb.gravityScale = 0f;
         }
     }
 
     private void OnEnable()
     {
-        // [FIX 1]: เปลี่ยนจาก Start() มาใช้ OnEnable() เพื่อจัดการ Timer เมื่อถูก Reuse
-        if (_poolRef != null)
+        // ตรวจ poolTag อัตโนมัติ
+        if (string.IsNullOrEmpty(PoolTag))
         {
-            // ยกเลิก Invoke ที่ค้างอยู่ (ถ้ามี)
-            CancelInvoke(nameof(ReturnToPool)); 
-            // เริ่มนับถอยหลังใหม่เพื่อคืน Pool เมื่อหมดอายุ
-            Invoke(nameof(ReturnToPool), _lifetime);
+            PoolTag = gameObject.name.Replace("(Clone)", "").Trim();
         }
-        else
-        {
-            // Fallback: ถ้า Pool Reference หาย ให้ใช้ Destroy() แบบเดิม
-            Destroy(gameObject, _lifetime); 
-        }
+
+        // reset physics
+        _rb.linearVelocity = Vector2.zero;
+        _rb.angularVelocity = 0f;
+
+        CancelInvoke(nameof(Despawn));
+        Invoke(nameof(Despawn), _lifetime);
     }
-    
+
     private void OnDisable()
     {
-        // [FIX 2]: ยกเลิก Invoke เมื่อ Object ถูกส่งกลับ Pool แล้ว
-        CancelInvoke(nameof(ReturnToPool));
+        CancelInvoke(nameof(Despawn));
     }
-    
-    // NOTE: เมธอด Start() เดิมถูกลบออก เพราะ OnEnable() รับหน้าที่จัดการ Timer แทน
 
-    #endregion
-
-    /// <summary>
-    /// Sets the damage value.
-    /// </summary>
     public void SetDamage(int amount)
     {
         _damageAmount = amount;
     }
 
+    // enemy / player hit
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // ----- โดน Player → ทำดาเมจ → หาย -----
         if (other.TryGetComponent<Player>(out var player))
         {
             player.TakeDamage(_damageAmount);
-
-            Debug.Log($"[Projectile] Hit PLAYER → Damage: {_damageAmount} | PoolTag: {_poolTag}");
-
-            ReturnToPool();
+            Despawn();
             return;
         }
 
-        // ----- โดน Enemy → ทำดาเมจ → หาย -----
         if (other.TryGetComponent<Enemy>(out var enemy))
         {
             enemy.TakeDamage(_damageAmount);
-
-            Debug.Log($"[Projectile] Hit ENEMY → Damage: {_damageAmount} | PoolTag: {_poolTag} | Enemy: {enemy.name}");
-
-            ReturnToPool();
+            Despawn();
             return;
         }
 
-        // ----- อะไรอย่างอื่นที่ไม่ใช่ Player/Enemy → หาย -----
-        if (other.CompareTag("Ground") ||
-            other.CompareTag("Wall") ||
-            other.CompareTag("Obstacle") ||
-            other.CompareTag("Prop"))
+        // Ground / walls / misc
+        if (other.CompareTag("Ground") || other.CompareTag("Obstacle"))
         {
-            Debug.Log($"[Projectile] Collided with MAP OBJECT ({other.tag}) → Returned to pool");
-            ReturnToPool();
+            Despawn();
             return;
         }
 
-        // เผื่อพลาด ยังไงไม่ใช่เป้าหมายก็คืน pool
-        Debug.Log($"[Projectile] Unexpected collision with {other.name} → Returned to pool");
-        ReturnToPool();
+        // fallback — ไม่ให้ค้างลอย
+        Despawn();
     }
 
-
-
-    // ReturnToPool()
-    private void ReturnToPool()
+    private void Despawn()
     {
-        if (_poolRef != null)
+        if (!gameObject.activeInHierarchy) return;
+
+        if (!string.IsNullOrEmpty(PoolTag) && ObjectPoolManager.Instance != null)
         {
-            // ส่ง Object กลับ Pool
-            _poolRef.ReturnToPool(_poolTag, gameObject);
-        } 
-        else 
+            ObjectPoolManager.Instance.ReturnToPool(PoolTag, gameObject);
+        }
+        else
         {
-            // Fallback (ถ้า DI ล้มเหลว)
-            Destroy(gameObject); 
+            // เผื่อเผลอยิง projectile ที่ไม่ได้อยู่ใน Pool
+            Destroy(gameObject);
         }
     }
 }

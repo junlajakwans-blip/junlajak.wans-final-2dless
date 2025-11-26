@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 525c282a5390f494c8f2600347e33a05, type: 3}
   m_Name: FXProfile_Programmer
   m_EditorClassIdentifier: Assembly-CSharp::CareerEffectProfile
-  basicAttackFX: {fileID: 0}
-  skillFX: {fileID: 0}
+  switchFX: {fileID: 11400000, guid: 5f6f7b5188ca1004fafb27835573dcf1, type: 2}
+  basicAttackFX: {fileID: 11400000, guid: 1c47438827e02684a81b7199d0ff12f5, type: 2}
+  skillFX: {fileID: 11400000, guid: 6254fa7a70417834d8cb1df6096e684f, type: 2}
   jumpAttackFX: {fileID: 0}
   hurtFX: {fileID: 0}
   deathFX: {fileID: 0}

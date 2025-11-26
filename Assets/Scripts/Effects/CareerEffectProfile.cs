@@ -3,6 +3,9 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "DUFFDUCK/Career Effect Profile", fileName = "FXProfile_")]
 public class CareerEffectProfile : ScriptableObject
 {
+    [Header("Career FX")]
+    public ComicEffectData switchFX; 
+
     [Header("Basic Attacks (W)")]
     public ComicEffectData basicAttackFX;
 

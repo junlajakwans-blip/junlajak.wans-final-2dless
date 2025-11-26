@@ -165,9 +165,6 @@ private void ShootProjectile()
         {
             // Use Data From EnemyData:Unique | Asset: _data.PeterProjectileDamage
             projectile.SetDamage(_data.PeterProjectileDamage);
-            
-            // [FIX 2.3]: INJECT DEPENDENCY เข้าไปใน Projectile
-            projectile.SetDependencies(_poolRef, poolTag);
         }
     }
 

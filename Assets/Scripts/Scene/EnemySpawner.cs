@@ -23,9 +23,6 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     [SerializeField] private int _currentWaveCount = 0;
     [SerializeField] private List<GameObject> _activeEnemies = new();
 
-    // SingerDuck BuffMap Field
-    [SerializeField] private float _goldenMonBonusChance = 0.02f; 
-
     [Header("References")]
     [SerializeField] private IObjectPool _objectPool;
     [SerializeField] private DistanceCulling _cullingManager;

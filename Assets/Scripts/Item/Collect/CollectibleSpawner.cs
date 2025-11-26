@@ -20,7 +20,7 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
     // ⬅ REMOVED: ไม่ใช้ Raycast หาพื้นอีกแล้ว
     // [SerializeField] private LayerMask _groundLayer;    // Platform/Ground
     [SerializeField] private LayerMask _obstacleLayer;  // Obstacle/Enemy/Collectible
-    [SerializeField] private float _groundOffset = 0.5f; // ค่า Offset ยังคงเก็บไว้เพื่อใช้อ้างอิง/กำหนดค่าจาก Inspector
+    //[SerializeField] private float _groundOffset = 0.5f; // ค่า Offset ยังคงเก็บไว้เพื่อใช้อ้างอิง/กำหนดค่าจาก Inspector
 
     [Header("Coin Trail")]
     [SerializeField] private CoinTrailGenerator _coinTrailGenerator;

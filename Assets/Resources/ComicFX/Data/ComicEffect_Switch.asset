@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b4f156c6f2b577c43953688122768907, type: 3}
-  m_Name: ComicEffect_Song
+  m_Name: ComicEffect_Switch
   m_EditorClassIdentifier: Assembly-CSharp::ComicEffectData
   prefab: {fileID: 7208645488188858175, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
-  sprite: {fileID: 3161944156006587863, guid: cb22f917c6c73d743aa29413f5b33640, type: 3}
+  sprite: {fileID: 8097560309512441037, guid: b7e9a314cc56f7e4795e86698937ac6a, type: 3}
   color: {r: 1, g: 1, b: 1, a: 1}
   duration: 0.6
   baseScale: 1

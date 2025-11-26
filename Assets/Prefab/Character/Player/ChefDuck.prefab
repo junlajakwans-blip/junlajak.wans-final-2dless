@@ -162,6 +162,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ChefDuck
       objectReference: {fileID: 0}
+    - target: {fileID: 7349491747996955045, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+      propertyPath: _profile
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 7978051908384033325, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
       propertyPath: m_Points.m_Paths.Array.data[0].Array.size
       value: 26

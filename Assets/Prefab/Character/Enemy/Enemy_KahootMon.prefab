@@ -30,6 +30,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3864567248219348563}
+  - {fileID: 6004504150669200273}
   m_Father: {fileID: 460577747710407820}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1565291614927048749
@@ -131,7 +132,7 @@ MonoBehaviour:
   - Yellow
   _activeQuestion: Knowme
   _blockPrefab: {fileID: 5849520914310556365, guid: ed4cfaf97ffc9924dabf9d91c86ed375, type: 3}
-  _firePoint: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+  _firePoint: {fileID: 6004504150669200273}
 --- !u!60 &9168070050323588942
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -198,6 +199,37 @@ PolygonCollider2D:
       - {x: 4.626211, y: 0.7067612}
       - {x: 4.2602863, y: 2.4409251}
   m_UseDelaunayMesh: 0
+--- !u!1 &1958040864661022075
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6004504150669200273}
+  m_Layer: 0
+  m_Name: throwPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 3936346786652291628, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6004504150669200273
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1958040864661022075}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -5.81, y: 1.45, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3147309938224664192}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6275231290935825329
 GameObject:
   m_ObjectHideFlags: 0

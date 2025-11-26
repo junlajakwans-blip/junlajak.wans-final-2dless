@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 525c282a5390f494c8f2600347e33a05, type: 3}
   m_Name: FXProfile_Firefighter
   m_EditorClassIdentifier: Assembly-CSharp::CareerEffectProfile
-  basicAttackFX: {fileID: 0}
-  skillFX: {fileID: 0}
+  switchFX: {fileID: 11400000, guid: 5f6f7b5188ca1004fafb27835573dcf1, type: 2}
+  basicAttackFX: {fileID: 11400000, guid: 29773892600ec4d43aa476f7fe988608, type: 2}
+  skillFX: {fileID: 11400000, guid: 2ca8c7fa27ce0fa40a65dd4eef81e0ab, type: 2}
   jumpAttackFX: {fileID: 0}
   hurtFX: {fileID: 0}
   deathFX: {fileID: 0}
-  extraFX: {fileID: 0}
+  extraFX: {fileID: 11400000, guid: 29773892600ec4d43aa476f7fe988608, type: 2}

@@ -27,6 +27,7 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
 
     [Header("Appearance Settings")]
     [SerializeField] private List<CareerBodyMap> _careerBodyMaps = new();
+    public IReadOnlyList<CareerBodyMap> CareerBodyMaps => _careerBodyMaps;
     //[SerializeField] private CharacterRigAnimator _playerAnimator;
 
     [Header("Career Catalog")]
@@ -199,6 +200,21 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
         }
 
         Debug.Log($"[CareerSwitcher] Swapped body to {mapEntry.bodyPrefab.name}.");
+
+         if (_fxPlayer != null && _fxPlayer.Profile != null)
+        {
+            ComicEffectData entry = _fxPlayer.Profile.switchFX;
+            if (entry != null)
+                ComicEffectManager.Instance.Play(entry, transform.position);
+        }
+        StartCoroutine(PlaySwitchFXNextFrame());
+    }
+
+    private IEnumerator PlaySwitchFXNextFrame()
+    {
+        yield return null; // wait 1 frame
+        if (_fxPlayer != null && _fxPlayer.Profile?.switchFX != null)
+            ComicEffectManager.Instance.Play(_fxPlayer.Profile.switchFX, transform.position);
     }
 
     public DuckCareerData GetCurrentCareer() => _currentCareer;

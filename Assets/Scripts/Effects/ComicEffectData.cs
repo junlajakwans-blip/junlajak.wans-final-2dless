@@ -14,6 +14,9 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "DUFFDUCK/Comic Effect Data", fileName = "ComicEffect_")]
 public class ComicEffectData : ScriptableObject
 {
+    [Header("Prefab Required")]
+    public ComicEffectPlayer prefab;
+
     [Header("Visual")]
     public Sprite sprite;
     public Color color = Color.white;

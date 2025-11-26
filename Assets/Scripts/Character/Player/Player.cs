@@ -72,7 +72,7 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
         ? _careerSwitcher.CurrentCareer.CareerSkill
         : null;
         
-    public event Action<Player> OnPlayerDied;
+    //public event Action<Player> OnPlayerDied;
 
     #endregion
 
@@ -80,6 +80,7 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     #region Initialization
     public void Initialize(PlayerData data, CardManager cardManager, CareerSwitcher careerSwitcher)
     {
+        gameObject.SetActive(true);
         _playerData = data;
         _maxHealth = data.MaxHealth;
         _currentHealth = _maxHealth;
@@ -227,27 +228,21 @@ public override void Move(Vector2 direction)
         if (_interact == null) _interact = GetComponent<PlayerInteract>();
         if (_interact == null) return;
 
+        // อาชีพอื่น → ห้ามเก็บ/ปา แต่ไม่ต้องเช็กซ้ำตอนถือแล้ว
         if (!IsDuckling)
         {
             Debug.Log("[Player] Only Duckling can pick up/throw items.");
             return;
         }
 
-        // ถือของอยู่
+        // มีของ → ปาเลย (ไม่ต้องเช็ก Duckling อีกรอบ)
         if (_interact.HasItem())
         {
-            // ถ้าไม่ใช่ Duckling → ห้ามปา
-            if (!IsDuckling)
-            {
-                Debug.Log("[Player] Cannot throw while transformed to a career.");
-                return;
-            }
-
-            _interact.ThrowItem();   // ปาของแบบ Duckling
+            _interact.ThrowItem();
             return;
         }
 
-        // ไม่ถือของ → เก็บของ
+        // ไม่มีของ → เก็บ
         _interact.TryPickUp();
     }
     #endregion
@@ -508,16 +503,32 @@ public override void Move(Vector2 direction)
     public override void Attack()
     {
         Debug.Log("[Player] Basic attack triggered.");
-        
-        _careerSwitcher.CurrentCareer.CareerSkill?.PerformAttack(this);
-        // TODO: integrate with weapon or animation
-        //if (_rigAnimator != null)
-        //{
-            // สมมติว่ามี Trigger "Attack"
-            // _rigAnimator.SetTrigger("Attack"); 
-        //}
-    }
 
+        // 1. เช็ค Switcher
+        if (_careerSwitcher == null)
+        {
+            Debug.LogError("[Player Attack] ❌ CareerSwitcher is NULL!");
+            return;
+        }
+
+        // 2. เช็ค CurrentCareer
+        if (_careerSwitcher.CurrentCareer == null)
+        {
+            Debug.LogError("[Player Attack] ❌ CurrentCareer is NULL! (Did you assign Default Career?)");
+            // Fallback: ถ้าไม่มีอาชีพ ให้โจมตีแบบพื้นฐานไปก่อน หรือ return
+            return;
+        }
+
+        // 3. เช็ค CareerSkill
+        if (_careerSwitcher.CurrentCareer.CareerSkill == null)
+        {
+            Debug.LogWarning($"[Player Attack] ⚠️ Career '{_careerSwitcher.CurrentCareer.DisplayName}' has NO Skill assigned in ScriptableObject.");
+            return;
+        }
+
+        // ถ้าผ่านหมด ค่อยสั่งโจมตี
+        _careerSwitcher.CurrentCareer.CareerSkill.PerformAttack(this);
+    }
     public virtual void ChargeAttack(float power)
     {
         Debug.Log($"[Player] Charge attack power: {power}");

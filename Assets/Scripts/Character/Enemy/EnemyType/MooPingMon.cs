@@ -150,33 +150,20 @@ private void TryAttack()
     private void ThrowSkewer()
     {
         if (_skewerProjectile == null || _throwPoint == null) return;
-
-        // [FIX 2.1]: ตรวจสอบ Pool Reference ที่ถูก Inject
-        if (_poolRef == null) 
+        if (_poolRef == null)
         {
             Debug.LogError("[MooPingMon] Object Pool NOT INJECTED! Cannot spawn projectile.");
             return;
         }
 
-        // NOTE: ควรใช้ Object Pooling แทน Instantiate
-        string poolTag = _skewerProjectile.name; // ใช้ชื่อ Prefab เป็น Tag
+        string poolTag = _skewerProjectile.name;
         var go = _poolRef.SpawnFromPool(poolTag, _throwPoint.position, Quaternion.identity);
-        
+
+        // ใส่แรง
         if (go.TryGetComponent<Rigidbody2D>(out var rb))
         {
-            Vector2 aim = (_target.position - _throwPoint.position).normalized; // NOTE: ควรยิงไปหา target เสมอ
-            
-            // Use Data From EnemyData:Unique | Asset: _data.MooPingProjectileSpeed
+            Vector2 aim = (_target.position - _throwPoint.position).normalized;
             rb.linearVelocity = aim * _data.MooPingProjectileSpeed;
-        }
-
-        if (go.TryGetComponent<Projectile>(out var proj))
-        {
-            // Use Data From EnemyData:Unique | Asset: _data.MooPingFireDamage
-            proj.SetDamage(_data.MooPingFireDamage); 
-            
-            // [FIX 2.3]: INJECT DEPENDENCY เข้าไปใน Projectile
-            proj.SetDependencies(_poolRef, poolTag); 
         }
     }
 

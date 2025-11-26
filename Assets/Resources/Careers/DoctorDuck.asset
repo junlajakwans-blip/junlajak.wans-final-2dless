@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DuckCareerData
   _careerID: 5
   _displayName: 
-  _careerDuration: 0
-  _careerCooldownAfterUse: 0
+  _careerDuration: 30
+  _careerCooldownAfterUse: 25
   _skillName: 
   _skillIcon: {fileID: 7409246165416591283, guid: 068bc80af1256384dabedf3bb890d5be, type: 3}
   _skillDescription: 

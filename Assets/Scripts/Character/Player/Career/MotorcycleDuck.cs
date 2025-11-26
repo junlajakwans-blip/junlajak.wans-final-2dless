@@ -10,7 +10,7 @@ public class MotorcycleSkill : CareerSkillBase
     [SerializeField] private float _dashMultiplier = 3f;
     [SerializeField] private float _dashDuration = 0.5f;
     [SerializeField] private float _immunityChance = 0.15f;
-    [SerializeField] private float _jumpBonus = 1.2f;
+    //TODO : Upgrade inFuture [SerializeField] private float _jumpBonus = 1.2f;
 
     [SerializeField] private float _skillDuration = 24f;
     [SerializeField] private float _skillCooldown = 18f;

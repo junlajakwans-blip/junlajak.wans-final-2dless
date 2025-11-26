@@ -6,13 +6,14 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
     [Header("Drop Table (Per Map)")]
     [SerializeField] private ThrowableDropTable _dropTable;
 
-    [Header("Distance Phases")]
-    [SerializeField] private float _phase1End = 700f;
-    [SerializeField] private float _phase2End = 1600f;
+    // TODO : [Header("Distance Phases")] 
+    // [SerializeField] private float _phase1End = 700f; ตอนแรกทำไว้แต่เทสยากเลยเอาไว้มาทำหลัง DEMO เสร็จ
+    // TODO : [SerializeField] private float _phase2End = 1600f;
 
-    [Header("Drop Chance (Phase3)")]
-    [Tooltip("0–1 เช่น 0.15 = 15%")]
-    [SerializeField] private float _phase3DropChance = 0.15f;
+
+    // TODO : [Header("Drop Chance (Phase3)")]
+    //[Tooltip("0–1 เช่น 0.15 = 15%")]
+    //[SerializeField] private float _phase3DropChance = 0.15f;
 
     [Header("Placement Offset Y")]
     [Tooltip("Offset แนวตั้งสุดท้าย (ควรตั้งค่าใน MapGenerator)")]
@@ -164,15 +165,16 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
         var interact = player.GetComponentInChildren<PlayerInteract>();
         
         
-        // 1. ให้ Player เก็บของชิ้นนี้
+        // 1. ให้ Player เก็บของชิ้นนี้ (PlayerInteract จะ SetParent และทำให้ Scale เปลี่ยน)
         interact?.SetThrowable(gameObject);
         
         // 2. บอก ThrowableItemInfo ว่าถูกเก็บแล้ว
+        // ThrowableItemInfo.DisablePhysicsOnHold() จะทำการตั้งค่า Scale ที่ถูกต้องให้เอง
         if (TryGetComponent<ThrowableItemInfo>(out var info))
-            info.DisablePhysicsOnHold(); // ใช้ DisablePhysicsOnHold เพื่อจัดการ physics และ interactable
+            info.DisablePhysicsOnHold(); 
 
         
-        // 4. ยกเลิกการจอง Slot เมื่อถูกเก็บ (ถือว่าไม่อยู่บนพื้นแล้ว)
+        // 3. ยกเลิกการจอง Slot เมื่อถูกเก็บ
         SpawnSlot.Unreserve(transform.position); 
     }
 
@@ -200,10 +202,14 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
     {
         if (obj == null || _pool == null) return;
         
+        // 0. รีเซ็ต Local Scale ก่อนคืน Pool
+        // โค้ดนี้ถูกคงไว้เพื่อความปลอดภัย แต่ OnReturnedToPool() ใน ThrowableItemInfo ก็ทำหน้าที่นี้แล้ว
+        obj.transform.localScale = new Vector3(0.2f, 0.2f, 1f); 
+
         // 1. Unreserve Slot (ถ้ายังมีการจองอยู่)
         SpawnSlot.Unreserve(obj.transform.position);
 
-        // 2. เรียก OnReturnedToPool ก่อนคืน
+        // 2. เรียก OnReturnedToPool ก่อนคืน (รวมถึงการรีเซ็ต Scale และ Unparent ใน ThrowableItemInfo)
         if (obj.TryGetComponent<ThrowableItemInfo>(out var info))
             info.OnReturnedToPool();
         

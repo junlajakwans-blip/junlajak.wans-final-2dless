@@ -51,7 +51,13 @@ public class DistanceCulling : MonoBehaviour
 
     public void RegisterObject(GameObject obj)
     {
-        if (obj != null && !_targetObjects.Contains(obj))
+        if (obj == null) return;
+
+        //🔥 ห้ามคัลลิง Player
+        if (obj.TryGetComponent<Player>(out _))
+            return;
+
+        if (!_targetObjects.Contains(obj))
             _targetObjects.Add(obj);
     }
 

@@ -3,7 +3,7 @@ using UnityEngine;
 public class PlayerInteract : MonoBehaviour
 {
     [Header("Interact Settings")]
-    [SerializeField] private float interactRadius = 1f;
+    [SerializeField] private float interactRadius = 2.2f;
     [SerializeField] private Transform interactOrigin;
 
     [Header("Throwable Display (Hold Point)")]
