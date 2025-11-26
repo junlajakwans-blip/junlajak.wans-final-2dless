@@ -89,19 +89,30 @@ public class ComicEffectManager : MonoBehaviour
             if (entry == null || entry.fxProfile == null)
                 continue;
 
-            var fxData = entry.fxProfile.switchFX;
-            if (fxData == null)
-                continue;
+            CareerEffectProfile p = entry.fxProfile;
 
-            string key = fxData.name;
-
-            if (!_pool.ContainsKey(key))
-            {
-                Register(key, fxPrefab, 3);     // ใช้ prefab เดียว แต่คนละ key
-                Debug.Log($"[ComicFX] Registered FX pool → {key}");
-            }
+            AddFXToPool(p.switchFX, fxPrefab);
+            AddFXToPool(p.basicAttackFX, fxPrefab);
+            AddFXToPool(p.skillFX, fxPrefab);
+            AddFXToPool(p.jumpAttackFX, fxPrefab);
+            AddFXToPool(p.hurtFX, fxPrefab);
+            AddFXToPool(p.deathFX, fxPrefab);
+            AddFXToPool(p.extraFX, fxPrefab);
         }
+
     }
+
+    private void AddFXToPool(ComicEffectData data, ComicEffectPlayer prefab)
+    {
+        if (data == null) return;
+
+        string key = data.name;
+        if (_pool.ContainsKey(key)) return;
+
+        Register(key, prefab, 3);
+        Debug.Log($"[ComicFX] Registered FX pool → {key}");
+    }
+
 
 
 }

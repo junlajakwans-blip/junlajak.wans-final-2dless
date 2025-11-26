@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-[CreateAssetMenu(menuName = "Career/Skill/ProgrammerSkill")]
+[CreateAssetMenu(menuName = "DUFFDUCK/Skill/ProgrammerSkill_Full")]
 public class ProgrammerSkill : CareerSkillBase
 {
     #region Summary
@@ -119,6 +119,15 @@ public class ProgrammerSkill : CareerSkillBase
     {
         _isSkillActive = true;
 
+        // ----------------
+        // [SkillFX]
+        // ----------------
+        if (player.FXProfile != null && player.FXProfile.skillFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.skillFX, player.transform.position);
+        }
+        // ----------------
+
         if (_codeEffect != null)
             Object.Instantiate(_codeEffect, player.transform.position, Quaternion.identity);
 
@@ -153,6 +162,15 @@ public class ProgrammerSkill : CareerSkillBase
     #region Attack Implementation
     public override void PerformAttack(Player player)
     {
+        // ----------------
+        // [AttackFX]
+        // ----------------
+        if (player.FXProfile != null && player.FXProfile.basicAttackFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.basicAttackFX, player.transform.position);
+        }
+        // ----------------
+        
         if (_bugBombEffect != null)
             Object.Instantiate(_bugBombEffect, player.transform.position, Quaternion.identity);
 
@@ -164,6 +182,15 @@ public class ProgrammerSkill : CareerSkillBase
 
     public override void PerformChargeAttack(Player player)
     {
+        // ----------------
+        // [ChargeFX (ExtraFX)]
+        // ----------------
+        if (player.FXProfile != null && player.FXProfile.extraFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.extraFX, player.transform.position);
+        }
+        // ----------------
+
         if (_bugBombEffect != null)
             Object.Instantiate(_bugBombEffect, player.transform.position, Quaternion.identity);
 

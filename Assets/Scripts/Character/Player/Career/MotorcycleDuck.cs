@@ -57,6 +57,11 @@ public class MotorcycleSkill : CareerSkillBase
     {
         _isSkillActive = true;
 
+        if (player.FXProfile != null && player.FXProfile.skillFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.skillFX, player.transform.position);
+        }
+
         player.StartCoroutine(DashRoutine(player));
         yield return new WaitForSeconds(_skillDuration);
 
@@ -91,6 +96,11 @@ public class MotorcycleSkill : CareerSkillBase
     #region Attack Override
     public override void PerformAttack(Player player)
     {
+        if (player.FXProfile != null && player.FXProfile.basicAttackFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.basicAttackFX, player.transform.position);
+        }
+
         Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, _handlebarRange);
         foreach (var h in hits)
             if (h.TryGetComponent<IDamageable>(out var t) && h.GetComponent<Player>() == null)
@@ -99,6 +109,11 @@ public class MotorcycleSkill : CareerSkillBase
 
     public override void PerformChargeAttack(Player player)
     {
+        if (player.FXProfile != null && player.FXProfile.extraFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.extraFX, player.transform.position);
+        }
+
         Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, _slideRange);
         foreach (var h in hits)
         {

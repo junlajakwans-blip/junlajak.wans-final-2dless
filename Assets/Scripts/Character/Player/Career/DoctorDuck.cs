@@ -95,6 +95,8 @@ public class DoctorSkill : CareerSkillBase
     #region 🔹 UseSkill → MedicBag
     public override void UseCareerSkill(Player player)
     {
+        if (player == null) return;
+
         if (_isSkillActive || _isCooldown)
         {
             Debug.Log($"[{player.PlayerName}] Skill not ready");
@@ -109,6 +111,15 @@ public class DoctorSkill : CareerSkillBase
         _isSkillActive = true;
 
         Debug.Log($"[{player.PlayerName}] Skill: I'm Doctor → Throw Medic Bag!");
+
+        // ---------------------------------------------------------
+        // PlayFX Skill 
+        // ---------------------------------------------------------
+        if (player.FXProfile != null && player.FXProfile.skillFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.skillFX, player.transform.position);
+        }
+        // ---------------------------------------------------------
 
         if (_medicBagPrefab != null)
             Object.Instantiate(_medicBagPrefab, player.transform.position + Vector3.up, Quaternion.identity);
@@ -171,6 +182,16 @@ public class DoctorSkill : CareerSkillBase
     #region 🔹 Attack / ChargeAttack / RangeAttack
     public override void PerformAttack(Player player)
     {
+        // ---------------------------------------------------------
+        // PlayFX Attack 
+        // ---------------------------------------------------------
+        if (player.FXProfile != null && player.FXProfile.basicAttackFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.basicAttackFX, player.transform.position);
+        }
+        // ---------------------------------------------------------
+        
+        //Attack
         Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, 2f);
         foreach (var hit in hits)
             if (hit.TryGetComponent<IDamageable>(out var target) && hit.GetComponent<Player>() == null)
@@ -184,6 +205,15 @@ public class DoctorSkill : CareerSkillBase
     {
         float power = player.GetChargePower();
         float range = Mathf.Lerp(2f, 3f, power);
+
+        // ---------------------------------------------------------
+        // PlayFX Charge (เพิ่มตรงนี้ - ใช้ extraFX)
+        // ---------------------------------------------------------
+        if (player.FXProfile != null && player.FXProfile.extraFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.extraFX, player.transform.position);
+        }
+        // ---------------------------------------------------------
 
         Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, range);
         foreach (var hit in hits)
@@ -213,6 +243,10 @@ public class DoctorSkill : CareerSkillBase
         _isSkillActive = false;
         _isCooldown = false;
         _canRevive = true;
+
+        _healRoutine = null;
+        _skillRoutine = null;
     }
+
     #endregion
 }

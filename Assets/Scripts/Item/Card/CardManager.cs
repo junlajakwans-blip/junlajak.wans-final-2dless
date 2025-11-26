@@ -223,7 +223,9 @@ public class CardManager : MonoBehaviour
         _muscleButton?.Hide();
 
         // สลับอาชีพเป็น Muscle Duck
-        _careerSwitcher.SwitchCareerByName("Muscle");
+        var muscleCareer = _careerSwitcher.GetCareerData(DuckCareer.Muscle);
+        _careerSwitcher.SwitchCareer(muscleCareer);
+
         _careerSwitcher.StartCareerTimer(10f);
 
         // ล็อกการ์ดระหว่างใช้ Muscle Duck

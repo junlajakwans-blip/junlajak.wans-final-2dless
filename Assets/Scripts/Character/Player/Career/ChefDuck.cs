@@ -26,6 +26,8 @@ public class ChefSkill : CareerSkillBase
     #region 🔹 Skill Logic (UseSkill → Ducklicious → Roast Duckeddon)
     public override void UseCareerSkill(Player player)
     {
+        if (player == null) return;
+
         if (_isSkillActive || _isCooldown)
         {
             Debug.Log($"[{player.PlayerName}] Skill not ready");
@@ -72,6 +74,13 @@ public class ChefSkill : CareerSkillBase
     #region Attack Logic (Copied from ChefDuck Attack override)
     public override void PerformAttack(Player player)
     {
+        //PlayFX
+        if (player.FXProfile != null && player.FXProfile.basicAttackFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.basicAttackFX, player.transform.position);
+        }
+        //Attack
+
         // Flying Pan 1.5f
         Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, 1.5f);
         foreach (var hit in hits)
@@ -85,6 +94,12 @@ public class ChefSkill : CareerSkillBase
         float range = Mathf.Lerp(2f, 4f, power);
         int baseDamage = 20;
         int scaledDamage = Mathf.RoundToInt(baseDamage * Mathf.Clamp(power, 1f, 2f));
+
+        //PlayFX Charge
+        if (player.FXProfile != null && player.FXProfile.extraFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.extraFX, player.transform.position);
+        }
 
         Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, range);
         foreach (var hit in hits)
@@ -108,6 +123,12 @@ public class ChefSkill : CareerSkillBase
     {
         if (_panEffect != null)
             Object.Instantiate(_panEffect, player.transform.position, Quaternion.identity);
+        
+                //PlayFX
+        if (player.FXProfile != null && player.FXProfile.skillFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.skillFX, player.transform.position);
+        }
 
         Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, _burnRange);
         foreach (var hit in hits)
@@ -151,11 +172,14 @@ public class ChefSkill : CareerSkillBase
     #region 🔹 Cleanup (เมื่อ revert → Duckling)
     public override void Cleanup(Player player)
     {
+        if (player == null) return;
+
         if (_routine != null)
             player.StopCoroutine(_routine);
 
         _isSkillActive = false;
         _isCooldown = false;
     }
+
     #endregion
 }

@@ -30,40 +30,36 @@ public class DetectiveSkill : CareerSkillBase
     #region 🔹 UseSkill → RevealHiddenItems
     public override void UseCareerSkill(Player player)
     {
+        if (player == null) return;
+
         if (_isSkillActive || _isCooldown)
         {
             Debug.Log($"[{player.PlayerName}] Skill not ready");
             return;
         }
 
-        _routine = player.StartCoroutine(RevealHiddenItemsRoutine(player));
+        _routine = player.StartCoroutine(SpawnBuffOnlyRoutine(player));
     }
 
-    private IEnumerator RevealHiddenItemsRoutine(Player player)
+    private IEnumerator SpawnBuffOnlyRoutine(Player player)
     {
         _isSkillActive = true;
-        Debug.Log($"[{player.PlayerName}] uses skill: RevealHiddenItems!");
+        Debug.Log($"[{player.PlayerName}] uses skill: RevealHiddenItems! (Spawn Mode)");
 
-        // FX
+        // ---------------------------------------------------------
+        // PlayFX Skill (เพิ่มตรงนี้)
+        // ---------------------------------------------------------
+        if (player.FXProfile != null && player.FXProfile.skillFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.skillFX, player.transform.position);
+        }
+        // ---------------------------------------------------------
+
         if (_scanEffect != null)
             Object.Instantiate(_scanEffect, player.transform.position, Quaternion.identity);
 
-        Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, _scanRadius);
-        int buffSpawned = 0;
-
-        // 1) Reveal nearby hidden items
-        foreach (var hit in hits)
-        {
-            if (hit.CompareTag("HiddenItem") && buffSpawned < 3)
-            {
-                hit.gameObject.SetActive(true);
-                buffSpawned++;
-                Debug.Log($"[{player.PlayerName}] Revealed hidden item at {hit.transform.position}");
-            }
-        }
-
-        // 2) Spawn new buff items if fewer than 3 revealed
-        for (int i = buffSpawned; i < 3; i++)
+        // สร้างบัฟ 3 อันรอบตัว
+        for (int i = 0; i < 3; i++)
         {
             Vector2 randomPos = (Vector2)player.transform.position + Random.insideUnitCircle * _scanRadius;
             SpawnBuffItem(player, randomPos);
@@ -97,6 +93,16 @@ public class DetectiveSkill : CareerSkillBase
     public override void PerformChargeAttack(Player player)
     {
         Debug.Log($"[{player.PlayerName}] activates Infrared Scanner!");
+        
+        // ---------------------------------------------------------
+        // PlayFX Charge (เพิ่มตรงนี้ - ใช้ extraFX)
+        // ---------------------------------------------------------
+        if (player.FXProfile != null && player.FXProfile.extraFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.extraFX, player.transform.position);
+        }
+        // ---------------------------------------------------------
+
         player.StartCoroutine(InfraredScannerRoutine(player));
     }
 
@@ -111,12 +117,23 @@ public class DetectiveSkill : CareerSkillBase
         foreach (var enemy in enemies)
             enemy.CanDetectOverride = true;
     }
+
     #endregion
 
 
     #region 🔹 Attack & RangeAttack
     public override void PerformAttack(Player player)
     {
+        // ---------------------------------------------------------
+        // PlayFX Attack (เพิ่มตรงนี้)
+        // ---------------------------------------------------------
+        if (player.FXProfile != null && player.FXProfile.basicAttackFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.basicAttackFX, player.transform.position);
+        }
+        // ---------------------------------------------------------
+
+        //Attack
         // MagnifyLight (2 Block)
         Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, _magnifyRange);
         foreach (var hit in hits)

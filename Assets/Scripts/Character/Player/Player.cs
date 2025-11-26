@@ -502,33 +502,40 @@ public override void Move(Vector2 direction)
     #region Combat System (IAttackable, ISkillUser)
     public override void Attack()
     {
-        Debug.Log("[Player] Basic attack triggered.");
+        if (_isDead) return;
 
-        // 1. เช็ค Switcher
-        if (_careerSwitcher == null)
+        // ดึงสกิลปัจจุบันแบบปลอดภัย
+        var skill = CurrentCareerSkill;
+
+        if (skill != null)
         {
-            Debug.LogError("[Player Attack] ❌ CareerSwitcher is NULL!");
-            return;
+            // ทุกอาชีพที่มีสกิล → ใช้ตามปกติ
+            skill.PerformAttack(this);
         }
-
-        // 2. เช็ค CurrentCareer
-        if (_careerSwitcher.CurrentCareer == null)
+        else
         {
-            Debug.LogError("[Player Attack] ❌ CurrentCareer is NULL! (Did you assign Default Career?)");
-            // Fallback: ถ้าไม่มีอาชีพ ให้โจมตีแบบพื้นฐานไปก่อน หรือ return
-            return;
+            // Fallback: ถ้าไม่มี career / ไม่มี skill ให้ตีธรรมดา (Duckling style)
+            BasicMeleeAttack();
         }
-
-        // 3. เช็ค CareerSkill
-        if (_careerSwitcher.CurrentCareer.CareerSkill == null)
-        {
-            Debug.LogWarning($"[Player Attack] ⚠️ Career '{_careerSwitcher.CurrentCareer.DisplayName}' has NO Skill assigned in ScriptableObject.");
-            return;
-        }
-
-        // ถ้าผ่านหมด ค่อยสั่งโจมตี
-        _careerSwitcher.CurrentCareer.CareerSkill.PerformAttack(this);
     }
+
+    /// <summary>
+    /// โจมตีระยะใกล้พื้นฐาน ใช้เป็น fallback เวลาไม่มีสกิล
+    /// </summary>
+    private void BasicMeleeAttack()
+    {
+        const float range = 1.2f;
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, range);
+
+        foreach (var hit in hits)
+        {
+            if (hit.TryGetComponent<IDamageable>(out var target) && hit.GetComponent<Player>() == null)
+            {
+                ApplyDamage(target, BASIC_ATTACK_DAMAGE);
+            }
+        }
+    }
+
     public virtual void ChargeAttack(float power)
     {
         Debug.Log($"[Player] Charge attack power: {power}");
@@ -554,10 +561,19 @@ public override void Move(Vector2 direction)
 
     public virtual void UseSkill()
     {
-        Debug.Log("[Player] Skill used.");
-        var skill = _careerSwitcher.CurrentCareer.CareerSkill;
-        skill?.UseCareerSkill(this);
+        if (_isDead) return;
+
+        var skill = CurrentCareerSkill;
+
+        // ถ้าไม่มีสกิล (Duckling หรือ career ไม่เซ็ต) → เงียบ ๆ ไม่ทำอะไร ไม่ error
+        if (skill == null)
+        {
+            return;
+        }
+
+        skill.UseCareerSkill(this);
     }
+
 
     public virtual void OnSkillCooldown()
     {

@@ -33,6 +33,7 @@ public class DancerSkill : CareerSkillBase
         _routine = player.StartCoroutine(StepDanceRoutine(player));
     }
 
+
     private IEnumerator StepDanceRoutine(Player player)
     {
         _isSkillActive = true;
@@ -40,6 +41,12 @@ public class DancerSkill : CareerSkillBase
         // FX
         if (_danceEffect != null)
             Object.Instantiate(_danceEffect, player.transform.position, Quaternion.identity);
+        
+        //PlayFX Skill
+        if (player.FXProfile != null && player.FXProfile.skillFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.skillFX, player.transform.position);
+        }
 
         // 1) Hide from enemies (no damage taken)
         HideFromEnemies(player, _hideDuration);
@@ -84,14 +91,23 @@ public class DancerSkill : CareerSkillBase
 
     private IEnumerator TemporarilyHideRoutine(Enemy[] enemies, float time)
     {
+        // ปิด detect สำหรับชุด enemy ที่มีตอนกดสกิล
         foreach (var enemy in enemies)
-            enemy.CanDetectOverride = false;
+        {
+            if (enemy != null)
+                enemy.CanDetectOverride = false;
+        }
 
         yield return new WaitForSeconds(time);
 
+        // เปิดกลับเฉพาะตัวที่ยังไม่โดนลบ
         foreach (var enemy in enemies)
-            enemy.CanDetectOverride = true;
+        {
+            if (enemy != null)
+                enemy.CanDetectOverride = true;
+        }
     }
+
 
     private void AffectNearbyEnemies(Player player)
     {
@@ -119,6 +135,13 @@ public class DancerSkill : CareerSkillBase
     #region 🔹 Attack Overrides
     public override void PerformAttack(Player player)
     {
+        //PlayFX
+        if (player.FXProfile != null && player.FXProfile.basicAttackFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.basicAttackFX, player.transform.position);
+        }
+        //Attack
+
         // Ground Waving Fan — 2 Block AoE
         Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, 2f);
         foreach (var hit in hits)
@@ -128,6 +151,12 @@ public class DancerSkill : CareerSkillBase
 
     public override void PerformChargeAttack(Player player)
     {
+        //PlayFX Charge
+        if (player.FXProfile != null && player.FXProfile.extraFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.extraFX, player.transform.position);
+        }
+
         // Charged Fan Spin — 4 Block AoE
         float attackRange = 4f;
         int baseDamage = 20;
@@ -150,13 +179,24 @@ public class DancerSkill : CareerSkillBase
 
 
     #region 🔹 Cleanup (เมื่อ revert → Duckling)
+    private Coroutine _hideRoutine;
+
     public override void Cleanup(Player player)
     {
+        if (player == null) return;
+
         if (_routine != null)
             player.StopCoroutine(_routine);
+
+        if (_hideRoutine != null)
+            player.StopCoroutine(_hideRoutine);
+
+        _routine = null;
+        _hideRoutine = null;
 
         _isSkillActive = false;
         _isCooldown = false;
     }
+
     #endregion
 }

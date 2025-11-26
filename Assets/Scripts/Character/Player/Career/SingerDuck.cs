@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-[CreateAssetMenu(menuName = "Career/Skill/SingerSkill")]
+[CreateAssetMenu(menuName = "DUFFDUCK/Skill/SingerSkill_Full")]
 public class SingerSkill : CareerSkillBase
 {
     #region Summary
@@ -72,6 +72,15 @@ public class SingerSkill : CareerSkillBase
     {
         _isSkillActive = true;
 
+        // ----------------
+        // [SkillFX]
+        // ----------------
+        if (player.FXProfile != null && player.FXProfile.skillFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.skillFX, player.transform.position);
+        }
+        // ----------------
+
         if (_micFx != null)
             Object.Instantiate(_micFx, player.transform.position, Quaternion.identity);
 
@@ -116,6 +125,15 @@ public class SingerSkill : CareerSkillBase
     #region Attack (High Note / Diva)
     public override void PerformAttack(Player player)
     {
+        // ----------------
+        // [AttackFX]
+        // ----------------
+        if (player.FXProfile != null && player.FXProfile.basicAttackFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.basicAttackFX, player.transform.position);
+        }
+        // ----------------
+
         if (_highNoteFx != null)
             Object.Instantiate(_highNoteFx, player.transform.position, Quaternion.identity);
 
@@ -127,6 +145,15 @@ public class SingerSkill : CareerSkillBase
 
     public override void PerformChargeAttack(Player player)
     {
+        // ----------------
+        // [ChargeFX (ExtraFX)]
+        // ----------------
+        if (player.FXProfile != null && player.FXProfile.extraFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.extraFX, player.transform.position);
+        }
+        // ----------------
+
         float power = player.GetChargePower();
         float range = Mathf.Lerp(_divaMinRange, _divaMaxRange, power);
 

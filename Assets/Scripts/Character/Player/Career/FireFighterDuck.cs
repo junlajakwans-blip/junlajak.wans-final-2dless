@@ -111,6 +111,15 @@ public class FireFighterSkill : CareerSkillBase
     {
         _isSkillActive = true;
 
+        // ---------------------------------------------------------
+        // PlayFX Skill (เพิ่มตรงนี้)
+        // ---------------------------------------------------------
+        if (player.FXProfile != null && player.FXProfile.skillFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.skillFX, player.transform.position);
+        }
+        // ---------------------------------------------------------
+        
         if (_waterSplashSkillEffect != null)
             Object.Instantiate(_waterSplashSkillEffect, player.transform.position, Quaternion.identity);
 
@@ -163,6 +172,15 @@ public class FireFighterSkill : CareerSkillBase
     #region ▬ Attack / Charge / Range
     public override void PerformAttack(Player player)
     {
+        // ---------------------------------------------------------
+        // PlayFX Attack 
+        // ---------------------------------------------------------
+        if (player.FXProfile != null && player.FXProfile.basicAttackFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.basicAttackFX, player.transform.position);
+        }
+        // ---------------------------------------------------------
+        
         if (_waterBallPrefab != null)
             Object.Instantiate(_waterBallPrefab, player.transform.position, Quaternion.identity);
 
@@ -177,6 +195,14 @@ public class FireFighterSkill : CareerSkillBase
 
     public override void PerformChargeAttack(Player player)
     {
+        // ---------------------------------------------------------
+        // PlayFX Charge (เพิ่มตรงนี้ - ใช้ extraFX)
+        // ---------------------------------------------------------
+        if (player.FXProfile != null && player.FXProfile.extraFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.extraFX, player.transform.position);
+        }
+        // ---------------------------------------------------------
         if (_splashEffect != null)
             Object.Instantiate(_splashEffect, player.transform.position, Quaternion.identity);
 

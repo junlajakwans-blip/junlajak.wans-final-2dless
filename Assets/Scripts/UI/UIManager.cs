@@ -102,13 +102,26 @@ public class UIManager : MonoBehaviour
 
     #region Main Menu
 
-    public void ShowMainMenu()
+public void ShowMainMenu()
     {
         Debug.Log(">> OPEN MAIN MENU");
+
+        // 1. ซ่อน HUD หลัก (Health, Score, etc.) เพื่อไม่ให้บัง
         if (panelHUDMain != null)
         {
             panelHUDMain.SetActive(false);
         }
+
+        // 2. ปิดเมนูที่อาจค้างอยู่ (Result, Pause, Store) จาก MenuUI
+        CloseAllMenus();
+
+        // 3. ปิด Card Selection Panel (ถ้าเปิดค้างไว้)
+        if (_cardSelectionPanel != null)
+        {
+            _cardSelectionPanel.SetActive(false);
+        }
+        
+        // 4. แสดงหน้า Main Menu
         SetPanel(panelMainMenu);
     }
 

@@ -494,7 +494,7 @@ public void InitializeGame()
     public void ExitToMainMenuFromResults()
     {
         Debug.Log("[GameManager] Exiting to Main Menu from Result Screen.");
-        _uiManager?.CloseAllMenus(); // ปิด Panel Result และ Menu อื่นๆ
+        _uiManager?.ShowMainMenu(); // ปิด Panel Result และ Menu อื่นๆ
         Time.timeScale = 1f; // คืนค่าเวลา
         LoadScene("MainMenu"); 
     }

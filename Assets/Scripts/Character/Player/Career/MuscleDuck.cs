@@ -83,6 +83,15 @@ public class MuscleSkill : CareerSkillBase
         _isSkillActive = true;
         _usesThisRound++;
 
+        // ----------------
+        // [SkillFX]
+        // ----------------
+        if (player.FXProfile != null && player.FXProfile.skillFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.skillFX, player.transform.position);
+        }
+        // ----------------
+
         if (_smashEffect != null)
             Object.Instantiate(_smashEffect, player.transform.position, Quaternion.identity);
 
@@ -118,6 +127,15 @@ public class MuscleSkill : CareerSkillBase
     #region Attack / Charge Attack
     public override void PerformAttack(Player player)
     {
+        // ----------------
+        // [AttackFX]
+        // ----------------
+        if (player.FXProfile != null && player.FXProfile.basicAttackFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.basicAttackFX, player.transform.position);
+        }
+        // ----------------
+
         if (_rageEffect != null)
             Object.Instantiate(_rageEffect, player.transform.position, Quaternion.identity);
 
@@ -131,6 +149,15 @@ public class MuscleSkill : CareerSkillBase
 
     public override void PerformChargeAttack(Player player)
     {
+        // ----------------
+        // [ChargeFX (ExtraFX)]
+        // ----------------
+        if (player.FXProfile != null && player.FXProfile.extraFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.extraFX, player.transform.position);
+        }
+        // ----------------
+
         Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, _pumpedUpRange);
         foreach (var hit in hits)
             if (hit.TryGetComponent<IDamageable>(out var target) && hit.GetComponent<Player>() == null)

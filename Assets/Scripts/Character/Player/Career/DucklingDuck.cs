@@ -1,6 +1,11 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Career/Skill/DucklingSkill")]
+/// <summary>
+/// Duckling – Default starter career (ID 0)
+/// No Skill, No BuffMon, No BuffMap.
+/// Player can only perform basic attacks (Bonk Attack / Jump Attack).
+/// </summary>
+[CreateAssetMenu(menuName = "DUFFDUCK/Skill/DucklingSkill")]
 public class DucklingSkill : CareerSkillBase
 {
     #region Summary
@@ -28,6 +33,15 @@ public class DucklingSkill : CareerSkillBase
 
     public override void PerformAttack(Player player)
     {
+        // ---------------------------------------------------------
+        // PlayFX Attack 
+        // ---------------------------------------------------------
+        if (player.FXProfile != null && player.FXProfile.basicAttackFX != null)
+        {
+            ComicEffectManager.Instance.Play(player.FXProfile.basicAttackFX, player.transform.position);
+        }
+        // ---------------------------------------------------------
+
         // Overlap 1 block
         float range = 1.2f;
         Vector2 origin = player.transform.position + new Vector3(player.FaceDir * 0.8f, 0f, 0f);
@@ -44,6 +58,7 @@ public class DucklingSkill : CareerSkillBase
         Debug.Log("[Duckling] Bonk Attack!");
     }
 
+    // Duckling ไม่มี Charge/Range Attack จึงปล่อยว่างไว้ ไม่ต้องใส่ Effect
     public override void PerformChargeAttack(Player player) { }
     public override void PerformRangeAttack(Player player, Transform target) { }
 
