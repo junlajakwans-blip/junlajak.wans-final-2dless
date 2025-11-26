@@ -1,89 +1,698 @@
 @startuml DUFFDUCK_FULL_SYSTEM
 !theme plain
-skinparam classAttributeIconSize 0
-skinparam linetype polyline
-hide empty members
+scale 595 width
+scale 842 height 
 
-!include ./Assets/Scripts/CameraController.puml
-!include ./Assets/Scripts/DevCheat.puml
-!include ./Assets/Scripts/GameManager.puml
-!include ./Assets/Scripts/GameProgressData.puml
-!include ./Assets/Scripts/ReadOnlyAttribute.puml
-!include ./Assets/Scripts/SaveSystem.puml
-!include ./Assets/Scripts/Character/Character.puml
-!include ./Assets/Scripts/Effects/CareerEffectProfile.puml
-!include ./Assets/Scripts/Effects/ComicEffectAutoRecycle.puml
-!include ./Assets/Scripts/Effects/ComicEffectData.puml
-!include ./Assets/Scripts/Effects/ComicEffectManager.puml
-!include ./Assets/Scripts/Effects/ComicEffectPlayer.puml
-!include ./Assets/Scripts/Effects/ComicEffectSpawner.puml
-!include ./Assets/Scripts/Enum/CardType.puml
-!include ./Assets/Scripts/Enum/DuckCareer.puml
-!include ./Assets/Scripts/Enum/EnemyType.puml
-!include ./Assets/Scripts/Enum/MapType.puml
-!include ./Assets/Scripts/Scene/AssetSpawner.puml
-!include ./Assets/Scripts/Scene/BackgroundLooper.puml
-!include ./Assets/Scripts/Scene/EnemySpawner.puml
-!include ./Assets/Scripts/Scene/MapGeneratorBase.puml
-!include ./Assets/Scripts/Scene/MapGeneratorKitchen.puml
-!include ./Assets/Scripts/Scene/MapGeneratorRoad.puml
-!include ./Assets/Scripts/Scene/MapGeneratorSchool.puml
-!include ./Assets/Scripts/Scene/SceneManager.puml
-!include ./Assets/Scripts/Scene/SpawnSlot.puml
-!include ./Assets/Scripts/Scene/Wall_Kill.puml
-!include ./Assets/Scripts/Store/Currency.puml
-!include ./Assets/Scripts/Store/StoreBase.puml
-!include ./Assets/Scripts/Store/StoreExchange.puml
-!include ./Assets/Scripts/Store/StoreItem.puml
-!include ./Assets/Scripts/Store/StoreManager.puml
-!include ./Assets/Scripts/Store/StoreMap.puml
-!include ./Assets/Scripts/Store/StoreType.puml
-!include ./Assets/Scripts/Store/StoreUpgrade.puml
-!include ./Assets/Scripts/Store/TopCurrencyUI.puml
-!include ./Assets/Scripts/System/DistanceCulling.puml
-!include ./Assets/Scripts/System/MapCollectibleData.puml
-!include ./Assets/Scripts/System/ObjectPoolManager.puml
-!include ./Assets/Scripts/System/PerformanceManager.puml
-!include ./Assets/Scripts/UI/UIManager.puml
-!include ./Assets/Scripts/Character/Enemy/Enemy.puml
-!include ./Assets/Scripts/Character/Enemy/EnemyData.puml
-!include ./Assets/Scripts/Character/Enemy/Projectile.puml
-!include ./Assets/Scripts/Character/Interface/IAttackable.puml
-!include ./Assets/Scripts/Character/Interface/ICareerSwitchable.puml
-!include ./Assets/Scripts/Character/Interface/ICollectable.puml
-!include ./Assets/Scripts/Character/Interface/IDamageable.puml
-!include ./Assets/Scripts/Character/Interface/IInteractable.puml
-!include ./Assets/Scripts/Character/Interface/IMoveable.puml
-!include ./Assets/Scripts/Character/Interface/ISkillUser.puml
-!include ./Assets/Scripts/Character/Player/Player.puml
-!include ./Assets/Scripts/Character/Player/PlayerController.puml
-!include ./Assets/Scripts/Character/Player/PlayerData.puml
-!include ./Assets/Scripts/Character/Player/PlayerInteract.puml
-!include ./Assets/Scripts/Item/Card/Card.puml
-!include ./Assets/Scripts/Item/Card/CardManager.puml
-!include ./Assets/Scripts/Item/Card/CardSlotUI.puml
-!include ./Assets/Scripts/Item/Card/CardUI.puml
-!include ./Assets/Scripts/Item/Card/CardUIPool.puml
-!include ./Assets/Scripts/Item/Card/MuscleButton.puml
-!include ./Assets/Scripts/Item/Card/RandomStarterCard.puml
-!include ./Assets/Scripts/Item/Collect/BuffManager.puml
-!include ./Assets/Scripts/Item/Collect/CoinMagnet.puml
-!include ./Assets/Scripts/Item/Collect/CoinTrailGenerator.puml
-!include ./Assets/Scripts/Item/Collect/CollectibleItem.puml
-!include ./Assets/Scripts/Item/Collect/CollectibleSpawner.puml
-!include ./Assets/Scripts/Item/Throwable/ThrowableDropTable.puml
-!include ./Assets/Scripts/Item/Throwable/ThrowableItemInfo.puml
-!include ./Assets/Scripts/Item/Throwable/ThrowableSpawner.puml
-!include ./Assets/Scripts/System/Interface/IObjectPool.puml
-!include ./Assets/Scripts/System/Interface/ISpawn.puml
-!include ./Assets/Scripts/UI/Menu_GamePlay/CameraFollow.puml
-!include ./Assets/Scripts/UI/Menu_GamePlay/HealthBarUI.puml
-!include ./Assets/Scripts/UI/Menu_GamePlay/HUDLoad.puml
-!include ./Assets/Scripts/UI/Menu_GamePlay/MapSelectController.puml
-!include ./Assets/Scripts/UI/Menu_GamePlay/MenuUI.puml
-!include ./Assets/Scripts/UI/Menu_GamePlay/SceneUI.puml
-!include ./Assets/Scripts/UI/Menu_GamePlay/ScoreUI.puml
-!include ./Assets/Scripts/UI/Store/SlotUI.puml
-!include ./Assets/Scripts/UI/Store/StoreUI.puml
-!include ./Assets/Scripts/UI/Store/UpgradeUI.puml
+skinparam dpi 150
+skinparam classAttributeIconSize 0
+top to bottom direction
+hide empty members
+skinparam linetype ortho
+
+
+
+abstract class Character {
+    + CurrentHealth : int <<get>>
+    + MaxHealth : int <<get>>
+    + IsDead : bool <<get>>
+    + <<virtual>> Initialize(maxHealth:int) : void
+    + <<virtual>> TakeDamage(amount:int) : void
+    + <<virtual>> Heal(amount:int) : void
+    + {abstract} Die() : void
+    + <<virtual>> Move(direction:Vector2) : void
+    + {abstract} Attack() : void
+}
+MonoBehaviour <|-- Character
+IDamageable <|-- Character
+
+class Player {
+    +  <<event>> OnCoinCollected : System.Action<int> 
+    + GetChargePower() : float
+    + PlayerName : string <<get>>
+    + FaceDir : int <<get>> = 1
+    + Initialize(data:PlayerData, cardManager:CardManager, careerSwitcher:CareerSwitcher) : void
+    + <<override>> Move(direction:Vector2) : void
+    + ApplySpeedModifier(multiplier:float, duration:float) : void
+    + HandleInteract() : void
+    + <<virtual>> Jump() : void
+    + <<override>> TakeDamage(amount:int) : void
+    + <<override>> Heal(amount:int) : void
+    + Revive(reviveHP:int) : void
+    + <<override>> Die() : void
+    + GetCurrentCareerID() : DuckCareer
+    + SetHealthBarUI(healthBarUI:HealthBarUI) : void
+    + HookScoreUI(scoreUI:ScoreUI, initialCoin:int) : void
+    + AddCoin(amount:int) : void
+    + AddToken(amount:int) : void
+    + GetCurrency() : Currency
+    + <<override>> Attack() : void
+    + <<virtual>> ChargeAttack(power:float) : void
+    + <<virtual>> RangeAttack(target:Transform) : void
+    + <<virtual>> ApplyDamage(target:IDamageable, amount:int) : void
+    + <<virtual>> UseSkill() : void
+    + <<virtual>> OnSkillCooldown() : void
+    + UseCard(card:Card) : void
+    + EnterOverdrive() : void
+    + ExitOverdrive() : void
+    + SetFXProfile(newProfile:CareerEffectProfile) : void
+    + OnCareerChanged(newCareer:DuckCareerData) : void
+    + IsDuckling : bool <<get>>
+    + UpdatePlayerFormState() : void
+    + ResetState() : void
+}
+Character <|-- Player
+IDamageable <|-- Player
+IAttackable <|-- Player
+ISkillUser <|-- Player
+Player --> "CurrentCareerData" DuckCareerData
+Player --> "CurrentCareerID" DuckCareer
+Player --> "CurrentMapType" MapType
+Player --> "FXProfile" CareerEffectProfile
+Player --> "CurrentCareerSkill" CareerSkillBase
+
+class PlayerData {
+    + PlayerName : string <<get>> <<set>>
+    + SelectedCareer : string <<get>> <<set>>
+    + MaxHealth : int <<get>> <<set>>
+    + Speed : float <<get>> <<set>>
+    + AttackPower : float <<get>> <<set>>
+    + Defense : int <<get>> <<set>>
+    + PlayerData(currency:Currency, progress:GameProgressData)
+    + UpgradeStat(statName:string, value:int) : void
+    + IsDefaultDuckling : bool <<get>> <<set>>
+    + ResetPlayerState() : void
+}
+PlayerData --> "Currency" Currency
+PlayerData --> "Progress" GameProgressData
+
+class PlayerInteract {
+    + HasItem() : bool
+    + TryPickUp() : void
+    + SetThrowable(itemObject:GameObject) : void
+    + ThrowItem() : void
+    + ConsumeHeldItem() : GameObject
+}
+MonoBehaviour <|-- PlayerInteract
+
+class CareerSwitcher {
+    +  <<event>> OnCareerChangedEvent : Action<DuckCareerData> 
+    +  <<event>> OnRevertToDefaultEvent : Action 
+    +  <<event>> OnResetCareerCycle : Action 
+    + IsDuckling : bool <<get>>
+    + SwitchCareer(newCareer:DuckCareerData) : void
+    + GetAvailableCareers() : List<DuckCareer>
+    + OnCareerChanged(newCareer:DuckCareerData) : void
+    + ApplyCareerAppearance() : void
+    + GetCurrentCareer() : DuckCareerData
+    + RevertToDefault() : void
+    + StartCareerTimer(duration:float) : void
+    + CanChangeTo(newCareer:DuckCareerData) : bool
+    + GetCareerData(type:DuckCareer) : DuckCareerData
+    + GetCareerDataByName(name:string) : DuckCareerData
+    + SwitchCareerByName(careerName:string) : void
+}
+class CareerBodyMap {
+}
+class "IReadOnlyList`1"<T> {
+}
+MonoBehaviour <|-- CareerSwitcher
+ICareerSwitchable <|-- CareerSwitcher
+CareerSwitcher --> "EffectProfile" CareerEffectProfile
+CareerSwitcher --> "CareerBodyMaps<CareerBodyMap>" "IReadOnlyList`1"
+CareerSwitcher --> "CurrentCareer" DuckCareerData
+CareerSwitcher +-- CareerBodyMap
+CareerBodyMap --> "careerID" DuckCareer
+CareerBodyMap --> "bodyPrefab" GameObject
+CareerBodyMap --> "fxProfile" CareerEffectProfile
+
+class DuckCareerData {
+    + CareerDuration : float <<get>>
+    + CareerCooldownAfterUse : float <<get>>
+    + BaseCooldown : float = 10f
+    + DisplayName : string <<get>>
+    + BaseHealth : int <<get>>
+    + BaseSpeed : float <<get>>
+    + SkillName : string <<get>>
+    + SkillDescription : string <<get>>
+    + ChefMonCoinMinBonusValue : int <<get>>
+    + ChefMonCoinMaxBonusValue : int <<get>>
+    + PeterMonAttackSkipChance : float <<get>>
+    + PeterMonBuffDuration : float <<get>>
+    + ProgrammerMonCoinBonusValue : int <<get>>
+    + KahootMonDisableChance : float <<get>>
+    + GetCareerStats() : string
+    + ActivateSkill(player:Player) : void
+}
+ScriptableObject <|-- DuckCareerData
+DuckCareerData --> "CareerSkill" CareerSkillBase
+DuckCareerData --> "CareerID" DuckCareer
+DuckCareerData --> "SkillIcon" Sprite
+DuckCareerData --> "CardType" CardType
+DuckCareerData --> "CareerIcon" Sprite
+DuckCareerData --> "CareerCard" Sprite
+
+enum DuckCareer {
+    None= 0,
+    Duckling= 1,
+    Chef= 2,
+    Dancer= 3,
+    Detective= 4,
+    Doctor= 5,
+    Firefighter= 6,
+    Motorcycle= 7,
+    Programmer= 8,
+    Singer= 9,
+    Muscle= 10,
+}
+
+abstract class CareerSkillBase {
+    + <<virtual>> Initialize(player:Player) : void
+    + {abstract} UseCareerSkill(player:Player) : void
+    + <<virtual>> PerformAttack(player:Player) : void
+    + <<virtual>> PerformChargeAttack(player:Player) : void
+    + <<virtual>> PerformRangeAttack(player:Player, target:Transform) : void
+    + <<virtual>> Cleanup(player:Player) : void
+    + <<virtual>> OnEnterOverdrive(player:Player) : void
+    + <<virtual>> OnExitOverdrive(player:Player) : void
+    + <<virtual>> OnTakeDamage(player:Player, damage:int) : void
+    + <<virtual>> OnBeforeDie(player:Player) : bool
+}
+ScriptableObject <|-- CareerSkillBase
+
+class ChefSkill {
+    + <<override>> UseCareerSkill(player:Player) : void
+    + <<override>> PerformAttack(player:Player) : void
+    + <<override>> PerformChargeAttack(player:Player) : void
+    + <<override>> PerformRangeAttack(player:Player, target:Transform) : void
+    + <<override>> Cleanup(player:Player) : void
+}
+CareerSkillBase <|-- ChefSkill
+
+class DancerSkill {
+    + <<override>> UseCareerSkill(player:Player) : void
+    + <<override>> PerformAttack(player:Player) : void
+    + <<override>> PerformChargeAttack(player:Player) : void
+    + <<override>> PerformRangeAttack(player:Player, target:Transform) : void
+    + <<override>> Cleanup(player:Player) : void
+}
+CareerSkillBase <|-- DancerSkill
+
+class DetectiveSkill {
+    + <<override>> UseCareerSkill(player:Player) : void
+    + <<override>> PerformChargeAttack(player:Player) : void
+    + <<override>> PerformAttack(player:Player) : void
+    + <<override>> PerformRangeAttack(player:Player, target:Transform) : void
+    + <<override>> Cleanup(player:Player) : void
+}
+CareerSkillBase <|-- DetectiveSkill
+
+class DoctorSkill {
+    + <<override>> Initialize(player:Player) : void
+    + <<override>> OnTakeDamage(player:Player, incomingDamage:int) : void
+    + <<override>> OnBeforeDie(player:Player) : bool
+    + <<override>> UseCareerSkill(player:Player) : void
+    + <<override>> PerformAttack(player:Player) : void
+    + <<override>> PerformChargeAttack(player:Player) : void
+    + <<override>> PerformRangeAttack(player:Player, target:Transform) : void
+    + <<override>> Cleanup(player:Player) : void
+}
+CareerSkillBase <|-- DoctorSkill
+
+class DucklingSkill {
+    + <<override>> Initialize(player:Player) : void
+    + <<override>> Cleanup(player:Player) : void
+    + <<override>> UseCareerSkill(player:Player) : void
+    + <<override>> PerformAttack(player:Player) : void
+    + <<override>> PerformChargeAttack(player:Player) : void
+    + <<override>> PerformRangeAttack(player:Player, target:Transform) : void
+    + <<override>> OnTakeDamage(player:Player, dmg:int) : void
+    + <<override>> OnBeforeDie(player:Player) : bool
+}
+CareerSkillBase <|-- DucklingSkill
+
+class FireFighterSkill {
+    + <<override>> Initialize(player:Player) : void
+    + <<override>> UseCareerSkill(player:Player) : void
+    + <<override>> PerformAttack(player:Player) : void
+    + <<override>> PerformChargeAttack(player:Player) : void
+    + <<override>> PerformRangeAttack(player:Player, target:Transform) : void
+    + <<override>> Cleanup(player:Player) : void
+}
+CareerSkillBase <|-- FireFighterSkill
+
+class MotorcycleSkill {
+    + HasJumpBuff : bool <<get>>
+    + <<override>> Initialize(player:Player) : void
+    + <<override>> UseCareerSkill(player:Player) : void
+    + <<override>> PerformAttack(player:Player) : void
+    + <<override>> PerformChargeAttack(player:Player) : void
+    + <<override>> OnTakeDamage(player:Player, dmg:int) : void
+    + <<override>> Cleanup(player:Player) : void
+}
+CareerSkillBase <|-- MotorcycleSkill
+
+class MuscleSkill {
+    + <<override>> Initialize(player:Player) : void
+    + <<override>> UseCareerSkill(player:Player) : void
+    + <<override>> PerformAttack(player:Player) : void
+    + <<override>> PerformChargeAttack(player:Player) : void
+    + <<override>> OnTakeDamage(player:Player, dmg:int) : void
+    + <<override>> OnBeforeDie(player:Player) : bool
+    + <<override>> Cleanup(player:Player) : void
+}
+CareerSkillBase <|-- MuscleSkill
+
+class ProgrammerSkill {
+    + <<override>> Initialize(player:Player) : void
+    + <<override>> Cleanup(player:Player) : void
+    + <<override>> UseCareerSkill(player:Player) : void
+    + <<override>> PerformAttack(player:Player) : void
+    + <<override>> PerformChargeAttack(player:Player) : void
+}
+CareerSkillBase <|-- ProgrammerSkill
+
+class SingerSkill {
+    + <<override>> Initialize(player:Player) : void
+    + IsMapBuffActive : bool <<get>>
+    + <<override>> Cleanup(player:Player) : void
+    + <<override>> UseCareerSkill(player:Player) : void
+    + <<override>> PerformAttack(player:Player) : void
+    + <<override>> PerformChargeAttack(player:Player) : void
+}
+CareerSkillBase <|-- SingerSkill
+
+enum CardType {
+    None= 0,
+    Career= 1,
+    Berserk= 2,
+}
+
+abstract class Enemy {
+    + SpawnWeight : float = 30f
+    + CanDetectOverride : bool = true
+    + Speed : float <<get>> <<set>>
+    + AttackPower : int <<get>> <<set>>
+    + DetectionRange : float <<get>> <<set>>
+    + InitializeFromData() : void
+    + SetDependencies(player:Player, spawner:CollectibleSpawner, cardManager:CardManager, buffManager:BuffManager, pool:IObjectPool) : void
+    + <<virtual>> Move() : void
+    + <<override>> Attack() : void
+    + <<virtual>> DetectPlayer(playerPos:Vector3) : bool
+    + <<virtual>> DetectPlayer(playerPos:Vector3, customRange:float) : bool
+    + <<virtual>> ApplyCareerBuff(data:DuckCareerData) : void
+    + <<virtual>> DisableBehavior(duration:float) : void
+    + <<override>> TakeDamage(amount:int) : void
+    + <<override>> Die() : void
+    + <<virtual>> ChargeAttack(power:float) : void
+    + <<virtual>> RangeAttack(target:Transform) : void
+    + <<virtual>> ApplyDamage(target:IDamageable, amount:int) : void
+    + Confuse(duration:float) : void
+    + ApplyFear(duration:float) : void
+}
+
+enum EnemyType {
+    None= 0,
+    KahootMon= 1,
+    GhostWorkMon= 2,
+    LotteryMon= 3,
+    DoggoMon= 4,
+    RedlightMon= 5,
+    PeterMon= 6,
+    MamaMon= 7,
+    MooPingMon= 8,
+    GoldenMon= 9,
+}
+class EnemyTypeExtensions <<static>> {
+    + {static} IsCommon(enemyType:EnemyType) : bool
+    + {static} IsRare(enemyType:EnemyType) : bool
+    + {static} GetAssociatedMaps(enemyType:EnemyType) : List<MapType>
+    + {static} CanAppearInMap(enemyType:EnemyType, mapType:MapType) : bool
+}
+enum EnemyState {
+    Idle,
+    Chase,
+    Attack,
+    Confused,
+    Disabled,
+    Dead,
+}
+
+class EnemyData {
+    + DisplayName : string <<get>>
+    + BaseHealth : int <<get>>
+    + BaseAttackPower : int <<get>>
+    + BaseMovementSpeed : float <<get>>
+    + BaseDetectionRange : float <<get>>
+    + CoinDropAmount : int <<get>>
+    + MamaNoodleCount : int = 3
+    + MamaAttackCooldown : float = 2f
+    + MamaBoilRange : float = 4f
+    + MamaBoilDamage : int = 10
+    + MamaProjectileSpeed : float = 5f
+    + MamaProjectileDamage : int = 15
+    + MamaHealChance : float = 0.1f
+    + MamaHealCooldown : float = 8f
+    + MamaCoinDropChance : float = 0.35f
+    + MamaGreenTeaDropChance : float = 0.10f
+    + KahootAttackInterval : float = 3f
+    + KahootBlockSpeed : float = 6f
+    + KahootBlockDamage : int = 5
+    + KahootSpeedDuration : float = 3f
+    + KahootSlowModifier : float = 0.4f
+    + KahootSlowDuration : float = 2.5f
+    + KahootSmallDamage : int = 1
+    + KahootCoinDropChance : float = 0.40f
+    + LotteryLuckFactor : float = 0.15f
+    + LotteryCurseDuration : float = 4f
+    + LotteryAttackCooldown : float = 5f
+    + LotteryMinCoinDrop : int = 1
+    + LotteryMaxCoinDrop : int = 40
+    + LotteryGoodLuckMinCoin : int = 1
+    + LotteryGoodLuckMaxCoin : int = 10
+    + RedlightCarCooldown : float = 3.0f
+    + RedlightSwitchInterval : float = 5.0f
+    + RedlightSpawnCarCount : int = 2
+    + RedlightMaxCarTypes : int = 3
+    + RedlightCoinDropChance : float = 0.30f
+    + RedlightCoffeeDropChance : float = 0.05f
+    + GoldenMonBreakPlatformCount : int = 2
+    + GoldenMonCoinDropMultiplier : int = 5
+    + GoldenMonBaseMinCoin : int = 10
+    + GoldenMonBaseMaxCoin : int = 20
+    + GoldenCardDropChance : float = 1.0f
+    + GhostWorkFadeDuration : float = 1.5f
+    + GhostWorkHauntRange : float = 6f
+    + GhostWorkTeleportCooldown : float = 5f
+    + GhostWorkBaseTeleportDistance : float = 2f
+    + GhostWorkHauntDamage : int = 5
+    + GhostWorkCoinDropChance : float = 0.45f
+    + GhostWorkGreenTeaDropChance : float = 0.15f
+    + MooPingFireDamage : int = 20
+    + MooPingSmokeRadius : float = 2.5f
+    + MooPingThrowCooldown : float = 2.2f
+    + MooPingPatternSpeed : float = 2.0f
+    + MooPingPatternWidth : float = 1.5f
+    + MooPingProjectileSpeed : float = 5f
+    + MooPingCoinDropChance : float = 0.20f
+    + MooPingCoffeeDropChance : float = 0.05f
+    + PeterHoverAmplitude : float = 0.25f
+    + PeterHoverSpeed : float = 2f
+    + PeterAttackRange : float = 4.5f
+    + PeterAttackCooldown : float = 2.5f
+    + PeterProjectileDamage : int = 10
+    + PeterProjectileSpeed : float = 4f
+    + PeterCoinDropChance : float = 0.25f
+    + PeterGreenTeaDropChance : float = 0.05f
+    + DoggoChaseSpeed : float = 2.5f
+    + DoggoBarkRange : float = 1.25f
+    + DoggoDamage : int = 15
+    + DoggoHauntRange : int = 5
+    + DoggoCoinDropChance : float = 0.30f
+    + GetStatsDebugString() : string
+}
+ScriptableObject <|-- EnemyData
+EnemyData --> "TypeID" EnemyType
+EnemyData --> "EnemySprite" Sprite
+EnemyData o-> "GoldenGuaranteedCardType" CardType
+
+class DoggoMon {
+    + <<override>> Move() : void
+    + ChasePlayer(player:Player) : void
+    + Stop() : void
+    + SetDirection(direction:Vector2) : void
+    + <<override>> ApplyCareerBuff(data:DuckCareerData) : void
+    + <<override>> Die() : void
+}
+Enemy <|-- DoggoMon
+
+class GhostWorkMon {
+    + TryTeleportAttack() : void
+    + <<override>> Attack() : void
+    + <<override>> Die() : void
+}
+Enemy <|-- GhostWorkMon
+
+class GoldenMon {
+    + <<override>> Move() : void
+    + DanceAttack() : void
+    + BreakPlatform() : void
+    + DropGoldenCoins() : void
+    + <<override>> Die() : void
+}
+Enemy <|-- GoldenMon
+
+class KahootMon {
+    + <<override>> ApplyCareerBuff(data:DuckCareerData) : void
+    + <<override>> Attack() : void
+    + ShowQuestion() : void
+    + FireBlock(color:Color) : void
+    + ActivateEffect(player:Player) : void
+    + DoubleSpeedMode() : void
+    + <<override>> Die() : void
+}
+Enemy <|-- KahootMon
+
+class LotteryMon {
+    + <<override>> Attack() : void
+    + ApplyGoodLuck(player:Player) : void
+    + ApplyBadLuck(player:Player) : void
+    + <<override>> ApplyCareerBuff(data:DuckCareerData) : void
+    + <<override>> Die() : void
+}
+Enemy <|-- LotteryMon
+
+class MamaMon {
+    + <<override>> Attack() : void
+    + BoilSplash() : void
+    + RecoverHP() : void
+    + <<override>> Die() : void
+}
+Enemy <|-- MamaMon
+
+class MooPingMon {
+    + <<override>> Move() : void
+    + ChasePlayer(player:Player) : void
+    + Stop() : void
+    + SetDirection(direction:Vector2) : void
+    + <<override>> ApplyCareerBuff(data:DuckCareerData) : void
+    + <<override>> DisableBehavior(duration:float) : void
+    + <<override>> Die() : void
+}
+Enemy <|-- MooPingMon
+
+class RedlightMon {
+    + <<override>> Attack() : void
+    + SpawnCarAttack() : void
+    + SwitchLightState() : void
+    + WarnPlayer() : void
+    + ForceSignalState(state:string, forcePermanent:bool) : void
+    + <<override>> Die() : void
+}
+Enemy <|-- RedlightMon
+
+class PeterMon {
+    + <<override>> Move() : void
+    + <<override>> ApplyCareerBuff(data:DuckCareerData) : void
+    + <<override>> DisableBehavior(duration:float) : void
+    + <<override>> Die() : void
+}
+Enemy <|-- PeterMon
+
+Character <|-- Enemy
+IAttackable <|-- Enemy
+Enemy --> "EnemyType" EnemyType
+
+class Projectile {
+    + PoolTag : string <<get>>
+    + SetDamage(amount:int) : void
+}
+MonoBehaviour <|-- Projectile
+
+class Currency {
+    + {static}  <<event>> OnCurrencyChanged : Action 
+    + Coin : int <<get>> <<set>>
+    + Token : int <<get>> <<set>>
+    + KeyMap : int <<get>> <<set>>
+    + Initialize(switcher:CareerSwitcher) : void
+    + AddCoin(amount:int) : void
+    + UseCoin(amount:int) : bool
+    + AddToken(amount:int) : void
+    + UseToken(amount:int) : bool
+    + AddKey(amount:int) : void
+    + UseKey(amount:int) : bool
+    + ResetAll() : void
+    + <<override>> ToString() : string
+}
+
+abstract class StoreBase {
+    + {abstract} StoreName : string <<get>>
+    + <<virtual>> Initialize(manager:StoreManager, injectedItems:List<StoreItem>) : void
+    + <<virtual>> GetItem(id:string) : StoreItem
+    + {abstract} Purchase(item:StoreItem) : bool
+    + <<virtual>> IsUnlocked(item:StoreItem) : bool
+}
+class "IReadOnlyList`1"<T> {
+}
+MonoBehaviour <|-- StoreBase
+StoreBase --> "StoreType" StoreType
+StoreBase --> "Items<StoreItem>" "IReadOnlyList`1"
+
+class StoreExchange {
+    + <<override>> StoreName : string <<get>>
+    + <<override>> Initialize(manager:StoreManager, itemList:List<StoreItem>) : void
+    + RenderToUI(slots:List<SlotUI>, iconCoin:Sprite, iconToken:Sprite, iconKeyMap:Sprite) : void
+    + <<override>> Purchase(item:StoreItem) : bool
+}
+StoreBase <|-- StoreExchange
+StoreExchange --> "StoreType" StoreType
+
+enum StoreCurrency {
+    Coin,
+    Token,
+    KeyMap,
+}
+class StoreItem {
+    + ID : string
+    + DisplayName : string
+    + Price : int = 1
+    + RewardAmount : int = 1
+    + UnlockedByDefault : bool = false
+    + UseLevelScaling : bool = false
+    + MaxLevel : int = 5
+    + PriceMultiplier : float = 1.5f
+}
+ScriptableObject <|-- StoreItem
+StoreItem --> "StoreType" StoreType
+StoreItem --> "Icon" Sprite
+StoreItem --> "SpendCurrency" StoreCurrency
+StoreItem --> "RewardCurrency" StoreCurrency
+StoreItem --> "mapType" MapType
+
+class StoreMap {
+    + <<override>> StoreName : string <<get>>
+    + <<override>> Initialize(manager:StoreManager, itemList:List<StoreItem>) : void
+    + RenderToUI(slots:List<SlotUI>) : void
+    + <<override>> Purchase(item:StoreItem) : bool
+    + GetSceneName(item:StoreItem) : string
+    + ForceUnlock(type:MapType) : void
+    + <<override>> IsUnlocked(item:StoreItem) : bool
+}
+class "Action`1"<T> {
+}
+StoreBase <|-- StoreMap
+StoreMap --> "StoreType" StoreType
+StoreMap --> "OnMapUnlockedEvent<string>" "Action`1"
+
+enum MapType {
+    None= 0,
+    School= 1,
+    RoadTraffic= 2,
+    Kitchen= 3,
+    All= 99,
+}
+class MapTypeExtensions <<static>> {
+    + {static} IsPlayableMap(mapType:MapType) : bool
+    + {static} ToSceneName(mapType:MapType) : string
+    + {static} FromSceneName(sceneName:string) : MapType
+    + {static} IsUniversal(mapType:MapType) : bool
+    + {static} ToFriendlyString(mapType:MapType) : string
+    + {static} DebugInfo(mapType:MapType) : string
+}
+
+class StoreUpgrade {
+    + <<override>> StoreName : string <<get>>
+    + <<override>> Initialize(manager:StoreManager, injectedItems:List<StoreItem>) : void
+    + RenderToUI(slots:List<SlotUI>) : void
+    + <<override>> Purchase(item:StoreItem) : bool
+    + <<override>> IsUnlocked(item:StoreItem) : bool
+    + GetLevel(item:StoreItem) : int
+    + SetLevel(item:StoreItem, newLevel:int) : void
+    + GetPrice(item:StoreItem) : int
+    + GetTotalHPBonus() : int
+    + SyncWithSave() : void
+}
+StoreBase <|-- StoreUpgrade
+StoreUpgrade --> "StoreType" StoreType
+
+enum StoreType {
+    None,
+    Exchange,
+    Upgrade,
+    Map,
+}
+
+class StoreManager {
+    + StoreManager(currency:Currency, progressData:GameProgressData)
+    + RegisterStore(store:StoreBase) : void
+    + Purchase(itemID:string) : bool
+}
+class "List`1"<T> {
+}
+StoreManager o-> "Stores<StoreBase>" "List`1"
+StoreManager --> "Currency" Currency
+StoreManager --> "ProgressData" GameProgressData
+
+abstract class MapGeneratorBase {
+    + WallPushSpeed : float <<get>> <<set>>
+    + IsPlatformBreakable : bool <<get>> <<set>>
+    + IsWallPushEnabled : bool <<get>> <<set>>
+    + <<virtual>> InitializeGenerators(pivot:Transform) : void
+    + {abstract} GenerateMap() : void
+    + <<virtual>> SetupBackground() : void
+    + <<virtual>> SetupFloor() : void
+    + <<virtual>> SpawnEnemies() : void
+    + <<virtual>> SpawnCollectibles() : void
+    + <<virtual>> SpawnAssets() : void
+    + <<virtual>> SpawnThrowables() : void
+    + <<virtual>> BreakRightmostPlatform() : void
+    + <<virtual>> WallUpdate() : void
+    + SetWallPushSpeed(speed:float) : void
+    + EnableWallPush(enabled:bool) : void
+    + <<virtual>> ClearAllObjects() : void
+}
+enum PlatformState {
+    Normal,
+    AscendingSteps,
+    DescendingSteps,
+    HillUp,
+    HillDown,
+}
+MonoBehaviour <|-- MapGeneratorBase
+MapGeneratorBase +-- PlatformState
+
+class MapGeneratorKitchen {
+    + <<override>> GenerateMap() : void
+    + <<override>> SetupBackground() : void
+    + <<override>> SetupFloor() : void
+}
+MapGeneratorBase <|-- MapGeneratorKitchen
+
+class MapGeneratorRoad {
+    + <<override>> GenerateMap() : void
+    + <<override>> SetupBackground() : void
+}
+MapGeneratorBase <|-- MapGeneratorRoad
+
+class MapGeneratorSchool {
+    + <<override>> GenerateMap() : void
+    + <<override>> SetupBackground() : void
+    + <<override>> SpawnEnemies() : void
+    + <<override>> SpawnCollectibles() : void
+    + <<override>> SpawnAssets() : void
+    + <<override>> SpawnThrowables() : void
+}
+MapGeneratorBase <|-- MapGeneratorSchool
+
+class SceneManager <<sealed>> {
+    + {static}  <<event>> OnSceneInitialized : System.Action 
+    + Inject(gen:MapGeneratorBase, player:Player) : void
+    + TryInitializeScene() : void
+    + GetCurrentSceneName() : string
+    + GetCurrentMapType() : MapType
+    + IsInitialized : bool <<get>>
+    + GetMapGenerator() : MapGeneratorBase
+    + ClearSceneObjects() : void
+}
+MonoBehaviour <|-- SceneManager
+
 @enduml
