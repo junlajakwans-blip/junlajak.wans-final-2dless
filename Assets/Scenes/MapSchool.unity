@@ -538,11 +538,11 @@ MonoBehaviour:
   _maxPlatformCount: 10
   _generationPivot: {fileID: 2062886183}
   _platformWidth: 11.77
-  _minXOffset: 0.5
-  _maxXOffset: 1
-  _minYOffset: -0.01
-  _maxYOffset: 0.05
-  _collectibleOffset: 0.2
+  _minXOffset: 1.8
+  _maxXOffset: 3.1
+  _minYOffset: 0.05
+  _maxYOffset: 2.4
+  _collectibleOffset: 0.25
   _currentPlatformState: 0
   _stepsRemaining: 0
   _floorY: -0.8
@@ -863,14 +863,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CoinTrailGenerator
   _coinKey: Coin
-  _minCoins: 6
-  _maxCoins: 30
-  _xStep: 5
+  _minCoins: 8
+  _maxCoins: 14
+  _xStep: 1.3
   _yStep: 1
   groundLayer:
     serializedVersion: 2
     m_Bits: 2048
-  groundRayDistance: 20
+  groundRayDistance: 10
   coinYOffset: 0.6
 --- !u!4 &2093980297
 Transform:

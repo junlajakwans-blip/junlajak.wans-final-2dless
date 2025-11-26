@@ -251,18 +251,25 @@ public class CareerSwitcher : MonoBehaviour, ICareerSwitchable
         // แจ้ง CardManager reset cycle & unlock cards
         OnResetCareerCycle?.Invoke();
 
-        _currentCareer = _defaultCareer;
+        _fxPlayer?.StopAllEffects();
+        
 
-        // 🛑 หยุด / เคลียร์ FX ของอาชีพที่เพิ่งหมดเวลาก่อน
+        //  หยุด / เคลียร์ FX ของอาชีพที่เพิ่งหมดเวลาก่อน
         if (_fxPlayer != null)
-            _fxPlayer.StopAllEffects(); // <<< สำคัญมาก
+            _fxPlayer.StopAllEffects();
+
+        _currentCareer = _defaultCareer;
 
         // 🔄 เซ็ต FX Profile ให้กลับเป็น Duckling
         var duckEntry = _careerBodyMaps.Find(m => m.careerID == DuckCareer.Duckling);
-        if (_fxPlayer != null && duckEntry != null && duckEntry.fxProfile != null)
-            _fxPlayer.SetFXProfile(duckEntry.fxProfile);
+        if (duckEntry != null && duckEntry.fxProfile != null)
+        _fxPlayer.SetFXProfile(duckEntry.fxProfile);
 
         ApplyCareerAppearance();
+
+          if (_fxPlayer != null && duckEntry != null && duckEntry.fxProfile != null)
+        _fxPlayer.SetFXProfile(duckEntry.fxProfile);
+        
         OnCareerChanged(_defaultCareer);
 
         StartCoroutine(CooldownRoutine());

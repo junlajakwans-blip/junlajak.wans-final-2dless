@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 5297417206172577772}
   - component: {fileID: 2817665938550571944}
   - component: {fileID: 7543242060090717486}
+  - component: {fileID: -646382821596330446}
   m_Layer: 11
   m_Name: map_asset_School_BreakPlatform
   m_TagString: BreakPlatform
@@ -88,7 +89,7 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1985412070005020694}
-  m_BodyType: 2
+  m_BodyType: 1
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
@@ -107,6 +108,21 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!114 &-646382821596330446
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1985412070005020694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e2b4ed73ac505347a3c903cfb92b9cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BreakPlatform
+  delayBeforeFall: 0.35
+  fallGravity: 2.5
+  despawnDelay: 2
 --- !u!1 &6825612107079907467
 GameObject:
   m_ObjectHideFlags: 0

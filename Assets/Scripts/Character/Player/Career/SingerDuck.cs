@@ -4,14 +4,6 @@ using System.Collections;
 [CreateAssetMenu(menuName = "DUFFDUCK/Skill/SingerSkill_Full")]
 public class SingerSkill : CareerSkillBase
 {
-    #region Summary
-    // Singer – Crowd Control / High-Tier Utility career (ID 9, Tier S)
-    // Skill (Sonic Quack): Stun all enemies on screen + 50% chance to spawn GoldenMon
-    // BuffMon: None
-    // BuffMap: +2% GoldenMon spawn chance after enemy death (stacking)
-    #endregion
-
-    #region Fields
     [Header("FX")]
     [SerializeField] private GameObject _micFx;
     [SerializeField] private GameObject _highNoteFx;
@@ -31,37 +23,43 @@ public class SingerSkill : CareerSkillBase
 
     private bool _isSkillActive;
     private bool _isCooldown;
-    private bool _mapBuffActive;   // +2% GoldenMon Chance
+    private bool _mapBuffActive;
     private Coroutine _routine;
-    #endregion
+    private CareerSwitcher _switcherRef;
 
-    #region Initialize (BuffMap)
     public override void Initialize(Player player)
     {
-        // Singer ไม่มี BuffMon
-        // เปิด BuffMap ให้ระบบ GameManager / EnemySpawner ตรวจสอบตอนศัตรูตาย
         _mapBuffActive = true;
 
-        if (player.TryGetComponent<CareerSwitcher>(out var switcher))
-            switcher.OnRevertToDefaultEvent += () => Cleanup(player);
+        if (player.TryGetComponent(out _switcherRef))
+        {
+            _switcherRef.OnRevertToDefaultEvent -= HandleRevert; // ป้องกันสมัครซ้ำ
+            _switcherRef.OnRevertToDefaultEvent += HandleRevert;
+        }
     }
 
-    public bool IsMapBuffActive => _mapBuffActive;
-    #endregion
-
-    #region Cleanup
-    public override void Cleanup(Player player)
+    private void HandleRevert()
     {
+        // ถูกเรียกโดย CardManager / Switcher เมื่อกลับ Duckling
+        _mapBuffActive = false;
         _isSkillActive = false;
         _isCooldown = false;
+    }
+
+    public override void Cleanup(Player player)
+    {
         _mapBuffActive = false;
+        _isSkillActive = false;
+        _isCooldown = false;
 
         if (_routine != null)
             player.StopCoroutine(_routine);
-    }
-    #endregion
 
-    #region UseSkill (Sonic Quack)
+        // ถอน event ที่สมัครไว้
+        if (_switcherRef != null)
+            _switcherRef.OnRevertToDefaultEvent -= HandleRevert;
+    }
+
     public override void UseCareerSkill(Player player)
     {
         if (_isSkillActive || _isCooldown) return;
@@ -72,19 +70,13 @@ public class SingerSkill : CareerSkillBase
     {
         _isSkillActive = true;
 
-        // ----------------
-        // [SkillFX]
-        // ----------------
-        if (player.FXProfile != null && player.FXProfile.skillFX != null)
-        {
+        if (player.FXProfile?.skillFX != null)
             ComicEffectManager.Instance.Play(player.FXProfile.skillFX, player.transform.position);
-        }
-        // ----------------
 
         if (_micFx != null)
             Object.Instantiate(_micFx, player.transform.position, Quaternion.identity);
 
-        StunAllEnemies(player);
+        StunAllEnemies();
         TrySpawnGoldenMon(player);
 
         yield return new WaitForSeconds(_skillDuration);
@@ -99,68 +91,48 @@ public class SingerSkill : CareerSkillBase
         yield return new WaitForSeconds(_skillCooldown);
         _isCooldown = false;
     }
-    #endregion
 
-    #region Skill Effects
-    private void StunAllEnemies(Player player)
+    private void StunAllEnemies()
     {
-        Enemy[] enemies = Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None);
-        foreach (var e in enemies)
-            e.DisableBehavior(_stunDuration);   // ใช้ stun ดีกว่า confuse
+        foreach (var e in Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None))
+            e.DisableBehavior(_stunDuration);
     }
 
     private void TrySpawnGoldenMon(Player player)
     {
         if (Random.value >= _goldenMonSpawnChance) return;
 
-        EnemySpawner spawner = Object.FindFirstObjectByType<EnemySpawner>();
-        if (spawner != null)
+        var sp = Object.FindFirstObjectByType<EnemySpawner>();
+        if (sp != null)
         {
             Vector3 pos = player.transform.position + Vector3.right * 2f;
-            spawner.SpawnSpecificEnemy(EnemyType.GoldenMon, pos);
+            sp.SpawnSpecificEnemy(EnemyType.GoldenMon, pos);
         }
     }
-    #endregion
 
-    #region Attack (High Note / Diva)
     public override void PerformAttack(Player player)
     {
-        // ----------------
-        // [AttackFX]
-        // ----------------
-        if (player.FXProfile != null && player.FXProfile.basicAttackFX != null)
-        {
+        if (player.FXProfile?.basicAttackFX != null)
             ComicEffectManager.Instance.Play(player.FXProfile.basicAttackFX, player.transform.position);
-        }
-        // ----------------
 
         if (_highNoteFx != null)
             Object.Instantiate(_highNoteFx, player.transform.position, Quaternion.identity);
 
-        Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, _highNoteRange);
-        foreach (var h in hits)
-            if (h.TryGetComponent<IDamageable>(out var t) && h.GetComponent<Player>() == null)
+        foreach (var h in Physics2D.OverlapCircleAll(player.transform.position, _highNoteRange))
+            if (h.TryGetComponent<IDamageable>(out var t) && !h.TryGetComponent<Player>(out _))
                 t.TakeDamage(15);
     }
 
     public override void PerformChargeAttack(Player player)
     {
-        // ----------------
-        // [ChargeFX (ExtraFX)]
-        // ----------------
-        if (player.FXProfile != null && player.FXProfile.extraFX != null)
-        {
+        if (player.FXProfile?.extraFX != null)
             ComicEffectManager.Instance.Play(player.FXProfile.extraFX, player.transform.position);
-        }
-        // ----------------
 
         float power = player.GetChargePower();
         float range = Mathf.Lerp(_divaMinRange, _divaMaxRange, power);
 
-        Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, range);
-        foreach (var h in hits)
-            if (h.TryGetComponent<IDamageable>(out var t) && h.GetComponent<Player>() == null)
+        foreach (var h in Physics2D.OverlapCircleAll(player.transform.position, range))
+            if (h.TryGetComponent<IDamageable>(out var t) && !h.TryGetComponent<Player>(out _))
                 t.TakeDamage(25);
     }
-    #endregion
 }
