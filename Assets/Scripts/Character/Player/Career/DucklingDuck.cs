@@ -8,7 +8,6 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "DUFFDUCK/Skill/DucklingSkill")]
 public class DucklingSkill : CareerSkillBase
 {
-    [SerializeField] private GameObject _bonkEffect;   
     #region Summary
     // Duckling – Default starter career (ID 0)
     // No Skill, No BuffMon, No BuffMap.
@@ -41,8 +40,6 @@ public class DucklingSkill : CareerSkillBase
         {
             ComicEffectManager.Instance.Play(player.FXProfile.basicAttackFX, player.transform.position);
         }
-        if (_bonkEffect != null)
-        Object.Instantiate(_bonkEffect, player.transform.position, Quaternion.identity);
         // ---------------------------------------------------------
 
         // Overlap 1 block

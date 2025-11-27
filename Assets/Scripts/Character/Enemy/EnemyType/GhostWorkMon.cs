@@ -88,8 +88,7 @@ public class GhostWorkMon : Enemy
     {
         if (_isDead) return;
         _isDead = true;
-        StopAllCoroutines();
-        
+
         CollectibleSpawner spawner = _spawnerRef;
          Vector3 enemyDeathPosition = transform.position;
         
