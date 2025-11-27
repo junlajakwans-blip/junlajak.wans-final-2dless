@@ -107,8 +107,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc44c2a75f235b248abdc89c0e940626, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MamaMon
-  _maxHealth: 30
-  _currentHealth: 0
+  _maxHealth: 10
+  _currentHealth: 10
   _moveSpeed: 3.5
   _rigidbody: {fileID: -5937522036954992674}
   _animator: {fileID: 0}

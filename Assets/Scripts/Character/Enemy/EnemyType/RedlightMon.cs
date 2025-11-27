@@ -192,7 +192,7 @@ public class RedlightMon : Enemy
         {
             Debug.LogWarning("[RedlightMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
         }
-        OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
+        base.Die();
     }
     #endregion
 }

@@ -86,16 +86,22 @@ public class ObjectPoolManager : MonoBehaviour, IObjectPool
 
     public virtual void ReturnToPool(string objectTag, GameObject obj)
     {
+        // 1) Clean the tag BEFORE checking dictionary
+        objectTag = objectTag.Replace("(Clone)", "").Trim();
+
+        // 2) Safe guard
         if (!_poolDictionary.ContainsKey(objectTag))
         {
-            Debug.LogWarning($"[Pool] Trying to return object '{objectTag}' that has no pool.");
+            Debug.LogWarning($"❌ [POOL ERROR] Missing pool for: {objectTag}");
             Destroy(obj);
             return;
         }
 
+        // 3) Reset & return
         obj.SetActive(false);
         _poolDictionary[objectTag].Enqueue(obj);
     }
+
 
     public virtual void ClearPool()
     {

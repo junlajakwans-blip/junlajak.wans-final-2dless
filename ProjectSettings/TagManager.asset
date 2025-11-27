@@ -12,6 +12,9 @@ TagManager:
   - Platform
   - BreakPlatform
   - ThrowItem
+  - Obstacle
+  - Collectible
+  - MainEventSystem
   layers:
   - Default
   - TransparentFX

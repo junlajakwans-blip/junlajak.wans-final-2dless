@@ -48,6 +48,10 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     [SerializeField] protected bool _hasMapBuff;
     [SerializeField] protected float _buffMultiplier = 1.0f;
 
+    [Header("Defense State")]
+    [SerializeField] private bool _isInvulnerable = false;
+    public bool IsInvulnerable => _isInvulnerable;
+
     [Header("UI References")]
     [SerializeField] private HealthBarUI _healthBarUI;
     public event System.Action<int> OnCoinCollected;
@@ -354,8 +358,25 @@ public override void Move(Vector2 direction)
     public override void TakeDamage(int amount)
     {
         if (_isDead) return;
+        
+        // ตรวจสอบสถานะ Invulnerability
+        if (_isInvulnerable)
+        {
+            Debug.Log($"[Player] IGNORED {amount} damage (Invulnerable).");
+            return; 
+        }
 
-        _currentHealth -= amount;
+        //  Original Check (ย้ายมาไว้ข้างในเพื่อให้นำ Skill Check ไปใช้ได้)
+        if (CurrentCareerSkill != null)
+        {
+            //  ตรวจสอบ MotorcycleSkill.OnTakeDamage(this, amount) ที่มีโอกาส Immune 15%
+            CurrentCareerSkill?.OnTakeDamage(this, amount); 
+            return; // **สำคัญ**: ตรรกะของ CareerSkill.OnTakeDamage ต้องตัดสินใจว่าจะเรียก player.TakeDamage(dmg) ต่อไปเองหรือไม่
+        }
+
+        // Fallback: ถ้าไม่มี CareerSkill.OnTakeDamage
+        _currentHealth -= amount; 
+        
         if (_currentHealth <= 0)
         {
             _currentHealth = 0;
@@ -364,11 +385,7 @@ public override void Move(Vector2 direction)
 
         _healthBarUI?.UpdateHealth(_currentHealth);
         Debug.Log($"[Player] Took {amount} damage. HP: {_currentHealth}/{_maxHealth}");
-
-        if (CurrentCareerSkill != null)
-        CurrentCareerSkill?.OnTakeDamage(this, amount);
     }
-
     /// <summary>
     /// Player – Default form (no passive heal)
     /// Only way to Heal Player or some career must use BuffItem when Icollectable
@@ -389,6 +406,17 @@ public override void Move(Vector2 direction)
         _isDead = false;
         _currentHealth = Mathf.Clamp(reviveHP, 1, _maxHealth);
         // อัปเดต UI / animation ถ้ามี
+    }
+
+
+    /// <summary>
+    /// Sets the player's invulnerability state.
+    /// </summary>
+    public void SetInvulnerable(bool state)
+    {
+        _isInvulnerable = state;
+        // 💡 หากต้องการเพิ่ม feedback เช่น การกะพริบ, ให้เรียกใช้ที่นี่
+        Debug.Log($"[Player] Invulnerability set to: {state}");
     }
 
 
@@ -568,6 +596,7 @@ public override void Move(Vector2 direction)
         // ถ้าไม่มีสกิล (Duckling หรือ career ไม่เซ็ต) → เงียบ ๆ ไม่ทำอะไร ไม่ error
         if (skill == null)
         {
+            Debug.Log($"{CurrentCareerID} did't haveskill");
             return;
         }
 

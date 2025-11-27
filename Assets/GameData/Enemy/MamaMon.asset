@@ -14,18 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   _typeID: 7
   _displayName: MamaMon
-  _baseHealth: 30
-  _baseAttackPower: 5
-  _baseMovementSpeed: 1.5
+  _baseHealth: 10
+  _baseAttackPower: 2
+  _baseMovementSpeed: 0.5
   _baseDetectionRange: 5
   _coinDropAmount: 1
   _enemySprite: {fileID: -8211018948725580446, guid: 91c1980dcc54a18468593d496e6c2349, type: 3}
-  MamaNoodleCount: 3
-  MamaAttackCooldown: 2
-  MamaBoilRange: 4
-  MamaBoilDamage: 10
-  MamaProjectileSpeed: 5
-  MamaProjectileDamage: 15
+  MamaNoodleCount: 1
+  MamaAttackCooldown: 3
+  MamaBoilRange: 2
+  MamaBoilDamage: 1
+  MamaProjectileSpeed: 1
+  MamaProjectileDamage: 2
   MamaHealChance: 0.1
   MamaHealCooldown: 8
   MamaCoinDropChance: 0.35

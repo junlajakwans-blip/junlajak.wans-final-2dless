@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4648569982965011155}
   m_Layer: 10
   m_Name: Coffee
-  m_TagString: Untagged
+  m_TagString: Collectible
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

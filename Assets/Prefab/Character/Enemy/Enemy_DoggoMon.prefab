@@ -84,7 +84,7 @@ MonoBehaviour:
   _data: {fileID: 11400000, guid: cb089019ee3808e429869f6672ec9494, type: 2}
   _target: {fileID: 3180083276177619504, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   _enemyType: 4
-  SpawnWeight: 30
+  SpawnWeight: 35
   _isDisabled: 0
   CanDetectOverride: 1
 --- !u!60 &7004047541957242172

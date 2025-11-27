@@ -41,6 +41,8 @@ public class MuscleSkill : CareerSkillBase
         _currentCooldown = _baseCooldown;
         _usesThisRound = 0;
 
+        player.SetInvulnerable(true);
+
         ApplyRoarMapBuff(player);
 
         Debug.Log("[MuscleSkill] Passive initialized: Immortal + Coin×2 (all maps).");
@@ -186,6 +188,7 @@ public class MuscleSkill : CareerSkillBase
         if (_skillRoutine != null)
             player.StopCoroutine(_skillRoutine);
 
+        player.SetInvulnerable(false);
         Debug.Log("[MuscleSkill] Cleanup complete.");
     }
     #endregion

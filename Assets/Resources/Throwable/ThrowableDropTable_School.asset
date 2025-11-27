@@ -27,7 +27,7 @@ MonoBehaviour:
   - id: map_ThrowItem_School_Clock_2
     assetName: Clock
     poolTag: map_ThrowItem_School_Clock
-    weight: 10
+    weight: 40
     icon: {fileID: 2780355898179003121, guid: 1ab9de51e2c379d4b9bcd238eda1b419, type: 3}
   - id: map_ThrowItem_School_Folder_3
     assetName: Folder
@@ -37,15 +37,15 @@ MonoBehaviour:
   - id: map_ThrowItem_School_Mug_4
     assetName: Mug
     poolTag: map_ThrowItem_School_Mug
-    weight: 5
+    weight: 30
     icon: {fileID: 5695924539099090374, guid: 220adf71c18367948b3331079730634d, type: 3}
   - id: map_ThrowItem_School_Notebook_5
     assetName: Notebook
     poolTag: map_ThrowItem_School_Notebook
-    weight: 10
+    weight: 20
     icon: {fileID: -3069591491519139557, guid: e58f4eae652d9d64e9399b1d2e53ca5f, type: 3}
   - id: map_ThrowItem_School_Pen_6
     assetName: Pen
     poolTag: map_ThrowItem_School_Pen
-    weight: 5
+    weight: 15
     icon: {fileID: 93245684810914057, guid: aec2803b019f1df48826d155b9a3ddaa, type: 3}

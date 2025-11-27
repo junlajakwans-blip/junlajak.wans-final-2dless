@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   _typeID: 3
   _displayName: LottryMon
-  _baseHealth: 20
+  _baseHealth: 10
   _baseAttackPower: 6
   _baseMovementSpeed: 1.5
   _baseDetectionRange: 5

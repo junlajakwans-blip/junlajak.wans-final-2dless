@@ -228,8 +228,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd776a3588f690848bc7ad464a40ffba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PeterMon
-  _maxHealth: 50
-  _currentHealth: 0
+  _maxHealth: 10
+  _currentHealth: 10
   _moveSpeed: 3.5
   _rigidbody: {fileID: 7177338774800372511}
   _animator: {fileID: 0}

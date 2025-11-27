@@ -106,8 +106,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c42e64cbac232946bbd7cb2d1e2413e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedlightMon
-  _maxHealth: 50
-  _currentHealth: 0
+  _maxHealth: 10
+  _currentHealth: 10
   _moveSpeed: 3.5
   _rigidbody: {fileID: 504585275588700058}
   _animator: {fileID: 0}

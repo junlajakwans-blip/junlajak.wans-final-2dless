@@ -107,9 +107,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66f38d6c2e9247949bb4be216a085bc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KahootMon
-  _maxHealth: 30
-  _currentHealth: 30
-  _moveSpeed: 3.5
+  _maxHealth: 10
+  _currentHealth: 10
+  _moveSpeed: 2
   _rigidbody: {fileID: 7515110630794668540}
   _animator: {fileID: 0}
   _visualRoot: {fileID: 3147309938224664192}

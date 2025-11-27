@@ -20,7 +20,7 @@ MonoBehaviour:
   _skillIcon: {fileID: 0}
   _skillDescription: 
   _careerSkill: {fileID: 11400000, guid: 9a440b1d278fc9746a89993740284a6e, type: 2}
-  _baseHealth: 100
+  _baseHealth: 200
   _baseSpeed: 0
   _cardType: 1
   _careerIcon: {fileID: -8679237763749255768, guid: 1aa9d36b7e98456448af4aa2f752878c, type: 3}

@@ -326,8 +326,16 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1109110456559917266, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
+      propertyPath: _maxSpeed
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1109110456559917266, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
       propertyPath: _pushSpeed
-      value: 2
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1109110456559917266, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
+      propertyPath: _acceleration
+      value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 2834084880469090607, guid: b283e5ef7ca2ed240847fb5f6cf17b72, type: 3}
       propertyPath: m_LocalScale.x
@@ -982,7 +990,13 @@ MonoBehaviour:
   _spawnInterval: 1
   _maxEnemies: 3
   _currentWaveCount: 0
-  _activeEnemies: []
+  _activeEnemies:
+  - {fileID: 3679138491074812253, guid: 4704439c2f1fb5140a50ed91a96403cf, type: 3}
+  - {fileID: 6417080718696356904, guid: 581cf72d0a2755f44b896dd936e765c2, type: 3}
+  - {fileID: 1565291614927048749, guid: 978421387daef8948be61e5d5695cde5, type: 3}
+  - {fileID: 2325540279114266656, guid: a65a92ef880f2604ab9eadd91cbc972c, type: 3}
+  - {fileID: 6382190799963839869, guid: 2eb6375df96e96e4c91ab3ba46d87879, type: 3}
+  - {fileID: 3359114595578432427, guid: 61867ba28e45cc24d8e454e07ecbd645, type: 3}
   _cullingManager: {fileID: 2100565030}
   _player: {fileID: 8952884402048639063, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   _collectibleSpawner: {fileID: 3128689819189778724}
@@ -1002,8 +1016,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 2
-      outSlope: 2
+      inSlope: 0
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0

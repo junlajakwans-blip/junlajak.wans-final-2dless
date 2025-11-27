@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   _typeID: 1
   _displayName: KahootMon
-  _baseHealth: 30
+  _baseHealth: 5
   _baseAttackPower: 5
   _baseMovementSpeed: 1.5
   _baseDetectionRange: 5
@@ -31,7 +31,7 @@ MonoBehaviour:
   MamaCoinDropChance: 0.35
   MamaGreenTeaDropChance: 0.1
   KahootAttackInterval: 3
-  KahootBlockSpeed: 6
+  KahootBlockSpeed: 3
   KahootBlockDamage: 5
   KahootSpeedDuration: 3
   KahootSlowModifier: 0.4

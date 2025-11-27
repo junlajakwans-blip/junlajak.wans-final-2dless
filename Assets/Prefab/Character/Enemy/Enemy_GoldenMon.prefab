@@ -196,7 +196,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26d119aaf8c10d9498645cc47dff1736, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GoldenMon
-  _maxHealth: 20
+  _maxHealth: 10
   _currentHealth: 10
   _moveSpeed: 3.5
   _rigidbody: {fileID: -8582135991359644507}

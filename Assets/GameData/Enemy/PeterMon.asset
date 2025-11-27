@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   _typeID: 6
   _displayName: PeterMon
-  _baseHealth: 20
+  _baseHealth: 10
   _baseAttackPower: 10
   _baseMovementSpeed: 1.5
   _baseDetectionRange: 5

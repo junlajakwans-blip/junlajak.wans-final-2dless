@@ -107,7 +107,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49dae77697187ba4b86c21c608ff30fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LotteryMon
-  _maxHealth: 20
+  _maxHealth: 10
   _currentHealth: 20
   _moveSpeed: 3.5
   _rigidbody: {fileID: -3156925987863832518}

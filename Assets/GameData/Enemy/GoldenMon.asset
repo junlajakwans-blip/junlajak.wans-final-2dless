@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   _typeID: 9
   _displayName: GoldenMon
-  _baseHealth: 20
-  _baseAttackPower: 10
+  _baseHealth: 10
+  _baseAttackPower: 2
   _baseMovementSpeed: 1.5
   _baseDetectionRange: 5
   _coinDropAmount: 1

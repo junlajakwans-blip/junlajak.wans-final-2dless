@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   _typeID: 2
   _displayName: GhostWorkMon
-  _baseHealth: 30
-  _baseAttackPower: 8
+  _baseHealth: 10
+  _baseAttackPower: 2
   _baseMovementSpeed: 1
   _baseDetectionRange: 5
   _coinDropAmount: 1

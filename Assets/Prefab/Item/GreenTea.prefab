@@ -103,7 +103,7 @@ GameObject:
   - component: {fileID: 2041876380077582583}
   m_Layer: 10
   m_Name: GreenTea
-  m_TagString: Untagged
+  m_TagString: Collectible
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

@@ -4,7 +4,7 @@ using UnityEngine;
 public class Projectile : MonoBehaviour
 {
     [Header("Damage")]
-    [SerializeField] private int _damageAmount = 10;
+    [SerializeField] private int _damageAmount = 2;
 
     [Header("Lifetime")]
     [SerializeField] private float _lifetime = 3f;
@@ -57,6 +57,7 @@ public class Projectile : MonoBehaviour
     // enemy / player hit
     private void OnTriggerEnter2D(Collider2D other)
     {
+        // เข้า Player → โดน
         if (other.TryGetComponent<Player>(out var player))
         {
             player.TakeDamage(_damageAmount);
@@ -64,22 +65,19 @@ public class Projectile : MonoBehaviour
             return;
         }
 
+        // เข้า Enemy → ถ้ามาจากศัตรู อย่าทำ Damage ฝั่งเดียวกัน
         if (other.TryGetComponent<Enemy>(out var enemy))
         {
-            enemy.TakeDamage(_damageAmount);
-            Despawn();
+            // ยิงโดนเพื่อนศัตรู? ให้ลอยผ่าน
             return;
         }
 
-        // Ground / walls / misc
+        // ชนพื้นหรือกำแพง → แตก
         if (other.CompareTag("Ground") || other.CompareTag("Obstacle"))
         {
             Despawn();
             return;
         }
-
-        // fallback — ไม่ให้ค้างลอย
-        Despawn();
     }
 
     private void Despawn()

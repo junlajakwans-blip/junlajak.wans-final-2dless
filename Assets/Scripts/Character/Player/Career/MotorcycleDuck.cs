@@ -74,8 +74,15 @@ public class MotorcycleSkill : CareerSkillBase
         if (_dashEffect != null)
             Object.Instantiate(_dashEffect, player.transform.position, Quaternion.identity);
 
+        // เปิด Invulnerability ก่อนพุ่ง
+        player.SetInvulnerable(true); 
+
         player.ApplySpeedModifier(_dashMultiplier, _dashDuration);
+        
         yield return new WaitForSeconds(_dashDuration);
+
+        // ปิด Invulnerability เมื่อ Dash สิ้นสุด
+        player.SetInvulnerable(false); 
     }
     #endregion
 

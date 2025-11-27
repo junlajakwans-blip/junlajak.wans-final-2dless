@@ -228,8 +228,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d417cb61b017adf409feae8edb99bd39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MooPingMon
-  _maxHealth: 40
-  _currentHealth: 0
+  _maxHealth: 10
+  _currentHealth: 10
   _moveSpeed: 3.5
   _rigidbody: {fileID: 5723300370534533067}
   _animator: {fileID: 0}

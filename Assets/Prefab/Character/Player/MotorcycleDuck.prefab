@@ -101,7 +101,7 @@ PrefabInstance:
     - target: {fileID: 452335919761276993, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
       propertyPath: _ducklingRenderer
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 5028267733204602733}
     - target: {fileID: 452335919761276993, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
       propertyPath: _careerBodyMaps.Array.data[6].bodyPrefab
       value: 

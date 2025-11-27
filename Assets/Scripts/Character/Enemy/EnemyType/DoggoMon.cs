@@ -138,6 +138,7 @@ public class DoggoMon : Enemy // IMoveable is redundant as Enemy already provide
         {
             Debug.LogWarning("[DoggoMon] CollectibleSpawner NOT INJECTED! Cannot drop item.");
         }
+        base.Die();
         OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
     }
 #endregion

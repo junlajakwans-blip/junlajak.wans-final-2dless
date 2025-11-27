@@ -11,6 +11,10 @@ namespace DuffDuck.Stage
 [RequireComponent(typeof(Collider2D))]
 public class WallPushController : MonoBehaviour
 {
+    [Header("Speed Growth")]
+    [SerializeField] private float _acceleration = 0.05f; // ความเร็วเพิ่มต่อวินาที
+    [SerializeField] private float _maxSpeed = 8f; // กันหลุด
+
     [Header("Settings")]
     [SerializeField] private float _pushSpeed = 1.0f; // overwritten by MapGenerator
     [SerializeField] private bool _isPushing = true;
@@ -30,10 +34,26 @@ public class WallPushController : MonoBehaviour
         // เช็คสถานะก่อนเคลื่อนที่
         if (!_isPushing) return; 
 
+        // เร่งความเร็วตามเวลา
+        _pushSpeed += _acceleration * Time.deltaTime;
+        _pushSpeed = Mathf.Min(_pushSpeed, _maxSpeed);
+
         // Move horizontally only (ใช้ Time.deltaTime ใน Update() เพื่อให้การเคลื่อนที่ราบรื่น)
         transform.Translate(Vector3.right * _pushSpeed * Time.deltaTime);
     }
     
+    private void LateUpdate()
+    {
+        if (!_isPushing || _player == null) return;
+
+        float dist = _player.position.x - transform.position.x;
+
+        float targetSpeed = Mathf.Lerp(1f, 8f, dist / 60f); // ปรับได้
+        _pushSpeed = Mathf.MoveTowards(_pushSpeed, targetSpeed, Time.deltaTime * 2f);
+
+        transform.Translate(Vector3.right * _pushSpeed * Time.deltaTime);
+    }
+
 
     /// <summary>
     /// Called by MapGeneratorBase to sync speed and toggle state

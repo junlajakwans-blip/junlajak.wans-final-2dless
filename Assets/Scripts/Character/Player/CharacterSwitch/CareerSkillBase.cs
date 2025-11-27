@@ -4,11 +4,17 @@ public abstract class CareerSkillBase : ScriptableObject
 {
     [Header("FX Profile")]
     public CareerEffectProfile FXProfile;
+    
+    protected bool _initialized = false;
+    public bool IsInitialized => _initialized;
+
     /// <summary>
     /// เรียกเมื่อเริ่มอาชีพ
     /// </summary>
-    /// <param name="player"></param>
-    public virtual void Initialize(Player player) {}    
+    public virtual void Initialize(Player player)
+    {
+        _initialized = true; // 🔥 Prevent double initialization
+    }
 
     /// <summary>
     /// เรียกเมื่อใช้สกิล (QWER / Key Input / Card หรือระบบอื่น ๆ)

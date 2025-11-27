@@ -65,7 +65,17 @@ public class StoreUpgrade : StoreBase
         // level up
         int newLevel = currentLevel + 1;
         upgradeLevels[item.ID] = newLevel;
-        _manager.ProgressData.UpgradeLevels[item.ID] = newLevel;
+        _manager.ProgressData.SetUpgradeLevel(item.ID, newLevel);
+
+        if (SaveSystem.Instance != null)
+        {
+            SaveSystem.Instance.SaveData();
+            // Note: SaveSystem.Instance ถูกตั้งค่าเป็น Singleton และ DontDestroyOnLoad
+        }
+        else
+        {
+            Debug.LogError("[StoreUpgrade] SaveSystem Instance is null! Data not saved.");
+        }
 
         Debug.Log($"[StoreUpgrade] {item.DisplayName} → Lv {newLevel}/{item.MaxLevel}");
         return true;

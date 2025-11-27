@@ -117,6 +117,7 @@ public class GhostWorkMon : Enemy
         {
             Debug.LogWarning("[GhostWorkMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
         }
+        base.Die();
         OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
     }
     #endregion

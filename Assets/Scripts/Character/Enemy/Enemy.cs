@@ -63,17 +63,31 @@ public abstract class Enemy : Character, IAttackable
 
     protected virtual void Update()
     {
-         UpdateFear();
-         
+        if (_isDead)
+        return; 
+
+        // ถ้าตกจากฉาก
+        if (transform.position.y < -10f)
+        {
+            Die();
+            return;
+        }
+
+        if (_isDisabled) return;
         if (_target == null) return;
 
         if (DetectPlayer(_target.position))
         {
-            if (_isDisabled) return;
             Move();
             Attack();
         }
     }
+
+    public bool CanAct()
+    {
+        return !_isDead && !_isDisabled;
+    }
+
     #endregion
 
     #region Initialization
@@ -135,6 +149,7 @@ public abstract class Enemy : Character, IAttackable
     /// </summary>
     public virtual void Move()
     {
+        if (!CanAct()) return;
         if (_target == null) return;
 
         Vector3 direction = (_target.position - transform.position).normalized;
@@ -148,6 +163,7 @@ public abstract class Enemy : Character, IAttackable
     /// </summary>
     public override void Attack()
     {
+        if (!CanAct()) return;
         Debug.Log($"[{_enemyType}] attacks the player with power {_attackPower}!");
     }
 
@@ -200,26 +216,51 @@ public abstract class Enemy : Character, IAttackable
     /// <summary>
     /// Reduces health when hit by damage.
     /// </summary>
-    public override void TakeDamage(int amount) 
-    {
-        //Call Take Damage from Character
-        base.TakeDamage(amount); 
-        
-        Debug.Log($"[{_enemyType}] took {amount} damage! Remaining HP: {_currentHealth}"); // ใช้ _currentHealth จาก Base
-        
-    }
-    
-    //Die form abstract Character
-
-    public override void Die() 
+    public override void TakeDamage(int amount)
     {
         if (_isDead) return;
-        _isDead = true; 
-        
-        // [FIX 1]: เรียก Event เพื่อให้ EnemySpawner จัดการ Despawn
-        OnEnemyDied?.Invoke(this); 
 
+        _currentHealth -= amount;
+
+        Debug.Log($"[{_enemyType}] took {amount} damage! Remaining HP: {_currentHealth}");
+
+        if (_currentHealth <= 0)
+        {
+            _currentHealth = 0;
+            Die();   // 
+            return;
+        }
+
+        UpdateHealthBar();
     }
+
+    //Die form abstract Character
+
+    public override void Die()
+    {
+        if (_isDead) return;
+        _isDead = true;
+
+        // 🔹 ปิดสคริปต์ทันที (หยุด Update → ไม่ Attack / Move / Detect อีก)
+        enabled = false;
+
+        // 🔹 ปิดการชน
+        if (TryGetComponent<Collider2D>(out var col)) col.enabled = false;
+
+        // 🔹 หยุดฟิสิกส์
+        if (_rigidbody != null) _rigidbody.linearVelocity = Vector2.zero;
+
+        // 🔹 หยุด Animator (ถ้ามี)
+        if (_animator != null) _animator.SetFloat("MoveSpeed", 0);
+
+        // 🔹 เก็บ handler ก่อน invoke
+        var handler = OnEnemyDied;
+        OnEnemyDied = null; // ❗ กัน invoke ซ้ำ ไม่ลูป ไม่ spam
+
+        handler?.Invoke(this); // ส่งไปที่ Spawner
+    }
+
+
     #endregion
 
     #region IAttackable Implementation

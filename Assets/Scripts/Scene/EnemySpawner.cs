@@ -37,10 +37,10 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     [Header("GoldenMon Difficulty Scaling")]
     [SerializeField] private AnimationCurve _goldenChanceCurve =
     new AnimationCurve(
-        new Keyframe(0f, 0.25f),     // เริ่มเกม: 25%
-        new Keyframe(300f, 0.15f),   // ระยะกลาง: 15%
-        new Keyframe(1500f, 0.12f),  // คงที่ช่วงกลางเกม
-        new Keyframe(2500f, 0.18f)   // ท้ายเกมเพิ่มนิดหน่อย
+        new Keyframe(0f, 0.10f),     // เริ่มเกม: 10%
+        new Keyframe(300f, 0.08f),   // ระยะกลาง: 8%
+        new Keyframe(1500f, 0.05f),  // คงที่ช่วงกลางเกม
+        new Keyframe(2500f, 0.07f)   // ท้ายเกมเพิ่มนิดหน่อย
     );
 
     #region  Enemy First
@@ -145,6 +145,7 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     {
         
         if (enemy == null) return;
+        if (!_activeEnemies.Contains(enemy.gameObject)) return;
         
         // 1: เก็บตำแหน่งไว้ในตัวแปรท้องถิ่นก่อน
         // ป้องกัน MissingReferenceException เมื่อ Spawn GoldenMon
@@ -160,19 +161,13 @@ public class EnemySpawner : MonoBehaviour, ISpawn
             // ระยะที่ player วิ่ง → ใช้คำนวณสเกลความยาก
             float distance = Mathf.Max(0f, _player.transform.position.x);
 
-            float goldenChance = _goldenChanceCurve.Evaluate(distance);
-            if (Random.value < goldenChance)
+            float goldenChance = Mathf.Clamp01(_goldenChanceCurve.Evaluate(distance));
+
+            if (Random.value <= goldenChance)
             {
-                // Random roll
-                if (Random.value < goldenChance)
-                {
-                    // 2: ใช้ deathPosition ที่เก็บไว้
-                    SpawnSpecificEnemy(EnemyType.GoldenMon, deathPosition);
-                    Debug.Log(
-                        $"<color=yellow>[GoldenMon]</color> Spawned | Chance={goldenChance:P2} | Dist={distance:F0}"
-                    );
-                }
+                SpawnSpecificEnemy(EnemyType.GoldenMon, deathPosition);
             }
+
         }
         
         // 3: สั่ง Despawn/ReturnToPool ทันทีหลังจบ Logic ทั้งหมด
@@ -467,13 +462,20 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     {
         if (enemy == null) return;
 
-        // Note: HandleEnemyDied unsubscribe event
         _cullingManager?.UnregisterObject(enemy);
         _activeEnemies.Remove(enemy);
-        
-        // Note: name.Replace("(Clone)", "") ถูกลบออกจาก Despawn ของ MapGeneratorBase แล้ว
-        _objectPool.ReturnToPool(enemy.name, enemy); 
+
+        // เรียกคืนเข้าพูลก่อน
+        _objectPool.ReturnToPool(enemy.name, enemy);
+
+        // ถ้ายัง active/ยัง enable หลังจากคืน → แปลว่า Pool ยังไม่จัดการ → Destroy
+        if (enemy.activeSelf)
+        {
+            Debug.LogWarning($"[EnemySpawner] Pool busy → Destroying {enemy.name}");
+            Destroy(enemy);
+        }
     }
+
 
     public int GetSpawnCount() => _activeEnemies.Count;
 

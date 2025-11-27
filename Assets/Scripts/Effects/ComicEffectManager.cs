@@ -36,17 +36,36 @@ public class ComicEffectManager : MonoBehaviour
 
     public void Play(ComicEffectData data, Vector3 pos)
     {
+        if (data == null) return;
+
         string key = data.name;
-        if (!_pool.ContainsKey(key) || _pool[key].Count == 0)
+
+        // 🔥 Auto-register ถ้า pool ยังไม่มี
+        if (!_pool.ContainsKey(key))
         {
-            Debug.LogWarning($"[ComicFX] Pool missing: {key}");
-            return;
+            Debug.LogWarning($"[ComicFX] Auto-register missing FX pool: {key}");
+            var prefab = GetComponentInChildren<ComicEffectPlayer>();
+            if (prefab == null) return;
+
+            Register(key, prefab, 3);
+        }
+
+        if (_pool[key].Count == 0)
+        {
+            Debug.LogWarning($"[ComicFX] Pool empty, creating more: {key}");
+            var prefab = GetComponentInChildren<ComicEffectPlayer>();
+            var obj = Instantiate(prefab, transform);
+            obj.Initialize();
+            obj.SetPoolKey(key);
+            obj.gameObject.SetActive(false);
+            _pool[key].Enqueue(obj);
         }
 
         var fx = _pool[key].Dequeue();
         fx.SetPoolKey(key);
         fx.Play(data, pos);
     }
+
 
     public void Release(ComicEffectPlayer fx)
     {

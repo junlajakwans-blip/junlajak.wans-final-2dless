@@ -106,8 +106,26 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
         // 2. Spawn Slot Check (Asset/Collectible/Throwable ต้องไม่ทับกัน)
         if (!SpawnSlot.Reserve(finalPos))
         {
-            Debug.LogWarning($"[ThrowableSpawner] Spawn Failed: Slot Reserved at X={finalPos.x:F1}.");
-            return null;
+            // ลองขยับขวา 1 หน่วย
+            Vector3 tryRight = finalPos + new Vector3(1f, 0f, 0f);
+            if (SpawnSlot.Reserve(tryRight))
+            {
+                finalPos = tryRight;
+            }
+            else
+            {
+                // ลองขยับซ้าย 1 หน่วย
+                Vector3 tryLeft = finalPos + new Vector3(-1f, 0f, 0f);
+                if (SpawnSlot.Reserve(tryLeft))
+                {
+                    finalPos = tryLeft;
+                }
+                else
+                {
+                    Debug.LogWarning($"[ThrowableSpawner] Spawn Failed (All Directions Reserved) at X={finalPos.x:F1}.");
+                    return null;
+                }
+            }
         }
 
         string poolTag = GetWeightedTag();

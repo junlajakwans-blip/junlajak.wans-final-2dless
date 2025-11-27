@@ -15,9 +15,9 @@ MonoBehaviour:
   _typeID: 8
   _displayName: MooPingMon
   _baseHealth: 10
-  _baseAttackPower: 8
+  _baseAttackPower: 5
   _baseMovementSpeed: 0.5
-  _baseDetectionRange: 5
+  _baseDetectionRange: 3
   _coinDropAmount: 1
   _enemySprite: {fileID: 5685010844166404831, guid: c31a5c9dfd76af343b223062bc617a34, type: 3}
   MamaNoodleCount: 3
@@ -64,14 +64,14 @@ MonoBehaviour:
   GhostWorkHauntDamage: 5
   GhostWorkCoinDropChance: 0.45
   GhostWorkGreenTeaDropChance: 0.15
-  MooPingFireDamage: 8
+  MooPingFireDamage: 2
   MooPingSmokeRadius: 2.5
-  MooPingThrowCooldown: 5
+  MooPingThrowCooldown: 10
   MooPingPatternSpeed: 0.2
   MooPingPatternWidth: 1.5
   MooPingProjectileSpeed: 5
   MooPingCoinDropChance: 0.2
-  MooPingCoffeeDropChance: 0.05
+  MooPingCoffeeDropChance: 0.2
   PeterHoverAmplitude: 0.25
   PeterHoverSpeed: 2
   PeterAttackRange: 4.5

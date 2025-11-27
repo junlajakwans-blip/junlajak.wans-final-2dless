@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: New Duckling Skill
   m_EditorClassIdentifier: Assembly-CSharp::DucklingSkill
   FXProfile: {fileID: 11400000, guid: 87fe319dd875b4443804c983cc645cb9, type: 2}
+  _bonkEffect: {fileID: 4441387112938985303, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}

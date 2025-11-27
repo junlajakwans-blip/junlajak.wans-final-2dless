@@ -57,53 +57,42 @@ public class GoldenMon : Enemy
     /// <summary>
     /// Guaranteed drop of Career Card + massive Coin drop + potential Token bonus.
     /// </summary>
-    public override void Die()
+public override void Die()
+{
+    if (_isDead) return;
+    _isDead = true;
+
+    CardManager cardManager = _cardManagerRef;
+    Player player = _playerRef;
+    CollectibleSpawner spawner = _spawnerRef;
+    Vector3 enemyDeathPosition = transform.position;
+
+    // --- 2. Guaranteed Career Card Drop (Data-Linked) ---
+    if (cardManager != null && _data != null)
     {
-        if (_isDead) return;
-        _isDead = true;
-
-        CardManager cardManager = _cardManagerRef;
-        Player player = _playerRef;
-        CollectibleSpawner spawner = _spawnerRef;
-        Vector3 enemyDeathPosition = transform.position;
-        
-        // --- 2. Guaranteed Career Card Drop (Data-Linked) ---
-        if (cardManager != null && _data != null)
+        if (UnityEngine.Random.value < _data.GoldenCardDropChance)
         {
-            // 🚨 Check drop chance (should be 1.0 for guaranteed)
-            if (UnityEngine.Random.value < _data.GoldenCardDropChance)
-            {
-                // Note: The CardManager.AddCareerCard() method implicitly uses CardType.Career
-                // which aligns with the GoldenGuaranteedCardType setting.
-                cardManager.AddCareerCard();
-                
-                Debug.Log($"[GoldenMon] Card Dropped ({_data.GoldenGuaranteedCardType}) with chance {_data.GoldenCardDropChance * 100:F0}%");
-            }
+            cardManager.AddCareerCard();
+            Debug.Log($"[GoldenMon] Card Dropped ({_data.GoldenGuaranteedCardType})");
         }
-        else
-        {
-            Debug.LogWarning("[GoldenMon] CardManager or EnemyData NOT INJECTED! Cannot drop card.");
-        }
-
-
-        // --- 3. Special Token Drop (MuscleDuck/Berserk Condition) ---
-        // MuscleDuck ID Enum is DuckCareer.Muscle = 10
-        if (player != null && player.GetCurrentCareerID() == DuckCareer.Muscle) 
-        {
-             if (spawner != null)
-             {
-                 spawner.DropCollectible(CollectibleType.Token, enemyDeathPosition);
-                 Debug.Log("[GoldenMon] MuscleDuck Bonus: Dropped 1 Token!");
-             }
-             else
-             {
-                 Debug.LogWarning("[GoldenMon] Spawner NOT INJECTED for Token drop!");
-             }
-        }
-        
-        // --- 4. Massive Coin Drop ---
-        DropGoldenCoins(); 
-        OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
     }
+
+    // --- 3. Special Token Drop (MuscleDuck Condition) ---
+    if (player != null && player.GetCurrentCareerID() == DuckCareer.Muscle)
+        spawner?.DropCollectible(CollectibleType.Token, enemyDeathPosition);
+
+    // --- 4. Massive Coin Drop ---
+    DropGoldenCoins();
+
+    // call event แค่ครั้งเดียว
+    OnEnemyDied?.Invoke(this);
+
+    // ปิด event ไม่ให้ยิงซ้ำหลัง return จาก Pool
+    OnEnemyDied = null;
+
+    // ปิดการทำงานของ GoldenMon ทันทีในเฟรมนี้ (กัน Update ทำงานต่อ)
+    gameObject.SetActive(false);
+}
+
     #endregion
 }

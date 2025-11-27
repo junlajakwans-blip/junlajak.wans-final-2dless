@@ -219,7 +219,7 @@ Transform:
   m_GameObject: {fileID: 1526907069799846881}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.07, y: 5.63, z: 0}
+  m_LocalPosition: {x: 0.07, y: 6.58, z: 0}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -250,7 +250,7 @@ Transform:
   m_GameObject: {fileID: 2971531076567058291}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.09, y: -0.85, z: 0}
+  m_LocalPosition: {x: 4.17, y: 1.11, z: 0}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -369,7 +369,7 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5999967935324284092}
-  m_BodyType: 1
+  m_BodyType: 0
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
@@ -386,7 +386,7 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!60 &7978051908384033325
 PolygonCollider2D:
@@ -470,9 +470,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38bd1b599073a504e94dd5bf90e1e278, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
-  _maxHealth: 1000
-  _currentHealth: 500
-  _moveSpeed: 5
+  _maxHealth: 500
+  _currentHealth: 200
+  _moveSpeed: 6
   _rigidbody: {fileID: -4817979446526450474}
   _animator: {fileID: 0}
   _visualRoot: {fileID: 6145297030757921140}
@@ -480,7 +480,7 @@ MonoBehaviour:
   _playerData:
     _playerName: 
     _selectedCareer: 
-    _maxHealth: 100
+    _maxHealth: 500
     _speed: 5
     _attackPower: 10
     _defense: 5
@@ -601,5 +601,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6feaeea2c564bfc40ac568b3acb4c2d2, type: 2}
   _ducklingRenderer: {fileID: 4980727429312497355}
   _ducklingAnimator: {fileID: 0}
-  _fxPlayer: {fileID: 0}
-  _careerCooldown: 3
+  _fxPlayer: {fileID: 1519572491552406277}
+  _careerCooldown: 5

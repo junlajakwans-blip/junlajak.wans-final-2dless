@@ -11,7 +11,7 @@ public class PlayerData
     [SerializeField] private string _selectedCareer;
 
     [Header("Stats")]
-    [SerializeField] private int _maxHealth = 100;
+    [SerializeField] private int _maxHealth = 500;
     [SerializeField] private float _speed = 5f;
     [SerializeField] private float _attackPower = 10f;
     [SerializeField] private int _defense = 5;
