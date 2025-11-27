@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: ComicEffect_Pan
   m_EditorClassIdentifier: Assembly-CSharp::ComicEffectData
   prefab: {fileID: 7208645488188858175, guid: e80f7c3c0d13a1b43bde5071756fcede, type: 3}
-  sprite: {fileID: 2843015859964844711, guid: 3bc9461a23748de40901e095bd85ab8d, type: 3}
+  sprite: {fileID: -8497053694448668289, guid: 3bc9461a23748de40901e095bd85ab8d, type: 3}
   color: {r: 1, g: 1, b: 1, a: 1}
   duration: 0.6
-  baseScale: 1
+  baseScale: 0.3
   randomScaleRange: 0.2
   randomRotation: 1
   rotationMin: -20

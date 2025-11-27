@@ -69,7 +69,7 @@ public class ComicEffectPlayer : MonoBehaviour
             ReleaseToPool();
     }
 
-    private void ReleaseToPool()
+    public void ReleaseToPool()
     {
         _isPlaying = false;
         ComicEffectManager.Instance.Release(this);

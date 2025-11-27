@@ -63,6 +63,40 @@ public class ComicEffectManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Clears all active effects from the pool and forces them back into the queue.
+    /// This is necessary when a player dies or changes career to ensure no old FX remains.
+    /// </summary>
+    public void ClearAllActiveFX()
+    {
+        // 1. วนลูปผ่านทุก Key ใน Pool
+        foreach (var pair in _pool)
+        {
+            string key = pair.Key;
+            Queue<ComicEffectPlayer> poolQueue = pair.Value;
+            
+            List<ComicEffectPlayer> activeFX = new List<ComicEffectPlayer>();
+            foreach (Transform child in transform) 
+            {
+                if (child.TryGetComponent<ComicEffectPlayer>(out var fx))
+                {
+                    if (fx.gameObject.activeSelf)
+                    {
+                        activeFX.Add(fx);
+                    }
+                }
+            }
+
+            // สั่ง Release FX ที่กำลัง Active อยู่
+            foreach (var fx in activeFX)
+            {
+                fx.ReleaseToPool(); // เรียกเมธอด ReleaseToPool ใน ComicEffectPlayer
+            }
+        }
+        
+        Debug.Log("[ComicFX] Cleared all active effects from the scene.");
+    }
+
+    /// <summary>
     /// Initialize FX pools from player career profiles (called by GameManager)
     /// </summary>
     public void Initialize(Player player)
