@@ -171,10 +171,19 @@ public class MuscleSkill : CareerSkillBase
 
 
     #region Passive – Immortal
-    public override void OnTakeDamage(Player player, int dmg)
+    public override void OnTakeDamage(Player player, int amount)
     {
-        Debug.Log("[MuscleSkill] Immortal → ignored damage.");
+        float chance = 1.0f;
+        if (Random.value < chance)
+        {
+            Debug.Log("[MuscleDuck] Blocked damage!");
+            return; // block
+        }
+
+        // let damage through
+        player.ApplyRawDamage(amount); // ให้ดาเมจเข้าปกติ
     }
+
 
     public override bool OnBeforeDie(Player player) => true;
     #endregion

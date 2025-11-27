@@ -358,25 +358,30 @@ public override void Move(Vector2 direction)
     public override void TakeDamage(int amount)
     {
         if (_isDead) return;
-        
-        // ตรวจสอบสถานะ Invulnerability
+
+        // 1) WinRider: Immortal buff (invulnerable)
         if (_isInvulnerable)
         {
-            Debug.Log($"[Player] IGNORED {amount} damage (Invulnerable).");
-            return; 
+            Debug.Log($"[Player] IGNORED {amount} damage (WinRider Invulnerable)");
+            return;
         }
 
-        //  Original Check (ย้ายมาไว้ข้างในเพื่อให้นำ Skill Check ไปใช้ได้)
-        if (CurrentCareerSkill != null)
+        // 2) MuscleDuck: Skill decides whether to block damage
+        if (CurrentCareerID == DuckCareer.Muscle && CurrentCareerSkill != null)
         {
-            //  ตรวจสอบ MotorcycleSkill.OnTakeDamage(this, amount) ที่มีโอกาส Immune 15%
-            CurrentCareerSkill?.OnTakeDamage(this, amount); 
-            return; // **สำคัญ**: ตรรกะของ CareerSkill.OnTakeDamage ต้องตัดสินใจว่าจะเรียก player.TakeDamage(dmg) ต่อไปเองหรือไม่
+            // Skill จะตัดสินเองว่าจะ block หรือให้ดาเมจเข้า
+            CurrentCareerSkill.OnTakeDamage(this, amount);
+            return; // ต้อง return เพราะ skill เป็นคนจัดการต่อเอง
         }
 
-        // Fallback: ถ้าไม่มี CareerSkill.OnTakeDamage
-        _currentHealth -= amount; 
-        
+        // 3) ทุกอาชีพอื่น → โดน damage ทันที
+        ApplyRawDamage(amount);
+    }
+
+    public void ApplyRawDamage(int amount)
+    {
+        _currentHealth -= amount;
+
         if (_currentHealth <= 0)
         {
             _currentHealth = 0;
@@ -386,6 +391,8 @@ public override void Move(Vector2 direction)
         _healthBarUI?.UpdateHealth(_currentHealth);
         Debug.Log($"[Player] Took {amount} damage. HP: {_currentHealth}/{_maxHealth}");
     }
+
+
     /// <summary>
     /// Player – Default form (no passive heal)
     /// Only way to Heal Player or some career must use BuffItem when Icollectable
