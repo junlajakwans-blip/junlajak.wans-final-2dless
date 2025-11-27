@@ -337,84 +337,6 @@ enum EnemyState {
     Dead,
 }
 
-class EnemyData {
-    + DisplayName : string <<get>>
-    + BaseHealth : int <<get>>
-    + BaseAttackPower : int <<get>>
-    + BaseMovementSpeed : float <<get>>
-    + BaseDetectionRange : float <<get>>
-    + CoinDropAmount : int <<get>>
-    + MamaNoodleCount : int = 3
-    + MamaAttackCooldown : float = 2f
-    + MamaBoilRange : float = 4f
-    + MamaBoilDamage : int = 10
-    + MamaProjectileSpeed : float = 5f
-    + MamaProjectileDamage : int = 15
-    + MamaHealChance : float = 0.1f
-    + MamaHealCooldown : float = 8f
-    + MamaCoinDropChance : float = 0.35f
-    + MamaGreenTeaDropChance : float = 0.10f
-    + KahootAttackInterval : float = 3f
-    + KahootBlockSpeed : float = 6f
-    + KahootBlockDamage : int = 5
-    + KahootSpeedDuration : float = 3f
-    + KahootSlowModifier : float = 0.4f
-    + KahootSlowDuration : float = 2.5f
-    + KahootSmallDamage : int = 1
-    + KahootCoinDropChance : float = 0.40f
-    + LotteryLuckFactor : float = 0.15f
-    + LotteryCurseDuration : float = 4f
-    + LotteryAttackCooldown : float = 5f
-    + LotteryMinCoinDrop : int = 1
-    + LotteryMaxCoinDrop : int = 40
-    + LotteryGoodLuckMinCoin : int = 1
-    + LotteryGoodLuckMaxCoin : int = 10
-    + RedlightCarCooldown : float = 3.0f
-    + RedlightSwitchInterval : float = 5.0f
-    + RedlightSpawnCarCount : int = 2
-    + RedlightMaxCarTypes : int = 3
-    + RedlightCoinDropChance : float = 0.30f
-    + RedlightCoffeeDropChance : float = 0.05f
-    + GoldenMonBreakPlatformCount : int = 2
-    + GoldenMonCoinDropMultiplier : int = 5
-    + GoldenMonBaseMinCoin : int = 10
-    + GoldenMonBaseMaxCoin : int = 20
-    + GoldenCardDropChance : float = 1.0f
-    + GhostWorkFadeDuration : float = 1.5f
-    + GhostWorkHauntRange : float = 6f
-    + GhostWorkTeleportCooldown : float = 5f
-    + GhostWorkBaseTeleportDistance : float = 2f
-    + GhostWorkHauntDamage : int = 5
-    + GhostWorkCoinDropChance : float = 0.45f
-    + GhostWorkGreenTeaDropChance : float = 0.15f
-    + MooPingFireDamage : int = 20
-    + MooPingSmokeRadius : float = 2.5f
-    + MooPingThrowCooldown : float = 2.2f
-    + MooPingPatternSpeed : float = 2.0f
-    + MooPingPatternWidth : float = 1.5f
-    + MooPingProjectileSpeed : float = 5f
-    + MooPingCoinDropChance : float = 0.20f
-    + MooPingCoffeeDropChance : float = 0.05f
-    + PeterHoverAmplitude : float = 0.25f
-    + PeterHoverSpeed : float = 2f
-    + PeterAttackRange : float = 4.5f
-    + PeterAttackCooldown : float = 2.5f
-    + PeterProjectileDamage : int = 10
-    + PeterProjectileSpeed : float = 4f
-    + PeterCoinDropChance : float = 0.25f
-    + PeterGreenTeaDropChance : float = 0.05f
-    + DoggoChaseSpeed : float = 2.5f
-    + DoggoBarkRange : float = 1.25f
-    + DoggoDamage : int = 15
-    + DoggoHauntRange : int = 5
-    + DoggoCoinDropChance : float = 0.30f
-    + GetStatsDebugString() : string
-}
-ScriptableObject <|-- EnemyData
-EnemyData --> "TypeID" EnemyType
-EnemyData --> "EnemySprite" Sprite
-EnemyData o-> "GoldenGuaranteedCardType" CardType
-
 class DoggoMon {
     + <<override>> Move() : void
     + ChasePlayer(player:Player) : void
@@ -695,4 +617,150 @@ class SceneManager <<sealed>> {
 }
 MonoBehaviour <|-- SceneManager
 
+class SaveSystem {
+    + Initialize() : void
+    + GetProgressData() : GameProgressData
+    + SaveData() : void
+    + LoadData() : void
+    + SetGlobalHighScore(newScore:int) : void
+    + GetGlobalHighScore() : int
+    + ResetData() : void
+    + DeleteSave() : void
+    + BackupSaveFile() : void
+}
+MonoBehaviour <|-- SaveSystem
+SaveSystem --> "Instance" SaveSystem
+
+class GameProgressData {
+    + GlobalHighScore : int = 0
+    + TotalCoins : int <<get>> <<set>>
+    + TotalTokens : int <<get>> <<set>>
+    + TotalKeyMaps : int <<get>> <<set>>
+    + BestScore : int <<get>> <<set>>
+    + PlayTime : float <<get>> <<set>>
+    + GameProgressData()
+    + GetUpgradeLevel(itemID:string) : int
+    + SetUpgradeLevel(itemID:string, level:int) : void
+    + AddUnlockedMap(id:string) : void
+    + IsMapUnlocked(id:string) : bool
+    + AddUnlockedCareer(id:string) : void
+    + AddCoins(amount:int) : void
+    + UpdateBestScore(score:int) : void
+    + ResetProgress() : void
+}
+class "List`1"<T> {
+}
+class "Dictionary`2"<T1,T2> {
+}
+GameProgressData --> "UnlockedMaps<string>" "List`1"
+GameProgressData --> "UnlockedCareers<string>" "List`1"
+GameProgressData --> "UpgradeLevels<string,int>" "Dictionary`2"
+GameProgressData --> "LastPlayDate" DateTime
+
+class GameManager {
+    + {static}  <<event>> OnCurrencyReady : System.Action 
+    + IsPaused : bool <<get>>
+    + Score : int <<get>>
+    + PlayTime : float <<get>>
+    + GetProgressData() : GameProgressData
+    + GetCurrency() : Currency
+    + GetStoreManager() : StoreManager
+    + GetStoreList() : List<StoreBase>
+    + {static}  <<event>> OnGameReady : Action 
+    + LoadGameLevel(sceneName:string, mapType:MapType) : void
+    + LoadScene(sceneName:string) : void
+    + InitializeGame() : void
+    + StartGame() : void
+    + TogglePause() : void
+    + PauseGame() : void
+    + ResumeGame() : void
+    + ResumeGameFromPauseButton() : void
+    + RestartGameFromPause() : void
+    + EndGame() : void
+    + PlayerDieHandler() : void
+    + ExitToMainMenuFromResults() : void
+    + RestartGame() : void
+    + ExitGame() : void
+    + AddScore(amount:int) : void
+    + GetPlayTime() : float
+    + SaveProgress() : void
+    + SetupStores(progressData:GameProgressData) : void
+    + ResetGameProgress() : void
+    + DeleteSaveAndRestart() : void
+}
+MonoBehaviour <|-- GameManager
+GameManager --> "Instance" GameManager
+GameManager --> "CardManager" CardManager
+GameManager --> "CurrentMapType" MapType
+GameManager --> "PlayerRef" Player
+
+class UIManager {
+    + GetScoreUI() : ScoreUI
+    + SetDependencies(gm:GameManager, currency:Currency, storeManager:StoreManager, stores:List<StoreBase>) : void
+    + ShowMainMenu() : void
+    + ShowSelectMap() : void
+    + ShowStoreMenu(isActive:bool) : void
+    + SwitchStorePanel(type:StoreType) : void
+    + ShowStoreBase() : void
+    + ShowPrompt(message:string) : void
+    + HidePrompt() : void
+    + GetPlayerHealthBarUI() : HealthBarUI
+    + InitializeHealth(maxHP:int) : void
+    + UpdateHealth(currentHP:int) : void
+    + ShowDamageEffect() : void
+    + ShowHealEffect() : void
+    + InitializeScore(startScore:int) : void
+    + UpdateScore(newScore:int) : void
+    + ShowComboEffect(combo:int) : void
+    + DisplayHighScore(score:int) : void
+    + UpdateCardSlots(cards:System.Collections.Generic.List<Card>) : void
+    + HighlightCard(index:int) : void
+    + ResetCardSlots() : void
+    + ShowCardSelectionPanel(isActive:bool) : void
+    + ShowPauseMenu(isActive:bool) : void
+    + ShowResultMenu() : void
+    + CloseAllMenus() : void
+    + IsAnyMenuOpen() : bool
+    + ShowGameplayHUD() : void
+    + OpenStore() : void
+    + ShowStoreExchange() : void
+    + ShowStoreUpgrade() : void
+    + ShowStoreMap() : void
+    + RefreshStoreUI() : void
+}
+MonoBehaviour <|-- UIManager
+UIManager --> "panelHUDMain" GameObject
+UIManager --> "panelMainMenu" GameObject
+UIManager --> "panelSelectMap" GameObject
+UIManager --> "panelStore" GameObject
+UIManager --> "panelSettings" GameObject
+UIManager --> "panelStoreExchange" GameObject
+UIManager --> "panelStoreUpgrade" GameObject
+UIManager --> "upgradeUI" UpgradeUI
+UIManager --> "Instance" UIManager
+
+class ObjectPoolManager {
+    + IsInitialized : bool <<get>> = false
+    + <<virtual>> InitializePool() : void
+    + <<virtual>> SpawnFromPool(objectTag:string, position:Vector3, rotation:Quaternion) : GameObject
+    + <<virtual>> ReturnToPool(objectTag:string, obj:GameObject) : void
+    + <<virtual>> ClearPool() : void
+    + <<virtual>> ExpandPool(objectTag:string, additionalCount:int) : void
+    + GetAllTags() : List<string>
+}
+MonoBehaviour <|-- ObjectPoolManager
+IObjectPool <|-- ObjectPoolManager
+ObjectPoolManager --> "Instance" ObjectPoolManager
+
+class SceneManager <<sealed>> {
+    + {static}  <<event>> OnSceneInitialized : System.Action 
+    + Inject(gen:MapGeneratorBase, player:Player) : void
+    + TryInitializeScene() : void
+    + GetCurrentSceneName() : string
+    + GetCurrentMapType() : MapType
+    + IsInitialized : bool <<get>>
+    + GetMapGenerator() : MapGeneratorBase
+    + ClearSceneObjects() : void
+}
+MonoBehaviour <|-- SceneManager
 @enduml
