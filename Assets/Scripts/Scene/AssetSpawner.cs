@@ -16,8 +16,8 @@ public class AssetSpawner : MonoBehaviour, ISpawn
     [SerializeField] private string _assetPrefix = "map_asset_School_";
 
     [Header("Distance Phases (x-axis distance from start)")]
-    [SerializeField] private float _phase1End = 700f;   // 0–700
-    [SerializeField] private float _phase2End = 1600f;  // 700–1600, หลังจากนั้นคือ Phase3
+    [SerializeField] private float _phase1End = 700f;   // 0–700
+    [SerializeField] private float _phase2End = 1600f;  // 700–1600, หลังจากนั้นคือ Phase3
 
     [Header("Spawn Interval (Cooldown Control)")]
     [Tooltip("ช่วงเวลา spawn สำหรับ Phase1 (ยิ่งเลขเยอะ ยิ่งเกิดน้อย)")]
@@ -34,6 +34,15 @@ public class AssetSpawner : MonoBehaviour, ISpawn
     [Header("Placement Settings")]
     [Tooltip("Offset แนวตั้งสุดท้าย (แนะนำให้ MapGenerator จัดการให้หมด)")]
     [SerializeField] private float _verticalOffset = 0f; 
+    
+    [Header("Climbing Asset Stacking")]
+    [Tooltip("Tag สำหรับ Asset ที่ใช้ปีนป่าย (เช่น กล่องสี่เหลี่ยมจัตุรัส)")]
+    [SerializeField] private string _climbingAssetTag = "map_asset_School_BoxSquare";
+    [Tooltip("จำนวนครั้งที่ Asset ปีนป่ายสามารถซ้อนกันได้สูงสุด (เพื่อสร้างบันได)")]
+    [SerializeField] private int _maxStackHeight = 3;
+    [Tooltip("ระยะห่างแนวตั้ง (Y) ระหว่างแต่ละชั้นของ Asset ปีนป่าย")]
+    [SerializeField] private float _stackVerticalStep = 1.0f; 
+
     #endregion
 
     #region 3. Runtime Data
@@ -42,7 +51,7 @@ public class AssetSpawner : MonoBehaviour, ISpawn
     [SerializeField] private List<GameObject> _activeAssets = new List<GameObject>();
 
     private IObjectPool _pool;
-    private Transform _pivot;     // ใช้คำนวณระยะทาง (Player)
+    private Transform _pivot;     // ใช้คำนวณระยะทาง (Player)
     private float _startX;
     private float _nextSpawnAllowedTime = 0f; // ตัวคุมเวลา (Cooldown)
     #endregion
@@ -131,11 +140,11 @@ public class AssetSpawner : MonoBehaviour, ISpawn
     }
 
 
-    private GameObject SpawnNow(Vector3 targetPos)
+    private GameObject SpawnNow(Vector3 targetPos, int currentStack = 0)
     {
         Vector3 pos = targetPos;
-        pos.y += _verticalOffset;
-
+        pos.y += _verticalOffset + (currentStack * _stackVerticalStep); // ปรับตำแหน่ง Y ตาม Stack
+        
         // Cache Check
         if (_cachedAssetKeys == null || _cachedAssetKeys.Count == 0)
         {
@@ -144,17 +153,28 @@ public class AssetSpawner : MonoBehaviour, ISpawn
             if (_cachedAssetKeys.Count == 0) return null;
         }
 
-        // Slot Check
-        if (!SpawnSlot.Reserve(pos))
+        // Random key (ใช้ Asset ที่เป็นบันได ถ้า Stack > 0)
+        string key;
+        if (currentStack > 0)
+        {
+             key = _climbingAssetTag; // บังคับใช้ Climbing Asset เมื่อสร้างซ้อน
+        }
+        else
+        {
+             key = _cachedAssetKeys[Random.Range(0, _cachedAssetKeys.Count)];
+        }
+        
+        // Slot Check: ถ้าเป็นการสร้างบันไดซ้อนทับ (currentStack > 0) ให้ข้ามการจอง Slot
+        // เราเชื่อว่า Slot ฐาน (Platform) ถูกจองแล้ว และการซ้อนทับนี้ไม่อันตราย
+        if (currentStack == 0 && !SpawnSlot.Reserve(pos))
             return null;
 
-        // Random key
-        string key = _cachedAssetKeys[Random.Range(0, _cachedAssetKeys.Count)];
+
         GameObject obj = _pool.SpawnFromPool(key, pos, Quaternion.identity);
 
         if (obj == null)
         {
-            SpawnSlot.Unreserve(pos);
+            if (currentStack == 0) SpawnSlot.Unreserve(pos);
             return null;
         }
 
@@ -169,15 +189,33 @@ public class AssetSpawner : MonoBehaviour, ISpawn
         // Track pooled obj
         _activeAssets.Add(obj);
 
-        if (Random.value < 0.25f) // 25% chance
+        // ------------------------------------------------------------------
+        // NEW LOGIC: สร้างซ้อนเป็นบันได (Climbing Stacking)
+        // ------------------------------------------------------------------
+        if (key == _climbingAssetTag && currentStack < _maxStackHeight)
         {
-            Vector3 offset = Vector3.right * Random.Range(1f, 3f);
-            SpawnNow(targetPos + offset);
+             // มีโอกาส 50% ที่จะซ้อนอีกชั้น
+             if (Random.value < 0.5f)
+             {
+                 // เรียก SpawnNow ซ้ำ โดยเพิ่ม Stack
+                 SpawnNow(targetPos, currentStack + 1); 
+             }
+        }
+        
+        // NEW LOGIC: Recursive Spawn สำหรับ Asset ทั่วไป (ลดโอกาสเกิดติดกัน)
+        else if (currentStack == 0 && Random.value < 0.1f) // 10% chance
+        {
+            // สปาวน์ Asset อีกชิ้นห่างกัน 3-5 หน่วย
+            Vector3 offset = Vector3.right * Random.Range(3f, 5f);
+            SpawnNow(targetPos + offset, 0); 
         }
 
         // Cooldown next spawn
-        float dist = Mathf.Max(0, _pivot.position.x - _startX);
-        CalculateNextSpawnTime(dist);
+        if (currentStack == 0)
+        {
+            float dist = Mathf.Max(0, _pivot.position.x - _startX);
+            CalculateNextSpawnTime(dist);
+        }
 
         return obj;
     }

@@ -80,9 +80,18 @@ public class PlayerInteract : MonoBehaviour
         if (heldItemObject.TryGetComponent<ThrowableItemInfo>(out var info))
             info.EnablePhysicsOnThrow();
 
-        // ใส่แรงปา
         if (heldItemObject.TryGetComponent<Rigidbody2D>(out var rb))
-            rb.linearVelocity = new Vector2(player.FaceDir * throwForce, 0);
+        {
+            float inherit = 0f;
+            if (player.TryGetComponent<Rigidbody2D>(out var prb))
+                inherit = prb.linearVelocity.x * 1.2f;
+
+            float x = player.FaceDir * throwForce * 3.2f + inherit;
+            float y = throwForce * 0.8f;
+
+            rb.linearVelocity = new Vector2(x, y);
+        }
+
 
         // ล้าง state บนหัว
         heldItemObject = null;

@@ -379,6 +379,9 @@ MonoBehaviour:
   _phase2Interval: {x: 1.7, y: 2.7}
   _phase3Interval: {x: 1.1, y: 1.9}
   _verticalOffset: -0.3
+  _climbingAssetTag: map_asset_School_BoxSquare
+  _maxStackHeight: 3
+  _stackVerticalStep: 1
   _cachedAssetKeys: []
   _activeAssets: []
 --- !u!4 &610633208
@@ -540,6 +543,8 @@ MonoBehaviour:
   _backgroundWidth: 30
   _backgroundYOffset: 3.5
   _destroyThreshold: 25
+  _minMoveThreshold: 0.01
+  _stationaryWaitTime: 0.5
   _currentBackgroundKey: default
 --- !u!4 &1001232346
 Transform:
@@ -630,6 +635,9 @@ MonoBehaviour:
   _minYOffset: 0.05
   _maxYOffset: 2.4
   _collectibleOffset: 0.25
+  _assetVerticalOffset: 0.1
+  _minPlatformsBetweenEnemy: 3
+  _minPlatformsBetweenAsset: 2
   _currentPlatformState: 0
   _stepsRemaining: 0
   _floorY: -0.8
@@ -749,8 +757,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 886553eceff88a746be4e7f85ca9fcc6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThrowableSpawner
-  _dropTable: {fileID: 11400000, guid: d2d9d9a0968270848953eb9b5c46aa26, type: 2}
+  _throwableItems:
+  - {fileID: 11400000, guid: 5ee45fbdf7fe60044aa9d36a37945ed4, type: 2}
+  - {fileID: 11400000, guid: 1d5ea6222b80b6a44aba3eebc4b8ccb5, type: 2}
+  - {fileID: 11400000, guid: d6041ce59ae3f3b4faa5c70e37f114b6, type: 2}
+  - {fileID: 11400000, guid: 98c3459d9842d3c43ac46e6f5fd1ece0, type: 2}
+  - {fileID: 11400000, guid: 3a663368fd953784ca93abb2260fd7e3, type: 2}
+  - {fileID: 11400000, guid: 5c62f3dc91a4bec4bb26929d68f30334, type: 2}
+  - {fileID: 11400000, guid: b5e592929d096e74b81a362a6a035518, type: 2}
+  _throwablePrefabTemplate: {fileID: 8814945304724067155, guid: 06571315cbe096f42857d0394c2cb822, type: 3}
+  _phase1End: 700
+  _phase2End: 1600
+  _phase3DropChance: 0.15
+  _phase1DropChance: 0.4
+  _phase2DropChance: 0.25
   _spawnYOffset: 0.2
+  _preSpawnAmount: 5
   _activeThrowables: []
 --- !u!4 &2073505760
 Transform:
@@ -950,9 +972,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CoinTrailGenerator
   _coinKey: Coin
-  _minCoins: 8
-  _maxCoins: 14
-  _xStep: 1.3
+  _minCoins: 1
+  _maxCoins: 10
+  _xStep: 3
   _yStep: 1
   groundLayer:
     serializedVersion: 2
@@ -1066,8 +1088,8 @@ MonoBehaviour:
   - {fileID: 1040190956}
   - {fileID: 39698708}
   - {fileID: 957922880}
-  _spawnInterval: 1
-  _maxEnemies: 3
+  _spawnInterval: 2
+  _maxEnemies: 5
   _currentWaveCount: 0
   _activeEnemies:
   - {fileID: 3679138491074812253, guid: 4704439c2f1fb5140a50ed91a96403cf, type: 3}
@@ -1095,8 +1117,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 0
-      outSlope: 0
+      inSlope: 2
+      outSlope: 2
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -1108,7 +1130,7 @@ MonoBehaviour:
   _spawnStartDistance: 60
   _firstEnemySpawned: 1
   _firstEnemyType: 7
-  _minSpawnSpacing: 12
+  _minSpawnSpacing: 20
   _verticalSpawnOffset: 1
 --- !u!4 &939860341859728424
 Transform:
@@ -1177,13 +1199,14 @@ MonoBehaviour:
   - {fileID: 1204049181334368868, guid: 5013f70113cc70941818204312ae6462, type: 3}
   - {fileID: 7271098682250228881, guid: e3ce9920ebd823d4e821d9767854c208, type: 3}
   - {fileID: 1079607818994521509, guid: f78aa01edf9194945934ec27bc5d63b1, type: 3}
-  _takoyakiChance: 0.4
+  _takoyakiChance: 0.05
   _buffChance: 0.1
   _obstacleLayer:
     serializedVersion: 2
     m_Bits: 8704
+  _groundOffset: 0.5
   _coinTrailGenerator: {fileID: 2093980296}
-  _coinTrailChance: 0.8
+  _coinTrailChance: 0.3
   _activeCollectibles: []
 --- !u!114 &5940353169928122486
 MonoBehaviour:

@@ -296,34 +296,6 @@ public class GameManager : MonoBehaviour
 
     public Player PlayerRef => _player;
 
-    private IEnumerator ShowStarterPanelNextFrame()
-    {
-        yield return null; // รอ 1 เฟรมให้ UI และ currency refresh ก่อน
-        var starterPanel = FindFirstObjectByType<RandomStarterCard>();
-        starterPanel?.ResetForNewGame();
-        starterPanel?.OpenPanel();
-
-        UIManager.Instance.ShowCardSelectionPanel(true);
-        Time.timeScale = 0f;
-    }
-
-    private void HandleMainMenuState()
-    {
-        if (_uiManager == null) _uiManager = FindFirstObjectByType<UIManager>();
-        
-        if (_uiManager != null)
-        {
-            _uiManager.ShowMainMenu();
-            _uiManager.SetDependencies(this, _currencyData, _storeManager, GetStoreList());
-        }
-        
-        // Setup Map Selector if exists
-        var mapSelect = FindFirstObjectByType<MapSelectController>();
-        if (mapSelect != null) mapSelect.SetDependencies(this, _currencyData);
-
-        OnCurrencyReady?.Invoke();
-    }
-
     private void HandleHUDVisibility(string sceneName)
     {
         if (_uiManager == null) return;

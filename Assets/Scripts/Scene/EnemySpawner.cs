@@ -89,19 +89,42 @@ public class EnemySpawner : MonoBehaviour, ISpawn
 
 
     #region Initialization
+    
     /// <summary>
-    /// Initializes the spawner with a given object pool and map context.
+    /// ใช้สำหรับ MapGeneratorBase ในการตั้งค่า Dependencies ที่หาได้จากคลาสฐาน
     /// </summary>
-    public void InitializeSpawner(IObjectPool pool, MapType mapType, Player player, CollectibleSpawner collectibleSpawner, CardManager cardManager, BuffManager buffManager)
+    public void SetDependencies(Player player, CollectibleSpawner collectibleSpawner, CardManager cardManager, BuffManager buffManager, IObjectPool pool, DistanceCulling culling)
     {
-        this._objectPool = pool;
-        _mapType = mapType;
         this._player = player;
         this._collectibleSpawner = collectibleSpawner;
         this._cardManager = cardManager;
         this._buffManagerRef = buffManager;
+        this._objectPool = pool;
+        this._cullingManager = culling;
+        Debug.Log("[EnemySpawner] Base Dependencies Set (Player, Managers, Pool, Culling).");
+    }
+
+
+    /// <summary>
+    /// Initializes the spawner with a given object pool and map context.
+    /// เมธอดนี้ควรถูกเรียกโดย MapGenerator ที่เฉพาะเจาะจง (เช่น MapGeneratorSchool) เพราะต้องส่ง MapType
+    /// </summary>
+    public void InitializeSpawner(IObjectPool pool, MapType mapType, Player player, CollectibleSpawner collectibleSpawner, CardManager cardManager, BuffManager buffManager)
+    {
+        // 1. ตั้งค่า Dependencies หากยังไม่ได้ตั้งค่าจาก SetDependencies (ป้องกันซ้ำ)
+        if (this._objectPool == null)
+        {
+            this._objectPool = pool;
+            this._player = player;
+            this._collectibleSpawner = collectibleSpawner;
+            this._cardManager = cardManager;
+            this._buffManagerRef = buffManager;
+        }
+
+        // 2. ตั้งค่า Map-specific
+        _mapType = mapType;
         
-        Debug.Log("[EnemySpawner] Initialized with dependencies (Player, CollectibleSpawner, CardManager).");
+        Debug.Log("[EnemySpawner] Initialized with MapType and all dependencies.");
 
         _maxEnemies = GetRecommendedEnemyCount();
 
@@ -161,37 +184,38 @@ public class EnemySpawner : MonoBehaviour, ISpawn
 /// <summary>
     /// Event handler for enemy death, used to trigger BuffMap effects and Despawn.
     /// </summary>
+    private float _lastBuffSpawnTime = 0f;
+    private float _buffSpawnCooldown = 4f; // Golden / Extra enemy at most every 4s
+
     private void HandleEnemyDied(Enemy enemy)
     {
-        
         if (enemy == null) return;
         if (!_activeEnemies.Contains(enemy.gameObject)) return;
-        
-        // 1: เก็บตำแหน่งไว้ในตัวแปรท้องถิ่นก่อน
-        // ป้องกัน MissingReferenceException เมื่อ Spawn GoldenMon
-        Vector3 deathPosition = enemy.transform.position; 
-        
-        // 1. Clean up from active list and event
+
+        Vector3 deathPosition = enemy.transform.position;
+
         _activeEnemies.Remove(enemy.gameObject);
         enemy.OnEnemyDied -= HandleEnemyDied;
-        
-        // 2. SingerDuck BuffMap Logic (ใช้ deathPosition แทน enemy.transform.position)
+
+        // 🔥 LIMIT BuffMap extra spawns (Golden / Extra Mob)
         if (_player != null && _player.CurrentCareerID == DuckCareer.Singer)
         {
-            // ระยะที่ player วิ่ง → ใช้คำนวณสเกลความยาก
-            float distance = Mathf.Max(0f, _player.transform.position.x);
-
-            float goldenChance = Mathf.Clamp01(_goldenChanceCurve.Evaluate(distance));
-
-            if (Random.value <= goldenChance)
+            float now = Time.time;
+            if (now - _lastBuffSpawnTime >= _buffSpawnCooldown)
             {
-                SpawnSpecificEnemy(EnemyType.GoldenMon, deathPosition);
-            }
+                float distance = Mathf.Max(0f, _player.transform.position.x);
+                float goldenChance = Mathf.Clamp01(_goldenChanceCurve.Evaluate(distance));
 
+                if (Random.value <= goldenChance)
+                    SpawnSpecificEnemy(EnemyType.GoldenMon, deathPosition);
+
+                _lastBuffSpawnTime = now;
+            }
         }
-        
+
         ReturnEnemyToPool(enemy.gameObject);
     }
+
     #endregion
 
 
@@ -233,7 +257,7 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     }
 
 
-    if (!SpawnSlot.Reserve(spawnPos))
+    if (!SpawnSlot.Reserve(finalSpawnPos))
     {
         return; // Slot ถูกจองแล้ว ไม่สร้าง (ทับ Asset/Collectible/Enemy อื่น)
     }
@@ -267,7 +291,7 @@ public class EnemySpawner : MonoBehaviour, ISpawn
                 if (prefab == null)
                 {
                     Debug.LogWarning($"[EnemySpawner] Failed to pick a prefab. Check weighted logic.");
-                    SpawnSlot.Unreserve(spawnPos); 
+                    SpawnSlot.Unreserve(finalSpawnPos); 
                     return;
                 }
 
@@ -312,61 +336,51 @@ public class EnemySpawner : MonoBehaviour, ISpawn
         }
         else
         {
-            SpawnSlot.Unreserve(spawnPos);
+            SpawnSlot.Unreserve(finalSpawnPos);
         }
     }
     #endregion
 
 
-    public GameObject SpawnAtPosition(Vector3 position)
+public GameObject SpawnAtPosition(Vector3 position)
+{
+    // ❗ ป้องกัน Overflow
+    if (_activeEnemies.Count >= _maxEnemies)
+        return null;
+
+    if (_validPrefabsCache.Count == 0)
+        return null;
+
+    Vector3 finalPos = position;
+    finalPos.y += _verticalSpawnOffset;
+
+    if (!SpawnSlot.Reserve(finalPos))
+        return null;
+
+    int randomEnemy = Random.Range(0, _validPrefabsCache.Count);
+    string objectTag = _validPrefabsCache[randomEnemy].name;
+
+    var enemyGO = SpawnEnemyInstance(objectTag, finalPos, Quaternion.identity);
+    if (enemyGO != null)
     {
-        if (_validPrefabsCache.Count == 0)
+        _activeEnemies.Add(enemyGO);
+        _cullingManager?.RegisterObject(enemyGO);
+
+        if (enemyGO.TryGetComponent<Enemy>(out var enemyComponent))
         {
-            Debug.LogWarning($"[EnemySpawner] No valid enemies for map {_mapType}.");
-            return null;
+            enemyComponent.SetDependencies(_player, _collectibleSpawner, _cardManager, _buffManagerRef, _objectPool);
+            enemyComponent.OnEnemyDied += HandleEnemyDied;
+            OnEnemySpawned?.Invoke(enemyComponent);
         }
-
-        Vector3 finalPos = position;
-        finalPos.y += _verticalSpawnOffset; 
-            
-            // Slot Reservation (MapGenerator ไม่ได้เช็ค Slot สำหรับศัตรู)
-        if (!SpawnSlot.Reserve(finalPos)) 
-            {
-                // Slot ถูกจองแล้ว เช่น ทับกับ Collectible/Asset ที่เกิดบน Platform เดียวกัน
-                Debug.LogWarning($"[EnemySpawner] SpawnAtPosition skipped: Slot reserved by another object at {finalPos}.");
-                return null; 
-            }
-
-        int randomEnemy = Random.Range(0, _validPrefabsCache.Count);
-        string objectTag = _validPrefabsCache[randomEnemy].name;
-
-        var enemyGO = SpawnEnemyInstance(objectTag, finalPos, Quaternion.identity); 
-        
-        if (enemyGO != null)
-        {
-            _activeEnemies.Add(enemyGO);
-            _cullingManager?.RegisterObject(enemyGO);
-            
-            // [NEW FIX] INJECT DEPENDENCIES & SUBSCRIBE
-            if (enemyGO.TryGetComponent<Enemy>(out var enemyComponent))
-            {
-                // 1. INJECT DEPENDENCIES (DI)
-                enemyComponent.SetDependencies(_player, _collectibleSpawner, _cardManager, _buffManagerRef, _objectPool);
-
-                // 2. SUBSCRIBE TO DEATH EVENT
-                enemyComponent.OnEnemyDied += HandleEnemyDied;
-                
-                // 3. INVOKE SPAWN EVENT
-                OnEnemySpawned?.Invoke(enemyComponent);
-            }
-            else
-            {
-                // ถ้า Spawn ไม่สำเร็จ ต้อง Unreserve
-                SpawnSlot.Unreserve(finalPos);
-            }
-        }
-        return enemyGO;
     }
+    else
+    {
+        SpawnSlot.Unreserve(finalPos);
+    }
+
+    return enemyGO;
+}
+
 
     private GameObject SpawnEnemyInstance(string objectTag, Vector3 position, Quaternion rotation)
     {

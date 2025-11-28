@@ -1,45 +1,62 @@
 using System.Collections.Generic;
 using UnityEngine;
-using DuffDuck.Stage;
+// ต้องแน่ใจว่าได้อ้างอิงถึง namespace ของ MapType และ GameManager ถูกต้อง
+using DuffDuck.Stage; 
 
 public class BackgroundLooper : MonoBehaviour
 {
+    // การตั้งค่าการ Loop ฉากหลัง
     [Header("Looping Settings")]
-    [Tooltip("ความกว้างจริงของรูป Background 1 รูป (หน่วย World Space)")]
-    [SerializeField] private float _backgroundWidth = 19.2f; //  เช็คให้ตรงกับขนาดรูปจริง
+    [Tooltip("ความกว้างของฉากหลัง 1 ชิ้นใน World Unit (เช่น 19.2f)")]
+    [SerializeField] private float _backgroundWidth = 19.2f;
+    [Tooltip("ระยะห่างจากแกน Y (ความสูง) ที่จะวางฉากหลัง")]
     [SerializeField] private float _backgroundYOffset = 0.2f;
-    
-    [Tooltip("ระยะห่างจากกล้องทางซ้าย ที่จะให้ย้ายรูปไปข้างหน้า")]
-    [SerializeField] private float _destroyThreshold = 25f;
+    [Tooltip("ระยะห่างจากกล้องที่ฉากหลังต้องขยับออกไป จึงจะถูก Loop กลับมา (20.0f ช่วยแก้ปัญหา Flicker)")]
+    [SerializeField] private float _destroyThreshold = 20.0f; 
+
+    // การควบคุมการเคลื่อนไหวเพื่อหยุด/เริ่ม Loop เมื่อกล้องหยุดนิ่ง
+    [Header("Movement Control")]
+    [Tooltip("ระยะทางต่ำสุดที่กล้องต้องขยับใน 1 Frame เพื่อถือว่ามีการเคลื่อนไหว (เช่น 0.01f)")]
+    [SerializeField] private float _minMoveThreshold = 0.01f;
+    [Tooltip("เวลา (วินาที) ที่กล้องต้องหยุดนิ่งก่อนที่จะหยุดการ Loop ฉากหลัง")]
+    [SerializeField] private float _stationaryWaitTime = 0.5f;
 
     [Header("Background Type Key")]
     [SerializeField] private string _currentBackgroundKey = "default";
 
-    // ใช้ 3 รูป (ซ้าย-กลาง-ขวา) เพื่อความเนียนเวลาวิ่งเร็วๆ
-    private const int BG_COUNT = 3; 
-    
+    private const int BG_COUNT = 3;
     private readonly List<GameObject> _backgroundLayers = new();
     private Transform _cameraTransform;
+    
+    // ตัวแปรสำหรับตรวจสอบการเคลื่อนไหว
+    private float _lastCameraX;
+    private float _stationaryTimer;
+    private bool _isCameraMoving = false; // เริ่มต้นให้เป็น false จนกว่าจะมีการเคลื่อนไหว
 
-    // =========================================================
-    // LIFECYCLE
-    // =========================================================
     private void Start()
     {
-
-        if (Camera.main != null)
-            _cameraTransform = Camera.main.transform;
+        // พยายามดึง Transform ของกล้องหลัก
+        _cameraTransform = Camera.main?.transform;
+        if (_cameraTransform == null)
+        {
+            Debug.LogError("[BackgroundLooper] ❌ Main Camera ไม่พบ! โปรดตรวจสอบแท็ก 'MainCamera' ใน Scene.");
+        }
         else
-            Debug.LogError("[BackgroundLooper] Main Camera not found!");
+        {
+            // กำหนดตำแหน่ง X เริ่มต้น
+            _lastCameraX = _cameraTransform.position.x;
+        }
     }
 
     private void OnEnable()
     {
+        // สมัครรับ Event เมื่อเกมพร้อมทำงาน
         GameManager.OnGameReady += HandleGameReady;
     }
 
     private void OnDisable()
     {
+        // ยกเลิกรับ Event เมื่อ Script ถูกปิดใช้งาน
         GameManager.OnGameReady -= HandleGameReady;
     }
 
@@ -50,46 +67,87 @@ public class BackgroundLooper : MonoBehaviour
 
     private void Update()
     {
+        // Guard Clause: ออกจากการทำงานถ้าไม่มีกล้องหรือฉากหลังยังไม่ถูกสร้าง
         if (_cameraTransform == null || _backgroundLayers.Count == 0) return;
 
-     
-        UpdateBackgroundPosition();
+        // 1. ตรวจสอบการเคลื่อนไหวของกล้องทุก Frame
+        CheckCameraMovement();
+
+        // 2. ถ้ากล้องมีการเคลื่อนที่ (หรือหยุดไม่นานเกินไป) จึงจะทำการ Loop
+        if (_isCameraMoving)
+        {
+            UpdateBackgroundPosition();
+        }
     }
 
-    // =========================================================
-    // LOGIC: ย้ายพื้นหลังไปดักหน้า (Leapfrog)
-    // =========================================================
+    /// <summary>
+    /// ตรวจสอบว่ากล้องเคลื่อนที่หรือไม่ และปรับสถานะ _isCameraMoving
+    /// </summary>
+    private void CheckCameraMovement()
+    {
+        float currentCameraX = _cameraTransform.position.x;
+        // คำนวณระยะการเคลื่อนที่ใน Frame นี้
+        float movement = Mathf.Abs(currentCameraX - _lastCameraX);
+
+        if (movement > _minMoveThreshold)
+        {
+            // กล้องขยับ: รีเซ็ตตัวนับและตั้งค่าให้มีการ Loop
+            _isCameraMoving = true;
+            _stationaryTimer = 0f;
+        }
+        else
+        {
+            // กล้องไม่ขยับ: เริ่มนับเวลา
+            _stationaryTimer += Time.deltaTime;
+            if (_stationaryTimer >= _stationaryWaitTime)
+            {
+                // หยุด Loop ถ้าหยุดนิ่งนานพอ
+                _isCameraMoving = false;
+            }
+        }
+
+        // อัพเดทตำแหน่งกล้องล่าสุดสำหรับ Frame ถัดไป
+        _lastCameraX = currentCameraX;
+    }
+
+
+    /// <summary>
+    /// ปรับตำแหน่งของฉากหลังเพื่อสร้างการ Loop แบบไร้รอยต่อ
+    /// </summary>
     private void UpdateBackgroundPosition()
     {
         float cameraX = _cameraTransform.position.x;
+        // ระยะทางการเคลื่อนย้ายที่ถูกต้องสำหรับระบบ 3 ชิ้น (3 * BackgroundWidth)
+        float moveDist = _backgroundWidth * _backgroundLayers.Count; 
 
         foreach (var layer in _backgroundLayers)
         {
             if (layer == null) continue;
 
             float bgX = layer.transform.position.x;
-
-            // 🟢 หลุดซ้าย → ย้ายไปขวา
-            if (bgX < cameraX - _destroyThreshold)
+            
+            // ตรวจสอบ: ฉากหลังหลุดไปทางซ้ายเกิน Threshold หรือไม่? (กล้องอยู่ไกลกว่าฉากหลังมาก)
+            if (cameraX - bgX > _destroyThreshold)
             {
-                float moveDist = _backgroundWidth * _backgroundLayers.Count;
+                // เลื่อนฉากหลังนี้ไปต่อด้านขวา
                 layer.transform.position += new Vector3(moveDist, 0f, 0f);
             }
-            // 🔵 หลุดขวา → ย้ายไปซ้าย (ขากลับ)
-            else if (bgX > cameraX + _destroyThreshold)
+            // ตรวจสอบ: ฉากหลังหลุดไปทางขวาเกิน Threshold หรือไม่? (ฉากหลังอยู่ไกลกว่ากล้องมาก)
+            // ใช้ 'else if' เพื่อให้แน่ใจว่ามีการเคลื่อนที่เพียงครั้งเดียวต่อ Frame (สำคัญในการแก้ปัญหา Flicker)
+            else if (bgX - cameraX > _destroyThreshold)
             {
-                float moveDist = _backgroundWidth * _backgroundLayers.Count;
+                // เลื่อนฉากหลังนี้ไปต่อด้านซ้าย
                 layer.transform.position -= new Vector3(moveDist, 0f, 0f);
             }
         }
     }
 
-    // =========================================================
-    // SPAWN / SETUP
-    // =========================================================
+    /// <summary>
+    /// กำหนดฉากหลังใหม่โดยการเปลี่ยน Pool Key
+    /// </summary>
     public void SetBackground(string backgroundKey)
     {
-        // Mapping ชื่อ BG ให้ตรงกับ MapType
+        // ตรรกะการเลือกฉากหลังตาม MapType เดิม
         if (backgroundKey == "default" && GameManager.Instance != null)
         {
             backgroundKey = GameManager.Instance.CurrentMapType switch
@@ -101,6 +159,7 @@ public class BackgroundLooper : MonoBehaviour
             };
         }
 
+        // หาก Background ไม่ได้เปลี่ยนและมี Layer อยู่แล้ว ไม่ต้องทำซ้ำ
         if (_currentBackgroundKey == backgroundKey && _backgroundLayers.Count > 0)
             return;
 
@@ -109,53 +168,42 @@ public class BackgroundLooper : MonoBehaviour
     }
 
     /// <summary>
-    /// จัดการคืนของเก่าและ Spawn พื้นหลังใหม่ตาม Pool Key
+    /// สร้างฉากหลัง 3 ชิ้นจาก Object Pool และจัดเรียงให้ตรงกับตำแหน่งกล้องปัจจุบัน
     /// </summary>
     private void SpawnBackgroundLayers(string poolKey)
     {
-        // 1. คืนของเก่าเข้า Pool
+        // 1. คืนพื้นหลังเก่าเข้าพูลก่อน
         foreach (var bg in _backgroundLayers)
-        {
-            if (bg) 
-            {
-                // 🔥 FIX: ใช้ GetObjectTag() เพื่อให้ได้ชื่อ Prefab ที่ถูกต้อง
-                ObjectPoolManager.Instance.ReturnToPool(GetObjectTag(bg), bg); 
-            }
-        }
+            if (bg) ObjectPoolManager.Instance.ReturnToPool(GetObjectTag(bg), bg);
+
         _backgroundLayers.Clear();
 
-        // 2. 🔥 FIX: หาจุดเริ่มวาง (Start X)
-        // ใช้ตำแหน่งขอบซ้ายของกล้องเป็นเกณฑ์
-        float startX = 0f; 
-        if (_cameraTransform != null)
-        {
-            // คำนวณขอบซ้ายของกล้อง + ระยะที่กำหนดไว้ (_destroyThreshold) 
-            // แล้ววางรูปแรกให้อยู่ตรงกลางของตำแหน่งนั้น
-            float cameraLeft = _cameraTransform.position.x - _destroyThreshold;
-            
-            // รูปแรกควรวางตำแหน่ง ณ ขอบซ้ายของกล้อง + ครึ่งหนึ่งของความกว้างรูป
-            // เพื่อให้รูปแรกครอบคลุมพื้นที่ที่กล้องมองเห็น
-            startX = cameraLeft + (_backgroundWidth / 2f); 
-        }
+        if (_cameraTransform == null) return;
 
-        // 3. Spawn ใหม่ 3 รูป เรียงต่อกัน
-        for (int i = 0; i < BG_COUNT; i++)
-        {
-            // ตำแหน่งของรูปที่ i จะห่างจาก startX เป็นระยะ i * _backgroundWidth
-            Vector3 spawnPos = new Vector3(startX + (i * _backgroundWidth), _backgroundYOffset, 0);
+        // 2. คำนวณตำแหน่งสำหรับวาง 3 รูป
+        float centerX = _cameraTransform.position.x;
 
+        float firstX = centerX - _backgroundWidth;     // ซ้ายสุด
+        float secondX = centerX;                       // กลาง
+        float thirdX = centerX + _backgroundWidth;     // ขวา
+        float[] positions = { firstX, secondX, thirdX };
+
+        // 3. Spawn และกำหนดค่า
+        foreach (float px in positions)
+        {
+            Vector3 spawnPos = new Vector3(px, _backgroundYOffset, 0);
+            // สมมติว่า ObjectPoolManager.Instance.SpawnFromPool พร้อมใช้งาน
             var bg = ObjectPoolManager.Instance.SpawnFromPool(poolKey, spawnPos, Quaternion.identity);
 
             if (!bg)
             {
-                Debug.LogError($"❌ BG prefab not found in pool: {poolKey}");
-                // หยุด Loop ทันที
-                return;
+                Debug.LogError($"❌ ไม่พบ BG prefab ใน Pool Key: {poolKey}");
+                return; 
             }
 
             bg.transform.SetParent(transform);
 
-            // ตั้งค่า Layer ให้แน่ใจว่าอยู่ข้างหลังสุด
+            // ตั้งค่า Sorting Layer
             if (bg.TryGetComponent<SpriteRenderer>(out var sr))
             {
                 sr.sortingLayerName = "Background";
@@ -165,7 +213,10 @@ public class BackgroundLooper : MonoBehaviour
             _backgroundLayers.Add(bg);
         }
     }
-        
+
+    /// <summary>
+    /// ดึง Tag (ชื่อ Prefab เดิม) จาก GameObject ที่โคลนมา
+    /// </summary>
     private string GetObjectTag(GameObject obj)
     {
         return obj.name.Replace("(Clone)", "").Trim();

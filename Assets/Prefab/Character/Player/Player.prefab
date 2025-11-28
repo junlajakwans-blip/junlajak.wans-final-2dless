@@ -472,7 +472,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Player
   _maxHealth: 500
   _currentHealth: 200
-  _moveSpeed: 6
+  _moveSpeed: 7
   _rigidbody: {fileID: -4817979446526450474}
   _animator: {fileID: 0}
   _visualRoot: {fileID: 6145297030757921140}
@@ -503,11 +503,13 @@ MonoBehaviour:
     _isDefaultDuckling: 1
   _rigAnimator: {fileID: 0}
   _jumpForce: 5
+  _fallDeathY: -5
   _isGrounded: 0
   _chargePower: 0
   _currentMapType: 1
   _hasMapBuff: 0
   _buffMultiplier: 1
+  _isInvulnerable: 0
   _healthBarUI: {fileID: 0}
   _fxProfile: {fileID: 11400000, guid: 87fe319dd875b4443804c983cc645cb9, type: 2}
 --- !u!114 &4658831917752918347

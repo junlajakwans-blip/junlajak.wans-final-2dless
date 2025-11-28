@@ -1,28 +1,47 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
+public class ThrowableSpawner : MonoBehaviour, ISpawn
 {
-    [Header("Drop Table (Per Map)")]
-    [SerializeField] private ThrowableDropTable _dropTable;
+    // 🔥 FIX: ลบ DropTable ออก และแทนที่ด้วย List ของ ThrowableItemSO
+    [Header("Item List (Per Map)")]
+    [Tooltip("รายการ ThrowableItemSO ทั้งหมดที่สามารถสปาวได้ใน Map นี้")]
+    [SerializeField] private List<ThrowableItemSO> _throwableItems = new List<ThrowableItemSO>();
+    
+    //   อ้างอิงถึง Prefab พื้นฐาน (ควรเป็น Prefab เดียวที่มี ThrowableItemInfo)
+    [Header("Item Template")]
+    [Tooltip("Prefab หลักของ Throwable (ควรมี ThrowableItemInfo ติดอยู่)")]
+    [SerializeField] private GameObject _throwablePrefabTemplate; 
 
-    // TODO : [Header("Distance Phases")] 
-    // [SerializeField] private float _phase1End = 700f; ตอนแรกทำไว้แต่เทสยากเลยเอาไว้มาทำหลัง DEMO เสร็จ
-    // TODO : [SerializeField] private float _phase2End = 1600f;
+
+    [Header("Distance Phases")] 
+    [Tooltip("ระยะทาง (X) สิ้นสุด Phase 1 (0-700)")]
+    [SerializeField] private float _phase1End = 700f; 
+    [Tooltip("ระยะทาง (X) สิ้นสุด Phase 2 (700-1600)")]
+    [SerializeField] private float _phase2End = 1600f;
 
 
-    // TODO : [Header("Drop Chance (Phase3)")]
-    //[Tooltip("0–1 เช่น 0.15 = 15%")]
-    //[SerializeField] private float _phase3DropChance = 0.15f;
+    [Header("Drop Chance (Phase Based)")]
+    [Tooltip("โอกาสดรอปใน Phase 3 (ระยะไกลสุด)")]
+    [SerializeField] private float _phase3DropChance = 0.15f; 
+    [Tooltip("โอกาสดรอปใน Phase 1 (0-700)")]
+    [SerializeField] private float _phase1DropChance = 0.40f; 
+    [Tooltip("โอกาสดรอปใน Phase 2 (700-1600)")]
+    [SerializeField] private float _phase2DropChance = 0.25f; 
+
 
     [Header("Placement Offset Y")]
     [Tooltip("Offset แนวตั้งสุดท้าย (ควรตั้งค่าใน MapGenerator)")]
     [SerializeField] private float _spawnYOffset = 0.5f;
 
+    [Header("Pool Settings")]
+    [Tooltip("จำนวน Throwable ที่จะ Pre-spawn ต่อ Type")]
+    [SerializeField] private int _preSpawnAmount = 5;
+
 
     private Transform _pivot; // Player
     private float _startX;
-    private IObjectPool _pool;
     private EnemySpawner _enemySpawner;
 
     private bool _canInteract = false;
@@ -30,6 +49,9 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
 
     // รายการของที่ spawn อยู่บนพื้น (ไม่รวมที่อยู่บนหัวผู้เล่น)
     [SerializeField] private List<GameObject> _activeThrowables = new();
+
+    // Dedicated Pool for Throwables
+    private Dictionary<string, Queue<GameObject>> _throwablePoolDictionary = new();
 
     #region Initialization
     public void Initialize(Transform pivot, EnemySpawner enemySpawner = null)
@@ -39,11 +61,16 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
         if (_pivot != null)
              _startX = _pivot.position.x; 
 
-        _pool = ObjectPoolManager.Instance;
         _enemySpawner = enemySpawner ?? FindFirstObjectByType<EnemySpawner>();
 
         if (_enemySpawner != null)
+        {
+            _enemySpawner.OnEnemySpawned -= HandleEnemySpawned;
             _enemySpawner.OnEnemySpawned += HandleEnemySpawned;
+        }
+
+        // NEW: Initialize Dedicated Pools
+        InitializeThrowablePools();
 
         _canInteract = true;
     }
@@ -53,12 +80,54 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
         if (_enemySpawner != null)
             _enemySpawner.OnEnemySpawned -= HandleEnemySpawned;
     }
+    
+    /// <summary>
+    ///  Creates a dedicated pool for each type of throwable item using the SO tag.
+    /// </summary>
+    private void InitializeThrowablePools()
+    {
+        // 🔥 FIX: ใช้ _throwableItems แทน _dropTable
+        if (_throwableItems == null || _throwableItems.Count == 0 || _throwablePrefabTemplate == null) 
+        {
+            Debug.LogError("[ThrowableSpawner Pool] Item List or Template is missing. Cannot initialize pool.");
+            return;
+        }
+
+        //  ใช้ Prefab Template ตัวเดียวในการ Instantiate ทุก Type
+        GameObject prefabTemplate = _throwablePrefabTemplate; 
+
+        // 🔥 FIX: วนลูปผ่าน List<ThrowableItemSO> โดยตรง
+        foreach (var itemSO in _throwableItems)
+        {
+            string poolTag = itemSO?.poolTag; 
+            if (string.IsNullOrEmpty(poolTag)) continue;
+            
+            if (!_throwablePoolDictionary.ContainsKey(poolTag))
+            {
+                _throwablePoolDictionary[poolTag] = new Queue<GameObject>();
+                
+                // Pre-spawn instances (ลด GC Spike)
+                for (int i = 0; i < _preSpawnAmount; i++)
+                {
+                    //  Instantiate จาก Prefab Template ตัวเดียว
+                    var obj = Instantiate(prefabTemplate, transform); 
+                    obj.name = poolTag; // ตั้งชื่อให้ถูกต้องสำหรับ Lookup
+                    obj.SetActive(false);
+                    _throwablePoolDictionary[poolTag].Enqueue(obj);
+                }
+            }
+        }
+        Debug.Log($"[ThrowableSpawner] Initialized dedicated pools for {_throwablePoolDictionary.Count} throwable types.");
+    }
+
+    //  FindPrefabTemplate ถูกลบไปแล้ว เพราะใช้ _throwablePrefabTemplate ตัวเดียว
     #endregion
 
     #region Enemy Events → Drop Logic
 
     private void HandleEnemySpawned(Enemy enemy)
     {
+        enemy.OnEnemyDied -= HandleEnemyDied;
         enemy.OnEnemyDied += HandleEnemyDied;
     }
 
@@ -69,67 +138,104 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
         if (_pivot == null) return; // Guard
         
         float distance = Mathf.Max(0f, _pivot.position.x - _startX);
-
-        // Early game → ดรอปเยอะหน่อย เพื่อให้ Duckling ใช้สู้ได้
-        if (distance < 600f)
-        {
-            if (Random.value < 0.40f)   // 40%
-                SpawnThrowableAt(enemy.transform.position);
-            return;
-        }
-
-        // ระยะไกล → ความถี่ลดลงแต่ยังเจอเรื่อยๆ
-        if (Random.value < 0.18f)       // 18%
-            SpawnThrowableAt(enemy.transform.position);
-
         
-        Vector3 pos = enemy.transform.position;
-        GameObject obj = SpawnThrowableAt(pos);
-
+        float dropChance = 0f;
+        
+        //  FIX: ใช้ Logic Phase-based Drop Chance
+        if (distance < _phase1End)
+        {
+            dropChance = _phase1DropChance;   // Phase 1
+        }
+        else if (distance < _phase2End)
+        {
+            dropChance = _phase2DropChance;       // Phase 2
+        }
+        else
+        {
+            dropChance = _phase3DropChance;       // Phase 3
+        }
+        
+        if (Random.value < dropChance)
+        {
+             Vector3 pos = enemy.transform.position;
+             SpawnThrowableAt(pos);
+        }
     }
 
     #endregion
 
     #region Spawn Core
+    private GameObject SpawnThrowableInstance(string poolTag, Vector3 position, Quaternion rotation)
+    {
+        if (!_throwablePoolDictionary.ContainsKey(poolTag))
+        {
+            Debug.LogError($"[ThrowableSpawner Pool] Missing pool for tag: {poolTag}. Cannot spawn.");
+            return null;
+        }
+
+        var queue = _throwablePoolDictionary[poolTag];
+        GameObject obj = null;
+
+        // ดึงของจากคิว
+        while (queue.Count > 0 && obj == null)
+        {
+            obj = queue.Dequeue();
+        }
+
+        if (obj == null)
+        {
+            //  Dynamic Expansion: ใช้ Template เดิมในการสร้างใหม่
+            if (_throwablePrefabTemplate == null) return null;
+            
+            obj = Instantiate(_throwablePrefabTemplate, transform);
+            obj.name = poolTag;
+            Debug.LogWarning($"[ThrowableSpawner Pool] Dynamic created NEW instance for {poolTag} (Pool empty/destroyed).");
+        }
+
+        // Reset & Activate
+        obj.transform.SetPositionAndRotation(position, rotation);
+        obj.SetActive(true);
+
+        return obj;
+    }
+
+
     private GameObject SpawnThrowableAt(Vector3 receivedPos)
     {
-        if (_pool == null ||
-            _dropTable == null ||
-            _dropTable.dropList == null ||
-            _dropTable.dropList.Count == 0)
+        // 🔥 FIX: ตรวจสอบ List _throwableItems
+        if (_throwableItems == null || _throwableItems.Count == 0)
             return null;
 
-        // 1. กำหนดตำแหน่งสุดท้าย (เชื่อถือตำแหน่งที่ส่งมา)
+        // 🔥 1. เลือก ThrowableItemSO ตามน้ำหนัก
+        ThrowableItemSO itemSO = GetWeightedThrowableSO();
+        if (itemSO == null) return null;
+
+        string poolTag = itemSO.poolTag;
+
+
+        // 2. กำหนดตำแหน่งสุดท้าย (เชื่อถือตำแหน่งที่ส่งมา)
         Vector3 finalPos = receivedPos;
         finalPos.y += _spawnYOffset; // เพิ่ม Offset ให้ลอยเหนือจุดเกิด Enemy
 
-        // 2. Spawn Slot Check (Asset/Collectible/Throwable ต้องไม่ทับกัน)
+        // 3. Spawn Slot Check
         if (!SpawnSlot.Reserve(finalPos))
         {
-            // ลองขยับขวา 1 หน่วย
-            Vector3 tryRight = finalPos + new Vector3(1f, 0f, 0f);
-            if (SpawnSlot.Reserve(tryRight))
+            // หาก Slot ถูกจอง ให้ลองขยับไปด้านข้างเล็กน้อย (0.5 หน่วย)
+            float offset = 0.5f;
+            if (Random.value > 0.5f) offset = -offset;
+            
+            Vector3 tryPos = finalPos + new Vector3(offset, 0f, 0f);
+
+            if (!SpawnSlot.Reserve(tryPos))
             {
-                finalPos = tryRight;
+                 Debug.LogWarning($"[ThrowableSpawner] Spawn Failed (Slot Reserved) at X={finalPos.x:F1}.");
+                 return null;
             }
-            else
-            {
-                // ลองขยับซ้าย 1 หน่วย
-                Vector3 tryLeft = finalPos + new Vector3(-1f, 0f, 0f);
-                if (SpawnSlot.Reserve(tryLeft))
-                {
-                    finalPos = tryLeft;
-                }
-                else
-                {
-                    Debug.LogWarning($"[ThrowableSpawner] Spawn Failed (All Directions Reserved) at X={finalPos.x:F1}.");
-                    return null;
-                }
-            }
+            finalPos = tryPos;
         }
 
-        string poolTag = GetWeightedTag();
-        GameObject obj = _pool.SpawnFromPool(poolTag, finalPos, Quaternion.identity);
+        // 4. Spawn from Dedicated Pool
+        GameObject obj = SpawnThrowableInstance(poolTag, finalPos, Quaternion.identity);
         
         if (obj == null) 
         {
@@ -137,68 +243,48 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
             return null;
         }
         
-        // 3. Inject Info and Sprite
-        var info = obj.GetComponent<ThrowableItemInfo>();
-        var sr   = obj.GetComponent<SpriteRenderer>();
-
-        if (info != null)
+        // 5. Inject SO Data
+        // การเรียก GetComponent ในครั้งแรกหลังจาก Pool นั้นไม่ก่อให้เกิด GC Spike ร้ายแรง
+        if (obj.TryGetComponent<ThrowableItemInfo>(out var info))
         {
-            var entry = _dropTable.dropList.Find(x => x.poolTag == poolTag);
-            if (entry != null)
-            {
-                // [FIX]: SetInfo จะกำหนด PoolTag และ Icon ให้ ThrowableItemInfo
-                info.SetInfo(poolTag, entry.icon); 
-                
-                // [FIX]: ต้องใช้ SetSprite ของ ThrowableItemInfo เพื่อเปลี่ยน Sprite
-                if (sr != null)
-                    sr.sprite = entry.icon;
-            }
+            // ส่ง SO เข้าไปใน Info โดยตรงเพื่อกำหนดคุณสมบัติทั้งหมด (Damage, Sprite, Scale)
+            info.ApplyData(itemSO); 
         }
         
-        // [FIX]: เพิ่มการลงทะเบียนวัตถุที่เกิดสำเร็จ
+        // 6. ลงทะเบียนวัตถุที่เกิดสำเร็จ
         _activeThrowables.Add(obj);
-        
         
         return obj;
     }
 
-    private string GetWeightedTag()
+    /// <summary>
+    /// 🔥 NEW: Return the ThrowableItemSO based on its weight.
+    /// </summary>
+    private ThrowableItemSO GetWeightedThrowableSO()
     {
+        if (_throwableItems == null || _throwableItems.Count == 0) return null;
+        
         float total = 0f;
-        foreach (var e in _dropTable.dropList) total += e.weight;
+        // 🔥 FIX: ใช้ SO.weight โดยตรง
+        foreach (var itemSO in _throwableItems) 
+        {
+            if (itemSO != null) total += itemSO.weight;
+        }
+        
+        if (total <= 0f) return null;
 
         float r = Random.value * total;
-        foreach (var e in _dropTable.dropList)
+        // 🔥 FIX: ใช้ SO.weight โดยตรง
+        foreach (var itemSO in _throwableItems)
         {
-            r -= e.weight;
-            if (r <= 0f) return e.poolTag;
+            if (itemSO != null)
+            {
+                r -= itemSO.weight;
+                if (r <= 0f) return itemSO;
+            }
         }
-        return _dropTable.dropList[_dropTable.dropList.Count - 1].poolTag;
-    }
-    #endregion
-
-    #region IInteractable — Pick Up
-    public void Interact(Player player)
-    {
-        var interact = player.GetComponentInChildren<PlayerInteract>();
-        
-        
-        // 1. ให้ Player เก็บของชิ้นนี้ (PlayerInteract จะ SetParent และทำให้ Scale เปลี่ยน)
-        interact?.SetThrowable(gameObject);
-        
-        // 2. บอก ThrowableItemInfo ว่าถูกเก็บแล้ว
-        // ThrowableItemInfo.DisablePhysicsOnHold() จะทำการตั้งค่า Scale ที่ถูกต้องให้เอง
-        if (TryGetComponent<ThrowableItemInfo>(out var info))
-            info.DisablePhysicsOnHold(); 
-
-        
-        // 3. ยกเลิกการจอง Slot เมื่อถูกเก็บ
-        SpawnSlot.Unreserve(transform.position); 
-    }
-
-    public void ShowPrompt()
-    {
-        UIManager.Instance.ShowPrompt("Press E to pick up");
+        // Fallback
+        return _throwableItems[_throwableItems.Count - 1];
     }
     #endregion
 
@@ -218,12 +304,8 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
 
     public void Despawn(GameObject obj)
     {
-        if (obj == null || _pool == null) return;
+        if (obj == null) return;
         
-        // 0. รีเซ็ต Local Scale ก่อนคืน Pool
-        // โค้ดนี้ถูกคงไว้เพื่อความปลอดภัย แต่ OnReturnedToPool() ใน ThrowableItemInfo ก็ทำหน้าที่นี้แล้ว
-        obj.transform.localScale = new Vector3(0.2f, 0.2f, 1f); 
-
         // 1. Unreserve Slot (ถ้ายังมีการจองอยู่)
         SpawnSlot.Unreserve(obj.transform.position);
 
@@ -231,14 +313,44 @@ public class ThrowableSpawner : MonoBehaviour, ISpawn, IInteractable
         if (obj.TryGetComponent<ThrowableItemInfo>(out var info))
             info.OnReturnedToPool();
         
-        // 3. Remove จาก List และ Return
+        // 3. Remove จาก List และ Return (เข้า Pool ของตัวเอง)
         _activeThrowables.Remove(obj);
-
-        // [FIX]: ใช้ GetObjectTag Helper (ตามที่ทำใน AssetSpawner) หรือใช้ name.Replace
-        string key = obj.name.Replace("(Clone)", "").Trim(); 
-        _pool.ReturnToPool(key, obj);
+        ReturnThrowableToPool(obj);
     }
 
+    /// <summary>
+    /// Returns a throwable instance to its dedicated pool.
+    /// </summary>
+    private void ReturnThrowableToPool(GameObject obj)
+    {
+        if (obj == null) return;
+
+        // _activeThrowables.Remove(obj); // ⬅ ถูกย้ายไป Despawn เพื่อให้แน่ใจว่าถูก Remove ก่อน Return
+
+        // ดึง Tag ที่ถูกต้อง
+        string objectTag = obj.name;
+        int index = objectTag.IndexOf("(Clone)");
+        if (index > 0) objectTag = objectTag.Substring(0, index).Trim();
+
+        if (!_throwablePoolDictionary.ContainsKey(objectTag))
+        {
+            Debug.LogWarning($"❌ [THROWABLE POOL ERROR] Missing dedicated pool for: {objectTag} (Destroying instance).");
+            Destroy(obj); 
+            return;
+        }
+
+        // Reset & Return
+        obj.SetActive(false);
+        _throwablePoolDictionary[objectTag].Enqueue(obj);
+    }
+
+
     public int GetSpawnCount() => _activeThrowables.Count;
+
+    public void HidePrompt()
+    {
+        // ใช้งานเมื่อมี UIManager
+        // throw new System.NotImplementedException();
+    }
     #endregion
 }
