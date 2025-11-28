@@ -34,6 +34,9 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     [SerializeField] protected const int JUMP_ATTACK_DAMAGE = 10; // ดาเมจจากการเหยียบ
     [SerializeField] protected const int BASIC_ATTACK_DAMAGE = 15; // ดาเมจจากการโจมตีปกติ
 
+    [Header("Death Zone")]
+    [SerializeField] private float _fallDeathY = -5.0f; 
+    public float FallDeathY => _fallDeathY; // ให้ Game Manager อ่านได้
 
     [Header("Runtime State")]
     [SerializeField] private bool _isGrounded = false;
@@ -80,6 +83,18 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
 
     #endregion
 
+    private void Update()
+    {
+        if (_isDead) return;
+
+        // ตรวจสอบการตกสู่ Death Zone
+        if (transform.position.y < _fallDeathY)
+        {
+            Debug.Log($"[Player] Fell below Death Zone ({_fallDeathY}). Forcing Die.");
+            // เรียก Die() ซึ่งจะสั่ง GameManager.EndGame() ต่อไป
+            Die(); 
+        }
+    }
 
     #region Initialization
     public void Initialize(PlayerData data, CardManager cardManager, CareerSwitcher careerSwitcher)

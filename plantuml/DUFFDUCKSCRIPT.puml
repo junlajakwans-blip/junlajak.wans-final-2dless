@@ -1,15 +1,10 @@
 @startuml DUFFDUCK_FULL_SYSTEM
 !theme plain
-scale 595 width
-scale 842 height 
-
 skinparam dpi 150
 skinparam classAttributeIconSize 0
 top to bottom direction
 hide empty members
 skinparam linetype ortho
-
-
 
 abstract class Character {
     + CurrentHealth : int <<get>>
@@ -453,11 +448,6 @@ abstract class StoreBase {
     + {abstract} Purchase(item:StoreItem) : bool
     + <<virtual>> IsUnlocked(item:StoreItem) : bool
 }
-class "IReadOnlyList`1"<T> {
-}
-MonoBehaviour <|-- StoreBase
-StoreBase --> "StoreType" StoreType
-StoreBase --> "Items<StoreItem>" "IReadOnlyList`1"
 
 class StoreExchange {
     + <<override>> StoreName : string <<get>>
@@ -763,4 +753,98 @@ class SceneManager <<sealed>> {
     + ClearSceneObjects() : void
 }
 MonoBehaviour <|-- SceneManager
+
+class EnemySpawner {
+    +  <<event>> OnEnemySpawned : System.Action<Enemy> 
+    + InitializeSpawner(pool:IObjectPool, mapType:MapType, player:Player, collectibleSpawner:CollectibleSpawner, cardManager:CardManager, buffManager:BuffManager) : void
+    + Spawn() : void
+    + SpawnAtPosition(position:Vector3) : GameObject
+    + Despawn(enemy:GameObject) : void
+    + GetSpawnCount() : int
+    + SpawnSpecificEnemy(type:EnemyType, position:Vector3) : GameObject
+    + StartWave() : IEnumerator
+}
+MonoBehaviour <|-- EnemySpawner
+ISpawn <|-- EnemySpawner
+
+
+class AssetSpawner {
+    + Initialize(pivot:Transform, pool:IObjectPool) : void
+    + SpawnAtPosition(position:Vector3) : GameObject
+    + Despawn(obj:GameObject) : void
+    + GetSpawnCount() : int
+    + Spawn() : void
+}
+MonoBehaviour <|-- AssetSpawner
+ISpawn <|-- AssetSpawner
+
+class ThrowableSpawner {
+    + CanInteract : bool <<get>>
+    + Initialize(pivot:Transform, enemySpawner:EnemySpawner) : void
+    + Interact(player:Player) : void
+    + ShowPrompt() : void
+    + Spawn() : void
+    + SpawnAtPosition(position:Vector3) : GameObject
+    + Despawn(obj:GameObject) : void
+    + GetSpawnCount() : int
+}
+MonoBehaviour <|-- ThrowableSpawner
+ISpawn <|-- ThrowableSpawner
+IInteractable <|-- ThrowableSpawner
+
+class CollectibleSpawner {
+    + InitializeSpawner(pool:IObjectPool, cullingManager:DistanceCulling, cardManager:CardManager, buffManager:BuffManager) : void
+    + SetPlayer(player:Transform) : void
+    + SpawnAtPosition(targetPos:Vector3) : GameObject
+    + Spawn() : void
+    + Despawn(collectible:GameObject) : void
+    + GetSpawnCount() : int
+    + DropCollectible(type:CollectibleType, position:Vector3) : GameObject
+}
+MonoBehaviour <|-- CollectibleSpawner
+ISpawn <|-- CollectibleSpawner
+
+class CollectibleSpawner {
+    + InitializeSpawner(pool:IObjectPool, cullingManager:DistanceCulling, cardManager:CardManager, buffManager:BuffManager) : void
+    + SetPlayer(player:Transform) : void
+    + SpawnAtPosition(targetPos:Vector3) : GameObject
+    + Spawn() : void
+    + Despawn(collectible:GameObject) : void
+    + GetSpawnCount() : int
+    + DropCollectible(type:CollectibleType, position:Vector3) : GameObject
+}
+MonoBehaviour <|-- CollectibleSpawner
+ISpawn <|-- CollectibleSpawner
+
+class ComicEffectSpawner <<static>> {
+    + {static} Spawn(data:ComicEffectData, target:Transform) : void
+    + {static} Spawn(data:ComicEffectData, worldPos:Vector3) : void}
+
+class CardManager {
+    + IsReady : bool <<get>>
+    + Initialize(player:Player) : void
+    + SetCareerSwitcher(switcher:CareerSwitcher) : void
+    + AddCard(newCard:Card) : void
+    + RemoveCard(index:int) : void
+    + OnClickStarterButton() : void
+    + UseCard(index:int) : void
+    + ActivateMuscleDuck() : void
+    + AddStarterCard() : void
+    + AddCareerCard() : void
+}
+MonoBehaviour <|-- CardManager
+CardManager --> "Instance" CardManager
+CardManager --> "starterPanel" RandomStarterCard
+
+
+class ComicEffectManager {
+    + Register(key:string, prefab:ComicEffectPlayer, preloadCount:int) : void
+    + Play(data:ComicEffectData, pos:Vector3) : void
+    + Release(fx:ComicEffectPlayer) : void
+    + Initialize(player:Player) : void
+}
+MonoBehaviour <|-- ComicEffectManager
+ComicEffectManager --> "Instance" ComicEffectManager
+
+
 @enduml

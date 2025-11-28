@@ -913,7 +913,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1684979911893463440}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
         m_MethodName: ShowStoreMenu
         m_Mode: 6
@@ -1426,7 +1426,7 @@ MonoBehaviour:
   _playTime: 0
   _player: {fileID: 8952884402048639063, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   _saveSystem: {fileID: 1417430387}
-  _uiManager: {fileID: 1684979911893463440}
+  _uiManager: {fileID: 0}
   _cardManager: {fileID: 245340658}
   _devCheat: {fileID: 405969214}
   _targetFrameRate: 60
@@ -1492,7 +1492,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 484847110}
-  - {fileID: 1341418794}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &335992220
@@ -3099,6 +3098,73 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 512009185}
   m_CullTransparentMesh: 1
+--- !u!1 &515346380
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 515346382}
+  - component: {fileID: 515346381}
+  m_Layer: 5
+  m_Name: UIManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &515346381
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 515346380}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bfbcd4e017d45c4899a81d72498e0ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIManager
+  _healthBarUI: {fileID: 0}
+  _scoreUI: {fileID: 0}
+  _cardSlotUI: {fileID: 0}
+  _menuUI: {fileID: 0}
+  panelHUDMain: {fileID: 0}
+  _cardSelectionPanel: {fileID: 0}
+  _storeUI: {fileID: 0}
+  _mapSelectController: {fileID: 0}
+  promptUI: {fileID: 0}
+  promptText: {fileID: 0}
+  storeTitleText: {fileID: 0}
+  topCurrencies: []
+  panelMainMenu: {fileID: 0}
+  panelSelectMap: {fileID: 0}
+  panelStore: {fileID: 0}
+  panelSettings: {fileID: 0}
+  panelStoreExchange: {fileID: 0}
+  panelStoreUpgrade: {fileID: 0}
+  upgradeUI: {fileID: 0}
+--- !u!224 &515346382
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 515346380}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 401.42014, y: 302.5}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &519767651
 GameObject:
   m_ObjectHideFlags: 0
@@ -4221,7 +4287,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1684979911893463440}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
         m_MethodName: ShowStoreUpgrade
         m_Mode: 1
@@ -4353,7 +4419,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1684979911893463440}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
         m_MethodName: ShowSelectMap
         m_Mode: 1
@@ -7568,6 +7634,7 @@ GameObject:
   - component: {fileID: 1048763185}
   - component: {fileID: 1048763184}
   - component: {fileID: 1048763183}
+  - component: {fileID: 1048763186}
   m_Layer: 5
   m_Name: Button_Play
   m_TagString: Untagged
@@ -7638,19 +7705,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1048763184}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1684979911893463440}
-        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: ShowSelectMap
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1048763184
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7689,6 +7744,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1048763181}
   m_CullTransparentMesh: 1
+--- !u!114 &1048763186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1048763181}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4744090cb80390d4aa34ff26bf851279, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIButton_Play
 --- !u!1 &1067259323
 GameObject:
   m_ObjectHideFlags: 0
@@ -10282,11 +10349,11 @@ Transform:
   m_GameObject: {fileID: 1341418791}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -654.71265, y: -239.60934, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 320670326}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1349002577
 GameObject:
@@ -12050,7 +12117,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1684979911893463440}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
         m_MethodName: ShowStoreExchange
         m_Mode: 1
@@ -15187,73 +15254,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StoreUpgrade
   items:
   - {fileID: 11400000, guid: 50e4c6b9bdbc75f4098b4368717cb10b, type: 2}
---- !u!224 &496331961433448065
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2315881057120577088}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 401.42014, y: 302.5}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1684979911893463440
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2315881057120577088}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3bfbcd4e017d45c4899a81d72498e0ea, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UIManager
-  _healthBarUI: {fileID: 2011307755}
-  _scoreUI: {fileID: 387684699}
-  _cardSlotUI: {fileID: 1798947143}
-  _menuUI: {fileID: 39334154}
-  panelHUDMain: {fileID: 1071875931}
-  _cardSelectionPanel: {fileID: 1305807102}
-  _storeUI: {fileID: 686105242}
-  _mapSelectController: {fileID: 1749192058}
-  promptUI: {fileID: 574821326}
-  promptText: {fileID: 997057973}
-  storeTitleText: {fileID: 2033598487}
-  topCurrencies: []
-  panelMainMenu: {fileID: 462428390}
-  panelSelectMap: {fileID: 1749192056}
-  panelStore: {fileID: 686105238}
-  panelSettings: {fileID: 512009185}
-  panelStoreExchange: {fileID: 994997339}
-  panelStoreUpgrade: {fileID: 2147098977}
-  upgradeUI: {fileID: 1561393217}
---- !u!1 &2315881057120577088
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 496331961433448065}
-  - component: {fileID: 1684979911893463440}
-  m_Layer: 5
-  m_Name: UIManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
 --- !u!4 &7006256497116214885
 Transform:
   m_ObjectHideFlags: 0
@@ -15305,6 +15305,7 @@ SceneRoots:
   - {fileID: 109758876}
   - {fileID: 1258507878}
   - {fileID: 320670326}
-  - {fileID: 496331961433448065}
+  - {fileID: 515346382}
   - {fileID: 1030200944}
   - {fileID: 440463421}
+  - {fileID: 1341418794}

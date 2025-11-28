@@ -1,9 +1,9 @@
-using UnityEngine;
+/*using UnityEngine;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine.SceneManagement;
 
-public class UIManager : MonoBehaviour
+public class UIM : MonoBehaviour
 {
 
     #region Fields
@@ -11,7 +11,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private HealthBarUI _healthBarUI;
     [SerializeField] private ScoreUI _scoreUI;
     [SerializeField] private CardSlotUI _cardSlotUI;
-    [SerializeField] private MenuUI _menuUI;
+    [SerializeField] private MenuUI_Main _menuUI; // <--- ใช้ Field นี้โดยตรง
+    [SerializeField] private MenuUI_HUD _menuUIHUD;
     [SerializeField] public GameObject panelHUDMain;
 
     [Header("Card Selection")]
@@ -28,11 +29,6 @@ public class UIManager : MonoBehaviour
     [Header("System References")]
     [SerializeField] private TextMeshProUGUI storeTitleText;
     [SerializeField] private TopCurrencyUI[] topCurrencies;
-
-    
-
-
-
     
     #endregion
 
@@ -46,15 +42,85 @@ public class UIManager : MonoBehaviour
     public static UIManager Instance { get; private set; }
 
 
-
     //  References สำหรับ Dependency Injection
     private GameManager _gameManagerRef;
     private Currency _currencyRef;
     private StoreManager _storeManagerRef;
     private List<StoreBase> _storesRef;
     public ScoreUI GetScoreUI() => _scoreUI;
-    
 
+    private T FindInAllChildren<T>(string name) where T : Component
+    {
+        foreach (var canvas in Resources.FindObjectsOfTypeAll<Canvas>())
+        {
+            if (!canvas.gameObject.scene.isLoaded) continue; // กัน Prefab ที่อยู่นอก Scene
+
+            var trs = canvas.GetComponentsInChildren<T>(true);
+            foreach (var t in trs)
+                if (t.name == name)
+                    return t;
+        }
+        return null;
+    }
+
+    public void AutoBindMainMenuUI()
+    {
+        panelMainMenu      = FindInAllChildren<Transform>("Panel_MainMenu")?.gameObject;
+        panelSelectMap     = FindInAllChildren<Transform>("Panel_SelectMap")?.gameObject;
+        panelStore         = FindInAllChildren<Transform>("Panel_Store")?.gameObject;
+        panelStoreExchange = FindInAllChildren<Transform>("Panel_Store_Exchange")?.gameObject;
+        panelStoreUpgrade  = FindInAllChildren<Transform>("Panel_Store_Upgrade")?.gameObject;
+        panelSettings      = FindInAllChildren<Transform>("Panel_Settings")?.gameObject;
+
+        _storeUI = FindInAllChildren<StoreUI>("Panel_Store");
+        _mapSelectController = FindInAllChildren<MapSelectController>("Panel_SelectMap");
+
+        // FIX: ควร Bind _menuUI ในนี้ด้วย เผื่อไม่ได้กำหนดใน Inspector
+        _menuUI = FindFirstObjectByType<MenuUI_Main>();
+
+        upgradeUI = FindInAllChildren<UpgradeUI>("Icon_MaxUpgrade");
+
+        storeTitleText ??= FindInAllChildren<TextMeshProUGUI>("Text_ShopTitle");
+
+        // Currency bar
+        topCurrencies = FindObjectsByType<TopCurrencyUI>(FindObjectsSortMode.None);
+
+        Debug.Log("<color=yellow>[UIManager] AutoBindMainMenuUI completed (deep scan) ✔</color>");
+    }
+
+    public void TryBindHUD()
+    {
+
+        if (_healthBarUI != null && _scoreUI != null && _cardSlotUI != null && panelHUDMain != null)
+        {
+            Debug.Log("[UIManager] Skip bind — HUD already bound ✔");
+            return;
+        }
+
+        Canvas[] canvases = Resources.FindObjectsOfTypeAll<Canvas>();
+        Debug.Log($"[UIManager] Found {canvases.Length} Canvas objects in deep scan.");
+
+        foreach (var canvas in canvases)
+        {
+            Debug.Log($"[UIManager] Check canvas: {canvas.name}");
+
+            if (canvas.name != "Canvas_HUD") 
+                continue;
+
+            _healthBarUI = canvas.GetComponentInChildren<HealthBarUI>(true);
+            _scoreUI     = canvas.GetComponentInChildren<ScoreUI>(true);
+            _cardSlotUI  = canvas.GetComponentInChildren<CardSlotUI>(true);
+            _menuUIHUD = canvas.GetComponentInChildren<MenuUI_HUD>(true);
+            panelHUDMain = canvas.transform.Find("Panel_HUD")?.gameObject;
+
+            Debug.Log("<color=cyan>[UIManager] HUD deep scan & bind (component-based) ✔</color>");
+            return;
+        }
+
+        Debug.LogWarning("[UIManager] HUD deep scan failed (Canvas_HUD not found)");
+    }
+
+    
     #region Dependencies
     
     /// <summary>
@@ -66,24 +132,30 @@ public class UIManager : MonoBehaviour
         _currencyRef = currency;
         _storeManagerRef = storeManager;
         _storesRef = stores;
-        
-        // Register Currency for every TopCurrency UI
+
+        //------------------------------------------
+        // Currency UI
+        //------------------------------------------
         if (topCurrencies != null)
         {
             foreach (var ui in topCurrencies)
-            {
-                if (ui == null) continue;
-                ui.SetDependencies(currency);
-                Debug.Log("[UIManager] TopCurrencyUI registered");
-            }
+                ui?.SetDependencies(currency);
         }
 
-        // Register Store UI
+        //------------------------------------------
+        // Store UI
+        //------------------------------------------
         if (_storeUI != null)
-        _storeUI.SetDependencies(currency, stores, storeManager);
+            _storeUI.SetDependencies(currency, stores, storeManager);
 
+        //------------------------------------------
+        // Map Select
+        //------------------------------------------
         _mapSelectController?.SetDependencies(gm, currency);
 
+        // =============================
+        // HUD / Gameplay UI dependencies
+        // =============================
         if (_scoreUI != null)
         {
             _scoreUI.InitializeScore(0); // เริ่มคะแนนใหม่
@@ -91,14 +163,7 @@ public class UIManager : MonoBehaviour
 
         if (_healthBarUI != null && gm != null && gm.PlayerRef != null)
         {
-            // 1. ส่ง Reference ของ Health Bar ไปให้ Player เพื่อให้ Player ใช้ Update ค่าได้
             gm.PlayerRef.SetHealthBarUI(_healthBarUI);
-            
-            // 2. ตั้งค่า Health Bar สูงสุดและค่าปัจจุบันตาม Player (MaxHealth = 500)
-            InitializeHealth(gm.PlayerRef.MaxHealth); 
-            UpdateHealth(gm.PlayerRef.CurrentHealth);
-            
-            Debug.Log($"[UIManager] Health Bar Initialized with Max HP: {gm.PlayerRef.MaxHealth}");
         }
 
         if (_cardSlotUI != null && CardManager.Instance != null)
@@ -106,21 +171,26 @@ public class UIManager : MonoBehaviour
             _cardSlotUI.SetManager(CardManager.Instance);
         }
 
+        Debug.Log("<color=green>[UIManager] HUD SetDependencies linked successfully ✔</color>");
+
+        //------------------------------------------
+        // Refresh visible UI state
+        //------------------------------------------
         RefreshStoreUI();
     }
 
     #endregion  
 
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject); // ทำลายตัวเอง ถ้ามีตัวอื่นอยู่แล้ว
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject); 
-    }
+    //private void Awake()
+    //{
+        //if (Instance != null && Instance != this)
+        //{
+        //    Destroy(gameObject); // ทำลายตัวเอง ถ้ามีตัวอื่นอยู่แล้ว
+       //     return;
+      //  }
+     //   Instance = this;
+     //   DontDestroyOnLoad(gameObject); 
+    //}
 
     #region Main Menu
 
@@ -309,19 +379,20 @@ public void ShowMainMenu()
     #region Menu UI During Gameplay
     public void ShowPauseMenu(bool isActive)
     {
-        _menuUI?.ShowPauseMenu(isActive);
+        // Gameplay Menu
+        _menuUIHUD?.ShowPauseMenu(isActive);
     }
 
     public void ShowResultMenu()
     {
-        _scoreUI.ShowFinalResult();  //  ใช้ text จาก prefab ScoreUI
-        _menuUI.ShowResultMenu();    // เปิด Panel หน้า Result
+        // Gameplay Result Panel
+        _menuUIHUD?.ShowResultMenu();
     }
-
 
     public void CloseAllMenus()
     {
-        _menuUI?.CloseAllPanels();
+        _menuUI?.CloseAllPanels();   // MainMenu
+        _menuUIHUD?.CloseAllPanels(); // Gameplay
     }
 
     public bool IsAnyMenuOpen()
@@ -330,7 +401,10 @@ public void ShowMainMenu()
     }
 
     public void ShowGameplayHUD()
-    {
+    {   
+        //Call HUD
+        TryBindHUD();
+
         // 1. เปิด HUD หลัก
         if (panelHUDMain != null)
             panelHUDMain.SetActive(true);
@@ -352,20 +426,38 @@ public void ShowMainMenu()
         var cardPanel = GameObject.Find("Panel_Card");
         if (cardPanel != null)
             cardPanel.SetActive(true);
+
+        // กัน HUD spawn ช้า (Mobile / WebGL)
+        Invoke(nameof(TryBindHUD), 0.1f);
     }
     #endregion
 
     #region Store UI
     public void OpenStore()
     {
-        // เปิดหน้าร้านรวม (ไม่ใช่ Exchange / Upgrade โดยตรง)
-        MenuUI.Instance.ShowStoreMenu(true);
+        // ใช้ _menuUI ที่ Bind ไว้แทนการค้นหาซ้ำ
+        if (_menuUI == null)
+        {
+            Debug.LogWarning("[UIManager] ⚠ Cannot open Store — _menuUI reference is missing (Please check Inspector/AutoBind)");
+            // สำรอง: ลองค้นหาหนึ่งครั้งเผื่อ AutoBind ยังไม่ทำงาน
+            _menuUI = FindFirstObjectByType<MenuUI_Main>();
+            if (_menuUI == null) 
+            {
+                 Debug.LogWarning("[UIManager] ❌ Cannot open Store — MenuUI_Main not found in scene.");
+                 return;
+            }
+        }
+
+        _menuUI.ShowStoreMenu(true);
 
         if (_storeUI != null && _storesRef != null)
         {
-            // ร้านแรกที่จะแสดงค่าเริ่มต้น (Exchange)
             var firstStore = _storesRef.Find(s => s.StoreType == StoreType.Exchange);
-            _storeUI.SetActiveStore(firstStore);
+            // ป้องกัน Null Ref ถ้าไม่มี Store Exchange
+            if (firstStore != null)
+            {
+                _storeUI.SetActiveStore(firstStore);
+            }
         }
 
         RefreshStoreUI();
@@ -373,38 +465,55 @@ public void ShowMainMenu()
 
     public void ShowStoreExchange()
     {
-        MenuUI.Instance.ShowStoreMenu(true);
+        // ใช้ _menuUI ที่ Bind ไว้แทน
+        if (_menuUI == null)
+        {
+            Debug.LogWarning("[UIManager] ⚠ Cannot show Store Exchange — _menuUI reference is missing.");
+            return;
+        }
 
-        if (_storeUI != null)
-            _storeUI.SwitchStore(StoreType.Exchange);
+        _menuUI.ShowStoreMenu(true);
+        _storeUI?.SwitchStore(StoreType.Exchange);
     }
 
     public void ShowStoreUpgrade()
     {
-        MenuUI.Instance.ShowStoreMenu(true);
+        // ใช้ _menuUI ที่ Bind ไว้แทน
+        if (_menuUI == null)
+        {
+            Debug.LogWarning("[UIManager] ⚠ Cannot show Store Upgrade — _menuUI reference is missing.");
+            return;
+        }
 
-        if (_storeUI != null)
-            _storeUI.SwitchStore(StoreType.Upgrade);
+        _menuUI.ShowStoreMenu(true);
+        _storeUI?.SwitchStore(StoreType.Upgrade);
     }
 
     public void ShowStoreMap()
     {
-        MenuUI.Instance.ShowStoreMenu(true);
+        // ใช้ _menuUI ที่ Bind ไว้แทน
+        if (_menuUI == null)
+        {
+            Debug.LogWarning("[UIManager] ⚠ Cannot show Store Map — _menuUI reference is missing.");
+            return;
+        }
 
-        if (_storeUI != null)
-            _storeUI.SwitchStore(StoreType.Map);
+        _menuUI.ShowStoreMenu(true);
+        _storeUI?.SwitchStore(StoreType.Map);
     }
+
 
     public void RefreshStoreUI()
     {
-        foreach (var ui in topCurrencies)
-            ui?.Refresh();          // เงินด้านบน
+        if (topCurrencies != null)
+            foreach (var ui in topCurrencies)
+                ui?.Refresh();
 
-        upgradeUI?.Refresh();       // ค่า LV / MAX Upgrade
-
-        if (_storeUI != null)
-        _storeUI.RefreshActiveSlots();
+        upgradeUI?.Refresh();
+        _storeUI?.RefreshActiveSlots();
     }
+
     #endregion
 
 }
+*/

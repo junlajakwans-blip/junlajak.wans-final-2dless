@@ -42,7 +42,8 @@ public abstract class MapGeneratorBase : MonoBehaviour
     [SerializeField] protected float _maxYOffset = 1.5f;
 
     // กำหนดค่า Offset ใหม่ตรงนี้เพื่อให้ Collectible ลอยอยู่บน Platform พอดี
-    [SerializeField] protected float _collectibleOffset = 0.5f;
+    [SerializeField] protected float _collectibleOffset = 0.25f;
+    [SerializeField] protected float _assetVerticalOffset = 0.1f;
 
     protected float _nextSpawnX; //  Cursor สำคัญ: บอกตำแหน่งขวาสุดที่สร้าง Platform ไปแล้ว
     protected float _nextFloorX; //  Cursor สำคัญ: บอกตำแหน่งขวาสุดที่สร้างพื้นหลัง (Floor) ไปแล้ว
@@ -217,6 +218,13 @@ public abstract class MapGeneratorBase : MonoBehaviour
                 }
             }
 
+            // 🔥 เติม Floor ด้านซ้าย เมื่อ Player เดินถอยหลัง
+            float backFrontierX = _generationPivot.position.x - 10f; // เติมจากหลังผู้เล่นเล็กน้อย
+            while (_nextFloorX > backFrontierX)
+            {
+                SpawnFloorSegmentBackward();
+            }
+
             // 4. ลบของเก่าที่หลุดจอซ้าย
             RecycleOffScreenPlatforms();
             RecycleOffScreenFloors();
@@ -229,6 +237,21 @@ public abstract class MapGeneratorBase : MonoBehaviour
         }
     }
     #endregion
+
+    private void SpawnFloorSegmentBackward()
+    {
+        GameObject floor = _objectPoolManager.SpawnFromPool(FloorKey, Vector3.zero, Quaternion.identity);
+        if (floor == null) return;
+
+        _nextFloorX -= _floorLength; // ย้าย Cursor ถอยหลัง
+        Vector3 pos = new Vector3(_nextFloorX, _floorY, 0f);
+
+        floor.transform.position = pos;
+        floor.transform.SetParent(transform);
+        floor.SetActive(true);
+        _activeFloors.Add(floor);
+    }
+
 
     // ============================================================================
     // 6. PLATFORM GENERATION
@@ -430,8 +453,14 @@ protected virtual void TrySpawnContentOnPlatform(GameObject platform, Vector3 po
         0f
     );
     
+    Vector3 assetSpawnPos = new Vector3(
+        pos.x, 
+        platformTopY + _assetVerticalOffset,
+        0f
+    );
+
     // 2. จุด Center ของ Platform (สำหรับ Enemy)
-    Vector3 platformCenter = new Vector3(pos.x, pos.y, 0f); 
+    Vector3 platformTop = new Vector3(pos.x, platformTopY, 0f); 
 
     if (chance < 0.3f && _collectibleSpawner != null)
     {
@@ -441,12 +470,12 @@ protected virtual void TrySpawnContentOnPlatform(GameObject platform, Vector3 po
     else if (chance < 0.5f && _assetSpawner != null)
     {
         // 20% เกิด Asset
-        _assetSpawner.SpawnAtPosition(collectibleSpawnPos); 
+        _assetSpawner.SpawnAtPosition(assetSpawnPos); 
     }
     else if (chance < 0.6f && _enemySpawner != null)
     {
         // 10% เกิด Enemy
-        _enemySpawner.SpawnAtPosition(platformCenter); 
+        _enemySpawner.SpawnAtPosition(platformTop); 
     }
 }
 #endregion

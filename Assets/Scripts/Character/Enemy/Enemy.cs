@@ -227,11 +227,12 @@ public abstract class Enemy : Character, IAttackable
         if (_currentHealth <= 0)
         {
             _currentHealth = 0;
-            Die();   // 
+            _isDead = true;
+            if (TryGetComponent<Collider2D>(out var col)) col.enabled = false;
+            Die();   
             return;
         }
 
-        UpdateHealthBar();
     }
 
     //Die form abstract Character
@@ -297,6 +298,42 @@ public abstract class Enemy : Character, IAttackable
         target.TakeDamage(amount);
         Debug.Log($"[{_enemyType}] dealt {amount} damage to target!");
     }
+    #endregion
+
+    #region Pooling Helpers
+
+    /// <summary>
+
+    /// Resets the enemy state when returned to the pool (Despawned).
+
+    /// This ensures the enemy is clean and ready for immediate reuse by the EnemySpawner's Dedicated Pool.
+
+    /// </summary>
+
+    public void ResetStateForPooling()
+
+    {
+        // 1. Reset Flags
+        _isDead = false; // ต้องตั้งค่ากลับเป็น false
+        _isDisabled = false;
+        _isConfused = false;
+        _isFeared = false;
+        _fearTimer = 0f;
+        _currentState = EnemyState.Idle; 
+
+        // 2. Reset Component states (เปิดสิ่งที่ถูกปิดใน Die()/TakeDamage() กลับคืน)
+        enabled = true; // เปิด Script
+
+        if (TryGetComponent<Collider2D>(out var col)) col.enabled = true; // เปิดชนกลับคืน
+
+        // 3. Reset Health/Stats
+        _currentHealth = _maxHealth; // คืนเลือดเต็ม
+
+        // 4. หยุด Coroutine ที่อาจยังทำงานอยู่
+        StopAllCoroutines(); 
+
+    }
+
     #endregion
 
     /// <summary>

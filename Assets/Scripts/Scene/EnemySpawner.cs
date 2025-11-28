@@ -54,14 +54,13 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     [SerializeField] private float _minSpawnSpacing = 10f;     
     private Vector3 _lastEnemySpawnPosition = Vector3.negativeInfinity; 
     [Tooltip("Vertical lift to place the enemy on the platform/floor.")]
-    [SerializeField] private float _verticalSpawnOffset = 0.5f;
+    [SerializeField] private float _verticalSpawnOffset = 0.05f;
 
 
     #endregion
 
     private List<GameObject> _validPrefabsCache = new();
-
-
+    private Dictionary<string, Queue<GameObject>> _enemyPoolDictionary = new();// Dedicated Enemy Pool Dictionary
 
     /// <summary>
     /// Event triggered every time a new enemy is spawned from the pool.
@@ -95,7 +94,7 @@ public class EnemySpawner : MonoBehaviour, ISpawn
     /// </summary>
     public void InitializeSpawner(IObjectPool pool, MapType mapType, Player player, CollectibleSpawner collectibleSpawner, CardManager cardManager, BuffManager buffManager)
     {
-        _objectPool = pool;
+        this._objectPool = pool;
         _mapType = mapType;
         this._player = player;
         this._collectibleSpawner = collectibleSpawner;
@@ -108,9 +107,30 @@ public class EnemySpawner : MonoBehaviour, ISpawn
 
         CacheValidEnemies();
 
+        InitializeEnemyPools();
+
         Debug.Log($"[EnemySpawner] Initialized for map: {_mapType.ToFriendlyString()} | " + $"Platform: {Application.platform} | MaxEnemies={_maxEnemies}");
     }
 
+    private void InitializeEnemyPools()
+    {
+        foreach (var prefab in _validPrefabsCache)
+        {
+            string tag = prefab.name;
+            if (!_enemyPoolDictionary.ContainsKey(tag))
+            {
+                _enemyPoolDictionary[tag] = new Queue<GameObject>();
+                // Pre-spawn 5 instances per enemy type
+                for (int i = 0; i < 5; i++)
+                {
+                    var obj = Instantiate(prefab, transform); 
+                    obj.SetActive(false);
+                    _enemyPoolDictionary[tag].Enqueue(obj);
+                }
+            }
+        }
+        Debug.Log($"[EnemySpawner] Initialized dedicated pools for {_enemyPoolDictionary.Count} enemy types.");
+    }
     /// <summary>
     /// Filters the main prefab list based on the current MapType and stores the result in a cache.
     /// This prevents repeated GC allocation from LINQ in the Spawn methods.
@@ -170,9 +190,7 @@ public class EnemySpawner : MonoBehaviour, ISpawn
 
         }
         
-        // 3: สั่ง Despawn/ReturnToPool ทันทีหลังจบ Logic ทั้งหมด
-        // นี่คือส่วนที่ขาดหายไปซึ่งทำให้มอนสเตอร์ค้างอยู่ในฉาก
-        Despawn(enemy.gameObject); 
+        ReturnEnemyToPool(enemy.gameObject);
     }
     #endregion
 
@@ -274,7 +292,9 @@ public class EnemySpawner : MonoBehaviour, ISpawn
 
         // ---------------- Spawn ----------------
 
-        var enemyGO = _objectPool.SpawnFromPool(objectTag, finalSpawnPos, spawnRot);
+        
+
+        var enemyGO = SpawnEnemyInstance(objectTag, finalSpawnPos, spawnRot);
 
         if (enemyGO != null)
         {
@@ -318,7 +338,9 @@ public class EnemySpawner : MonoBehaviour, ISpawn
             }
 
         int randomEnemy = Random.Range(0, _validPrefabsCache.Count);
-        var enemyGO = _objectPool.SpawnFromPool(_validPrefabsCache[randomEnemy].name, finalPos, Quaternion.identity);
+        string objectTag = _validPrefabsCache[randomEnemy].name;
+
+        var enemyGO = SpawnEnemyInstance(objectTag, finalPos, Quaternion.identity); 
         
         if (enemyGO != null)
         {
@@ -344,6 +366,49 @@ public class EnemySpawner : MonoBehaviour, ISpawn
             }
         }
         return enemyGO;
+    }
+
+    private GameObject SpawnEnemyInstance(string objectTag, Vector3 position, Quaternion rotation)
+    {
+        // Clean tag 
+        if (objectTag.Contains("(Clone)"))
+        {
+            objectTag = objectTag.Replace("(Clone)", "").Trim();
+        }
+        
+        if (!_enemyPoolDictionary.ContainsKey(objectTag))
+        {
+            Debug.LogWarning($"[EnemySpawner Pool] Tag '{objectTag}' not found. Expanding pool.");
+            // Fallback: ถ้ายังไม่มี Pool ให้สร้างใหม่ทันที
+            var prefab = FindSpecificPrefab(objectTag); 
+            if (prefab == null) return null;
+            _enemyPoolDictionary[objectTag] = new Queue<GameObject>();
+        }
+
+        var queue = _enemyPoolDictionary[objectTag];
+        GameObject obj = null;
+
+        // ดึงของจากคิว และข้ามวัตถุที่อาจถูก Destroy ไปแล้ว (null)
+        while (queue.Count > 0 && obj == null)
+        {
+            obj = queue.Dequeue();
+        }
+
+        if (obj == null)
+        {
+            // สร้างใหม่
+            var prefab = FindSpecificPrefab(objectTag);
+            if (prefab == null) return null;
+
+            obj = Instantiate(prefab, transform);
+            Debug.LogWarning($"[EnemySpawner Pool] Created NEW instance for {objectTag} (Pool empty/destroyed).");
+        }
+
+        // Reset & Activate
+        obj.transform.SetPositionAndRotation(position, rotation);
+        obj.SetActive(true);
+
+        return obj;
     }
 
 
@@ -455,6 +520,18 @@ public class EnemySpawner : MonoBehaviour, ISpawn
         }
         return null;
     }
+
+    private GameObject FindSpecificPrefab(string objectTag)
+    {
+        foreach (var prefab in _enemyPrefabs)
+        {
+            if (prefab.name == objectTag)
+            {
+                return prefab;
+            }
+        }
+        return null;
+    }
     #endregion
 
 
@@ -476,6 +553,32 @@ public class EnemySpawner : MonoBehaviour, ISpawn
         }
     }
 
+    private void ReturnEnemyToPool(GameObject obj)
+    {
+        if (obj == null) return;
+
+        string objectTag = obj.name;
+        if (objectTag.Contains("(Clone)"))
+        {
+            objectTag = objectTag.Replace("(Clone)", "").Trim();
+        }
+
+        if (!_enemyPoolDictionary.ContainsKey(objectTag))
+        {
+            Debug.LogWarning($"❌ [ENEMY POOL ERROR] Missing dedicated pool for: {objectTag} (Destroying instance).");
+            Destroy(obj); 
+            return;
+        }
+
+        // 🟢 Deducing from Enemy.cs: เรียก ResetStateForPooling
+        if (obj.TryGetComponent<Enemy>(out var enemy))
+        {
+            enemy.ResetStateForPooling(); // ⬅️ ดึง Logic จาก Enemy.cs
+        }
+
+        obj.SetActive(false);
+        _enemyPoolDictionary[objectTag].Enqueue(obj);
+    }
 
     public int GetSpawnCount() => _activeEnemies.Count;
 
@@ -505,7 +608,7 @@ public class EnemySpawner : MonoBehaviour, ISpawn
 
             string objectTag = prefabToSpawn.name;
 
-        var enemyGO = _objectPool.SpawnFromPool(objectTag, position, Quaternion.identity);
+        var enemyGO = SpawnEnemyInstance(objectTag, position, Quaternion.identity);
         
         if (enemyGO != null) 
         { 

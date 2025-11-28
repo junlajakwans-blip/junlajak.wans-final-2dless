@@ -62,20 +62,24 @@ public class BackgroundLooper : MonoBehaviour
     private void UpdateBackgroundPosition()
     {
         float cameraX = _cameraTransform.position.x;
-        
+
         foreach (var layer in _backgroundLayers)
         {
             if (layer == null) continue;
 
-            // ถ้าพื้นหลังหลุดจอไปทางซ้ายไกลๆ
-            if (layer.transform.position.x < cameraX - _destroyThreshold) 
+            float bgX = layer.transform.position.x;
+
+            // 🟢 หลุดซ้าย → ย้ายไปขวา
+            if (bgX < cameraX - _destroyThreshold)
             {
-                // ย้ายไปข้างหน้า = จำนวนรูปทั้งหมด * ความกว้าง
                 float moveDist = _backgroundWidth * _backgroundLayers.Count;
-                
-                Vector3 newPos = layer.transform.position;
-                newPos.x += moveDist; 
-                layer.transform.position = newPos;
+                layer.transform.position += new Vector3(moveDist, 0f, 0f);
+            }
+            // 🔵 หลุดขวา → ย้ายไปซ้าย (ขากลับ)
+            else if (bgX > cameraX + _destroyThreshold)
+            {
+                float moveDist = _backgroundWidth * _backgroundLayers.Count;
+                layer.transform.position -= new Vector3(moveDist, 0f, 0f);
             }
         }
     }
