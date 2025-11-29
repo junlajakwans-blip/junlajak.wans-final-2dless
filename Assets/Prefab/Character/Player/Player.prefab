@@ -502,7 +502,7 @@ MonoBehaviour:
       GlobalHighScore: 0
     _isDefaultDuckling: 1
   _rigAnimator: {fileID: 0}
-  _jumpForce: 5
+  _jumpForce: 7
   _fallDeathY: -5
   _isGrounded: 0
   _chargePower: 0
@@ -541,6 +541,7 @@ MonoBehaviour:
   interactRadius: 1
   interactOrigin: {fileID: 3180083276177619504}
   displayPoint: {fileID: 6979801062742470440}
+  throwPoint: {fileID: 6413461673691137256}
   throwForce: 12
   interactLayer:
     serializedVersion: 2

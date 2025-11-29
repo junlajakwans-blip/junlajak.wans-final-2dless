@@ -103,7 +103,7 @@ public class ThrowableItemInfo : MonoBehaviour, IInteractable
         if (_rb != null)
         {
             _rb.bodyType = RigidbodyType2D.Dynamic;
-            _rb.gravityScale = 2.8f;
+            _rb.gravityScale = 3.2f;
             _rb.linearDamping = 0f;   
         }
 

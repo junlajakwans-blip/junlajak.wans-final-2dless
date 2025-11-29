@@ -10,6 +10,7 @@ public class PlayerInteract : MonoBehaviour
     [SerializeField] private Transform displayPoint;
 
     [Header("Throw Settings")]
+    [SerializeField] private Transform throwPoint;
     [SerializeField] private float throwForce = 12f;
     [SerializeField] private LayerMask interactLayer;
 
@@ -71,6 +72,13 @@ public class PlayerInteract : MonoBehaviour
         {
             Debug.Log("[PlayerInteract] Cannot throw — current form is NOT Duckling.");
             return;
+        }
+
+        // ThrowPoint ถูก Flip ตาม Visual 
+        if (throwPoint != null)
+        {
+        // ย้ายของที่ถูกถือ (heldItemObject) ให้มี World Position เดียวกับ throwPoint
+        heldItemObject.transform.position = throwPoint.position;
         }
 
         // ปล่อยออกจากหัว

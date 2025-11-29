@@ -197,6 +197,16 @@ public override void Move(Vector2 direction)
     if (direction.x > 0.01f && !_facingRight) Flip();
     else if (direction.x < -0.01f && _facingRight) Flip();
 
+    //Flip Throw
+    if (direction.x > 0.01f) 
+    {
+        FaceDir = 1; // หันขวา
+    }
+    else if (direction.x < -0.01f)
+    {
+        FaceDir = -1; // หันซ้าย
+    }
+
     float speed = _moveSpeed * _speedModifier; // ต้องคำนวณ speed
 
 #if UNITY_2022_3_OR_NEWER
