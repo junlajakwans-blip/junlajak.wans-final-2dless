@@ -9,7 +9,6 @@ public class MapGeneratorRoad : MapGeneratorBase
     [SerializeField] private string _platformKey = "map_asset_RoadTraffic_Normal_Platform";
     [SerializeField] private string _breakPlatformKey = "map_asset_RoadTraffic_Break_Platform";
     [SerializeField] private string _wallVisualKey = "map_Wall_RoadTraffic";
-
     protected override string NormalPlatformKey => _platformKey;
     protected override string BreakPlatformKey  => _breakPlatformKey;
     protected override string FloorKey         => _floorKey;
@@ -39,7 +38,7 @@ public class MapGeneratorRoad : MapGeneratorBase
                 FindFirstObjectByType<CardManager>(),
                 FindFirstObjectByType<BuffManager>()
             );
-            StartCoroutine(_enemySpawner.StartWave());
+            _enemySpawner.StartWaveRepeating();
         }
 
         // 5) Collectibles

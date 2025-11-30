@@ -31,12 +31,12 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     [Header("Stats")]
 
     [SerializeField] protected float _jumpForce = 5f;
-    [SerializeField] protected const int JUMP_ATTACK_DAMAGE = 10; // ดาเมจจากการเหยียบ
-    [SerializeField] protected const int BASIC_ATTACK_DAMAGE = 15; // ดาเมจจากการโจมตีปกติ
+    [SerializeField] protected const int JUMP_ATTACK_DAMAGE = 10; // Damage from stomp
+    [SerializeField] protected const int BASIC_ATTACK_DAMAGE = 15; // Damage from basic attack
 
     [Header("Death Zone")]
     [SerializeField] private float _fallDeathY = -5.0f; 
-    public float FallDeathY => _fallDeathY; // ให้ Game Manager อ่านได้
+    public float FallDeathY => _fallDeathY; // Allow Game Manager to read
 
     [Header("Runtime State")]
     [SerializeField] private bool _isGrounded = false;
@@ -87,11 +87,11 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     {
         if (_isDead) return;
 
-        // ตรวจสอบการตกสู่ Death Zone
+        // Check for falling into Death Zone
         if (transform.position.y < _fallDeathY)
         {
             Debug.Log($"[Player] Fell below Death Zone ({_fallDeathY}). Forcing Die.");
-            // เรียก Die() ซึ่งจะสั่ง GameManager.EndGame() ต่อไป
+            // Call Die() which triggers GameManager.EndGame()
             Die(); 
         }
     }
@@ -101,13 +101,37 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     {
         gameObject.SetActive(true);
         _playerData = data;
-        _maxHealth = data.MaxHealth;
-        _currentHealth = _maxHealth;
+        
+        // 1. Fetch Max Health including upgrade bonuses (from PlayerData.MaxHealth)
+        // Note: We assume data.MaxHealth is the correct total value (e.g., 100 if no upgrade) 
+        int upgradedMaxHealth = data.MaxHealth; 
+        
+        // 2. Fetch Base Health of the current career (200 for Duckling default)
+        // If CurrentCareerData is null (e.g., Duckling), use Duckling's BaseHealth (200)
+        int careerBaseHealth = CurrentCareerData != null ? CurrentCareerData.BaseHealth : 200; 
+
+        // 3. 🔥 FIX: Calculate final Max Health
+        //    * Use the greater value between PlayerData's MaxHealth and the Career's BaseHealth.
+        //    * If data.MaxHealth (100) < careerBaseHealth (200), finalMaxHealth will be 200.
+        //    * If data.MaxHealth (600) is upgraded, finalMaxHealth will be 600.
+        int finalMaxHealth = Mathf.Max(upgradedMaxHealth, careerBaseHealth);
+        
+        // 4. 🔥 FIX: Call base.Initialize to set the correct _maxHealth and _currentHealth in the base class (Character)
+        base.Initialize(finalMaxHealth);
+
+        // =========================================================
+        // ✅ NEW: COLORED DEBUG LOG
+        // =========================================================
+        Debug.Log($"<color=lime>[Player] ★ MAX HP SET! Final HP: {finalMaxHealth} (Upgraded:{upgradedMaxHealth} / Base:{careerBaseHealth})</color>");
+        // =========================================================
+
+        
+        // Set speed (which is not affected by HP logic)
         _moveSpeed = data.Speed;
 
 
         // -----------------------------------------------------------------
-        // 1. รับค่า Dependencies และเช็คทันที
+        // 1. Get Dependencies and check immediately
         // -----------------------------------------------------------------
         _careerSwitcher = careerSwitcher;
         _cardManager = cardManager;
@@ -120,7 +144,7 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
 
 
         // -----------------------------------------------------------------
-        // 2. ดึง Component ภายในและเช็ค
+        // 2. Fetch internal Components and check
         // -----------------------------------------------------------------
         if (_rigAnimator == null)
         {
@@ -138,11 +162,11 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
 
 
         // -----------------------------------------------------------------
-        // 3. เริ่มต้นระบบย่อย (Sub-systems)
+        // 3. Initialize sub-systems
         // -----------------------------------------------------------------
         _currency ??= new Currency();
 
-        // ตรวจสอบก่อนเรียกใช้เพื่อป้องกัน NullReferenceException
+        // Check before calling to prevent NullReferenceException
         if (_careerSwitcher != null)
             _currency.Initialize(_careerSwitcher);
         
@@ -152,12 +176,14 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
         
         if (UIManager.Instance != null)
         {
-            // UIManager.Instance คือ DDoL Singleton ที่ถือ HealthBarUI
+            // UIManager.Instance is the DDoL Singleton holding HealthBarUI
             HealthBarUI healthBar = UIManager.Instance.GetPlayerHealthBarUI();
             
-            // ใช้เมธอด SetHealthBarUI ที่มีอยู่เพื่อ Inject Reference และ Initialize ค่า Max HP
+            // Use the existing SetHealthBarUI method to Inject Reference and Initialize Max HP
             if (healthBar != null)
             {
+                // SetHealthBarUI will call healthBar.InitializeHealth(_maxHealth) again
+                // _maxHealth is already set by base.Initialize(finalMaxHealth)
                 SetHealthBarUI(healthBar);
             }
         }
@@ -172,16 +198,16 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
 
 
         // -----------------------------------------------------------------
-        // 4. สรุปผลการ Initialize
+        // 4. Initialization summary
         // -----------------------------------------------------------------
         bool isSuccess = _careerSwitcher != null && _cardManager != null && _rigidbody != null;
         string statusIcon = isSuccess ? "✅" : "⚠️";
         
         Debug.Log($"[Player] {statusIcon} Initialize Complete.\n" +
-                  $"   - HP: {_maxHealth}, Speed: {_moveSpeed}\n" +
-                  $"   - CareerSwitcher: {(_careerSwitcher != null ? "OK" : "NULL")}\n" +
-                  $"   - CardManager: {(_cardManager != null ? "OK" : "NULL")}\n" +
-                  $"   - Components: {(_rigidbody != null && _rigAnimator != null && _interact != null ? "OK" : "INCOMPLETE")}");
+                  $"  - Final Max HP: {finalMaxHealth}, Speed: {_moveSpeed}\n" +
+                  $"  - CareerSwitcher: {(_careerSwitcher != null ? "OK" : "NULL")}\n" +
+                  $"  - CardManager: {(_cardManager != null ? "OK" : "NULL")}\n" +
+                  $"  - Components: {(_rigidbody != null && _rigAnimator != null && _interact != null ? "OK" : "INCOMPLETE")}");
     }
 
 
@@ -197,17 +223,18 @@ public override void Move(Vector2 direction)
     if (direction.x > 0.01f && !_facingRight) Flip();
     else if (direction.x < -0.01f && _facingRight) Flip();
 
-    //Flip Throw
+    // 🔥 FIX: Update FaceDir during movement (for throwing)
     if (direction.x > 0.01f) 
     {
-        FaceDir = 1; // หันขวา
+        FaceDir = 1; // Facing right
     }
     else if (direction.x < -0.01f)
     {
-        FaceDir = -1; // หันซ้าย
+        FaceDir = -1; // Facing left
     }
+    // **********************************
 
-    float speed = _moveSpeed * _speedModifier; // ต้องคำนวณ speed
+    float speed = _moveSpeed * _speedModifier; // Calculate speed
 
 #if UNITY_2022_3_OR_NEWER
     _rigidbody.linearVelocity = new Vector2(direction.x * speed, _rigidbody.linearVelocity.y);
@@ -257,21 +284,21 @@ public override void Move(Vector2 direction)
         if (_interact == null) _interact = GetComponent<PlayerInteract>();
         if (_interact == null) return;
 
-        // อาชีพอื่น → ห้ามเก็บ/ปา แต่ไม่ต้องเช็กซ้ำตอนถือแล้ว
+        // Other careers → cannot pick up/throw, but don't check again when holding
         if (!IsDuckling)
         {
             Debug.Log("[Player] Only Duckling can pick up/throw items.");
             return;
         }
 
-        // มีของ → ปาเลย (ไม่ต้องเช็ก Duckling อีกรอบ)
+        // Has item → Throw immediately (no need to check Duckling again)
         if (_interact.HasItem())
         {
             _interact.ThrowItem();
             return;
         }
 
-        // ไม่มีของ → เก็บ
+        // No item → Pick up
         _interact.TryPickUp();
     }
     #endregion
@@ -291,10 +318,10 @@ public override void Move(Vector2 direction)
             if (_rigAnimator != null)
                 _rigAnimator.SetTrigger("Jump");
 
-            return; // ห้ามตกลงไปกระโดดปกติซ้ำ
+            return; // Prohibit normal jump fallback
         }
 
-        // Default Jump (ไม่มีบัฟ)
+        // Default Jump (no buff)
         _rigidbody.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse);
         _isGrounded = false;
 
@@ -362,7 +389,6 @@ public override void Move(Vector2 direction)
         }
         else
         {
-            _currentMapType = MapType.None;
             Debug.LogWarning($"[{name}] SceneManager not found or not ready!");
         }
     }
@@ -394,12 +420,12 @@ public override void Move(Vector2 direction)
         // 2) MuscleDuck: Skill decides whether to block damage
         if (CurrentCareerID == DuckCareer.Muscle && CurrentCareerSkill != null)
         {
-            // Skill จะตัดสินเองว่าจะ block หรือให้ดาเมจเข้า
+            // Skill will decide whether to block or allow damage
             CurrentCareerSkill.OnTakeDamage(this, amount);
-            return; // ต้อง return เพราะ skill เป็นคนจัดการต่อเอง
+            return; // Must return because the skill handles the rest
         }
 
-        // 3) ทุกอาชีพอื่น → โดน damage ทันที
+        // 3) All other careers → Take damage immediately
         ApplyRawDamage(amount);
     }
 
@@ -437,7 +463,7 @@ public override void Move(Vector2 direction)
     {
         _isDead = false;
         _currentHealth = Mathf.Clamp(reviveHP, 1, _maxHealth);
-        // อัปเดต UI / animation ถ้ามี
+        // Update UI / animation if available
     }
 
 
@@ -447,7 +473,7 @@ public override void Move(Vector2 direction)
     public void SetInvulnerable(bool state)
     {
         _isInvulnerable = state;
-        // 💡 หากต้องการเพิ่ม feedback เช่น การกะพริบ, ให้เรียกใช้ที่นี่
+        // 💡 Add feedback like flashing here if needed
         Debug.Log($"[Player] Invulnerability set to: {state}");
     }
 
@@ -457,7 +483,7 @@ public override void Move(Vector2 direction)
         if (_isDead) return;
 
         
-        // ⚠ ถ้ามี Skill ป้องกันการตาย → ไม่ต้อง Die
+        // ⚠ If there is a death prevention skill → do not Die
         if (CurrentCareerSkill != null && CurrentCareerSkill.OnBeforeDie(this))
         {
             Debug.Log("[Player] Death intercepted by Career Skill.");
@@ -466,11 +492,11 @@ public override void Move(Vector2 direction)
 
         _isDead = true;
 
-        // 1) ตัด collider ตัวเอง → ศัตรูจะหยุดตี / หยุดชนทันที
+        // 1) Disable own collider → Enemies stop attacking/colliding immediately
         var coll = GetComponent<Collider2D>();
         if (coll != null) coll.enabled = false;
 
-        // 2) ตัด Rigidbody interaction → ไม่ให้ล้มกลิ้งแบบรับดาเมจซ้ำ
+        // 2) Disable Rigidbody interaction → prevent excessive damage registration
     #if UNITY_2022_3_OR_NEWER
         _rigidbody.linearVelocity = Vector2.zero;
     #else
@@ -478,11 +504,11 @@ public override void Move(Vector2 direction)
     #endif
         _rigidbody.simulated = false;
 
-        // 3) ปิดระบบการโจมตี การ์ด และอินพุต
+        // 3) Disable attack, card, and input systems
         if (_cardManager != null)
         _cardManager.enabled = false;
 
-        this.enabled = false; // ปิด Player.cs update ทั้งคลาส
+        this.enabled = false; // Disable Player.cs update for the entire class
 
         if (_animator != null)
             _animator.SetTrigger("Die");
@@ -495,7 +521,7 @@ public override void Move(Vector2 direction)
     private IEnumerator HandleGameOver()
     {
         yield return new WaitForSeconds(2f);
-        GameManager.Instance.EndGame(); // หรือ LoadScene("GameOver")
+        GameManager.Instance.EndGame(); // or LoadScene("GameOver")
     }
 
     public DuckCareer GetCurrentCareerID()
@@ -510,7 +536,7 @@ public override void Move(Vector2 direction)
             _healthBarUI = healthBarUI;
             if (_healthBarUI != null)
             {
-                // ถ้า UI เพิ่งถูกตั้งค่า ให้ Initialize ทันที
+                // Initialize UI immediately if it was just set
                 _healthBarUI.InitializeHealth(_maxHealth); 
             }
         }
@@ -564,23 +590,23 @@ public override void Move(Vector2 direction)
     {
         if (_isDead) return;
 
-        // ดึงสกิลปัจจุบันแบบปลอดภัย
+        // Get current skill safely
         var skill = CurrentCareerSkill;
 
         if (skill != null)
         {
-            // ทุกอาชีพที่มีสกิล → ใช้ตามปกติ
+            // All careers with skills → use normally
             skill.PerformAttack(this);
         }
         else
         {
-            // Fallback: ถ้าไม่มี career / ไม่มี skill ให้ตีธรรมดา (Duckling style)
+            // Fallback: If no career / no skill, use basic attack (Duckling style)
             BasicMeleeAttack();
         }
     }
 
     /// <summary>
-    /// โจมตีระยะใกล้พื้นฐาน ใช้เป็น fallback เวลาไม่มีสกิล
+    /// Basic melee attack used as a fallback when no skill is available
     /// </summary>
     private void BasicMeleeAttack()
     {
@@ -599,7 +625,7 @@ public override void Move(Vector2 direction)
     public virtual void ChargeAttack(float power)
     {
         Debug.Log($"[Player] Charge attack power: {power}");
-        _chargePower = power; // เก็บ power ไว้ให้ Skill อ่าน
+        _chargePower = power; // Store power for the skill to read
         _careerSwitcher.CurrentCareer.CareerSkill?.PerformChargeAttack(this);
     }
 
@@ -625,7 +651,7 @@ public override void Move(Vector2 direction)
 
         var skill = CurrentCareerSkill;
 
-        // ถ้าไม่มีสกิล (Duckling หรือ career ไม่เซ็ต) → เงียบ ๆ ไม่ทำอะไร ไม่ error
+        // If no skill (Duckling or career not set) → silent, do nothing, no error
         if (skill == null)
         {
             Debug.Log($"{CurrentCareerID} did't haveskill");
@@ -680,7 +706,7 @@ public override void Move(Vector2 direction)
 
     public void UpdatePlayerFormState()
     {
-        // sync ข้อมูลระหว่าง Data และ CareerSwitcher
+        // Sync data between Data and CareerSwitcher
         if (_careerSwitcher != null)
             _playerData.IsDefaultDuckling = _careerSwitcher.IsDuckling;
 

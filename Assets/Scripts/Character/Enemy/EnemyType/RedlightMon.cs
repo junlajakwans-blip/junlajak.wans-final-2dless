@@ -151,8 +151,8 @@ public class RedlightMon : Enemy
         // ... (logic อื่นๆ) ...
     }
     #endregion
-
-#region Death/Drop
+    
+    #region Death/Drop
     /// <summary>
     /// Called when this enemy dies. Implements item drop logic using EnemyData.
     /// </summary>
@@ -160,39 +160,37 @@ public class RedlightMon : Enemy
     {
         if (_isDead) return;
         _isDead = true;
-        
-        CollectibleSpawner spawner = _spawnerRef;
-        Vector3 enemyDeathPosition = transform.position;
-        
-        if (spawner != null && _data != null)
+
+        Vector3 pos = transform.position;
+
+        if (_data != null)
         {
             float roll = UnityEngine.Random.value;
-            
-            // Use Data From EnemyData:Unique | Drop Chance จาก Asset
-            float coinChance = _data.RedlightCoinDropChance;
-            float coffeeChance = _data.RedlightCoffeeDropChance;
 
-            // Chacne Token (Coin chance + Coffee chance)
+            float coinChance   = _data.RedlightCoinDropChance;
+            float coffeeChance = _data.RedlightCoffeeDropChance;
             float totalCoffeeChance = coinChance + coffeeChance;
-            
-            // Drop Coin: (roll < 30%)
+
+            // Drop Coin
             if (roll < coinChance)
             {
-                spawner.DropCollectible(CollectibleType.Coin, enemyDeathPosition);
+                RequestDrop(CollectibleType.Coin);
                 Debug.Log($"[RedlightMon] Dropped: Coin (Chance: {coinChance * 100:F0}%)");
             }
-            // Drop Coffee: (e.g., 30% <= roll < 35%)
+            // Drop Coffee
             else if (roll < totalCoffeeChance)
             {
-                spawner.DropCollectible(CollectibleType.Coffee, enemyDeathPosition); 
+                RequestDrop(CollectibleType.Coffee);
                 Debug.Log($"[RedlightMon] Dropped: Coffee (Chance: {coffeeChance * 100:F0}%)");
             }
         }
-        else if (spawner == null)
+        else
         {
-            Debug.LogWarning("[RedlightMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
+            Debug.LogWarning("[RedlightMon] EnemyData missing. Drop skipped.");
         }
+
         base.Die();
     }
     #endregion
+
 }

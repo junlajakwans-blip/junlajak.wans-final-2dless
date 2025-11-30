@@ -10,6 +10,7 @@ public class RandomStarterCard : MonoBehaviour
     private CardManager _cardManagerRef;
     private GameManager _gmRef;
     private bool _alreadyClaimed = false;
+    private static bool _globalSummonLock = false; // prevents duplicate listeners from consuming extra tokens
     #endregion
 
     [Header("UI Components")]
@@ -23,10 +24,16 @@ public class RandomStarterCard : MonoBehaviour
     {
         // Bind UI events
         if (buttonSummon != null)
+        {
+            buttonSummon.onClick.RemoveListener(OnClickSummon);
             buttonSummon.onClick.AddListener(OnClickSummon);
+        }
 
         if (buttonCancel != null)
+        {
+            buttonCancel.onClick.RemoveListener(ClosePanel);
             buttonCancel.onClick.AddListener(ClosePanel);
+        }
     }
 
     // Inject Reference
@@ -98,8 +105,9 @@ public class RandomStarterCard : MonoBehaviour
     private void OnClickSummon()
     {
         Debug.Log($"[Check Duplicate] Called by Object: {gameObject.name}, Script Instance ID: {this.GetInstanceID()}");
-        if (_lockInput) return;
+        if (_lockInput || _globalSummonLock) return;
         _lockInput = true;
+        _globalSummonLock = true;
 
         // ปิด event ของปุ่มทันที กัน double click 
         buttonSummon.enabled = false;
@@ -111,6 +119,7 @@ public class RandomStarterCard : MonoBehaviour
             _alreadyClaimed = true;
             ClosePanel();
             UpdateTokenText();
+            _globalSummonLock = false;
         }
         else
         {
@@ -118,6 +127,7 @@ public class RandomStarterCard : MonoBehaviour
             buttonSummon.enabled = true;
             buttonSummon.interactable = true;
             _lockInput = false;
+            _globalSummonLock = false;
         }
     }
 

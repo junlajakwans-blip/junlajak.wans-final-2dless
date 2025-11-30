@@ -86,38 +86,45 @@ public class GhostWorkMon : Enemy
     #region Death/Drop
     public override void Die()
     {
+        // Guard: already dead
         if (_isDead) return;
         _isDead = true;
 
-        CollectibleSpawner spawner = _spawnerRef;
-         Vector3 enemyDeathPosition = transform.position;
-        
-        if (spawner != null && _data != null)
+        // Stop behaviors immediately
+        StopAllCoroutines();
+
+        // Cache death position if needed for debugging
+        Vector3 pos = transform.position;
+
+        // Drop logic based on EnemyData
+        if (_data != null)
         {
             float roll = Random.value;
-            
-            //  Drop Chance from Asset
-            float coinChance = _data.GhostWorkCoinDropChance;
-            float greenTeaChance = _data.GhostWorkGreenTeaDropChance;
+            float coinChance = _data.GhostWorkCoinDropChance;               // 45% (ตัวอย่าง)
+            float greenTeaChance = _data.GhostWorkGreenTeaDropChance;       // 15% (ตัวอย่าง)
             float totalGreenTeaChance = coinChance + greenTeaChance;
-            
-            // Drop Coin: (roll < 45%)
+
+            // Drop Coin (roll < coinChance)
             if (roll < coinChance)
             {
-                spawner.DropCollectible(CollectibleType.Coin, enemyDeathPosition);
+                RequestDrop(CollectibleType.Coin);
+                Debug.Log($"[GhostWorkMon] Dropped: Coin ({coinChance * 100:F0}%)");
             }
-            // Drop GreenTea: (45% <= roll < 60%)
-            else if (roll < totalGreenTeaChance) 
+            // Drop GreenTea (coinChance <= roll < totalGreenTeaChance)
+            else if (roll < totalGreenTeaChance)
             {
-                spawner.DropCollectible(CollectibleType.GreenTea, enemyDeathPosition);
+                RequestDrop(CollectibleType.GreenTea);
+                Debug.Log($"[GhostWorkMon] Dropped: GreenTea ({greenTeaChance * 100:F0}%)");
             }
         }
-        else if (spawner == null)
+        else
         {
-            Debug.LogWarning("[GhostWorkMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
+            Debug.LogWarning("[GhostWorkMon] EnemyData missing. Drop skipped.");
         }
+
+        // Notify spawner and return to pool
         base.Die();
-        OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
     }
+
     #endregion
 }

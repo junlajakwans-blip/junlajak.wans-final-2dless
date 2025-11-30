@@ -193,38 +193,42 @@ private void ShootProjectile()
         _isDisabled = false;
     }
     #endregion
-
-    #region Death/Drop
+#region Death/Drop
     public override void Die()
     {
+        // Guard: already dead
         if (_isDead) return;
         _isDead = true;
-        
-        CollectibleSpawner spawner = _spawnerRef;
-        Vector3 enemyDeathPosition = transform.position;
-        
-        if (spawner != null && _data != null)
+
+        Vector3 pos = transform.position;
+
+        // Drop logic based on EnemyData
+        if (_data != null)
         {
             float roll = Random.value;
-            
             float totalGreenTeaChance = _data.PeterCoinDropChance + _data.PeterGreenTeaDropChance;
-            
+
             // Drop Coin
             if (roll < _data.PeterCoinDropChance)
             {
-                spawner.DropCollectible(CollectibleType.Coin, enemyDeathPosition);
+                RequestDrop(CollectibleType.Coin);
+                Debug.Log("[PeterMon] Dropped: Coin");
             }
             // Drop GreenTea
             else if (roll < totalGreenTeaChance)
             {
-                spawner.DropCollectible(CollectibleType.GreenTea, enemyDeathPosition);
+                RequestDrop(CollectibleType.GreenTea);
+                Debug.Log("[PeterMon] Dropped: GreenTea");
             }
         }
-        else if (spawner == null)
+        else
         {
-            Debug.LogWarning("[PeterMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
+            Debug.LogWarning("[PeterMon] EnemyData missing. Drop skipped.");
         }
-        OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
+
+        // Notify spawner and return to pool
+        base.Die();
     }
     #endregion
+
 }

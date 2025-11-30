@@ -626,19 +626,21 @@ MonoBehaviour:
   _backgroundLooper: {fileID: 1001232345}
   _assetSpawner: {fileID: 610633207}
   _throwableSpawner: {fileID: 2073505759}
+  _mapType: 1
   _spawnStartPosition: {x: -10, y: 1}
   _maxPlatformCount: 10
   _generationPivot: {fileID: 2062886183}
   _platformWidth: 11.77
-  _minXOffset: 1.8
+  _minXOffset: 2
   _maxXOffset: 3.1
-  _minYOffset: 0.05
-  _maxYOffset: 2.4
+  _minYOffset: 1.2
+  _maxYOffset: 3
   _collectibleOffset: 0.25
   _assetVerticalOffset: 0.1
   _minPlatformsBetweenEnemy: 3
   _minPlatformsBetweenAsset: 2
   _currentPlatformState: 0
+  _maxPlatformHeightOffset: 5
   _stepsRemaining: 0
   _floorY: -0.8
   _floorLength: 2.35
@@ -773,6 +775,7 @@ MonoBehaviour:
   _phase2DropChance: 0.25
   _spawnYOffset: 0.2
   _preSpawnAmount: 5
+  _despawnCheckInterval: 0.2
   _activeThrowables: []
 --- !u!4 &2073505760
 Transform:
@@ -1088,7 +1091,7 @@ MonoBehaviour:
   - {fileID: 1040190956}
   - {fileID: 39698708}
   - {fileID: 957922880}
-  _spawnInterval: 2
+  _spawnInterval: 1.2
   _maxEnemies: 5
   _currentWaveCount: 0
   _activeEnemies:
@@ -1127,11 +1130,12 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   _gameManager: {fileID: 0}
-  _spawnStartDistance: 60
+  _spawnStartDistance: 5
   _firstEnemySpawned: 1
   _firstEnemyType: 7
-  _minSpawnSpacing: 20
+  _minSpawnSpacing: 7.5
   _verticalSpawnOffset: 1
+  _forwardSpawnOffset: 12
 --- !u!4 &939860341859728424
 Transform:
   m_ObjectHideFlags: 0
@@ -1206,7 +1210,7 @@ MonoBehaviour:
     m_Bits: 8704
   _groundOffset: 0.5
   _coinTrailGenerator: {fileID: 2093980296}
-  _coinTrailChance: 0.3
+  _coinTrailChance: 0.5
   _activeCollectibles: []
 --- !u!114 &5940353169928122486
 MonoBehaviour:

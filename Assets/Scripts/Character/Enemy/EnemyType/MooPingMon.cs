@@ -213,50 +213,54 @@ private void TryAttack()
         _isDisabled = false;
     }
     #endregion
+#region Death/Drop
+public override void Die()
+{
+    // Guard: already dead
+    if (_isDead) return;
+    _isDead = true;
 
-    #region Death/Drop
-    public override void Die()
+    Vector3 pos = transform.position;
+
+    if (_data != null)
     {
-        if (_isDead) return;
-        _isDead = true;
-        
-        CollectibleSpawner spawner = _spawnerRef;
-        Vector3 enemyDeathPosition = transform.position;
-        
-        if (spawner != null && _data != null)
+        // 1) FireFighter guaranteed buff item
+        if (_isBuffItemGuaranteed)
         {
-            // --- 1. FireFighter Buff Drop Logic ---
-            if (_isBuffItemGuaranteed)
-            {
-                // Drop 1 random buff item (Coffee or GreenTea - assuming CollectibleType has these)
-                CollectibleType buffItem = (Random.value < 0.5f) ? CollectibleType.Coffee : CollectibleType.GreenTea;
-                spawner.DropCollectible(buffItem, transform.position + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0));
-                Debug.Log($"[MooPingMon] FireFighter Bonus: Dropped guaranteed {buffItem}.");
-            }
+            // Random buff: Coffee or GreenTea
+            CollectibleType buffItem = (Random.value < 0.5f) ? CollectibleType.Coffee : CollectibleType.GreenTea;
 
+            // Slight scatter
+            Vector3 scatter = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0f);
+            RequestDrop(buffItem, pos + scatter);
 
-            // --- 2. Base Drop Logic (Original MooPingMon chance) ---
-            float roll = Random.value;
-            float totalChanceForCoffee = _data.MooPingCoinDropChance + _data.MooPingCoffeeDropChance;
-            
-            // Drop Coin: (roll < 20%)
-            if (roll < _data.MooPingCoinDropChance)
-            {
-                spawner.DropCollectible(CollectibleType.Coin,enemyDeathPosition);
-                Debug.Log($"[MooPingMon] Dropped: Coin ({roll:F2})");
-            }
-            // Drop Coffee: (20% <= roll < 25%)
-            else if (roll < totalChanceForCoffee)
-            {
-                spawner.DropCollectible(CollectibleType.Coffee, enemyDeathPosition);
-                Debug.Log($"[MooPingMon] Dropped: Coffee ({roll:F2})");
-            }
+            Debug.Log($"[MooPingMon] FireFighter Bonus: Dropped guaranteed {buffItem}.");
         }
-        else
+
+        // 2) Base Chance Drop (original MooPingMon)
+        float roll = Random.value;
+        float totalChanceForCoffee = _data.MooPingCoinDropChance + _data.MooPingCoffeeDropChance;
+
+        // Drop Coin
+        if (roll < _data.MooPingCoinDropChance)
         {
-            Debug.LogWarning("[MooPingMon] Cannot drop item: CollectibleSpawner not found or EnemyData missing!");
+            RequestDrop(CollectibleType.Coin);
+            Debug.Log($"[MooPingMon] Dropped: Coin ({roll:F2})");
         }
-        OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
+        // Drop Coffee
+        else if (roll < totalChanceForCoffee)
+        {
+            RequestDrop(CollectibleType.Coffee);
+            Debug.Log($"[MooPingMon] Dropped: Coffee ({roll:F2})");
+        }
     }
-    #endregion
+    else
+    {
+        Debug.LogWarning("[MooPingMon] EnemyData missing. Drop skipped.");
+    }
+
+    // Finalize death and return to pool
+    base.Die();
+}
+#endregion
 }

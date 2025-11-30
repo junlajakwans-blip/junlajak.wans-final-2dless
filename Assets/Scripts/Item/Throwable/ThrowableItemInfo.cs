@@ -13,14 +13,6 @@ public class ThrowableItemInfo : MonoBehaviour, IInteractable
     private bool _isThrown = false;
     private bool _hasBounced = false;
 
-    // Smooth Prompt Runtime Vars
-    private CanvasGroup _promptCanvasGroup;
-    private Coroutine _fadeRoutine;
-
-    // Offset สำหรับ Prompt
-    private Vector3 _promptStartOffset = new Vector3(0, 0.40f, 0);
-    private Vector3 _promptTargetOffset = new Vector3(0, 0.70f, 0);
-
     private Coroutine _autoDespawnRoutine;
     [SerializeField] private float _despawnDelay = 5f;
     [SerializeField] private float _throwRotationSpeed = 360f;
@@ -29,10 +21,13 @@ public class ThrowableItemInfo : MonoBehaviour, IInteractable
     [SerializeField] private GameObject hitFX;
 
     [SerializeField] private GameObject promptUI;
+    [SerializeField] private TMPro.TMP_Text promptText;
     
     private bool _activated = false;
 
     public bool CanInteract { get; private set; } = true;
+
+    [SerializeField] private Animator promptAnim; //Anim Text
 
     private void Awake()
     {
@@ -44,11 +39,13 @@ public class ThrowableItemInfo : MonoBehaviour, IInteractable
     private void Update()
     {
         if (!_isThrown || _rb == null) return;
+        {
+            if (_rb.linearVelocity.sqrMagnitude < 0.3f)
+                _isThrown = false;
 
-        if (_rb.linearVelocity.sqrMagnitude < 0.3f)
-            _isThrown = false;
-
-        transform.Rotate(Vector3.forward * _throwRotationSpeed * Time.deltaTime);
+            transform.Rotate(Vector3.forward * _throwRotationSpeed * Time.deltaTime);
+        }
+        
     }
 
 
@@ -67,6 +64,13 @@ public class ThrowableItemInfo : MonoBehaviour, IInteractable
             _sr.sprite = _data.itemSprite;
 
         transform.localScale = _data.scaleDefault;
+
+        CanInteract = true;
+        if (!_activated)   // spawn but not thrown
+            ShowPrompt();
+        else
+            HidePrompt();
+
     }
 
     public void Interact(Player player)
@@ -117,18 +121,6 @@ public class ThrowableItemInfo : MonoBehaviour, IInteractable
         _autoDespawnRoutine = StartCoroutine(AutoDespawnTimer());
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.CompareTag("Player"))
-            ShowPrompt();
-    }
-
-    private void OnTriggerExit2D(Collider2D other)
-    {
-        if (other.CompareTag("Player"))
-            HidePrompt();
-    }
-
     public void OnReturnedToPool()
     {
         CanInteract = true;
@@ -162,7 +154,7 @@ public class ThrowableItemInfo : MonoBehaviour, IInteractable
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        HidePrompt();
+       
         if (!_activated) return;
 
         //  ถ้าโดน Throwable ตัวอื่น → ข้าม
@@ -215,113 +207,24 @@ public class ThrowableItemInfo : MonoBehaviour, IInteractable
 #region PromptUI
     public void ShowPrompt()
     {
-        if (promptUI == null || !CanInteract) return;
-
-        // เช็คถือของอยู่แล้ว → ไม่ให้โชว์
-        var player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null && player.TryGetComponent<PlayerInteract>(out var interact))
-            if (interact.HasItem()) return;
-
-        if (!promptUI.activeSelf)
-            promptUI.SetActive(true);
-
-        promptUI.transform.position = transform.position + _promptStartOffset;
-        promptUI.transform.rotation = Quaternion.identity;
-
-        // Lazy init CanvasGroup
-        if (_promptCanvasGroup == null)
-        {
-            _promptCanvasGroup = promptUI.GetComponent<CanvasGroup>();
-            if (_promptCanvasGroup == null)
-                _promptCanvasGroup = promptUI.AddComponent<CanvasGroup>(); //  กันพังตอน prefab ไม่มี
-        }
-
-
-        if (_fadeRoutine != null) StopCoroutine(_fadeRoutine);
-        _fadeRoutine = StartCoroutine(FadePrompt(1f));
+        if (promptAnim != null)
+            promptAnim.SetBool("Visible", true);
     }
 
     public void HidePrompt()
     {
-        if (promptUI == null) return;
-
-        if (_promptCanvasGroup == null)
-        {
-            _promptCanvasGroup = promptUI.GetComponent<CanvasGroup>();
-            if (_promptCanvasGroup == null)
-                _promptCanvasGroup = promptUI.AddComponent<CanvasGroup>(); //  กันพังตอน prefab ไม่มี
-        }
-
-        if (_fadeRoutine != null) StopCoroutine(_fadeRoutine);
-        _fadeRoutine = StartCoroutine(FadePrompt(0f));
+        if (promptAnim != null)
+            promptAnim.SetBool("Visible", false);
     }
 
-    private IEnumerator FadePrompt(float targetAlpha)
+    public void RefreshPrompt(PlayerInteract interact)
     {
-        float duration = 0.18f;
-        float t = 0;
-        float startAlpha = _promptCanvasGroup.alpha;
-
-        Vector3 startPos = promptUI.transform.position;
-        Vector3 endPos = transform.position + (targetAlpha > 0 ? _promptTargetOffset : _promptStartOffset);
-
-        while (t < duration)
-        {
-            t += Time.unscaledDeltaTime;
-            float lerp = t / duration;
-
-            _promptCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, lerp);
-            promptUI.transform.position = Vector3.Lerp(startPos, endPos, lerp);
-
-            yield return null;
-        }
-
-        _promptCanvasGroup.alpha = targetAlpha;
-
-        if (targetAlpha == 0)
-            promptUI.SetActive(false);
+        promptText.text = interact.HasItem() 
+            ? "<color=#FFA400>TO THROW</color>" 
+            : "<color=white>TO PICK UP</color>";
     }
 #endregion
 
-    private void Reset()
-    {
-        if (!TryGetComponent<CircleCollider2D>(out var physicsCol))
-            physicsCol = gameObject.AddComponent<CircleCollider2D>();
-        physicsCol.isTrigger = false;
-
-        GameObject triggerObj = new GameObject("PromptTrigger");
-        triggerObj.transform.SetParent(transform);
-        triggerObj.transform.localPosition = Vector3.zero;
-
-        CircleCollider2D trigger = triggerObj.AddComponent<CircleCollider2D>();
-        trigger.isTrigger = true;
-        trigger.radius = 1.2f;
-
-        var handler = triggerObj.AddComponent<ThrowablePromptTrigger>();
-        handler.Init(this);
-
-        _isThrown = false;
-        _hasBounced = false;
-        _throwRotationSpeed = 360f; 
-    }
-
-    public class ThrowablePromptTrigger : MonoBehaviour
-    {
-        private ThrowableItemInfo info;
-        public void Init(ThrowableItemInfo i) => info = i;
-
-        private void OnTriggerEnter2D(Collider2D other)
-        {
-            if (other.CompareTag("Player"))
-                info.ShowPrompt();
-        }
-
-        private void OnTriggerExit2D(Collider2D other)
-        {
-            if (other.CompareTag("Player"))
-                info.HidePrompt();
-        }
-    }
 
     private IEnumerator AutoDespawnTimer()
     {

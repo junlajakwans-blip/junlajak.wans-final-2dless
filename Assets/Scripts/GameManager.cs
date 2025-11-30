@@ -262,12 +262,17 @@ public class GameManager : MonoBehaviour
         data.UpgradeStat("MaxHealth", hpBonus);
         _player.Initialize(data, cardManager, careerSwitcher);
 
+        Debug.Log($"[GM DEBUG] HP Upgrade Bonus: {hpBonus}");
+        Debug.Log($"[GM DEBUG] PlayerData.MaxHealth (after upgrade stat): {data.MaxHealth}");  
+      
         if (_player != null && _uiManager != null)
         {
-            // การเรียก SetHealthBarUI จะทำให้ Player เรียก HealthBarUI.InitializeHealth(_maxHealth) อีกครั้ง
+            // SetHealthBarUI จะทำให้ Player เรียก HealthBarUI.InitializeHealth(_maxHealth) อีกครั้ง
             _player.SetHealthBarUI(_uiManager.GetPlayerHealthBarUI());
+            Debug.Log($"[GM DEBUG] Player's Max Health AFTER Initialize (Final Value): {_player.MaxHealth}");
             Debug.Log("[GM] HealthBarUI re-synced with final Max HP.");
         }
+
 
         // 9. Comic FX pools
         var fxManager = FindFirstObjectByType<ComicEffectManager>();

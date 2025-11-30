@@ -181,29 +181,33 @@ public class KahootMon : Enemy
     /// </summary>
     public override void Die()
     {
+        // Guard: already dead
         if (_isDead) return;
         _isDead = true;
-        
-        CollectibleSpawner spawner = _spawnerRef;
-        Vector3 enemyDeathPosition = transform.position;
-        
-        if (spawner != null && _data != null)
+
+        Vector3 pos = transform.position;
+
+        // Drop logic based on EnemyData
+        if (_data != null)
         {
             float roll = Random.value;
-            float coinChance = _data.KahootCoinDropChance;
+            float coinChance = _data.KahootCoinDropChance;   // Chance from ScriptableObject
 
-            //  Drop Coin 
+            // Drop Coin
             if (roll < coinChance)
             {
-                spawner.DropCollectible(CollectibleType.Coin,enemyDeathPosition);
+                RequestDrop(CollectibleType.Coin);
                 Debug.Log($"[KahootMon] Dropped: Coin (Chance: {coinChance * 100:F0}%)");
             }
         }
-        else if (spawner == null)
+        else
         {
-            Debug.LogWarning("[KahootMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
+            Debug.LogWarning("[KahootMon] EnemyData missing. Drop skipped.");
         }
-        OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
+
+        // Hand control back to EnemySpawner (despawn, physics disable, unsubscribe events)
+        base.Die();
     }
+
     #endregion
 }

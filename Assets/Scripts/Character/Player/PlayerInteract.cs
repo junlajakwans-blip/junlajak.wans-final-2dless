@@ -14,10 +14,16 @@ public class PlayerInteract : MonoBehaviour
     [SerializeField] private float throwForce = 12f;
     [SerializeField] private LayerMask interactLayer;
 
+    private ThrowableItemInfo _currentHover;
     private Player player;
     private GameObject heldItemObject;
 
-    public bool HasItem() => heldItemObject != null;
+    public bool HasItem()
+    {
+        if (heldItemObject == null) return false;
+        return heldItemObject.GetComponent<ThrowableItemInfo>() != null;
+    }
+
 
     private void Awake()
     {
@@ -59,7 +65,12 @@ public class PlayerInteract : MonoBehaviour
 
         // คุมฟิสิกส์ตอนถือขึ้นหัว
         if (heldItemObject.TryGetComponent<ThrowableItemInfo>(out var info))
+        {
             info.DisablePhysicsOnHold();
+            info.RefreshPrompt(this);             
+
+        }
+
     }
 
 
@@ -103,6 +114,13 @@ public class PlayerInteract : MonoBehaviour
 
         // ล้าง state บนหัว
         heldItemObject = null;
+    }
+
+    //Text Change
+    public void SetHover(ThrowableItemInfo item)
+    {
+        _currentHover = item;
+        item.RefreshPrompt(this);
     }
 
 

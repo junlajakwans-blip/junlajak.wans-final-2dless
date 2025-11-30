@@ -130,43 +130,53 @@ public void ApplyBadLuck(Player player)
     /// </summary>
     public override void Die()
     {
+        // Guard: already dead
         if (_isDead) return;
         _isDead = true;
-        
-        CollectibleSpawner spawner = _spawnerRef;
-        Vector3 enemyDeathPosition = transform.position;
-        
-        if (spawner != null && _data != null)
+
+        Vector3 pos = transform.position;
+
+        if (_data != null)
         {
-            // Use Data From EnemyData:Unique | Asset: LotteryMinCoinDrop และ LotteryMaxCoinDrop
+            // 1) Random coin amount
             int coinAmount = Random.Range(_data.LotteryMinCoinDrop, _data.LotteryMaxCoinDrop + 1);
-            
+
             for (int i = 0; i < coinAmount; i++)
             {
-                // Spawn individual coins (scattered position)
-                spawner.DropCollectible(CollectibleType.Coin, enemyDeathPosition + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0));
+                // Maple-style scatter: half-circle upward spread
+                float angle = Random.Range(-80f, 80f) * Mathf.Deg2Rad;
+                float distance = Random.Range(0.6f, 1.6f);
+                Vector3 offset = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * distance;
+
+                RequestDrop(CollectibleType.Coin, pos + offset);
             }
-            Debug.Log($"[LotteryMon] Dropped {coinAmount} coins on defeat (Range: {_data.LotteryMinCoinDrop} - {_data.LotteryMaxCoinDrop}).");
 
+            Debug.Log($"[LotteryMon] Dropped {coinAmount} coins (Maple Scatter).");
 
-            // --- 2. ChefDuck Buff Drop Logic ---
-            // Check if the ChefDuck coin bonus buff was applied
+            // 2) ChefDuck bonus
             if (_chefCoinBonusMax > 0)
             {
                 int bonusAmount = Random.Range(_chefCoinBonusMin, _chefCoinBonusMax + 1);
+
                 for (int i = 0; i < bonusAmount; i++)
                 {
-                    // Spawn bonus coins with slight scattering
-                    spawner.DropCollectible(CollectibleType.Coin, enemyDeathPosition + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0));
+                    float angle = Random.Range(-80f, 80f) * Mathf.Deg2Rad;
+                    float distance = Random.Range(0.6f, 1.6f);
+                    Vector3 offset = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * distance;
+
+                    RequestDrop(CollectibleType.Coin, pos + offset);
                 }
-                Debug.Log($"[LotteryMon] Chef Bonus Drop: +{bonusAmount} coins.");
+
+                Debug.Log($"[LotteryMon] Chef Bonus Drop: +{bonusAmount} coins (Maple Scatter).");
             }
         }
-        else if (spawner == null)
+        else
         {
-            Debug.LogWarning("[LotteryMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
+            Debug.LogWarning("[LotteryMon] EnemyData missing. Drop skipped.");
         }
-        OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
+
+        base.Die();
     }
+
     #endregion
 }

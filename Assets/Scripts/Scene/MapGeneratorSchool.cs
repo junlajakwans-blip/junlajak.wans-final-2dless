@@ -11,6 +11,8 @@ public class MapGeneratorSchool : MapGeneratorBase
     [SerializeField] private string _breakPlatformKey = "map_asset_School_BreakPlatform";
     [SerializeField] private string _backgroundKey = "map_bg_School";
 
+
+
     protected override string NormalPlatformKey => _platformKey;
     protected override string BreakPlatformKey  => _breakPlatformKey;
     protected override string FloorKey         => _floorKey;
@@ -69,7 +71,7 @@ public class MapGeneratorSchool : MapGeneratorBase
     public override void SpawnEnemies()
     {
         if (_enemySpawner == null) return;
-        StartCoroutine(_enemySpawner.StartWave());
+        _enemySpawner.StartWaveRepeating();
     }
 
     public override void SpawnCollectibles()

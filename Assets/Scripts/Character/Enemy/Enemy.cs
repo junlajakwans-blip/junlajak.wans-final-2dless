@@ -1,39 +1,35 @@
 using UnityEngine;
-using System.Collections; // Added for Coroutines
+using System.Collections;
+using System.Collections.Generic;
 
 /// <summary>
 /// Base class for all enemy types in the game.
 /// Implements core attack, detection, and damage logic shared across all enemies.
 /// Derived classes (e.g., DoggoMon, PeterMon) override behavior for movement or special skills.
 /// </summary>
-// NOTE: IAttackable, IDamageable are no longer explicitly needed here if Character implements them.
 // Assume Character implements IDamageable.
-// We keep IAttackable for specialized attack methods.
+// IAttackable is kept for specialized attack methods.
 [RequireComponent(typeof(Rigidbody2D))]
 public abstract class Enemy : Character, IAttackable 
 {
-    // ====================================================================================
-    // NOTE: Stat Fields in Character.cs and link from EnemyData.asset 
-    // ====================================================================================
-
+    #region Fields (Serialized and Runtime)
+    
     [Header("Data Link")]
     [SerializeField] protected EnemyData _data;
     
-    #region Fields
-        
-    [SerializeField] protected Transform _target;
+    [Header("Behavior Control")]
     [SerializeField] protected EnemyType _enemyType = EnemyType.None;
     [SerializeField] public float SpawnWeight = 30f;
     [SerializeField] protected bool _isDisabled = false;
-
+    [SerializeField] protected Transform _target;
 
     // Runtime Fields (Loaded from EnemyData)
-    //  protected fields from Asset
     protected int _attackPower;
     protected float _detectionRange;
-    public bool CanDetectOverride = true; // Logic Flag
+    public bool CanDetectOverride = true; // Logic Flag: Can detection be overridden by external buffs?
     protected bool _isConfused = false;
     protected EnemyState _currentState = EnemyState.Idle;
+
     #endregion
 
     #region Properties
@@ -42,9 +38,11 @@ public abstract class Enemy : Character, IAttackable
     public int AttackPower { get => _attackPower; set => _attackPower = value; } 
     public float DetectionRange { get => _detectionRange; set => _detectionRange = value; }     
     public EnemyType EnemyType { get => _enemyType; set => _enemyType = value; }
+    
+    /// <summary>Event triggered when the enemy dies. Payload: the enemy instance.</summary>
     public System.Action<Enemy> OnEnemyDied;
 
-    //For Dependenciess
+    // References / Dependencies (Injected by Spawner)
     protected Player _playerRef;
     protected CollectibleSpawner _spawnerRef;
     protected CardManager _cardManagerRef;
@@ -53,36 +51,49 @@ public abstract class Enemy : Character, IAttackable
 
     #endregion
 
-#region Unity Lifecycle
+    #region Unity Lifecycle
     
+    private void OnEnable()
+    {
+        Debug.Log($"[Enemy ENABLE] {name} | OnEnemyDied listeners = {OnEnemyDied?.GetInvocationList()?.Length ?? 0}");
+    }
+
+
     protected virtual void Start() 
     {
         InitializeFromData(); 
-        
     }
 
     protected virtual void Update()
     {
-        if (_isDead)
-        return; 
+        if (_isDead) return; 
 
-        // ถ้าตกจากฉาก
+        // Auto-kill if enemy falls off the expected boundary
         if (transform.position.y < -10f)
         {
+            Debug.Log($"[Enemy:{name}] Fell off the map, executing Die().");
             Die();
             return;
         }
 
         if (_isDisabled) return;
+        
+        // 1. Update status effects that affect movement (like Fear)
+        UpdateFear();
+
         if (_target == null) return;
 
-        if (DetectPlayer(_target.position))
+        // 2. Check for detection, then move and attack if the enemy is not Feared
+        if (!_isFeared && DetectPlayer(_target.position))
         {
             Move();
             Attack();
         }
     }
 
+    /// <summary>
+    /// Checks if the enemy is in a state where it can perform actions (not dead or disabled).
+    /// </summary>
     public bool CanAct()
     {
         return !_isDead && !_isDisabled;
@@ -90,7 +101,7 @@ public abstract class Enemy : Character, IAttackable
 
     #endregion
 
-    #region Initialization
+    #region Initialization & Dependencies
     
     /// <summary>
     /// Initializes all enemy runtime stats by loading data from the linked EnemyData ScriptableObject.
@@ -100,32 +111,33 @@ public abstract class Enemy : Character, IAttackable
         if (_data == null) 
         {
             Debug.LogError($"[Enemy:{name}] Missing EnemyData Asset! Using hardcoded defaults.");
-            // Fallback: Plan 2 set num insted link Data
+            // Fallback: Use hardcoded defaults
             _attackPower = 10;
             _detectionRange = 5f;
             base.Initialize(1); // Character Base HP = 1
             return;
         }
 
-        // Character.Initialize() set _maxHealth and _currentHealth
+        // Initialize Character Base Class (Max Health, Current Health)
         base.Initialize(_data.BaseHealth); 
         
-        // Set _moveSpeed in Character.cs
+        // Set base movement speed in Character.cs
         base._moveSpeed = _data.BaseMovementSpeed;
         
-        // Link stat
+        // Link core stats
         _attackPower = _data.BaseAttackPower;
         _detectionRange = _data.BaseDetectionRange;
         
-        // type from EnemyType ID
+        // Set type from EnemyType ID
         _enemyType = _data.TypeID; 
 
         Debug.Log($"[Enemy] Initialized from Data: {_data.TypeID}. HP: {_currentHealth}, Speed: {base._moveSpeed}");
     }
-    #endregion
-
-
-    #region  Dependencies
+    
+    /// <summary>
+    /// Injects necessary manager dependencies from the EnemySpawner.
+    /// Sets the Player's transform as the default target.
+    /// </summary>
     public void SetDependencies(Player player, CollectibleSpawner spawner, CardManager cardManager, BuffManager buffManager, IObjectPool pool)
     {
         _playerRef = player;
@@ -140,21 +152,21 @@ public abstract class Enemy : Character, IAttackable
 
     #endregion
 
-
     #region Core Logic
     
-    
     /// <summary>
-    /// Moves toward the player if within detection range.
+    /// Moves toward the player if within detection range (or moves away if feared).
     /// </summary>
     public virtual void Move()
     {
-        if (!CanAct()) return;
-        if (_target == null) return;
+        if (!CanAct() || _target == null) return;
+        
+        // Movement while Feared is handled by UpdateFear(), so we skip here if Feared.
+        if (_isFeared) return;
 
         Vector3 direction = (_target.position - transform.position).normalized;
         
-        //  Base.Move() from Character.cs
+        // Base.Move() handles the actual physics movement
         base.Move(direction); 
     }
 
@@ -164,28 +176,27 @@ public abstract class Enemy : Character, IAttackable
     public override void Attack()
     {
         if (!CanAct()) return;
+        // Specific attack logic for derived classes goes here (e.g., cooldowns, collision check)
         Debug.Log($"[{_enemyType}] attacks the player with power {_attackPower}!");
     }
 
     /// <summary>
-    /// (Default)
-    /// For normal Update()
+    /// Checks if the player is within the enemy's default detection range.
     /// </summary>
     public virtual bool DetectPlayer(Vector3 playerPos)
     {
-        
         return DetectPlayer(playerPos, _detectionRange); 
     }
 
     /// <summary>
-    /// (Custom)
-    /// For Monter custom Range (ex GhostWorkMon) 
+    /// Checks if the player is within a custom detection range.
+    /// Used by specific enemy types or temporary effects.
     /// </summary>
     public virtual bool DetectPlayer(Vector3 playerPos, float customRange) 
     {
-    if (!CanDetectOverride) return false;
-    float distance = Vector3.Distance(transform.position, playerPos);
-    return distance <= customRange;
+        if (!CanDetectOverride) return false;
+        float distance = Vector3.Distance(transform.position, playerPos);
+        return distance <= customRange;
     }
 
     /// <summary>
@@ -198,6 +209,9 @@ public abstract class Enemy : Character, IAttackable
         // Default enemies have no career-specific buff interaction by default.
     }
 
+    /// <summary>
+    /// Disables all movement and attack behavior for a set duration.
+    /// </summary>
     public virtual void DisableBehavior(float duration)
     {
         if (_isDisabled) return;
@@ -215,6 +229,7 @@ public abstract class Enemy : Character, IAttackable
 
     /// <summary>
     /// Reduces health when hit by damage.
+    /// Overrides the method from Character.
     /// </summary>
     public override void TakeDamage(int amount)
     {
@@ -223,48 +238,79 @@ public abstract class Enemy : Character, IAttackable
         _currentHealth -= amount;
 
         Debug.Log($"[{_enemyType}] took {amount} damage! Remaining HP: {_currentHealth}");
-
         if (_currentHealth <= 0)
         {
-            _currentHealth = 0;
-            _isDead = true;
-            if (TryGetComponent<Collider2D>(out var col)) col.enabled = false;
-            Die();   
+            Die();
+            Debug.Log($"<color=red>[Enemy] TakeDamage Die() → {name}</color>");
             return;
         }
 
     }
+    
+    #endregion
 
-    //Die form abstract Character
-
+    #region Death & Pooling Helpers
+    
+    /// <summary>
+    /// Executes the death sequence, disabling the enemy and triggering the death event.
+    /// Overrides the abstract method from Character.
+    /// </summary>
     public override void Die()
     {
-        if (_isDead) return;
+        // Allow one-time execution even if a subclass set _isDead before calling base.Die()
+        if (_isDead && OnEnemyDied == null) return;
         _isDead = true;
 
-        // 🔹 ปิดสคริปต์ทันที (หยุด Update → ไม่ Attack / Move / Detect อีก)
+        // Disable Update / Movement / Attack
         enabled = false;
 
-        // 🔹 ปิดการชน
+        // Disable collision
         if (TryGetComponent<Collider2D>(out var col)) col.enabled = false;
 
-        // 🔹 หยุดฟิสิกส์
+        // Stop physics
         if (_rigidbody != null) _rigidbody.linearVelocity = Vector2.zero;
 
-        // 🔹 หยุด Animator (ถ้ามี)
+        // Stop animation
         if (_animator != null) _animator.SetFloat("MoveSpeed", 0);
 
-        // 🔹 เก็บ handler ก่อน invoke
         var handler = OnEnemyDied;
-        OnEnemyDied = null; // ❗ กัน invoke ซ้ำ ไม่ลูป ไม่ spam
-
-        handler?.Invoke(this); // ส่งไปที่ Spawner
+        if (handler != null)
+        {
+            handler.Invoke(this); // HandleEnemyDied 
+        }
+        Debug.Log($"<color=red>[Enemy] Die() → {name} Alredy Die </color>");
     }
 
+    /// <summary>
+    /// Resets the enemy state when returned to the pool (Despawned).
+    /// This ensures the enemy is clean and ready for immediate reuse by the EnemySpawner's Dedicated Pool.
+    /// </summary>
+    public void ResetStateForPooling()
+    {
+        // 1. Reset Flags
+        _isDead = false; 
+        _isDisabled = false;
+        _isConfused = false;
+        _isFeared = false;
+        _fearTimer = 0f;
+        _currentState = EnemyState.Idle; 
+
+        // 2. Reset Component states (re-enable components disabled in Die()/TakeDamage())
+        enabled = true; // Re-enable Script
+        if (TryGetComponent<Collider2D>(out var col)) col.enabled = true; // Re-enable collider
+
+        // 3. Reset Health/Stats
+        _currentHealth = _maxHealth; // Restore full health
+
+        // 4. Stop any running Coroutines
+        StopAllCoroutines();
+
+    }
 
     #endregion
 
     #region IAttackable Implementation
+    
     public virtual void ChargeAttack(float power)
     {
         Debug.Log($"[{_enemyType}] is charging attack with power x{power:F1}!");
@@ -289,52 +335,18 @@ public abstract class Enemy : Character, IAttackable
             float noAttackChance = 0.15f; // 15%
             if (Random.value < noAttackChance)
             {
-                Debug.Log($"<color=green>[MuscleDuck BuffMap]</color> Enemy attack IGNORED (15% No Attack Chance)!");
-                return; // หยุดการโจมตีทั้งหมด
+                Debug.Log($"[MuscleDuck BuffMap] Enemy attack IGNORED (15% No Attack Chance)!");
+                return; // Stop all damage delivery
             }
         }
         
-        // Of no buff fight with normal way
+        // If no buff interjects, deal damage normally
         target.TakeDamage(amount);
         Debug.Log($"[{_enemyType}] dealt {amount} damage to target!");
     }
     #endregion
 
-    #region Pooling Helpers
-
-    /// <summary>
-
-    /// Resets the enemy state when returned to the pool (Despawned).
-
-    /// This ensures the enemy is clean and ready for immediate reuse by the EnemySpawner's Dedicated Pool.
-
-    /// </summary>
-
-    public void ResetStateForPooling()
-
-    {
-        // 1. Reset Flags
-        _isDead = false; // ต้องตั้งค่ากลับเป็น false
-        _isDisabled = false;
-        _isConfused = false;
-        _isFeared = false;
-        _fearTimer = 0f;
-        _currentState = EnemyState.Idle; 
-
-        // 2. Reset Component states (เปิดสิ่งที่ถูกปิดใน Die()/TakeDamage() กลับคืน)
-        enabled = true; // เปิด Script
-
-        if (TryGetComponent<Collider2D>(out var col)) col.enabled = true; // เปิดชนกลับคืน
-
-        // 3. Reset Health/Stats
-        _currentHealth = _maxHealth; // คืนเลือดเต็ม
-
-        // 4. หยุด Coroutine ที่อาจยังทำงานอยู่
-        StopAllCoroutines(); 
-
-    }
-
-    #endregion
+    #region Status Effects (Confuse & Fear)
 
     /// <summary>
     /// Applies the Confusion/Chaos status, causing the enemy to attack other enemies.
@@ -343,6 +355,7 @@ public abstract class Enemy : Character, IAttackable
     {
         if (_isDisabled || _isDead) return;
         
+        // Stop the routine if it's already running to restart the duration
         StopCoroutine(nameof(ConfuseRoutine)); 
         StartCoroutine(ConfuseRoutine(duration));
     }
@@ -361,7 +374,6 @@ public abstract class Enemy : Character, IAttackable
 
     }
 
-#region Fear System
     private bool _isFeared = false;
     private float _fearTimer = 0f;
 
@@ -376,7 +388,8 @@ public abstract class Enemy : Character, IAttackable
     }
 
     /// <summary>
-    /// Update Fear timer and flee movement
+    /// Updates the Fear timer and controls the enemy's fleeing movement.
+    /// This runs every Update loop if the enemy is feared.
     /// </summary>
     private void UpdateFear()
     {
@@ -391,11 +404,52 @@ public abstract class Enemy : Character, IAttackable
 
         if (_target != null)
         {
+            // Move AWAY from the player
             Vector3 direction = (transform.position - _target.position).normalized;
-            base.Move(direction); // move AWAY from the player
+            base.Move(direction); 
         }
     }
     #endregion
 
+    #region Drop System
+
+    /// <summary>
+    /// Structure used to pass collectible drop information from the enemy to the spawner in an event.
+    /// </summary>
+    public struct DropRequest
+    {
+        public CollectibleType Type;
+        public Vector3 Position;
+        public DropRequest(CollectibleType t, Vector3 p)
+        {
+            Type = t;
+            Position = p;
+        }
+    }
+
+    /// <summary>
+    /// Event triggered by the enemy (usually upon death) to request the spawner drops a collectible.
+    /// </summary>
+    public event System.Action<DropRequest> OnRequestDrop;
+
+    /// <summary>
+    /// Sends a request to the CollectibleSpawner to drop the specified type at the enemy's current position.
+    /// </summary>
+    /// <param name="type">The type of collectible to drop.</param>
+    protected void RequestDrop(CollectibleType type)
+    {
+        OnRequestDrop?.Invoke(new DropRequest(type, transform.position));
+    }
+
+    /// <summary>
+    /// Sends a drop request with a custom position (used for scatter / burst drop).
+    /// </summary>
+    protected void RequestDrop(CollectibleType type, Vector3 position)
+    {
+        OnRequestDrop?.Invoke(new DropRequest(type, position));
+    }
+
+
+    #endregion
 
 }

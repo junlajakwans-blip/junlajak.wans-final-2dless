@@ -87,19 +87,35 @@ public class ObjectPoolManager : MonoBehaviour, IObjectPool
     public virtual void ReturnToPool(string objectTag, GameObject obj)
     {
         // 1) Clean the tag BEFORE checking dictionary
-        objectTag = objectTag.Replace("(Clone)", "").Trim();
+        string cleanedTag = objectTag.Replace("(Clone)", "").Trim();
 
-        // 2) Safe guard
-        if (!_poolDictionary.ContainsKey(objectTag))
+        // If it starts with "throw_", assume ThrowableSpawner handles its return/pooling.
+        if (cleanedTag.StartsWith("throw_")) 
         {
-            Debug.LogWarning($"❌ [POOL ERROR] Missing pool for: {objectTag}");
+            // Do NOT process it in the main pool manager.
+            // The ThrowableSpawner script (or the object itself) must handle its own Despawn/Return.
+            // For now, we destroy it to prevent it from hanging if the Despawn/Return 
+            // process in ThrowableSpawner was missed.
+
+            // Note: If ThrowableSpawner.Despawn() is the only intended method for returning throwables,
+            // this `ReturnToPool` call should ideally not happen for throwables.
+            // But if it does happen, destroying it here prevents the error and stops leaks.
+            Debug.Log($"[Pool Manager] Skipping return for Throwable: {cleanedTag}. (Should be handled by ThrowableSpawner)");
             Destroy(obj);
             return;
         }
 
-        // 3) Reset & return
+        // 2) Safe guard for non-throwable objects
+        if (!_poolDictionary.ContainsKey(cleanedTag))
+        {
+            Debug.LogWarning($"❌ [POOL ERROR] Missing pool for: {cleanedTag} (Destroying instance).");
+            Destroy(obj);
+            return;
+        }
+
+        // 3) Reset & return for valid, non-throwable objects
         obj.SetActive(false);
-        _poolDictionary[objectTag].Enqueue(obj);
+        _poolDictionary[cleanedTag].Enqueue(obj);
     }
 
 

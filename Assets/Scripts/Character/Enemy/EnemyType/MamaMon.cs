@@ -152,44 +152,48 @@ public class MamaMon : Enemy
         Debug.Log($"[{name}] slurps noodles to heal HP!");
     }
     #endregion
-
+    
     #region Death/Drop
     /// <summary>
     /// Called when this enemy dies. Implements item drop logic.
     /// </summary>
     public override void Die()
     {
+        // Guard: already dead
         if (_isDead) return;
         _isDead = true;
-        
-        CollectibleSpawner spawner = _spawnerRef;
-        Vector3 enemyDeathPosition = transform.position;
-        
-        if (spawner != null && _data != null)
+
+        Vector3 pos = transform.position;
+
+        // Drop logic based on EnemyData
+        if (_data != null)
         {
             float roll = Random.value;
-            
-            // โอกาสรวมสำหรับการดรอป GreenTea
-            float totalChanceForGreenTea = _data.MamaCoinDropChance + _data.MamaGreenTeaDropChance; // e.g., 0.35 + 0.10 = 0.45f
-            
-            // Drop Coin: (roll < 35%)
+
+            // Chance grouping for GreenTea
+            float totalChanceForGreenTea = _data.MamaCoinDropChance + _data.MamaGreenTeaDropChance;
+
+            // Drop Coin: (roll < MamaCoinDropChance)
             if (roll < _data.MamaCoinDropChance)
             {
-                spawner.DropCollectible(CollectibleType.Coin, enemyDeathPosition);
+                RequestDrop(CollectibleType.Coin);
                 Debug.Log($"[MamaMon] Dropped: Coin (Chance: {_data.MamaCoinDropChance * 100:F0}%)");
             }
-            // Drop GreenTea: (35% <= roll < 45%)
+            // Drop GreenTea: (MamaCoinChance <= roll < totalChanceForGreenTea)
             else if (roll < totalChanceForGreenTea)
             {
-                spawner.DropCollectible(CollectibleType.GreenTea, enemyDeathPosition);
+                RequestDrop(CollectibleType.GreenTea);
                 Debug.Log($"[MamaMon] Dropped: GreenTea (Chance: {_data.MamaGreenTeaDropChance * 100:F0}%)");
             }
         }
-        else if (spawner == null)
+        else
         {
-            Debug.LogWarning("[MamaMon] CollectibleSpawner NOT INJECTED! Cannot drop items.");
+            Debug.LogWarning("[MamaMon] EnemyData missing. Drop skipped.");
         }
-        OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
+
+        // Notify spawner and handle despawn
+        base.Die();
     }
     #endregion
+
 }

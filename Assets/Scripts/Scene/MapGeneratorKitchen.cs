@@ -10,6 +10,7 @@ public class MapGeneratorKitchen : MapGeneratorBase
     [SerializeField] private string _breakPlatformKey = "map_asset_Kitchen_Break_Platform";
     [SerializeField] private string _wallVisualKey = "map_Wall_Kitchen";
 
+
     protected override string NormalPlatformKey => _platformKey;
     protected override string BreakPlatformKey  => _breakPlatformKey;
     protected override string FloorKey         => _floorKey;
@@ -40,7 +41,7 @@ public class MapGeneratorKitchen : MapGeneratorBase
                 FindFirstObjectByType<CardManager>(),
                 FindFirstObjectByType<BuffManager>()
             );
-            StartCoroutine(_enemySpawner.StartWave());
+            _enemySpawner.StartWaveRepeating();
         }
 
         // 5) Collectibles

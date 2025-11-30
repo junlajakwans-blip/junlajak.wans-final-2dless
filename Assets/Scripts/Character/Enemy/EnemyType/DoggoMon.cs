@@ -113,33 +113,32 @@ public class DoggoMon : Enemy // IMoveable is redundant as Enemy already provide
 #region Death Drop
     public override void Die()
     {
-        if (_isDead) return;
-        _isDead = true; 
 
-        CollectibleSpawner spawner = _spawnerRef;
-        Vector3 enemyDeathPosition = transform.position;
-        
-        if (spawner != null && _data != null)
+        // Cache death position for drop usage
+        Vector3 pos = transform.position;
+
+        // Drop logic based on EnemyData
+        if (_data != null)
         {
             float roll = Random.value;
-            
-            //  Drop Chance from Asset: _data.DoggoCoinDropChance
-            float coinChance = _data.DoggoCoinDropChance;
-            
-            // Drop Coin เท่านั้น
+            float coinChance = _data.DoggoCoinDropChance; // Chance from ScriptableObject
+
+            // Drop coin only
             if (roll < coinChance)
             {
-                spawner.DropCollectible(CollectibleType.Coin, enemyDeathPosition);
+                // Dispatch drop request to EnemySpawner
+                RequestDrop(CollectibleType.Coin);
                 Debug.Log($"[DoggoMon] Dropped: Coin (Chance: {coinChance * 100:F0}%)");
             }
-            
         }
-        else if (spawner == null)
+        else
         {
-            Debug.LogWarning("[DoggoMon] CollectibleSpawner NOT INJECTED! Cannot drop item.");
+            Debug.LogWarning("[DoggoMon] Missing EnemyData. Drop skipped.");
         }
+
+        // Notify spawner and return to pool
         base.Die();
-        OnEnemyDied?.Invoke(this); // Event จะถูกส่งออกไป
     }
+
 #endregion
 }

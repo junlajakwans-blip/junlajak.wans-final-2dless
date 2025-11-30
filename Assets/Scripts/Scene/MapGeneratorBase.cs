@@ -18,6 +18,7 @@ public abstract class MapGeneratorBase : MonoBehaviour
     [SerializeField] protected BackgroundLooper _backgroundLooper;
     [SerializeField] protected AssetSpawner _assetSpawner;          
     [SerializeField] protected ThrowableSpawner _throwableSpawner;  
+    [SerializeField] private MapType _mapType;
     protected ObjectPoolManager _objectPoolManager;
     #endregion
 
@@ -37,7 +38,8 @@ public abstract class MapGeneratorBase : MonoBehaviour
     [Header("Platform Endless Settings")]
     [SerializeField] protected float _platformWidth = 10f;
     [SerializeField] protected float _minXOffset = 2f;
-    [SerializeField] protected float _maxXOffset = 4f;
+    [Tooltip("ลดค่านี้ (จาก 4f) เพื่อให้ Platform ไม่ได้ห่างกันมากเกินไป")]
+    [SerializeField] protected float _maxXOffset = 3.0f; // ปรับลดจาก 4f เป็น 3.0f (แก้ปัญหา 'ห่างไป')
     [SerializeField] protected float _minYOffset = -1f;
     [SerializeField] protected float _maxYOffset = 1.5f;
 
@@ -46,10 +48,10 @@ public abstract class MapGeneratorBase : MonoBehaviour
     [SerializeField] protected float _assetVerticalOffset = 0.1f;
 
     [Header("Content Spawning Rules")]
-    [Tooltip("จำนวน Platform ขั้นต่ำที่ต้องเว้นก่อนสปาวน์ Enemy ตัวถัดไป (ปรับจาก 5 เป็น 3)")]
-    [SerializeField] private int _minPlatformsBetweenEnemy = 3; 
-    [Tooltip("จำนวน Platform ขั้นต่ำที่ต้องเว้นก่อนสปาวน์ Asset ตัวถัดไป (ปรับจาก 3 เป็น 2)")]
-    [SerializeField] private int _minPlatformsBetweenAsset = 2; 
+    [Tooltip("จำนวน Platform ขั้นต่ำที่ต้องเว้นก่อนสปาวน์ Enemy ตัวถัดไป (ปรับจาก 5 เป็น 3)")]
+    [SerializeField] private int _minPlatformsBetweenEnemy = 3; 
+    [Tooltip("จำนวน Platform ขั้นต่ำที่ต้องเว้นก่อนสปาวน์ Asset ตัวถัดไป (ปรับจาก 3 เป็น 2)")]
+    [SerializeField] private int _minPlatformsBetweenAsset = 2; 
 
     protected float _nextSpawnX; //  Cursor สำคัญ: บอกตำแหน่งขวาสุดที่สร้าง Platform ไปแล้ว
     protected float _nextFloorX; //  Cursor สำคัญ: บอกตำแหน่งขวาสุดที่สร้างพื้นหลัง (Floor) ไปแล้ว
@@ -64,13 +66,14 @@ public abstract class MapGeneratorBase : MonoBehaviour
         HillDown 
     }
     [SerializeField] private PlatformState _currentPlatformState = PlatformState.Normal;
-    //TODO : [SerializeField] private float _currentHeightLimit = 0f; // ใช้จำกัดความสูงสูงสุดใน Pattern Hill
+    [Tooltip("Offset สูงสุดที่ Platform จะอยู่สูงกว่า Floor Y (เช่น ถ้า Floor Y=-0.8 และค่านี้เป็น 3.8 จะทำให้ Max Y ประมาณ 3.0)")]
+    [SerializeField] private float _maxPlatformHeightOffset = 3.8f; // ปรับให้ได้ Max Y ประมาณ 3.0f เมื่อ Floor Y=-0.8f
     [SerializeField] private int _stepsRemaining = 0; // ใช้สำหรับ Pattern Steps
     #endregion
 
     #region Floor Settings
     [Header("Floor Settings (Tile 1 UNIT)")]
-    // NOTE: ค่า Y นี้คือค่ากึ่งกลางของ Floor/Platform ที่ใช้เป็น Base Y
+    // NOTE: ค่า Y นี้คือค่ากึ่งกลางของ Floor/Platform ที่ใช้เป็น Base Y
     [SerializeField] protected float _floorY = 0.2f; 
     [SerializeField] protected float _floorLength = 1f;
     [SerializeField] protected int _initialFloorSegments = 30;
@@ -98,9 +101,15 @@ public abstract class MapGeneratorBase : MonoBehaviour
     private int _platformsSinceLastEnemy = 0;
     private int _platformsSinceLastAsset = 0;
     
-    // ตัวแปรสำหรับควบคุมการหน่วงเวลาใน Coroutine (ปรับปรุงสำหรับ WebGL)
+    // WebGL OPTIMIZATION: ใช้ Timer เพื่อควบคุมการรัน Logic หนักๆ แทนการรันทุกเฟรม
     private float _generationTimer = 0f;
-    private const float GENERATION_CHECK_INTERVAL = 0.1f; // เช็คทุก 0.1 วินาที
+    private const float GENERATION_CHECK_INTERVAL = 0.1f; // ตรวจสอบ Logic การสร้างทุกๆ 0.1 วินาที
+    
+    // NEW: ตัวคูณโอกาสสปาวน์ (สำหรับปรับความยาก/Buff)
+    private float _contentSpawnChanceMultiplier = 1.0f; 
+    [Tooltip("ใช้สำหรับระบบ Buff/Difficulty เพื่อควบคุมโอกาสสปาวน์ Content")]
+    private bool _isEnemySpawnDisabled = false; // Flag สำหรับปิดการสปาวน์ศัตรูชั่วคราว (เช่นตอนแปลงร่าง)
+
     #endregion
 
     // ============================================================================
@@ -116,9 +125,15 @@ public abstract class MapGeneratorBase : MonoBehaviour
     public float WallPushSpeed { get => _wallPushSpeed; set => _wallPushSpeed = value; }
     public bool IsPlatformBreakable { get => _isPlatformBreakable; set => _isPlatformBreakable = value; }
     public bool IsWallPushEnabled { get => _isWallPushEnabled; set => _isWallPushEnabled = value; }
+    
+    public float ContentSpawnChanceMultiplier { get => _contentSpawnChanceMultiplier; set => _contentSpawnChanceMultiplier = value; }
     #endregion
 
-    // ============================================================================
+    #region  Event
+    public event System.Action<Vector3> OnPlatformTopSpawnPoint;
+    #endregion
+
+    // ============================================================================
     // 4. INITIALIZATION
     // ============================================================================
     #region Initialization
@@ -168,20 +183,27 @@ public abstract class MapGeneratorBase : MonoBehaviour
             Debug.Log("[MapGeneratorBase] CollectibleSpawner initialized.");
         }
 
-        // 3. **แก้ปัญหา EnemySpawner** - คลาสฐานไม่รู้ MapType จึงต้องให้คลาสลูกเรียก InitializeSpawner เอง
         //   SetDependencies ให้ EnemySpawner ในคลาสฐานนี้ และให้คลาสลูกเรียก InitializeSpawner
         if (_enemySpawner != null && culling != null)
         {
             // Set Dependencies ที่สามารถหาได้ เพื่อให้คลาสลูกเรียก InitializeSpawner ต่อได้
             // EnemySpawner.cs ต้องการ InitializeSpawner(IObjectPool pool, MapType mapType, Player player, CollectibleSpawner collectibleSpawner, CardManager cardManager, BuffManager buffManager)
             _enemySpawner.SetDependencies(
-                player, 
-                _collectibleSpawner, 
-                cardManager, 
-                buffManager, 
-                _objectPoolManager, 
-                culling
-            );
+                player, 
+                _collectibleSpawner, 
+                cardManager, 
+                buffManager, 
+                _objectPoolManager, 
+                culling
+            );
+                _enemySpawner.InitializeSpawner(
+                _objectPoolManager,
+                _mapType,
+                player,
+                _collectibleSpawner,
+                cardManager,
+                buffManager
+            );
         }
         else if (_enemySpawner != null)
         {
@@ -242,6 +264,7 @@ public abstract class MapGeneratorBase : MonoBehaviour
     //  CORE LOOP (FIXED): ใช้ Frontier Logic (ถมของให้เต็มหน้าจอเสมอ)
     protected IEnumerator GeneratePlatformsLoop()
     {
+        // WebGL/Mobile Optimization: ใช้ Coroutine และ Timer เพื่อแบ่งภาระงานหนัก
         while (_generationPivot != null)
         {
             _generationTimer += Time.deltaTime;
@@ -269,7 +292,7 @@ public abstract class MapGeneratorBase : MonoBehaviour
                     }
                 }
                 
-                // 4. ลบของเก่าที่หลุดจอซ้าย (ไม่ต้องเรียก SpawnFloorSegmentBackward แล้ว)
+                // 4. ลบของเก่าที่หลุดจอซ้าย
                 RecycleOffScreenPlatforms();
                 RecycleOffScreenFloors();
             
@@ -280,6 +303,12 @@ public abstract class MapGeneratorBase : MonoBehaviour
             // WebGL/Mobile Optimization: Yield ทุกเฟรมเพื่อให้ Main Thread ว่าง
             yield return null;
         }
+    }
+
+    protected virtual void OnDisable()
+    {
+        // NEW: สั่งหยุด Coroutine เมื่อ Object ถูกปิด/ทำลาย เพื่อป้องกัน Memory Leak
+        StopAllCoroutines();
     }
     #endregion
 
@@ -295,18 +324,18 @@ public abstract class MapGeneratorBase : MonoBehaviour
         // เลือก Key (Breakable หรือ Normal)
         string key = NormalPlatformKey;
 
-        // แก้ปัญหา BreakPlatform/Platform ซ้อนกัน: สุ่ม BreakPlatform เฉพาะเมื่อไม่ใช่ Starter
+        // แก้ปัญหา BreakPlatform/Platform ซ้อนกัน: สุ่ม BreakPlatform เฉพาะเมื่อไม่ใช่ Starter
         if (!isStarter && Random.value < 0.2f && BreakPlatformKey != "") 
-        {
-            key = BreakPlatformKey;
-        }
+        {
+            key = BreakPlatformKey;
+        }
 
         GameObject platform = _objectPoolManager.SpawnFromPool(key, Vector3.zero, Quaternion.identity);
         if (platform == null) 
-        {
-            Debug.LogWarning($"[MapGen] Failed to spawn platform key: {key}");
-            return;
-        }
+        {
+            Debug.LogWarning($"[MapGen] Failed to spawn platform key: {key}");
+            return;
+        }
 
         // คำนวณตำแหน่ง
         Vector3 spawnPos;
@@ -358,12 +387,17 @@ public abstract class MapGeneratorBase : MonoBehaviour
 
 protected float CalculateYOffsetByState(float currentBaseY)
 {
+    // ----------------------------------------------------
+    // ปรับปรุง: ลดความชันสูงสุด (maxDeltaY) และเพิ่มระดับต่ำสุด (minY)
+    // ----------------------------------------------------
     float yOffset = 0f;
-    float maxDeltaY = 0.45f; // การขึ้นลงสูงสุดต่อแพลตฟอร์ม
+    float maxDeltaY = 0.35f; // ลดการขึ้นลงสูงสุดต่อแพลตฟอร์ม (จาก 0.45f) เพื่อให้ทางลาดไม่ชันเกินไป (แก้ปัญหา 'สูงเกิน/ต่ำเกิน')
 
-    //  ปรับปรุงความสูงต่ำสุด/สูงสุดของ Platform
-    float minY = _floorY + 1.0f; // ปรับให้สูงขึ้นมาก (จาก 0.25f เป็น 1.0f)
-    float maxY = _floorY + 3.5f;  // ขยายขอบเขตความสูง (จาก 2.8f เป็น 3.5f)
+    //  ปรับปรุงความสูงต่ำสุด/สูงสุดของ Platform
+    // ใช้ค่า _floorY ที่มาจาก Inspector (-0.8f) เป็นฐาน
+    // ถ้า _floorY = -0.8f, minY จะเท่ากับ -0.8 + 2.0 = 1.2f. (Platform จะไม่ต่ำกว่า Y=1.2)
+    float minY = _floorY + 2.0f; // **ปรับเพิ่มจาก 1.6f เป็น 2.0f** เพื่อให้ Platform ลอยสูงขึ้นจากพื้น (Floor Y=-0.8) อย่างชัดเจน
+    float maxY = _floorY + _maxPlatformHeightOffset;  // ใช้ค่าจาก Inspector เพื่อควบคุม Max Y (ถ้าตั้ง 3.8 จะได้ Y=3.0)
 
     // -------------------------
     // เปลี่ยน Pattern เมื่อจบ Step
@@ -371,10 +405,10 @@ protected float CalculateYOffsetByState(float currentBaseY)
     if (_stepsRemaining <= 0)
     {
         float r = Random.value;
-        //  ปรับโอกาสเกิด Normal Pattern ลดลง และเพิ่มโอกาสเกิด Pattern อื่นๆ (50%)
-        if (r < 0.50f) _currentPlatformState = PlatformState.Normal; // 50%
-        else if (r < 0.65f) _currentPlatformState = PlatformState.AscendingSteps; // 15%
-        else if (r < 0.80f) _currentPlatformState = PlatformState.DescendingSteps; // 15%
+        //  ปรับโอกาสเกิด Normal Pattern ลดลงเหลือ 30% และเพิ่มโอกาสเกิด Pattern อื่นๆ เพื่อความหลากหลาย
+        if (r < 0.30f) _currentPlatformState = PlatformState.Normal; // 30% (แก้ปัญหา 'Pattern ไม่ค่อยหลากหลาย')
+        else if (r < 0.55f) _currentPlatformState = PlatformState.AscendingSteps; // 25% (เพิ่มขึ้น)
+        else if (r < 0.80f) _currentPlatformState = PlatformState.DescendingSteps; // 25% (เพิ่มขึ้น)
         else if (r < 0.90f) _currentPlatformState = PlatformState.HillUp; // 10%
         else _currentPlatformState = PlatformState.HillDown; // 10%
 
@@ -399,10 +433,12 @@ protected float CalculateYOffsetByState(float currentBaseY)
             break;
 
         case PlatformState.HillUp:
-            yOffset = Random.Range(0.1f, maxDeltaY);
+            // ใช้ค่า maxDeltaY ที่ปรับแล้ว
+            yOffset = Random.Range(0.1f, maxDeltaY); 
             break;
 
         case PlatformState.HillDown:
+            // ใช้ค่า maxDeltaY ที่ปรับแล้ว
             yOffset = Random.Range(-maxDeltaY, -0.1f);
             break;
     }
@@ -496,11 +532,13 @@ protected virtual void TrySpawnContentOnPlatform(GameObject platform, Vector3 po
         return;
     }
     
-    float chance = Random.value;
+    // ปรับโอกาสในการสปาวน์ Content ทั้งหมดตามตัวคูณความยาก/Buff
+    float contentChance = Random.value * _contentSpawnChanceMultiplier; 
 
     // 1. คำนวณจุด Spawn ที่ถูกต้องบน Platform
     // (สมมติว่า Platform มีความสูง 1 หน่วย และ pos คือจุดกึ่งกลาง Y)
     float platformTopY = pos.y + 0.5f; 
+
 
     // ตำแหน่ง Collectible ที่อยู่ "บน" Platform 
     Vector3 collectibleSpawnPos = new Vector3(
@@ -518,43 +556,59 @@ protected virtual void TrySpawnContentOnPlatform(GameObject platform, Vector3 po
     // 2. จุด Center ของ Platform (สำหรับ Enemy/Throwable ที่ควรอยู่บน Platform)
     Vector3 platformTop = new Vector3(pos.x, platformTopY, 0f); 
 
-    // ----------------------------------------------------
-    // UPDATED LOGIC: แยก Collectible ออก และเพิ่มโอกาสเกิด Enemy/Asset
-    // ----------------------------------------------------
-    
-    // 1. Collectible (30% Chance) - High Priority, Low Impact (ไม่นับเป็น Exclusive Slot)
-    if (Random.value < 0.35f && _collectibleSpawner != null) // 35% โอกาสสูงขึ้นเล็กน้อย
-    {
-        _collectibleSpawner.SpawnAtPosition(collectibleSpawnPos); 
-    }
+    // แจ้งตำแหน่ง Platform นี้ว่า Enemy สามารถยืนได้
+    OnPlatformTopSpawnPoint?.Invoke(new Vector3(pos.x, platformTopY, 0f));
 
-    // 2. Roll สำหรับ Enemy, Asset, Throwable (รวมกัน 70% ของโอกาสที่เหลือ)
-    float mainChance = Random.value;
-    
-    // 2.1 Enemy (15% Base Chance) - Needs Distance Lock (Min 3 platforms)
-    if (mainChance < 0.15f && _enemySpawner != null && _platformsSinceLastEnemy >= _minPlatformsBetweenEnemy)
-    {
-        _enemySpawner.SpawnAtPosition(platformTop); 
-        _platformsSinceLastEnemy = 0; // รีเซ็ตตัวนับเมื่อสปาวสำเร็จ
-    }
+    // ----------------------------------------------------
+    // UPDATED LOGIC: ใช้ contentChance ที่ถูกปรับแล้ว และเช็ค Enemy Disabled Flag
+    // ----------------------------------------------------
+    
+    // 1. Collectible (35% Chance) - High Priority, Low Impact (ไม่นับเป็น Exclusive Slot)
+    if (Random.value < 0.35f && _collectibleSpawner != null) 
+    {
+        _collectibleSpawner.SpawnAtPosition(collectibleSpawnPos); 
+    }
 
-    // 2.2 Asset (25% Base Chance) - Needs Distance Lock (Min 2 platforms)
-    // โอกาสรวมถึงช่องว่างที่ Enemy ไม่สปาวน์ (0.15f - 0.40f)
-    else if (mainChance < 0.40f && _assetSpawner != null && _platformsSinceLastAsset >= _minPlatformsBetweenAsset) 
-    {
-        _assetSpawner.SpawnAtPosition(assetSpawnPos); 
-        _platformsSinceLastAsset = 0; // รีเซ็ตตัวนับเมื่อสปาวสำเร็จ
-    }
-    
-    // 2.3 Throwable (20% Base Chance) - No Distance Lock
-    // โอกาสรวมถึงช่องว่างที่ Enemy/Asset ไม่สปาวน์ (0.40f - 0.60f)
-    else if (mainChance < 0.60f && _throwableSpawner != null)
-    {
-        // ใช้ตำแหน่งเดียวกับ Asset/Enemy แต่ตั้งค่าความสูงให้เหมาะสมใน Spawner นั้นๆ
-        _throwableSpawner.SpawnAtPosition(platformTop); 
-    }
-    
+    // 2. Roll สำหรับ Enemy, Asset, Throwable (รวมกัน 70% ของโอกาสที่เหลือ)
+    
+    // 2.1 Enemy (15% Base Chance) - Needs Distance Lock (Min 3 platforms)
+    if (contentChance < 0.15f && _enemySpawner != null && !_isEnemySpawnDisabled && _platformsSinceLastEnemy >= _minPlatformsBetweenEnemy)
+    {
+        _enemySpawner.SpawnAtPosition(platformTop); 
+        _platformsSinceLastEnemy = 0; // รีเซ็ตตัวนับเมื่อสปาวสำเร็จ
+    }
 
+    // 2.2 Asset (25% Base Chance) - Needs Distance Lock (Min 2 platforms)
+    // โอกาสรวมถึงช่องว่างที่ Enemy ไม่สปาวน์ (0.15f - 0.40f)
+    else if (contentChance < 0.40f && _assetSpawner != null && _platformsSinceLastAsset >= _minPlatformsBetweenAsset) 
+    {
+        _assetSpawner.SpawnAtPosition(assetSpawnPos); 
+        _platformsSinceLastAsset = 0; // รีเซ็ตตัวนับเมื่อสปาวสำเร็จ
+    }
+    
+    // 2.3 Throwable (20% Base Chance) - No Distance Lock
+    // โอกาสรวมถึงช่องว่างที่ Enemy/Asset ไม่สปาวน์ (0.40f - 0.60f)
+    else if (contentChance < 0.60f && _throwableSpawner != null)
+    {
+        // ใช้ตำแหน่งเดียวกับ Asset/Enemy แต่ตั้งค่าความสูงให้เหมาะสมใน Spawner นั้นๆ
+        _throwableSpawner.SpawnAtPosition(platformTop); 
+    }
+    
+
+}
+
+// NEW: API สำหรับระบบ Buff/Transformation เข้ามาสั่งปิด/เปิดการสปาวน์ศัตรู
+public void SetEnemySpawnDisabled(bool disabled)
+{
+    _isEnemySpawnDisabled = disabled;
+    if (disabled)
+    {
+        Debug.Log("[MapGen] Enemy spawning temporarily disabled (e.g., player transformed).");
+    }
+    else
+    {
+        Debug.Log("[MapGen] Enemy spawning re-enabled.");
+    }
 }
 #endregion
 
