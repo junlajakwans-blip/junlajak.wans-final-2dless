@@ -1,12 +1,9 @@
 using UnityEngine;
-using UnityEngine.UI;
-using DUFFDUCK.EditorTools; 
 
 public class CardUI : MonoBehaviour
 {
-    [Header("DO NOT ASSIGN — auto linked by CardUI.Set()")]
-    [Tooltip("ระบบจะเติมให้อัตโนมัติจาก DuckCareerData.CareerCard — ห้ามใส่เอง")]
-    [SerializeField, ReadOnly] private Image cardImage;
+    [Header("Auto-link: SpriteRenderer on world card")]
+    [SerializeField] private SpriteRenderer cardSprite;
 
     private string _careerID;
     private CardType _type;
@@ -15,12 +12,25 @@ public class CardUI : MonoBehaviour
     {
         if (data == null) return;
 
+        // auto find
+        if (cardSprite == null)
+            cardSprite = GetComponentInChildren<SpriteRenderer>();
+
         _careerID = data.CareerID.ToString();
         _type = data.CardType;
-        cardImage.sprite = data.CareerCard;
+
+        if (cardSprite != null)
+        {
+            cardSprite.sprite = data.CareerCard;
+            cardSprite.enabled = true; // บังคับเปิดทันที
+        }
+
+        var img = GetComponentInChildren<UnityEngine.UI.Image>();
+        if (img != null) img.enabled = false;
+
+        Debug.Log($"[CardUI] SetCareerData: {data.DisplayName}");
     }
 
-
-    public string GetID() => _careerID;
+    public string GetCareerID() => _careerID;
     public CardType GetCardType() => _type;
 }

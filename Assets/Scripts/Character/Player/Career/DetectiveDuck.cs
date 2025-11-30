@@ -47,7 +47,7 @@ public class DetectiveSkill : CareerSkillBase
         Debug.Log($"[{player.PlayerName}] uses skill: RevealHiddenItems! (Spawn Mode)");
 
         // ---------------------------------------------------------
-        // PlayFX Skill (เพิ่มตรงนี้)
+        // PlayFX Skill 
         // ---------------------------------------------------------
         if (player.FXProfile != null && player.FXProfile.skillFX != null)
         {
@@ -95,7 +95,7 @@ public class DetectiveSkill : CareerSkillBase
         Debug.Log($"[{player.PlayerName}] activates Infrared Scanner!");
         
         // ---------------------------------------------------------
-        // PlayFX Charge (เพิ่มตรงนี้ - ใช้ extraFX)
+        // PlayFX Charge ( - ใช้ extraFX)
         // ---------------------------------------------------------
         if (player.FXProfile != null && player.FXProfile.extraFX != null)
         {
@@ -125,7 +125,7 @@ public class DetectiveSkill : CareerSkillBase
     public override void PerformAttack(Player player)
     {
         // ---------------------------------------------------------
-        // PlayFX Attack (เพิ่มตรงนี้)
+        // PlayFX Attack
         // ---------------------------------------------------------
         if (player.FXProfile != null && player.FXProfile.basicAttackFX != null)
         {

@@ -15,6 +15,7 @@ TagManager:
   - Obstacle
   - Collectible
   - MainEventSystem
+  - 'CardPickup '
   layers:
   - Default
   - TransparentFX

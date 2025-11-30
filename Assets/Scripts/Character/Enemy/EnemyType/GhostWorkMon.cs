@@ -86,9 +86,6 @@ public class GhostWorkMon : Enemy
     #region Death/Drop
     public override void Die()
     {
-        // Guard: already dead
-        if (_isDead) return;
-        _isDead = true;
 
         // Stop behaviors immediately
         StopAllCoroutines();

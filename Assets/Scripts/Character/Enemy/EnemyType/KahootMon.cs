@@ -181,9 +181,6 @@ public class KahootMon : Enemy
     /// </summary>
     public override void Die()
     {
-        // Guard: already dead
-        if (_isDead) return;
-        _isDead = true;
 
         Vector3 pos = transform.position;
 

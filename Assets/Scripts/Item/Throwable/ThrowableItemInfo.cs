@@ -17,7 +17,6 @@ public class ThrowableItemInfo : MonoBehaviour, IInteractable
     [SerializeField] private float _despawnDelay = 5f;
     [SerializeField] private float _throwRotationSpeed = 360f;
     [SerializeField] private float _bounceForce = 4f;
-    [SerializeField] private float _bounceDrag = 4f;
     [SerializeField] private GameObject hitFX;
 
     [SerializeField] private GameObject promptUI;

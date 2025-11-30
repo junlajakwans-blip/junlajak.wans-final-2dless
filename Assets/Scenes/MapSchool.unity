@@ -1087,24 +1087,11 @@ MonoBehaviour:
   - {fileID: 3359114595578432427, guid: 61867ba28e45cc24d8e454e07ecbd645, type: 3}
   - {fileID: 1565291614927048749, guid: 978421387daef8948be61e5d5695cde5, type: 3}
   - {fileID: 6417080718696356904, guid: 581cf72d0a2755f44b896dd936e765c2, type: 3}
-  _spawnPoints:
-  - {fileID: 1040190956}
-  - {fileID: 39698708}
-  - {fileID: 957922880}
   _spawnInterval: 1.2
   _maxEnemies: 5
-  _currentWaveCount: 0
-  _activeEnemies:
-  - {fileID: 3679138491074812253, guid: 4704439c2f1fb5140a50ed91a96403cf, type: 3}
-  - {fileID: 6417080718696356904, guid: 581cf72d0a2755f44b896dd936e765c2, type: 3}
-  - {fileID: 1565291614927048749, guid: 978421387daef8948be61e5d5695cde5, type: 3}
-  - {fileID: 2325540279114266656, guid: a65a92ef880f2604ab9eadd91cbc972c, type: 3}
-  - {fileID: 6382190799963839869, guid: 2eb6375df96e96e4c91ab3ba46d87879, type: 3}
-  - {fileID: 3359114595578432427, guid: 61867ba28e45cc24d8e454e07ecbd645, type: 3}
-  _cullingManager: {fileID: 2100565030}
-  _player: {fileID: 8952884402048639063, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
-  _collectibleSpawner: {fileID: 3128689819189778724}
-  _cardManager: {fileID: 0}
+  _spawnStartDistance: 5
+  _minSpawnSpacing: 7.5
+  _verticalSpawnOffset: 1
   _goldenChanceCurve:
     serializedVersion: 2
     m_Curve:
@@ -1129,13 +1116,19 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  _gameManager: {fileID: 0}
-  _spawnStartDistance: 5
-  _firstEnemySpawned: 1
+  _currentWaveCount: 0
+  _activeEnemies:
+  - {fileID: 3679138491074812253, guid: 4704439c2f1fb5140a50ed91a96403cf, type: 3}
+  - {fileID: 6417080718696356904, guid: 581cf72d0a2755f44b896dd936e765c2, type: 3}
+  - {fileID: 1565291614927048749, guid: 978421387daef8948be61e5d5695cde5, type: 3}
+  - {fileID: 2325540279114266656, guid: a65a92ef880f2604ab9eadd91cbc972c, type: 3}
+  - {fileID: 6382190799963839869, guid: 2eb6375df96e96e4c91ab3ba46d87879, type: 3}
+  - {fileID: 3359114595578432427, guid: 61867ba28e45cc24d8e454e07ecbd645, type: 3}
   _firstEnemyType: 7
-  _minSpawnSpacing: 7.5
-  _verticalSpawnOffset: 1
-  _forwardSpawnOffset: 12
+  _cullingManager: {fileID: 2100565030}
+  _player: {fileID: 8952884402048639063, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
+  _collectibleSpawner: {fileID: 3128689819189778724}
+  _cardManager: {fileID: 0}
 --- !u!4 &939860341859728424
 Transform:
   m_ObjectHideFlags: 0
@@ -1198,7 +1191,8 @@ MonoBehaviour:
   _collectiblePrefabs:
   - {fileID: 5561300889309933517, guid: ac4dd69d4dab6ea4d9942c8653982be3, type: 3}
   - {fileID: 2368865025861581409, guid: 3153b32703c275d47a7b980701dc5e58, type: 3}
-  - {fileID: 4288398954455821371, guid: 95f05d628306dd546a3b854037883e20, type: 3}
+  - {fileID: 4974005388300951869, guid: d21269d857f0055438f5b1379962a2be, type: 3}
+  - {fileID: 5561300889309933517, guid: f25e120885313fb4488d87779a38d8ed, type: 3}
   _buffUtilityPrefabs:
   - {fileID: 1204049181334368868, guid: 5013f70113cc70941818204312ae6462, type: 3}
   - {fileID: 7271098682250228881, guid: e3ce9920ebd823d4e821d9767854c208, type: 3}
@@ -1208,7 +1202,6 @@ MonoBehaviour:
   _obstacleLayer:
     serializedVersion: 2
     m_Bits: 8704
-  _groundOffset: 0.5
   _coinTrailGenerator: {fileID: 2093980296}
   _coinTrailChance: 0.5
   _activeCollectibles: []

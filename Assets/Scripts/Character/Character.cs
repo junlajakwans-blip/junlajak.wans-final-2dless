@@ -42,8 +42,8 @@ public abstract class Character : MonoBehaviour, IDamageable
         if (_currentHealth <= 0)
         {
             _currentHealth = 0;
-            Die();     // ⛔ trigger death instantly
-            return;     // ⛔ stop here (no post-update after death)
+            Die();     //_bonkEffecttrigger death instantly
+            return;     //_bonkEffectstop here (no post-update after death)
         }
 
         UpdateHealthBar();

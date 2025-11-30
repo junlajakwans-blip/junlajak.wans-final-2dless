@@ -49,7 +49,9 @@ public class RandomStarterCard : MonoBehaviour
         buttonSummon.interactable = false;
         Currency.OnCurrencyChanged += UpdateTokenText;
         GameManager.OnCurrencyReady += EnableStarterUI;
-    }
+        if (_gmRef != null && _gmRef.GetCurrency() != null)
+            EnableStarterUI();
+        }
 
     private void OnDisable()
     {
@@ -80,6 +82,7 @@ public class RandomStarterCard : MonoBehaviour
 
         Time.timeScale = 0f;
         UpdateTokenText();
+        EnableStarterUI();
     }
 
 
@@ -202,3 +205,4 @@ public class RandomStarterCard : MonoBehaviour
 
 
 }
+

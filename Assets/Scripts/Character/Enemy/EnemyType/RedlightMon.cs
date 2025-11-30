@@ -151,15 +151,14 @@ public class RedlightMon : Enemy
         // ... (logic อื่นๆ) ...
     }
     #endregion
-    
+
     #region Death/Drop
     /// <summary>
     /// Called when this enemy dies. Implements item drop logic using EnemyData.
     /// </summary>
     public override void Die()
     {
-        if (_isDead) return;
-        _isDead = true;
+
 
         Vector3 pos = transform.position;
 

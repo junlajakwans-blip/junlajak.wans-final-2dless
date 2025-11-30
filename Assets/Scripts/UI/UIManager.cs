@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine.SceneManagement;
@@ -15,9 +15,11 @@ public class UIManager : MonoBehaviour
     [SerializeField] public GameObject panelHUDMain;
 
     [Header("Card Selection")]
+    // NOTE: Field นี้ถูกกำหนดใน Inspector (Manual)
     [SerializeField] private GameObject _cardSelectionPanel;
 
     [Header("Main UI References")]
+    // NOTE: References in this section may be set in Inspector, but MUST be re-bound if null after scene load.
     [SerializeField] private StoreUI _storeUI;
     [SerializeField] private MapSelectController _mapSelectController;
 
@@ -29,13 +31,11 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI storeTitleText;
     [SerializeField] private TopCurrencyUI[] topCurrencies;
 
-    
-
-
 
     
     #endregion
 
+    // NOTE: These public fields are assumed to be NON-DDoL and must be re-bound.
     public GameObject panelMainMenu;
     public GameObject panelSelectMap;
     public GameObject panelStore;
@@ -54,6 +54,90 @@ public class UIManager : MonoBehaviour
     private List<StoreBase> _storesRef;
     public ScoreUI GetScoreUI() => _scoreUI;
     
+
+    #region AutoBind Utility (สำหรับ Non-DDoL UI)
+    
+    /// <summary>
+    /// Helper to find a component in the currently active scene, useful for persistent managers.
+    /// </summary>
+    private T FindComponentInActiveScene<T>(string name = null) where T : Component
+    {
+        // FindObjectsByType will search all active objects including newly loaded ones
+        T[] objects = FindObjectsByType<T>(FindObjectsSortMode.None);
+        foreach (var obj in objects)
+        {
+            // Must be in a loaded scene (not a prefab template)
+            if (!obj.gameObject.scene.isLoaded) continue;
+
+            if (name == null || obj.name == name)
+            {
+                return obj;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Finds and re-assigns Main Menu specific references when the Main Menu scene is loaded again.
+    /// It only binds fields that are currently null.
+    /// </summary>
+    public void AutoBindMainMenuUI()
+    {
+        // 1. Re-bind Panel GameObjects (Only if currently null)
+        if (panelMainMenu == null) panelMainMenu = GameObject.Find("Panel_MainMenu")?.gameObject;
+        if (panelSelectMap == null) panelSelectMap = GameObject.Find("Panel_SelectMap")?.gameObject;
+        if (panelStore == null) panelStore = GameObject.Find("Panel_Store")?.gameObject;
+        if (panelSettings == null) panelSettings = GameObject.Find("Panel_Settings")?.gameObject;
+        
+        // Panels ย่อยของร้านค้า
+        if (panelStoreExchange == null) panelStoreExchange = GameObject.Find("Panel_Store_Exchange")?.gameObject;
+        if (panelStoreUpgrade == null) panelStoreUpgrade = GameObject.Find("Panel_Store_Upgrade")?.gameObject;
+
+        // 2. Re-bind Components (Only if currently null)
+        if (_storeUI == null) _storeUI = FindComponentInActiveScene<StoreUI>("Panel_Store");
+        if (_mapSelectController == null) _mapSelectController = FindComponentInActiveScene<MapSelectController>("Panel_SelectMap");
+        if (_menuUI == null) _menuUI = FindComponentInActiveScene<MenuUI>(); 
+        if (upgradeUI == null) upgradeUI = FindComponentInActiveScene<UpgradeUI>(); 
+        
+        // Re-bind currency bar components (Arrays are usually re-assigned entirely as they are scene-specific)
+        topCurrencies = FindObjectsByType<TopCurrencyUI>(FindObjectsSortMode.None);
+        
+        Debug.Log("<color=yellow>[UIManager] AutoBindMainMenuUI completed (Re-linked Main Menu UI) ✔</color>");
+
+        // 3. Re-link Dependencies to newly found components
+        if (_currencyRef != null)
+        {
+             // Pass Dependencies down again to newly found components
+            _storeUI?.SetDependencies(_currencyRef, _storesRef, _storeManagerRef);
+            _mapSelectController?.SetDependencies(_gameManagerRef, _currencyRef);
+
+            // Re-bind currency dependency for top currencies
+            if (topCurrencies != null)
+            {
+                foreach (var ui in topCurrencies)
+                {
+                    if (ui == null) continue;
+                    ui.SetDependencies(_currencyRef);
+                }
+            }
+        }
+    }
+    
+    #endregion
+
+    #region Scene Event Handling
+    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, LoadSceneMode mode)
+    {
+        // ตรวจสอบว่า Scene ที่โหลดคือ Main Menu 
+        if (scene.name == "MainMenu")
+        {
+            // Main Menu UI ถูกโหลดใหม่ → ต้อง AutoBind และแสดงหน้าจอหลัก
+            AutoBindMainMenuUI();
+            ShowMainMenu(); 
+        }
+        
+    }
+    #endregion
 
     #region Dependencies
     
@@ -119,7 +203,17 @@ public class UIManager : MonoBehaviour
             return;
         }
         Instance = this;
-        DontDestroyOnLoad(gameObject); 
+        DontDestroyOnLoad(gameObject);
+        
+        // **สำคัญ:** สมัคร Event Scene Loaded เพื่อ AutoBind
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+    
+    private void OnDestroy()
+    {
+        // **สำคัญ:** ยกเลิก Event เมื่อ UIManager ถูกทำลาย
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     #region Main Menu
@@ -136,6 +230,12 @@ public void ShowMainMenu()
 
         // 2. ปิดเมนูที่อาจค้างอยู่ (Result, Pause, Store) จาก MenuUI
         CloseAllMenus();
+        
+        // FIX: เพิ่มการตรวจสอบ MenuUI เพื่อป้องกัน Null เมื่อ CloseAllMenus() ถูกเรียก
+        if (_menuUI != null)
+        {
+            // ไม่ต้องทำอะไรเพิ่ม เชื่อว่า CloseAllMenus ทำงานถูกต้อง
+        }
 
         // 3. ปิด Card Selection Panel (ถ้าเปิดค้างไว้)
         if (_cardSelectionPanel != null)
@@ -144,12 +244,22 @@ public void ShowMainMenu()
         }
         
         // 4. แสดงหน้า Main Menu
+        if (panelMainMenu == null)
+        {
+            Debug.LogError("<color=red>[UIManager] Cannot SHOW MainMenu: panelMainMenu is NULL. AutoBind failed?</color>");
+            return;
+        }
+        
+        // 🔥 FIX: แก้ปัญหาที่ ShowSelectMap() เปิดมั่วเมื่อกลับมา
+        // ให้ SetPanel สั่งเปิด panelMainMenu เท่านั้น
         SetPanel(panelMainMenu);
     }
 
     public void ShowSelectMap()
     {
         Debug.Log(">> OPEN SELECT MAP");
+        
+        // NOTE: เมื่อเรียก SetPanel(panelSelectMap) มันจะสั่งปิด panelMainMenu
         SetPanel(panelSelectMap);
     }
 
@@ -165,8 +275,9 @@ public void ShowMainMenu()
 
     private void SetPanel(GameObject target)
     {
+        // 🔥 Logic ดั้งเดิมของคุณ (ที่ทำให้ Panel อื่นๆ ปิด/เปิดตามเงื่อนไข Target)
+        
         //ควบคุม Panel in MainMenu Scene
-        if (panelMainMenu != null)
         if (panelMainMenu != null)
             panelMainMenu.SetActive(target == panelMainMenu);
             
@@ -193,6 +304,14 @@ public void ShowMainMenu()
 
     public void SwitchStorePanel(StoreType type)
     {
+        // 1. สั่งให้ StoreUI สลับเนื้อหา/Store ที่ Active
+        if (_storeUI != null)
+            _storeUI.SwitchStore(type);
+
+        // 2. เปิด Menu Store หลัก (ซึ่งจะเรียก SetPanel(panelStore))
+        ShowStoreMenu(true); 
+
+        // 3. สลับ Panel ย่อยที่ถูกต้อง (ใช้ SetPanel เพื่อเปิด Panel ย่อย และ SetPanel จะจัดการเปิด Panel Store หลักให้เอง)
         if (type == StoreType.Exchange)
             SetPanel(panelStoreExchange);
         else if (type == StoreType.Upgrade)
@@ -201,6 +320,7 @@ public void ShowMainMenu()
 
     public void ShowStoreBase()
     {
+        // ใช้ SetPanel(panelStore) แบบเดิม
         SetPanel(panelStore);
     }
     #endregion
@@ -301,7 +421,9 @@ public void ShowMainMenu()
             _cardSelectionPanel.SetActive(isActive);
             Debug.Log($"[UIManager] Card Selection Panel set to: {isActive}");
         }
-        Time.timeScale = isActive ? 0f : 1f;
+        
+        // 🔥 FIX: นำ Time.timeScale กลับมาควบคุมที่นี่ (เพื่อแก้ปัญหาปุ่ม Summon กดไม่ได้)
+        Time.timeScale = isActive ? 0f : 1f; 
     }
     #endregion
 
@@ -314,8 +436,12 @@ public void ShowMainMenu()
 
     public void ShowResultMenu()
     {
-        _scoreUI.ShowFinalResult();  //  ใช้ text จาก prefab ScoreUI
-        _menuUI.ShowResultMenu();    // เปิด Panel หน้า Result
+        // 🔥 FIX: ตรวจสอบ null ก่อนเรียก ShowFinalResult() (อาจเป็นสาเหตุของบั๊ก)
+        if (_scoreUI != null)
+        {
+            _scoreUI.ShowFinalResult();
+        }
+        _menuUI?.ShowResultMenu();    // เปิด Panel หน้า Result
     }
 
 
@@ -349,9 +475,9 @@ public void ShowMainMenu()
         if (panelStoreUpgrade != null) panelStoreUpgrade.SetActive(false);
         
         if (_cardSelectionPanel != null) _cardSelectionPanel.SetActive(true);
-        var cardPanel = GameObject.Find("Panel_Card");
-        if (cardPanel != null)
-            cardPanel.SetActive(true);
+        // var cardPanel = GameObject.Find("Panel_Card"); // <-- ลบโค้ด Find นี้ออก
+        // if (cardPanel != null)
+        // cardPanel.SetActive(true); // <-- ลบโค้ด SetActive นี้ออก
     }
     #endregion
 
@@ -359,7 +485,7 @@ public void ShowMainMenu()
     public void OpenStore()
     {
         // เปิดหน้าร้านรวม (ไม่ใช่ Exchange / Upgrade โดยตรง)
-        MenuUI.Instance.ShowStoreMenu(true);
+        _menuUI?.ShowStoreMenu(true);
 
         if (_storeUI != null && _storesRef != null)
         {
@@ -373,7 +499,7 @@ public void ShowMainMenu()
 
     public void ShowStoreExchange()
     {
-        MenuUI.Instance.ShowStoreMenu(true);
+        _menuUI?.ShowStoreMenu(true);
 
         if (_storeUI != null)
             _storeUI.SwitchStore(StoreType.Exchange);
@@ -381,7 +507,7 @@ public void ShowMainMenu()
 
     public void ShowStoreUpgrade()
     {
-        MenuUI.Instance.ShowStoreMenu(true);
+        _menuUI?.ShowStoreMenu(true);
 
         if (_storeUI != null)
             _storeUI.SwitchStore(StoreType.Upgrade);
@@ -389,7 +515,7 @@ public void ShowMainMenu()
 
     public void ShowStoreMap()
     {
-        MenuUI.Instance.ShowStoreMenu(true);
+        _menuUI?.ShowStoreMenu(true);
 
         if (_storeUI != null)
             _storeUI.SwitchStore(StoreType.Map);

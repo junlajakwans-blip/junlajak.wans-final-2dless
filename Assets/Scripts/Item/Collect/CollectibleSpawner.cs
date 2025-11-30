@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class CollectibleSpawner : MonoBehaviour, ISpawn
 {
@@ -20,7 +21,7 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
     // ⬅ REMOVED: ไม่ใช้ Raycast หาพื้นอีกแล้ว
     // [SerializeField] private LayerMask _groundLayer;    // Platform/Ground
     [SerializeField] private LayerMask _obstacleLayer;  // Obstacle/Enemy/Collectible
-    [SerializeField] private float _groundOffset = 0.5f; // ค่า Offset ยังคงเก็บไว้เพื่อใช้อ้างอิง/กำหนดค่าจาก Inspector
+    //[SerializeField] private float _groundOffset = 0.5f; // ค่า Offset ยังคงเก็บไว้เพื่อใช้อ้างอิง/กำหนดค่าจาก Inspector
 
     [Header("Coin Trail")]
     [SerializeField] private CoinTrailGenerator _coinTrailGenerator;
@@ -178,55 +179,127 @@ public class CollectibleSpawner : MonoBehaviour, ISpawn
     /// </summary>
     public GameObject DropCollectible(CollectibleType type, Vector3 position)
     {
+        // ---------------- SAFETY & POOL ----------------
         if (_objectPool == null)
         {
-            Debug.LogError("[CollectibleSpawner] Object Pool is not initialized!");
+            Debug.LogError("[CollectibleSpawner] ❌ Object Pool is not initialized!");
             return null;
         }
-        
+
+        Debug.Log($"[CardDrop-SpawnRequest] Pos = ({position.x:F2}, {position.y:F2})");
+        float oldY = position.y;
+        // Clamp Y ให้ไม่ตกพื้น
+        if (position.y < -0.8f)
+            position.y = -0.8f;
+        Debug.Log($"[CardDrop-YFix] Before={oldY:F2}  After={position.y:F2}");
+
         string prefabName = type.ToString();
 
-        // 1. การจัดการ Slot สำหรับ Drop: Drop ที่เป็นเหรียญ (Coin) อนุญาตให้เกิดใกล้/ทับ Slot อื่นได้ 
-        // (ยกเว้นกรณีที่ต้องการให้เหรียญที่ดรอปเป็น Collectible เดี่ยวเท่านั้น)
-        bool isCoinDrop = type.ToString().Contains("Coin");
+        // ---------------- SLOT BLOCK CHECK ----------------
+        bool isCoinDrop = (type == CollectibleType.Coin);
+        bool isCardPickup = (type == CollectibleType.CardPickup);
+        bool slotExempt = isCoinDrop || isCardPickup; // CardPickup must not be blocked by slot
         bool isSlotReserved = SpawnSlot.IsReserved(position);
-        
-        if (!isCoinDrop && isSlotReserved)
-        {
-             // Slot ถูกจองแล้ว เช่น ดรอปทับ Item ที่เพิ่งเกิด หรือ Asset ที่อยู่ตรงนั้น
-             // ปล่อยให้มันหายไป (ไม่ดรอป) เพื่อแก้ปัญหาการซ้อนทับ
-             return null; 
-        }
 
-        // สำหรับ Drop ที่ไม่ใช่ Coin ต้องจอง Slot ก่อน
-        if (!isCoinDrop && !SpawnSlot.Reserve(position))
+        if (!slotExempt && isSlotReserved)
         {
-            // ควรไม่เกิดเหตุการณ์นี้แล้ว เพราะเช็คด้านบนแล้ว
+    #if UNITY_EDITOR
+            Debug.LogWarning("[CollectibleSpawner] Slot reserved → drop blocked: " + type);
+    #endif
             return null;
         }
-        
-        // 2. Spawn
-        var collectible = _objectPool.SpawnFromPool(
+
+        // สำหรับ Drop ที่ไม่ใช่ Coin/CardPickup → จอง Slot ก่อน
+        if (!slotExempt && !SpawnSlot.Reserve(position))
+        {
+    #if UNITY_EDITOR
+            Debug.LogWarning("[CollectibleSpawner] Reserve failed → drop canceled: " + type);
+    #endif
+            return null;
+        }
+
+        // ---------------- SPAWN ----------------
+        GameObject collectible = _objectPool.SpawnFromPool(
             prefabName,
             position,
             Quaternion.identity
         );
 
-        if (collectible != null)
+        // Raise Y for CardPickup to avoid clipping floor
+        if (type == CollectibleType.CardPickup)
         {
-            _activeCollectibles.Add(collectible);
-            
-            // DI: INJECT DEPENDENCIES
-            if (collectible.TryGetComponent<CollectibleItem>(out var collectibleItem))
+            collectible.transform.position += new Vector3(0, 0.45f, 0);
+        }
+
+
+        if (collectible == null)
+        {
+            if (!slotExempt) SpawnSlot.Unreserve(position);
+
+            Debug.LogError("[CollectibleSpawner] ❌ SpawnFromPool failed: " + prefabName);
+            return null;
+        }
+
+        _activeCollectibles.Add(collectible);
+
+        // ---------------- DEPENDENCY INJECTION ----------------
+        CollectibleItem collectibleItem = null;
+        if (!collectible.TryGetComponent(out collectibleItem) || collectibleItem == null)
+        {
+            Debug.LogError("[CollectibleSpawner] ❌ CollectibleItem missing on prefab: " + prefabName);
+            return collectible;
+        }
+
+        collectibleItem.SetDependencies(_cardManager, this, _buffManager);
+
+        // ---------------- CARD PICKUP EXTRA LOGIC ----------------
+        if (type == CollectibleType.CardPickup)
+        {
+            DuckCareerData careerData = null;
+
+            try
             {
-                collectibleItem.SetDependencies(_cardManager, this, _buffManager); 
+                careerData = _cardManager != null ? _cardManager.GetRandomCareerForDrop() : null;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError("[CollectibleSpawner] ❌ Exception GetRandomCareerForDrop(): " + ex.Message);
+            }
+
+            // Fallback: load from Resources/Careers to ensure we always show a career
+            if (careerData == null)
+            {
+                var allCareers = Resources.LoadAll<DuckCareerData>("Careers");
+                var candidates = allCareers
+                    .Where(c => c != null &&
+                                c.CardType == CardType.Career &&
+                                c.CareerID != DuckCareer.Muscle &&
+                                c.CareerCard != null)
+                    .ToList();
+                if (candidates.Count > 0)
+                {
+                    careerData = candidates[Random.Range(0, candidates.Count)];
+                    Debug.LogWarning("[CollectibleSpawner] ⚠ CardPickup fallback to Resources career: " + (string.IsNullOrWhiteSpace(careerData.DisplayName) ? careerData.CareerID.ToString() : careerData.DisplayName));
+                }
+            }
+
+            if (careerData != null)
+            {
+                collectibleItem.AssignCareer(careerData);              // ⭐ แสดงการ์ดตรงอาชีพบนพื้น
+    #if UNITY_EDITOR
+                string display = string.IsNullOrWhiteSpace(careerData.DisplayName) ? careerData.CareerID.ToString() : careerData.DisplayName;
+                Debug.Log("[CollectibleSpawner] 💳 CardPickup Spawned — Career = " + display);
+    #endif
+            }
+            else
+            {
+                Debug.LogWarning("[CollectibleSpawner] ⚠ CardPickup has NO career assigned!");
             }
         }
-        else
-        {
-             // Spawn ไม่สำเร็จ (เช่น Prefab Tag ผิด) ต้อง Unreserve ถ้าไม่ใช่ Coin Drop
-            if (!isCoinDrop) SpawnSlot.Unreserve(position);
-        }
+
+    #if UNITY_EDITOR
+        Debug.Log("[CollectibleSpawner] ✔ Drop Success: " + type + " at X=" + position.x.ToString("F1"));
+    #endif
 
         return collectible;
     }

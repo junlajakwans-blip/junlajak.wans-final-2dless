@@ -15,8 +15,6 @@ namespace DuffDuck.Stage
 public class WallPushController : MonoBehaviour
 {
   [Header("Speed Growth")]
-  [SerializeField] private float _acceleration = 0.05f; // ความเร็วเพิ่มต่อวินาที (ไม่ได้ใช้โดยตรงใน LateUpdate ปัจจุบัน)
-  [SerializeField] private float _maxSpeed = 8f; // กันหลุด (ไม่ได้ใช้โดยตรงใน LateUpdate ปัจจุบัน)
 
   [Header("Settings")]
   [SerializeField] private float _pushSpeed = 1.0f; // overwritten by MapGenerator

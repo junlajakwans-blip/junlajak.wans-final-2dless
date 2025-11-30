@@ -38,6 +38,17 @@ public class CollectibleItem : MonoBehaviour, ICollectable
     
     public CollectibleType GetCollectibleType() => _type;
 
+    private void OnEnable()
+    {
+        // คืน Collider
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null) col.enabled = true;
+
+        // คืน SpriteRenderer เฉพาะ CardPickup ด้วย (เพื่อกันบาง prefab ปิด sprite)
+        SpriteRenderer sr = GetComponentInChildren<SpriteRenderer>();
+        if (sr != null) sr.enabled = true;
+    }
+
 
 #region Dependencies
 
@@ -84,9 +95,9 @@ public class CollectibleItem : MonoBehaviour, ICollectable
         }
         
         SpriteRenderer sr = GetComponentInChildren<SpriteRenderer>(); 
-            if (sr != null)
+            if (_type != CollectibleType.CardPickup)
             {
-                sr.enabled = false; 
+                if (sr != null) sr.enabled = false;
             }
                 
         Debug.Log($"[Collectible] Player collected: {_type} ({_itemID})");
@@ -179,23 +190,63 @@ public class CollectibleItem : MonoBehaviour, ICollectable
     public void AssignCareer(DuckCareerData data)
     {
         _careerToDisplay = data;
-        GetComponent<CardUI>()?.SetCareerData(data);
+        if (TryGetComponent<CardUI>(out var cardUI))
+        {
+            cardUI.SetCareerData(data);
+        }
+        else
+        {
+            Debug.LogWarning("[CardPickup] CardUI component missing on prefab. Visual will not show.");
+        }
+        Debug.Log($"[CardPickup] Assigned career data: {(data == null ? "NULL" : (string.IsNullOrWhiteSpace(data.DisplayName) ? data.CareerID.ToString() : data.DisplayName))}");
     }
 
     // Card Pickup 
     private void DropCareerCard()
     {
-        CardManager manager = _cardManagerRef;
-        if (manager == null)
+        if (_cardManagerRef == null)
         {
-            Debug.LogWarning("[CardPickup] CardManager not found!");
+            Debug.LogWarning("[CardPickup] ❌ CardManager not found! Pickup ignored.");
             return;
         }
 
-        manager.AddCareerCard();
-        Debug.Log("[CardPickup] Added card to hand: " + _careerToDisplay?.DisplayName);
+        // เลือก career ที่จะใช้จริง
+        DuckCareerData finalCareer = _careerToDisplay;
+
+        // ถ้ายังไม่มี หรือเป็น Muscle → ใช้ random จาก CardManager แทน
+        if (finalCareer == null || finalCareer.CareerID == DuckCareer.Muscle)
+        {
+            Debug.Log("[CardPickup] Fallback → use random career from CardManager.");
+            finalCareer = _cardManagerRef.GetRandomCareerForDrop();
+        }
+
+        if (finalCareer == null)
+        {
+            Debug.LogWarning("[CardPickup] ❌ finalCareer is NULL → cannot add card.");
+            return;
+        }
+
+        // เพิ่มการ์ดเข้ามือทันที
+        Debug.Log($"[CardPickup] Collect career: {(string.IsNullOrWhiteSpace(finalCareer.DisplayName) ? finalCareer.CareerID.ToString() : finalCareer.DisplayName)}");
+        _cardManagerRef.AddCareerCard_FromDrop(finalCareer);
+
+        // บังคับให้ UI อัพเดต (ใช้ method ที่มีอยู่แล้วใน CardManager)
+        _cardManagerRef.ForceUIRefresh();
+
+        // คืนเข้าพูล / ลบ object ในฉาก
+        OnCollectedEffect();
     }
 
+    private IEnumerator ShowCardThenCollect_Fallback()
+    {
+        yield return new WaitForSeconds(0.6f);
+
+        // ใช้ระบบสุ่มปกติ
+        _cardManagerRef.AddCareerCard();
+
+        OnCollectedEffect();
+    }
 
 #endregion
 }
+

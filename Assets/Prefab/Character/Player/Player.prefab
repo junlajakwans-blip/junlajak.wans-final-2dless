@@ -502,7 +502,7 @@ MonoBehaviour:
       GlobalHighScore: 0
     _isDefaultDuckling: 1
   _rigAnimator: {fileID: 0}
-  _jumpForce: 7
+  _jumpForce: 8
   _fallDeathY: -5
   _isGrounded: 0
   _chargePower: 0
