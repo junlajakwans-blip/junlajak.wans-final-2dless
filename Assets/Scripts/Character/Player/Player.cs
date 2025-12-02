@@ -58,6 +58,8 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     [Header("UI References")]
     [SerializeField] private HealthBarUI _healthBarUI;
     public event System.Action<int> OnCoinCollected;
+    // Stored handler for ScoreUI so we can unsubscribe cleanly
+    private System.Action<int> _scoreUIHandler;
 
     [Header("Fx References")]
     [SerializeField] private CareerEffectProfile _fxProfile;
@@ -96,11 +98,26 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
         }
     }
 
+    // Editor helper to force Inspector refresh when running in the Unity Editor.
+    public void ForceEditorRefresh()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(this);
+        UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
+#endif
+    }
+
     #region Initialization
     public void Initialize(PlayerData data, CardManager cardManager, CareerSwitcher careerSwitcher)
     {
         gameObject.SetActive(true);
         _playerData = data;
+        // Ensure Player uses the same Currency instance provided by GameManager via PlayerData
+        if (data != null && data.Currency != null)
+        {
+            _currency = data.Currency;
+            Debug.Log($"[Player] Currency synced from PlayerData. Coin={_currency.Coin}, Token={_currency.Token}, KeyMap={_currency.KeyMap}");
+        }
         
         // 1. Fetch Max Health including upgrade bonuses (from PlayerData.MaxHealth)
         // Note: We assume data.MaxHealth is the correct total value (e.g., 100 if no upgrade) 
@@ -210,6 +227,20 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
                   $"  - Components: {(_rigidbody != null && _rigAnimator != null && _interact != null ? "OK" : "INCOMPLETE")}");
     }
 
+    /// <summary>
+    /// Resets PlayerData when save is deleted or reset.
+    /// Called by GameManager.OnGameReset event.
+    /// Clears stale serialized Inspector values.
+    /// </summary>
+    public void ResetPlayerDataCache()
+    {
+        if (_playerData != null)
+        {
+            // Create fresh empty PlayerData to clear stale serialized values in Inspector
+            _playerData = new PlayerData(new Currency(), new GameProgressData());
+            Debug.Log("<color=yellow>[Player] 🔄 PlayerData cache reset to empty state (Coin: 0, Token: 0, KeyMap: 0)</color>");
+        }
+    }
 
     #endregion
 
@@ -554,12 +585,24 @@ public override void Move(Vector2 direction)
 
         Debug.Log("[Player] BEFORE HOOK delegate = " + OnCoinCollected);
 
-        OnCoinCollected -= scoreUI.UpdateCoins;
-        OnCoinCollected += scoreUI.UpdateCoins;
+
+        // Unsubscribe previous wrapper if exists
+        if (_scoreUIHandler != null)
+            OnCoinCollected -= _scoreUIHandler;
+
+        // Create a new handler capturing the baseline initialCoin
+        _scoreUIHandler = (totalCoins) => {
+            int collectedThisRun = Mathf.Max(0, totalCoins - initialCoin);
+            scoreUI.UpdateCoins(collectedThisRun);
+        };
+
+        // Subscribe the stored handler
+        OnCoinCollected += _scoreUIHandler;
 
         Debug.Log("[Player] AFTER HOOK delegate = " + OnCoinCollected);
 
-        scoreUI.UpdateCoins(initialCoin);
+        // Initialize UI with zero collected at start
+        scoreUI.UpdateCoins(0);
     }
 
 

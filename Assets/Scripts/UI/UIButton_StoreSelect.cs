@@ -24,8 +24,8 @@ public class UIButton_StoreSelect : MonoBehaviour
 
         switch (action)
         {
-            case Action.Upgrade:   StoreUI.Instance.OpenUpgrade(); break;
-            case Action.Exchange:  StoreUI.Instance.OpenExchange(); break;
+            case Action.Upgrade:   UIManager.Instance.SwitchStorePanel(StoreType.Upgrade); break;
+            case Action.Exchange:  UIManager.Instance.SwitchStorePanel(StoreType.Exchange); break;
             case Action.Back:      UIManager.Instance.ShowMainMenu(); break;
         }
     }

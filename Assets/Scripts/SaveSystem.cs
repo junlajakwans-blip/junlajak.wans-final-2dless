@@ -132,12 +132,21 @@ public class SaveSystem : MonoBehaviour
                 File.Delete(_backupFilePath);
                 Debug.Log("🗑️ Backup save deleted");
             }
+
+            //  reset ค่า runtime ด้วย
+            _progressData = new GameProgressData();
+
+            // เซฟไฟล์ใหม่แบบค่าว่างเพื่อป้องกันการโหลดผิดในอนาคต
+            SaveData();
+
+            Debug.Log("🟩 Save deleted → recreated as empty GameProgressData");
         }
         catch (System.Exception e)
         {
             Debug.LogError($"❌ DeleteSave failed: {e.Message}");
         }
     }
+
 
 
     public void BackupSaveFile()

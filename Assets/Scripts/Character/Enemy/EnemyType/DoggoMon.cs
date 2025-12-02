@@ -56,6 +56,7 @@ public class DoggoMon : Enemy // IMoveable is redundant as Enemy already provide
         if (_isDisabled || player == null) return;
 
         Vector2 dir = (player.transform.position - transform.position).normalized;
+        FlipSprite(dir);
         
         //  Use Data From EnemyData:Unique | Asset: _data.DoggoChaseSpeed
         transform.Translate(dir * _data.DoggoChaseSpeed * Time.deltaTime);
@@ -85,6 +86,17 @@ public class DoggoMon : Enemy // IMoveable is redundant as Enemy already provide
     public void SetDirection(Vector2 direction)
     {
         _moveDirection = direction.sqrMagnitude > 0f ? direction.normalized : Vector2.left;
+        FlipSprite(_moveDirection);
+    }
+
+    private void FlipSprite(Vector2 dir)
+    {
+        if (dir.x != 0)
+        {
+            var scale = transform.localScale;
+            scale.x = dir.x < 0 ? Mathf.Abs(scale.x) : -Mathf.Abs(scale.x);
+            transform.localScale = scale;
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)

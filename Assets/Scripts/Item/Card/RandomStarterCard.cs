@@ -49,14 +49,18 @@ public class RandomStarterCard : MonoBehaviour
         buttonSummon.interactable = false;
         Currency.OnCurrencyChanged += UpdateTokenText;
         GameManager.OnCurrencyReady += EnableStarterUI;
+        GameManager.OnGameReset += ResetForNewGame; 
         if (_gmRef != null && _gmRef.GetCurrency() != null)
             EnableStarterUI();
-        }
+
+    }
+
 
     private void OnDisable()
     {
         Currency.OnCurrencyChanged -= UpdateTokenText;
         GameManager.OnCurrencyReady -= EnableStarterUI;
+        GameManager.OnGameReset -= ResetForNewGame; 
     }
 
     private void EnableStarterUI()
@@ -72,6 +76,7 @@ public class RandomStarterCard : MonoBehaviour
     {
         if (panelRandomCard != null)
             panelRandomCard.SetActive(true);
+        Time.timeScale = 0f;
 
         // inject ให้ตรงนี้ทุกครั้งที่เปิด panel
         _gmRef = GameManager.Instance;
@@ -80,7 +85,8 @@ public class RandomStarterCard : MonoBehaviour
         if (_cardManagerRef == null)
             Debug.LogError("[StarterCard] CardManager NOT FOUND during OpenPanel()");
 
-        Time.timeScale = 0f;
+        
+        _globalSummonLock = false;
         UpdateTokenText();
         EnableStarterUI();
     }
@@ -198,11 +204,15 @@ public class RandomStarterCard : MonoBehaviour
     public void ResetForNewGame()
     {
         _alreadyClaimed = false;
-        if (buttonSummon != null) buttonSummon.interactable = true;
         _lockInput = false;
+        _globalSummonLock = false; // <-- ต้อง reset ด้วย
 
+        if (buttonSummon != null)
+        {
+            buttonSummon.enabled = true;
+            buttonSummon.interactable = true;
+        }
     }
-
 
 }
 

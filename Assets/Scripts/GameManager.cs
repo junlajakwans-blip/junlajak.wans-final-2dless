@@ -40,6 +40,7 @@ public class GameManager : MonoBehaviour
     private bool _isSelectingStarterCard = false;
     public int Score => _score;
     private ScoreUI _scoreUI;
+    public static event System.Action OnGameReset;
 
     public float PlayTime => _playTime;
     private GameProgressData _persistentProgress;
@@ -199,9 +200,34 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        if (scene.name == "MainMenu")
+        {
+            StartCoroutine(WaitMainMenuUIBindThenShow());
+            return;
+        }
         HandleHUDVisibility(scene.name);
 
     }
+
+    private IEnumerator WaitMainMenuUIBindThenShow()
+    {
+        // รอให้ UIManager spawn แล้ว
+        while (UIManager.Instance == null) yield return null;
+
+        // รออีก 1–2 เฟรมให้ Canvas กับ Panels ถูก Instantiate
+        yield return null;
+        yield return null;
+
+        // AutoBind ก่อน
+        UIManager.Instance.AutoBindMainMenuUI();
+
+        // Inject dependencies (สำคัญ!!)
+        UIManager.Instance.SetDependencies(this, _currencyData, _storeManager, GetStoreList());
+
+        // เปิดเมนู
+        UIManager.Instance.ShowMainMenu();
+    }
+
     #endregion
 
 #region Coroutine GM
@@ -231,13 +257,18 @@ public class GameManager : MonoBehaviour
         _player.SetHealthBarUI(_uiManager.GetPlayerHealthBarUI());
 
         // 4. Score system + UI
-        _scoreUI = _uiManager.GetScoreUI();
+        _scoreUI = _uiManager.GetScoreUI();   // ดึง ScoreUI ตัวใหม่ทุกครั้ง
+        _score = 0;                           // reset ตัวแปร score
+        _playTime = 0f;                       // reset ตัวแปรเวลา
         if (_scoreUI != null)
         {
             _scoreUI.DisplaySavedHighScore(_persistentProgress.BestScore);
             _scoreUI.InitializeScore(0);
             _scoreUI.UpdateCoins(0);
-            _player.HookScoreUI(_scoreUI, 0);
+            _scoreUI.UpdateScore(0);  
+            Debug.Log($"[GM] ScoreUI forced refresh — Score=0");
+            // Pass baseline (saved) total coins so ScoreUI will show only session-collected coins
+            _player.HookScoreUI(_scoreUI, _currencyData != null ? _currencyData.Coin : 0);
             Debug.Log("[GM] ScoreUI initialized and linked.");
         }
 
@@ -480,7 +511,11 @@ public void InitializeGame()
         Debug.Log("[GameManager] Exiting to Main Menu from Result Screen.");
         _uiManager?.ShowMainMenu(); // ปิด Panel Result และ Menu อื่นๆ
         Time.timeScale = 1f; // คืนค่าเวลา
+        _isPaused = false;   
         LoadScene("MainMenu"); 
+        
+        //Reset Card Summon
+        OnGameReset?.Invoke();
     }
 
 
@@ -586,20 +621,39 @@ public void InitializeGame()
             Debug.LogWarning("[GameManager] SaveSystem not found! Cannot reset.");
             return;
         }
-        
-        // 1. สั่งให้ SaveSystem ล้างไฟล์เซฟและสร้าง GameProgressData ใหม่
-        _saveSystem.ResetData();
-        
-        // 2. โหลดข้อมูลใหม่ (0) กลับเข้าสู่ GameManager และระบบอื่นๆ
-        // (A) อัปเดต _persistentProgress ของ GameManager
-        _persistentProgress = _saveSystem.GetProgressData();
 
-        // (B) โหลดเกมใหม่เพื่อเริ่มต้นระบบทั้งหมดด้วยค่าใหม่
+        // 1. Reset SaveSystem file to fresh state
+        _saveSystem.ResetData(); // reset file
+
+        // 2. Get new empty GameProgressData from SaveSystem
+        _persistentProgress = _saveSystem.GetProgressData();
+        _persistentProgress.ResetProgress(); // clear values to be 100% safe
+        _saveSystem.SaveData(); // save cleared version
+
+        // 3. Reset runtime data
+        _currencyData = new Currency();
+        _storesInitialized = false;
+        _storeManager = null;
+
+        // 4. Reinitialize stores with fresh progress data
+        SetupStores(_persistentProgress);
+
+        // 5. Reset Player's cached PlayerData
+        if (_player != null)
+            _player.ResetPlayerDataCache();
+
+        // 5b. Force Editor refresh so Inspector shows updated runtime values
+        #if UNITY_EDITOR
+        _player?.ForceEditorRefresh();
+        #endif
+
+        // 6. Broadcast reset event for any listeners
+        OnGameReset?.Invoke();
+
         LoadScene("MainMenu");
-        
-        Debug.Log("[GameManager] Full game progress reset and restarted.");
+        Debug.Log("[GameManager] Full game progress reset → stores reinitialized → restarted.");
     }
-    
+
     public void DeleteSaveAndRestart()
     {
         if (_saveSystem == null)
@@ -608,10 +662,37 @@ public void InitializeGame()
             return;
         }
 
+        // 1. Delete save file and recreate empty version in SaveSystem
         _saveSystem.DeleteSave();
+
+        // 2. Get fresh GameProgressData from SaveSystem
+        _persistentProgress = _saveSystem.GetProgressData();
+
+        // 3. Reset runtime data
+        _currencyData = new Currency();
+        _storesInitialized = false;
+        _storeManager = null;
+
+        // 4. Reinitialize stores with fresh progress data
+        SetupStores(_persistentProgress);
+
+        // 5. Reset Player's cached PlayerData
+        if (_player != null)
+            _player.ResetPlayerDataCache();
+
+        // 5b. Force Editor refresh so Inspector shows updated runtime values
+        #if UNITY_EDITOR
+        _player?.ForceEditorRefresh();
+        #endif
+
+        // 6. Broadcast reset event for any listeners
+        OnGameReset?.Invoke();
+
         LoadScene("MainMenu");
-        Debug.Log("[GameManager] Save deleted and game restarted.");
+
+        Debug.Log("[GameManager] 🗑 Save deleted → fresh data loaded → stores reinitialized → PlayerData reset → game restarted.");
     }
+
 
 }
 

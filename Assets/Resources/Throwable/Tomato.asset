@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 385d025de2acdbc43a21f94f26620a33, type: 3}
+  m_Name: Tomato
+  m_EditorClassIdentifier: Assembly-CSharp::ThrowableItemSO
+  itemSprite: {fileID: 961341907015239753, guid: 2267fbdbe706a0f47abdae9731d5c2d9, type: 3}
+  weight: 1
+  poolTag: throw_kitchen_tomato
+  damage: 20
+  mapType: 3
+  hitEffect: {fileID: 11400000, guid: 377b5f8118752cb4c8eaf1b37e3e1dd7, type: 2}
+  scaleDefault: {x: 0.2, y: 0.2, z: 0.2}
+  scaleOnHold: {x: 0.2, y: 0.2, z: 0.2}
+  scaleOnThrow: {x: 0.2, y: 0.2, z: 0.2}

@@ -115,14 +115,15 @@ MonoBehaviour:
   _visualRoot: {fileID: 7984629853295586084}
   _facingRight: 1
   _data: {fileID: 11400000, guid: 8fd6501bad8fc0242a3d3c677385bc76, type: 2}
-  _target: {fileID: 1538763116065869602}
   _enemyType: 3
   SpawnWeight: 30
   _isDisabled: 0
+  _target: {fileID: 1538763116065869602}
   CanDetectOverride: 1
   _goodLuckThrowable: {fileID: 2255010811906261638, guid: 77d43d7d12042ed418996f0f53084e70, type: 3}
   _badLuckThrowable: {fileID: 2675317078426015269, guid: 297314d3a3c48244396740a483b439f3, type: 3}
   _throwForce: 6
+  _throwPoint: {fileID: 1538763116065869602}
 --- !u!60 &5348319614881918660
 PolygonCollider2D:
   m_ObjectHideFlags: 0

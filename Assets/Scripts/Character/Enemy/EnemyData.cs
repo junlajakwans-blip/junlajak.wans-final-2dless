@@ -182,6 +182,12 @@ public class EnemyData : ScriptableObject
 
     [Tooltip("Maximum number of car sprite/prefab variants (e.g., Car_1 to Car_N).")]
     public int RedlightMaxCarTypes = 3;
+    [Tooltip("Speed of car projectile movement.")]
+    public float RedlightCarSpeed = 14f;
+
+    [Tooltip("Damage dealt to player if car hits target.")]
+    public int RedlightCarDamage = 25;
+
 
   
     [Header("RedlightMon Drops")]

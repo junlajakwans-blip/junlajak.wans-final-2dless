@@ -10,6 +10,7 @@ public class LotteryMon : Enemy
     [SerializeField] private GameObject _badLuckThrowable;  // ไอเทมร้ายที่ปา
 
     [SerializeField] private float _throwForce = 6f; // ความแรงตอนปา
+    [SerializeField] private Transform _throwPoint;
 
 
     #region Fields
@@ -70,18 +71,35 @@ protected override void Update()
 
     private void ThrowItem(GameObject prefab, Player player)
     {
-        if (prefab == null) return;
-
-        // สร้าง object
-        GameObject item = Instantiate(prefab, transform.position, Quaternion.identity);
-
-        // ปาเข้าหาผู้เล่น
-        if (item.TryGetComponent<Rigidbody2D>(out var rb))
+        if (prefab == null || _throwPoint == null || player == null) return;
+        if (_poolRef == null)
         {
-            Vector2 dir = (player.transform.position - transform.position).normalized;
-            rb.AddForce(dir * _throwForce, ForceMode2D.Impulse);
+            Debug.LogError("[LotteryMon] Object Pool NOT injected! Cannot throw item.");
+            return;
+        }
+
+        string poolTag = prefab.name;
+
+        // Spawn projectile at throw point
+        var go = _poolRef.SpawnFromPool(poolTag, _throwPoint.position, Quaternion.identity);
+        if (go == null) return;
+
+        // Apply movement like MamaMon
+        if (go.TryGetComponent<Rigidbody2D>(out var rb))
+        {
+            Vector2 aim = ((Vector2)player.transform.position - (Vector2)_throwPoint.position).normalized;
+            rb.linearVelocity = aim * _throwForce;   // เหมือน MamaMon
+        }
+
+        // Damage system — optional (ถ้ามี Projectile.cs)
+        if (go.TryGetComponent<Projectile>(out var proj))
+        {
+            // Lottery projectile ไม่มี damage เป็นตัวเลข คงที่ ก็ไม่ต้อง set
+            // แต่ถ้าต้องการ damage ในอนาคตใส่ตรงนี้ได้
+            //proj.SetSource(this);
         }
     }
+
 
 
     public void ApplyGoodLuck(Player player)

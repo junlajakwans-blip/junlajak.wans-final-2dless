@@ -43,7 +43,7 @@ public class PlayerData
         _progress = progress;
 
         // Set base stats
-        _maxHealth = 100;
+        _maxHealth = 200;
         _speed = 5f;
         _attackPower = 10f;
         _defense = 5;
@@ -82,7 +82,7 @@ public class PlayerData
     /// </summary>
     public void ResetPlayerState()
     {
-        MaxHealth = 100;
+        MaxHealth = 200;
         Speed = 5f;
         AttackPower = 10f;
         Defense = 5;

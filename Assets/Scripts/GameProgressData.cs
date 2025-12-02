@@ -44,6 +44,8 @@ public class GameProgressData
         _unlockedCareers = new();
         _upgradeLevels = new();
         _totalCoins = 0;
+        _totalTokens = 0;         // ✅ Explicitly initialize
+        _totalKeyMaps = 0;        // ✅ Explicitly initialize
         _bestScore = 0;
         _playTime = 0f;
         _lastPlayDate = DateTime.Now;

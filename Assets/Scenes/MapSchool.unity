@@ -1123,7 +1123,6 @@ MonoBehaviour:
   - {fileID: 1565291614927048749, guid: 978421387daef8948be61e5d5695cde5, type: 3}
   - {fileID: 2325540279114266656, guid: a65a92ef880f2604ab9eadd91cbc972c, type: 3}
   - {fileID: 6382190799963839869, guid: 2eb6375df96e96e4c91ab3ba46d87879, type: 3}
-  - {fileID: 3359114595578432427, guid: 61867ba28e45cc24d8e454e07ecbd645, type: 3}
   _firstEnemyType: 7
   _cullingManager: {fileID: 2100565030}
   _player: {fileID: 8952884402048639063, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}

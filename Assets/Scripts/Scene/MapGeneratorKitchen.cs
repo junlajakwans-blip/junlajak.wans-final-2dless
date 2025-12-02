@@ -3,95 +3,81 @@ using UnityEngine;
 
 public class MapGeneratorKitchen : MapGeneratorBase
 {
-    [Header("Kitchen Map Keys")]
-    [SerializeField] private string _backgroundKey = "map_bg_Kitchen";
-    [SerializeField] private string _floorKey = "map_asset_Kitchen_Floor";
+    [Header("Kitchen Keys")]
+    [SerializeField] private string _floorKey = "map_floor_Kitchen";
     [SerializeField] private string _platformKey = "map_asset_Kitchen_Normal_Platform";
-    [SerializeField] private string _breakPlatformKey = "map_asset_Kitchen_Break_Platform";
-    [SerializeField] private string _wallVisualKey = "map_Wall_Kitchen";
-
+    [SerializeField] private string _breakPlatformKey = "map_asset_Kitchen_BreakPlatform";
+    [SerializeField] private string _backgroundKey = "map_bg_Kitchen";
 
     protected override string NormalPlatformKey => _platformKey;
     protected override string BreakPlatformKey  => _breakPlatformKey;
     protected override string FloorKey         => _floorKey;
 
-
     public override void GenerateMap()
     {
-        Debug.Log("🍳 GENERATING MAP >> KITCHEN");
-
         // 1) เตรียม Pool + Pivot
         InitializeGenerators();
 
-        // 2) Background
+        // 2) ฉากพื้นหลัง
         SetupBackground();
-        SetupFloor();
+        SetupFloor(); // floor เริ่มต้น
 
-        // 3) Begin endless floor + platform
+        // 3) เปิดระบบ Endless Platform + Floor
         InitializePlatformGeneration();
 
-        // 4) Enemy init & spawn wave
-        if (_enemySpawner != null)
-        {
-            _enemySpawner.InitializeSpawner(
-                _objectPoolManager,
-                MapType.Kitchen,
-                FindFirstObjectByType<Player>(),
-                _collectibleSpawner,
-                FindFirstObjectByType<CardManager>(),
-                FindFirstObjectByType<BuffManager>()
-            );
-            _enemySpawner.StartWaveRepeating();
-        }
+        // 4) Spawners
+        var player      = FindAnyObjectByType<Player>();
+        var cardManager = FindAnyObjectByType<CardManager>();
+        var buffManager = FindAnyObjectByType<BuffManager>();
+        var culling     = FindAnyObjectByType<DistanceCulling>();
 
-        // 5) Collectibles
-        if (_collectibleSpawner != null)
-        {
-            _collectibleSpawner.InitializeSpawner(
-                _objectPoolManager,
-                FindFirstObjectByType<DistanceCulling>(),
-                FindFirstObjectByType<CardManager>(),
-                FindFirstObjectByType<BuffManager>()
-            );
-        }
+        _enemySpawner?.InitializeSpawner(
+            _objectPoolManager,
+            MapType.Kitchen,
+            player,
+            _collectibleSpawner,
+            cardManager,
+            FindFirstObjectByType<BuffManager>()
+        );
 
-        // 6) Asset / Throwable
+        _collectibleSpawner?.InitializeSpawner(
+            _objectPoolManager,
+            culling,
+            cardManager,
+            buffManager
+        );
+
+        // 🆕 Asset & Throwable
         _assetSpawner?.Initialize(_generationPivot);
         _throwableSpawner?.Initialize(_generationPivot, _enemySpawner);
 
-        // 7) Wall Push
+        // 5) เริ่มระบบ Wave (Enemy) และ Collectible Loop เดิม
+        SpawnEnemies();
+        SpawnCollectibles();
+
+        // 6) Wall ไล่
         WallPushSpeed = _baseWallPushSpeed;
     }
-
 
     public override void SetupBackground()
     {
         _backgroundLooper?.SetBackground(_backgroundKey);
     }
 
-
-    public override void SetupFloor()
+    public override void SpawnEnemies()
     {
-        if (_objectPoolManager == null) return;
+        if (_enemySpawner == null) return;
+        _enemySpawner.StartWaveRepeating();
+    }
 
-        // Wall visual placed behind pivot
-        GameObject wallGO = _objectPoolManager.SpawnFromPool(
-            _wallVisualKey,
-            new Vector3(_spawnStartPosition.x - 10f, _spawnStartPosition.y + 2f, 0f),
-            Quaternion.identity
-        );
-
-        if (wallGO != null)
-            _endlessWall = wallGO.transform;
-
-    
+    public override void SpawnCollectibles()
+    {
+    // FIX: ลบ StartCoroutine(SpawnCollectiblesLoop()) ออก
+    // Logic การ Spawn ถูกย้ายไปควบคุมโดย InvokeRepeating ใน CollectibleSpawner.cs
     }
 
 
-
-    private void Update()
-    {
-        if (IsWallPushEnabled)
-            WallUpdate();
-    }
+    public override void SpawnAssets() { }
+    public override void SpawnThrowables() { }
 }
+

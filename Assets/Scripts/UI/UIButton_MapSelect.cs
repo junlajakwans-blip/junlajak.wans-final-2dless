@@ -17,10 +17,10 @@ public class UIButton_MapSelect : MonoBehaviour
 
         switch (action)
         {
-            case Action.Next: MapSelectController.Instance.NextMap(); break;
-            case Action.Prev: MapSelectController.Instance.PrevMap(); break;
-            case Action.Play: MapSelectController.Instance.TryPlaySelectedMap(); break;
-            case Action.Back: MapSelectController.Instance.BackToMainMenu(); break;
+            case Action.Next: UIManager.Instance.MapNext(); break;
+            case Action.Prev: UIManager.Instance.MapPrev(); break;
+            case Action.Play: UIManager.Instance.PlaySelectedMap(); break;
+            case Action.Back: UIManager.Instance.ShowMainMenu(); break;
         }
     }
 }

@@ -71,54 +71,74 @@ public class RedlightMon : Enemy
 
 
     /// <summary>
-    /// Spawns cars using the Object Pool Manager based on EnemyData count.
-    /// Uses the asset naming convention for car tags.
+    /// Spawn rushing cars from ObjectPool (RoadTraffic)
+    /// Random car type + random lane + auto Y + auto scale + start movement
     /// </summary>
     public void SpawnCarAttack()
     {
-
         IObjectPool pool = FindFirstObjectByType<ObjectPoolManager>();
         if (pool == null)
         {
-            Debug.LogError("[RedlightMon] Cannot find ObjectPoolManager (IObjectPool) to spawn cars!");
+            Debug.LogError("[RedlightMon] Cannot find ObjectPoolManager to spawn cars!");
             return;
         }
 
-        // ref Prefab in ObjectPoolManager (Tag)
-        // Convention: map_asset_RoadTraffic_Car_[int]
-        const string CAR_TAG_PREFIX = "map_asset_RoadTraffic_Car_";
-        // Link Max Car Type from ENEMYDATA
-        int maxCarTypes = _data.RedlightMaxCarTypes; 
+        // Get player target for targeting cars
+        Player player = _target?.GetComponent<Player>();
+        if (player == null)
+        {
+            Debug.LogWarning("[RedlightMon] Player target is null or missing Player component — cannot spawn targeting cars!");
+            return;
+        }
+
+        string[] carTags =
+        {
+            "map_asset_RoadTraffic_RushCarRed",
+            "map_asset_RoadTraffic_RushCarGreen",
+            "map_asset_RoadTraffic_RushCarBlue"
+        };
+
         int count = _data.RedlightSpawnCarCount;
-        
-        Vector3 spawnPosition = transform.position;
-        
-        Debug.Log($"[RedlightMon] Spawning {count} cars rush forward!");
-        
+        float[] laneYOffset = { -0.12f, -0.32f, -0.52f };
+
+        Vector3 basePos = transform.position;
+        Debug.Log($"[RedlightMon] 🚗 Spawn {count} cars targeting player!");
+
         for (int i = 0; i < count; i++)
         {
-            //Random Car
-            int carIndex = UnityEngine.Random.Range(1, maxCarTypes + 1); 
+            string carTag = carTags[UnityEngine.Random.Range(0, carTags.Length)];
+            float lane = laneYOffset[UnityEngine.Random.Range(0, laneYOffset.Length)];
+            Vector3 spawnPos = new Vector3(basePos.x, lane, 0);
+
+            GameObject car = pool.SpawnFromPool(carTag, spawnPos, Quaternion.identity);
+            if (car == null)
+            {
+                Debug.LogWarning($"[RedlightMon] Failed to spawn car: {carTag}");
+                continue;
+            }
+
+            // scaling
+            car.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
+
+            // movement: target the player
+            Vector3 directionToPlayer = (player.transform.position - spawnPos).normalized;
             
-            // 2. Create Tag  Convention: map_asset_RoadTraffic_Car_1
-            string carTag = CAR_TAG_PREFIX + carIndex; 
-
-            // 3. Spawn From Pool
-            GameObject car = pool.SpawnFromPool(carTag, spawnPosition, Quaternion.identity);
-
-            if (car != null)
+            if (car.TryGetComponent<Rigidbody2D>(out var rb))
             {
-                // TODO: Add initialization for car movement/damage here
-                // Note: ถ้ารถเป็น Projectile ต้องเรียก car.GetComponent<Projectile>().SetDependencies(_poolRef, carTag);
-                // แต่โค้ดนี้ไม่ได้ใช้ Projectile.cs จึงไม่จำเป็นต้องทำ
-                Debug.Log($"Spawned Car Tag: {carTag} at {spawnPosition}");
+                // Combine leftward movement with targeting offset toward player's Y position
+                // Primary: move left (across the road), secondary: bias toward player Y
+                float targetYBias = Mathf.Sign(directionToPlayer.y) * Mathf.Abs(directionToPlayer.y) * _data.RedlightCarSpeed * 0.3f;
+                rb.linearVelocity = new Vector2(-_data.RedlightCarSpeed, targetYBias);
+                
+                Debug.Log($"[RedlightMon] 🎯 Car spawned at {spawnPos}, targeting player at {player.transform.position}");
             }
-            else
-            {
-                 Debug.LogWarning($"[RedlightMon] Failed to spawn car with tag: {carTag}. Check ObjectPoolManager Prefab list.");
-            }
+
+            // ⚡ hit player → damage + despawn
+            if (car.TryGetComponent<CarHit>(out var hit))
+                hit.Init(pool, carTag, _data.RedlightCarDamage);
         }
     }
+
     #endregion
 
 
