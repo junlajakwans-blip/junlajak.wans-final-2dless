@@ -5,7 +5,7 @@ using Random = UnityEngine.Random;
 [CreateAssetMenu(menuName = "DUFFDUCK/Skill/MotorcycleSkill_Full")]
 public class MotorcycleSkill : CareerSkillBase
 {
-    #region Fields (คัดจาก MotorcycleDuck)
+    #region Fields 
     [SerializeField] private GameObject _dashEffect;
     [SerializeField] private float _dashMultiplier = 3f;
     [SerializeField] private float _dashDuration = 0.5f;
@@ -20,6 +20,7 @@ public class MotorcycleSkill : CareerSkillBase
     [SerializeField] private float _slideKnockback = 8f;
 
     private bool _isSkillActive;
+    public bool IsSkillActive => _isSkillActive;
     private bool _isCooldown;
     private bool _hasJumpBuff;
     public bool HasJumpBuff => _hasJumpBuff;
@@ -133,18 +134,23 @@ public class MotorcycleSkill : CareerSkillBase
         }
     }
     #endregion
-
-    #region OnTakeDamage (Immune 15%)
-    public override void OnTakeDamage(Player player, int dmg)
+    
+#region OnTakeDamage (Immune 15%)
+public override void OnTakeDamage(Player player, int dmg)
+{
+    // 1) ตรวจสอบโหมด Immortal (เช่นตอนใช้สกิล)
+    if (_isSkillActive && Random.value < _immunityChance)
     {
-        if (_isSkillActive && Random.value < _immunityChance)
-        {
-            Debug.Log($"[{player.PlayerName}] IMMUNE 15%");
-            return;
-        }
-        player.TakeDamage(dmg);
+        Debug.Log($"[{player.PlayerName}] IMMUNE 15% (Motorcycle Skill)");
+        return; // block damage
     }
-    #endregion
+
+    // 2) ถ้าไม่ block → ให้ player โดน damage จริง
+    player.ApplyRawDamage(dmg);
+
+    Debug.Log($"[{player.PlayerName}] MotorcycleSkill: Damage {dmg} passed through.");
+}
+#endregion
 
     #region BuffMon (RedlightMon)
     private void ApplyBuffsToExistingEnemies(Player player)

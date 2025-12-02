@@ -52,35 +52,35 @@ public class CardManager : MonoBehaviour
     {
         _player = player;
         _collectedCards.Clear();
-        EnsureCardUI();
         _cardSlotUI?.ResetAllSlots();
+        _cardSlotUI?.SetManager(this);
 
         if (_muscleButton != null)
             _muscleButton.Hide();
 
         if (_careerSwitcher != null) 
         {
-            // 1. à¸ªà¸¡à¸±à¸„à¸£ Event à¸›à¸à¸•à¸´
-            _careerSwitcher.OnCareerChangedEvent -= HandleCareerChange; // à¸›à¹‰à¸­à¸‡à¸à¸±à¸™à¸à¸²à¸£à¸ªà¸¡à¸±à¸„à¸£à¸‹à¹‰à¸³
+            // 1. สมัคร Event ปกติ
+            _careerSwitcher.OnCareerChangedEvent -= HandleCareerChange; // ป้องกันการสมัครซ้ำ
             _careerSwitcher.OnCareerChangedEvent += HandleCareerChange;
 
-            // 2. à¹ƒà¸Šà¹‰ ResetCareerDropCycle à¹à¸—à¸™à¸à¸²à¸£à¹ƒà¸Šà¹‰ Lambda à¸—à¸µà¹ˆà¸ˆà¸±à¸”à¸à¸²à¸£à¸¢à¸²à¸
-            _careerSwitcher.OnResetCareerCycle -= ResetCareerDropCycle; // à¸›à¹‰à¸­à¸‡à¸à¸±à¸™à¸à¸²à¸£à¸ªà¸¡à¸±à¸„à¸£à¸‹à¹‰à¸³
+            // 2. ใช้ ResetCareerDropCycle แทนการใช้ Lambda ที่จัดการยาก
+            _careerSwitcher.OnResetCareerCycle -= ResetCareerDropCycle; // ป้องกันการสมัครซ้ำ
             _careerSwitcher.OnResetCareerCycle += ResetCareerDropCycle;
         }
         
-        // à¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸²à¹€à¸£à¸´à¹ˆà¸¡à¸•à¹‰à¸™
+        // ตั้งค่าเริ่มต้น
         ResetCareerDropCycle(); 
     }
 
-    // à¹à¸à¹‰à¹„à¸‚ ResetCareerDropCycle() à¹ƒà¸«à¹‰à¸£à¸§à¸¡ UnlockCards()
+    // แก้ไข ResetCareerDropCycle() ให้รวม UnlockCards()
     private void ResetCareerDropCycle()
     {
 
-        _isCardLocked = false;          // à¸›à¸¥à¸”à¸¥à¹‡à¸­à¸à¸à¸²à¸£à¹Œà¸”
-        _cardSlotUI?.UnlockAllSlots();  // à¸›à¸¥à¸”à¸¥à¹‡à¸­à¸ UI
-        _cardSlotUI?.ClearHighlights(); // à¸”à¸±à¸š Hilight à¹€à¸•à¹‡à¸¡ 5 à¹ƒà¸š
-        _muscleButton?.Hide();          // à¸‹à¹ˆà¸­à¸™à¸›à¸¸à¹ˆà¸¡ Muscle
+        _isCardLocked = false;          // ปลดล็อกการ์ด
+        _cardSlotUI?.UnlockAllSlots();  // ปลดล็อก UI
+        _cardSlotUI?.ClearHighlights(); // ดับ Hilight เต็ม 5 ใบ
+        _muscleButton?.Hide();          // ซ่อนปุ่ม Muscle
         Debug.Log("[CardManager] Reset career cycle: drop counter = 0, cards unlocked.");
     }
 
@@ -89,7 +89,7 @@ public class CardManager : MonoBehaviour
         if (_careerSwitcher != null)
         {
             _careerSwitcher.OnCareerChangedEvent -= HandleCareerChange;
-            _careerSwitcher.OnResetCareerCycle -= ResetCareerDropCycle; // Unsubscribe à¸ˆà¸²à¸à¹€à¸¡à¸˜à¸­à¸”à¸—à¸µà¹ˆà¹ƒà¸Šà¹‰
+            _careerSwitcher.OnResetCareerCycle -= ResetCareerDropCycle; // Unsubscribe จากเมธอดที่ใช้
         }
     }
 
@@ -109,19 +109,19 @@ public class CardManager : MonoBehaviour
             _careerSwitcher.OnResetCareerCycle += ResetCareerDropCycle;
         }
 
-        Debug.Log($"[CardManager] CareerSwitcher assigned â†’ {switcher != null}");
+        Debug.Log($"[CardManager] CareerSwitcher assigned → {switcher != null}");
     }
 
 
     #region Add / Remove Card
     /// <summary>
-    /// à¹ƒà¸Šà¹‰à¸ªà¸³à¸«à¸£à¸±à¸š Monster Drop â†’ à¸ªà¸¸à¹ˆà¸¡à¸­à¸²à¸Šà¸µà¸žà¸•à¸²à¸¡ rate à¹à¸¥à¸°à¹„à¸¡à¹ˆà¹€à¸à¸´à¸™ 2 à¹ƒà¸šà¸‹à¹‰à¸³à¹ƒà¸™à¸¡à¸·à¸­
+    /// ใช้สำหรับ Monster Drop → สุ่มอาชีพตาม rate และไม่เกิน 2 ใบซ้ำในมือ
     /// </summary>
     public DuckCareerData GetRandomCareerForDrop()
     {
         DuckCareer career;
 
-        // à¸ªà¸¸à¹ˆà¸¡à¸ˆà¸™à¸à¸§à¹ˆà¸²à¸­à¸²à¸Šà¸µà¸žà¸™à¸µà¹‰à¸ˆà¸°à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¹€à¸à¸´à¸™ 2 à¹ƒà¸šà¹ƒà¸™à¸¡à¸·à¸­
+        // สุ่มจนกว่าอาชีพนี้จะยังไม่เกิน 2 ใบในมือ
         do
         {
             career = GetRandomCareerFromRate();
@@ -133,28 +133,27 @@ public class CardManager : MonoBehaviour
 
     public void AddCard(Card newCard)
     {
-        EnsureCardUI();
-        // 1. à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¹€à¸‡à¸·à¹ˆà¸­à¸™à¹„à¸‚à¸«à¹‰à¸²à¸¡à¹€à¸žà¸´à¹ˆà¸¡: à¸–à¸¹à¸à¸¥à¹‡à¸­à¸
+        // 1. ตรวจสอบเงื่อนไขห้ามเพิ่ม: ถูกล็อก
         if (_isCardLocked)
         {
             Debug.Log("[CardManager] Cannot add card: Card system is locked.");
             return;
         }
 
-        // 2. à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸¡à¸·à¸­à¹€à¸•à¹‡à¸¡
+        // 2. ตรวจสอบมือเต็ม
         if (_collectedCards.Count >= _maxCards)
         {
             _cardSlotUI?.HighlightFullHand();
             _muscleButton?.Show(); 
             Debug.Log("[CardManager] Hand is full. Card was not added. Showing Muscle Button.");
-            return; //à¹€à¸žà¸·à¹ˆà¸­à¸šà¸¥à¹‡à¸­à¸à¸à¸²à¸£à¹€à¸žà¸´à¹ˆà¸¡à¹€à¸¡à¸·à¹ˆà¸­à¸¡à¸·à¸­à¹€à¸•à¹‡à¸¡
+            return; //เพื่อบล็อกการเพิ่มเมื่อมือเต็ม
         }
 
-        // 3. à¸–à¹‰à¸²à¹„à¸¡à¹ˆà¹€à¸•à¹‡à¸¡à¹à¸¥à¸°à¹„à¸¡à¹ˆà¸–à¸¹à¸à¸¥à¹‡à¸­à¸ -> à¹€à¸žà¸´à¹ˆà¸¡à¸à¸²à¸£à¹Œà¸”
+        // 3. ถ้าไม่เต็มและไม่ถูกล็อก -> เพิ่มการ์ด
         _collectedCards.Add(newCard);
         _cardSlotUI?.UpdateSlots(_collectedCards);
 
-        // 4. à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸§à¹ˆà¸²à¸à¸²à¸£à¹€à¸žà¸´à¹ˆà¸¡à¸—à¸³à¹ƒà¸«à¹‰à¸¡à¸·à¸­à¹€à¸•à¹‡à¸¡à¸«à¸£à¸·à¸­à¹„à¸¡à¹ˆ (Trigger MuscleDuck Mode)
+        // 4. ตรวจสอบว่าการเพิ่มทำให้มือเต็มหรือไม่ (Trigger MuscleDuck Mode)
         if (_collectedCards.Count == _maxCards)
         {
             _cardSlotUI?.HighlightFullHand();
@@ -165,8 +164,7 @@ public class CardManager : MonoBehaviour
 
     public void AddCareerCard_FromDrop(DuckCareerData dataFromPickup)
     {
-        EnsureCardUI();
-        // Fallbacks à¸ˆà¸°à¹„à¸› AddCareerCard() â†’ à¹à¸¥à¹‰à¸§ Refresh UI à¸•à¸­à¸™à¸ˆà¸š
+        // Fallbacks จะไป AddCareerCard() → แล้ว Refresh UI ตอนจบ
         void Finish()
         {
             _cardSlotUI?.UpdateSlots(_collectedCards);
@@ -175,44 +173,44 @@ public class CardManager : MonoBehaviour
 
         if (dataFromPickup == null)
         {
-            Debug.LogWarning("[CardManager] âŒ Drop career NULL â†’ fallback random.");
-            AddCareerCard(); // à¹ƒà¸Šà¹‰à¸£à¸°à¸šà¸šà¸ªà¸¸à¹ˆà¸¡à¹à¸—à¸™
+            Debug.LogWarning("[CardManager] ❌ Drop career NULL → fallback random.");
+            AddCareerCard(); // ใช้ระบบสุ่มแทน
             return;
         }
 
-        // 1) à¸¡à¸·à¸­à¹€à¸•à¹‡à¸¡ â†’ Token à¹à¸—à¸™
+        // 1) มือเต็ม → Token แทน
         if (_collectedCards.Count >= _maxCards)
         {
             _player.AddToken(1);
-            Debug.Log("[CardManager] Hand full â†’ Token instead.");
+            Debug.Log("[CardManager] Hand full → Token instead.");
             return;
         }
 
-        // 2) à¸«à¹‰à¸²à¸¡ Muscle Duck à¸ˆà¸²à¸à¸à¸²à¸£à¸”à¸£à¸­à¸›à¹€à¸”à¹‡à¸”à¸‚à¸²à¸”
+        // 2) ห้าม Muscle Duck จากการดรอปเด็ดขาด
         if (dataFromPickup.CareerID == DuckCareer.Muscle)
         {
-            Debug.Log("[CardManager] âŒ Muscle cannot be dropped â†’ fallback random.");
+            Debug.Log("[CardManager] ❌ Muscle cannot be dropped → fallback random.");
             AddCareerCard();
             return;
         }
 
-        // 3) à¸ˆà¸³à¸à¸±à¸”à¹„à¸¡à¹ˆà¹€à¸à¸´à¸™ 2 à¹ƒà¸šà¸•à¹ˆà¸­ 1 à¸­à¸²à¸Šà¸µà¸ž
+        // 3) จำกัดไม่เกิน 2 ใบต่อ 1 อาชีพ
         if (CheckCareerCountInHand(dataFromPickup.CareerID) >= _maxSameCardInHand)
         {
-            Debug.Log($"[CardManager] âš  Already have 2 cards of {dataFromPickup.DisplayName} â†’ fallback random.");
+            Debug.Log($"[CardManager] ⚠ Already have 2 cards of {dataFromPickup.DisplayName} → fallback random.");
             AddCareerCard();
             return;
         }
 
-        Debug.Log($"[CardManager] ðŸŽ´ Added dropped card: {(string.IsNullOrWhiteSpace(dataFromPickup.DisplayName) ? dataFromPickup.CareerID.ToString() : dataFromPickup.DisplayName)} | Hand={_collectedCards.Count}/{_maxCards}");
+        Debug.Log($"[CardManager] 🎴 Added dropped card: {(string.IsNullOrWhiteSpace(dataFromPickup.DisplayName) ? dataFromPickup.CareerID.ToString() : dataFromPickup.DisplayName)} | Hand={_collectedCards.Count}/{_maxCards}");
 
-        // 4) à¸–à¸¹à¸à¸•à¹‰à¸­à¸‡ â†’ à¹€à¸žà¸´à¹ˆà¸¡à¸à¸²à¸£à¹Œà¸”à¸¥à¸‡à¸¡à¸·à¸­
+        // 4) ถูกต้อง → เพิ่มการ์ดลงมือ
         string id = System.Guid.NewGuid().ToString();
         Card newCard = new Card(id, dataFromPickup);
         _collectedCards.Add(newCard);
         _cardSlotUI?.UpdateSlots(_collectedCards);
 
-        // à¸¡à¸·à¸­à¹€à¸•à¹‡à¸¡à¸žà¸­à¸”à¸µ â†’ à¹à¸ªà¸”à¸‡ Muscle Button
+        // มือเต็มพอดี → แสดง Muscle Button
         if (_collectedCards.Count == _maxCards)
         {
             _cardSlotUI?.HighlightFullHand();
@@ -258,8 +256,8 @@ public class CardManager : MonoBehaviour
             if (_careerSwitcher != null && data != null && _careerSwitcher.CanChangeTo(data))
             {
                 _careerSwitcher.SwitchCareer(data);
-                _careerSwitcher.StartCareerTimer(data.CareerDuration); // â± à¸”à¸¶à¸‡à¸ˆà¸²à¸ ScriptableObject
-                HandleCareerCooldown(data); // â›” à¸¥à¹‡à¸­à¸„à¸à¸²à¸£à¹Œà¸”à¸•à¸²à¸¡ cooldown à¸‚à¸­à¸‡à¸­à¸²à¸Šà¸µà¸žà¸™à¸µà¹‰
+                _careerSwitcher.StartCareerTimer(data.CareerDuration); // ⏱ ดึงจาก ScriptableObject
+                HandleCareerCooldown(data); // ⛔ ล็อคการ์ดตาม cooldown ของอาชีพนี้
                 _uiEffectCharacter?.PlayEffect(card.SkillName);
                 success = true;
             }
@@ -295,20 +293,20 @@ public class CardManager : MonoBehaviour
     {
         if (_careerSwitcher == null) return;
 
-        // à¸¥à¸šà¸à¸²à¸£à¹Œà¸”à¸—à¸±à¹‰à¸‡ 5 à¹ƒà¸šà¸­à¸­à¸à¸ˆà¸²à¸à¹€à¸”à¹‡à¸„à¸à¹ˆà¸­à¸™
+        // ลบการ์ดทั้ง 5 ใบออกจากเด็คก่อน
         _collectedCards.Clear();
         _cardSlotUI?.ResetAllSlots();
 
-        // à¸‹à¹ˆà¸­à¸™à¸›à¸¸à¹ˆà¸¡ Muscle
+        // ซ่อนปุ่ม Muscle
         _muscleButton?.Hide();
 
-        // à¸ªà¸¥à¸±à¸šà¸­à¸²à¸Šà¸µà¸žà¹€à¸›à¹‡à¸™ Muscle Duck
+        // สลับอาชีพเป็น Muscle Duck
         var muscleCareer = _careerSwitcher.GetCareerData(DuckCareer.Muscle);
         _careerSwitcher.SwitchCareer(muscleCareer);
 
         _careerSwitcher.StartCareerTimer(10f);
 
-        // à¸¥à¹‡à¸­à¸à¸à¸²à¸£à¹Œà¸”à¸£à¸°à¸«à¸§à¹ˆà¸²à¸‡à¹ƒà¸Šà¹‰ Muscle Duck
+        // ล็อกการ์ดระหว่างใช้ Muscle Duck
         LockCards();
     }
 
@@ -343,10 +341,10 @@ public class CardManager : MonoBehaviour
 
     public void AddStarterCard()
     {
-        // 1. à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¹€à¸‡à¸·à¹ˆà¸­à¸™à¹„à¸‚à¸«à¹‰à¸²à¸¡à¹€à¸žà¸´à¹ˆà¸¡: à¸–à¸¹à¸à¸¥à¹‡à¸­à¸ à¸«à¸£à¸·à¸­ à¸¡à¸·à¸­à¹€à¸•à¹‡à¸¡
+        // 1. ตรวจสอบเงื่อนไขห้ามเพิ่ม: ถูกล็อก หรือ มือเต็ม
         if (_isCardLocked || _collectedCards.Count >= _maxCards)
         {
-             // à¹à¸ªà¸”à¸‡à¸›à¸¸à¹ˆà¸¡ Muscle à¹à¸¥à¸° Highlight à¹€à¸¡à¸·à¹ˆà¸­à¸¡à¸·à¸­à¹€à¸•à¹‡à¸¡ (à¹ƒà¸™à¸à¸£à¸“à¸µà¸—à¸µà¹ˆà¸–à¸¹à¸à¹€à¸£à¸µà¸¢à¸à¸•à¸­à¸™à¸¡à¸·à¸­à¹€à¸•à¹‡à¸¡)
+             // แสดงปุ่ม Muscle และ Highlight เมื่อมือเต็ม (ในกรณีที่ถูกเรียกตอนมือเต็ม)
              if (_collectedCards.Count >= _maxCards)
              {
                 _cardSlotUI?.HighlightFullHand();
@@ -356,7 +354,7 @@ public class CardManager : MonoBehaviour
              return;
         }
         
-        // 2. à¸ªà¸£à¹‰à¸²à¸‡à¸à¸²à¸£à¹Œà¸”à¹à¸šà¸šà¸ªà¸¸à¹ˆà¸¡ (à¹ƒà¸Šà¹‰ Logic à¸ªà¸¸à¹ˆà¸¡à¹€à¸”à¸´à¸¡)
+        // 2. สร้างการ์ดแบบสุ่ม (ใช้ Logic สุ่มเดิม)
         DuckCareer career = GetRandomCareerFromRate();
 
         if (_careerSwitcher == null) 
@@ -368,41 +366,41 @@ public class CardManager : MonoBehaviour
 
         if (careerData == null)
         {
-            Debug.LogError($"[CardManager] âŒ CareerData = NULL for career {career} â€” _allCareers à¸­à¸²à¸ˆà¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¹ƒà¸ªà¹ˆà¸•à¸±à¸§à¸™à¸µà¹‰à¹ƒà¸™ CareerSwitcher");
+            Debug.LogError($"[CardManager] ❌ CareerData = NULL for career {career} — _allCareers อาจยังไม่ใส่ตัวนี้ใน CareerSwitcher");
             return;
         }
 
         string cardID = System.Guid.NewGuid().ToString();
         Card newCard = new Card(cardID, careerData);
 
-        // 3. à¹€à¸žà¸´à¹ˆà¸¡à¸à¸²à¸£à¹Œà¸” (à¹ƒà¸Šà¹‰ AddCard à¸—à¸µà¹ˆà¹à¸à¹‰à¹„à¸‚à¹à¸¥à¹‰à¸§)
-        // AddCard à¸ˆà¸°à¸ˆà¸±à¸”à¸à¸²à¸£à¹€à¸£à¸·à¹ˆà¸­à¸‡ UI à¹à¸¥à¸° MuscleButton à¸•à¹ˆà¸­à¹„à¸›
+        // 3. เพิ่มการ์ด (ใช้ AddCard ที่แก้ไขแล้ว)
+        // AddCard จะจัดการเรื่อง UI และ MuscleButton ต่อไป
         AddCard(newCard); 
         _cardSlotUI?.HighlightSlot(_collectedCards.Count - 1);
 
 
-        // â˜… à¹„à¸¡à¹ˆà¸•à¹‰à¸­à¸‡à¹€à¸žà¸´à¹ˆà¸¡ _careerCardDropCount
+        // ★ ไม่ต้องเพิ่ม _careerCardDropCount
         Debug.Log($"[CardManager] Added Starter Card: {careerData.DisplayName}");
     }
 
     
 #region Drop from GoldenMon
     /// <summary>
-    /// à¹„à¸”à¹‰à¸£à¸±à¸šà¸à¸²à¸£à¹Œà¸”à¸ˆà¸²à¸à¸à¸²à¸£à¸”à¸£à¸­à¸› GoldenMon â€” à¹„à¸¡à¹ˆà¹‚à¸”à¸™ Card Lock à¸šà¸¥à¹‡à¸­à¸
-    /// à¸–à¹‰à¸²à¸¡à¸·à¸­à¹€à¸•à¹‡à¸¡ â†’ à¹„à¸”à¹‰ Token à¹à¸—à¸™
-    /// Muscle Duck â†’ à¹„à¸”à¹‰à¸à¸²à¸£à¹Œà¸” + Token (à¹„à¸”à¹‰à¸à¸²à¸£à¹Œà¸”à¸à¹ˆà¸­à¸™ à¹à¸¥à¹‰à¸§ Token à¸ˆà¸°à¹€à¸žà¸´à¹ˆà¸¡à¸«à¸¥à¸±à¸‡à¸ˆà¸²à¸à¹€à¸•à¹‡à¸¡)
+    /// ได้รับการ์ดจากการดรอป GoldenMon — ไม่โดน Card Lock บล็อก
+    /// ถ้ามือเต็ม → ได้ Token แทน
+    /// Muscle Duck → ได้การ์ด + Token (ได้การ์ดก่อน แล้ว Token จะเพิ่มหลังจากเต็ม)
     /// </summary>
     public void AddCareerCard()
     {
-        // 1) à¸–à¹‰à¸²à¸¡à¸·à¸­à¹€à¸•à¹‡à¸¡ â†’ à¹„à¸”à¹‰ Token à¹à¸—à¸™
+        // 1) ถ้ามือเต็ม → ได้ Token แทน
         if (_collectedCards.Count >= _maxCards)
         {
             _player.AddToken(1);
-            Debug.Log("[CardManager] Hand full â†’ Drop Token instead of Card.");
+            Debug.Log("[CardManager] Hand full → Drop Token instead of Card.");
             return;
         }
 
-        // 2) à¸ªà¸¸à¹ˆà¸¡à¸­à¸²à¸Šà¸µà¸žà¸ˆà¸™à¸à¸§à¹ˆà¸²à¸ˆà¸°à¹„à¸¡à¹ˆà¹€à¸à¸´à¸™ 2 à¹ƒà¸šà¹ƒà¸™à¸¡à¸·à¸­
+        // 2) สุ่มอาชีพจนกว่าจะไม่เกิน 2 ใบในมือ
         DuckCareer career;
         do
         {
@@ -413,19 +411,19 @@ public class CardManager : MonoBehaviour
         DuckCareerData data = _careerSwitcher?.GetCareerData(career);
         if (data == null)
         {
-            Debug.LogError($"[CardManager] âŒ CareerData is NULL for career {career} â€” Card not created.");
+            Debug.LogError($"[CardManager] ❌ CareerData is NULL for career {career} — Card not created.");
             return;
         }
 
-        // 3) à¸ªà¸£à¹‰à¸²à¸‡ Card object
+        // 3) สร้าง Card object
         string cardID = System.Guid.NewGuid().ToString();
         Card newCard = new Card(cardID, data);
 
-        // 4) à¹€à¸žà¸´à¹ˆà¸¡à¹€à¸‚à¹‰à¸²à¸¡à¸·à¸­ â€” â— à¹à¸¡à¹‰à¸£à¸°à¸šà¸šà¸à¸²à¸£à¹Œà¸”à¸ˆà¸° Lock à¸à¹‡à¸¢à¸±à¸‡à¸•à¹‰à¸­à¸‡à¹€à¸žà¸´à¹ˆà¸¡à¹„à¸”à¹‰
+        // 4) เพิ่มเข้ามือ — ❗ แม้ระบบการ์ดจะ Lock ก็ยังต้องเพิ่มได้
         _collectedCards.Add(newCard);
         _cardSlotUI?.UpdateSlots(_collectedCards);
 
-        // 5) à¸–à¹‰à¸²à¸¡à¸·à¸­à¹€à¸•à¹‡à¸¡à¸žà¸­à¸”à¸µà¸«à¸¥à¸±à¸‡à¹€à¸žà¸´à¹ˆà¸¡ â†’ Highlight + Muscle button
+        // 5) ถ้ามือเต็มพอดีหลังเพิ่ม → Highlight + Muscle button
         if (_collectedCards.Count == _maxCards)
         {
             _cardSlotUI?.HighlightFullHand();
@@ -437,14 +435,14 @@ public class CardManager : MonoBehaviour
 
 
     /// <summary>
-    /// NEW: à¸™à¸±à¸šà¸ˆà¸³à¸™à¸§à¸™à¸à¸²à¸£à¹Œà¸”à¸­à¸²à¸Šà¸µà¸žà¸—à¸µà¹ˆà¸£à¸°à¸šà¸¸à¸—à¸µà¹ˆà¸¡à¸µà¸­à¸¢à¸¹à¹ˆà¹ƒà¸™à¸¡à¸·à¸­à¸œà¸¹à¹‰à¹€à¸¥à¹ˆà¸™
+    /// NEW: นับจำนวนการ์ดอาชีพที่ระบุที่มีอยู่ในมือผู้เล่น
     /// </summary>
     private int CheckCareerCountInHand(DuckCareer careerType)
     {
         int count = 0;
         foreach (var card in _collectedCards)
         {
-            // à¸•à¹‰à¸­à¸‡à¸¡à¸±à¹ˆà¸™à¹ƒà¸ˆà¸§à¹ˆà¸² Card à¸¡à¸µ property Type à¹à¸¥à¸° CareerData à¸—à¸µà¹ˆà¹ƒà¸Šà¹‰à¹„à¸”à¹‰
+            // ต้องมั่นใจว่า Card มี property Type และ CareerData ที่ใช้ได้
             if (card.Type == CardType.Career && card.CareerData != null && card.CareerData.CareerID == careerType)
             {
                 count++;
@@ -458,20 +456,20 @@ public class CardManager : MonoBehaviour
         float roll = Random.Range(0f, 100f);
         float sum = 0f;
 
-        // Total 100% (à¸›à¸£à¸±à¸šà¸ˆà¸²à¸ 82% à¹€à¸”à¸´à¸¡)
-        // à¸­à¸±à¸•à¸£à¸²à¸ªà¹ˆà¸§à¸™à¹ƒà¸«à¸¡à¹ˆ: 16 + 15 + 15 + 12 + 11 + 12 + 12 + 7 = 100
+        // Total 100% (ปรับจาก 82% เดิม)
+        // อัตราส่วนใหม่: 16 + 15 + 15 + 12 + 11 + 12 + 12 + 7 = 100
         
-        if (roll < (sum += 16f)) return DuckCareer.Dancer;     // 16% (à¹€à¸”à¸´à¸¡ 13%)
-        if (roll < (sum += 15f)) return DuckCareer.Detective;  // 15% (à¹€à¸”à¸´à¸¡ 12%)
-        if (roll < (sum += 15f)) return DuckCareer.Motorcycle; // 15% (à¹€à¸”à¸´à¸¡ 12%)
-        if (roll < (sum += 12f)) return DuckCareer.Chef;       // 12% (à¹€à¸”à¸´à¸¡ 10%)
-        if (roll < (sum += 11f)) return DuckCareer.Firefighter; // 11% (à¹€à¸”à¸´à¸¡ 9%)
-        if (roll < (sum += 12f)) return DuckCareer.Programmer;  // 12% (à¹€à¸”à¸´à¸¡ 10%)
-        if (roll < (sum += 12f)) return DuckCareer.Doctor;     // 12% (à¹€à¸”à¸´à¸¡ 10%)
-        if (roll < (sum += 7f))  return DuckCareer.Singer;      // 7% (à¹€à¸”à¸´à¸¡ 6%)
+        if (roll < (sum += 16f)) return DuckCareer.Dancer;     // 16% (เดิม 13%)
+        if (roll < (sum += 15f)) return DuckCareer.Detective;  // 15% (เดิม 12%)
+        if (roll < (sum += 15f)) return DuckCareer.Motorcycle; // 15% (เดิม 12%)
+        if (roll < (sum += 12f)) return DuckCareer.Chef;       // 12% (เดิม 10%)
+        if (roll < (sum += 11f)) return DuckCareer.Firefighter; // 11% (เดิม 9%)
+        if (roll < (sum += 12f)) return DuckCareer.Programmer;  // 12% (เดิม 10%)
+        if (roll < (sum += 12f)) return DuckCareer.Doctor;     // 12% (เดิม 10%)
+        if (roll < (sum += 7f))  return DuckCareer.Singer;      // 7% (เดิม 6%)
         
-        // à¹€à¸¡à¸·à¹ˆà¸­à¸£à¸§à¸¡à¸à¸±à¸™à¹€à¸›à¹‡à¸™ 100% à¹à¸¥à¹‰à¸§ à¹‚à¸„à¹‰à¸”à¸ˆà¸°à¹„à¸¡à¹ˆà¸ªà¸²à¸¡à¸²à¸£à¸–à¸¡à¸²à¸–à¸¶à¸‡à¸šà¸£à¸£à¸—à¸±à¸”à¸™à¸µà¹‰à¹„à¸”à¹‰
-        return DuckCareer.Detective; // Fallback à¸ªà¸¸à¸”à¸—à¹‰à¸²à¸¢ (à¸«à¸£à¸·à¸­ return à¸„à¹ˆà¸²à¸­à¸·à¹ˆà¸™à¸—à¸µà¹ˆà¹€à¸«à¸¡à¸²à¸°à¸ªà¸¡)
+        // เมื่อรวมกันเป็น 100% แล้ว โค้ดจะไม่สามารถมาถึงบรรทัดนี้ได้
+        return DuckCareer.Detective; // Fallback สุดท้าย (หรือ return ค่าอื่นที่เหมาะสม)
     }
     #endregion
 
@@ -509,15 +507,6 @@ public class CardManager : MonoBehaviour
         UnlockCards();
     }
 
-    private void EnsureCardUI()
-    {
-        if (_cardSlotUI == null)
-        {
-            _cardSlotUI = FindFirstObjectByType<CardSlotUI>();
-            _cardSlotUI?.SetManager(this);
-        }
-    }
-
     public void ForceUIRefresh()
     {
         _cardSlotUI?.UpdateSlots(_collectedCards);
@@ -525,6 +514,3 @@ public class CardManager : MonoBehaviour
 
     #endregion
 }
-
-
-

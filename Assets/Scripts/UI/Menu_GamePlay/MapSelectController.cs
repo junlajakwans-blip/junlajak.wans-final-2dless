@@ -27,6 +27,7 @@ public class MapSelectController : MonoBehaviour
 
     private MapInfo[] maps;
     private int index = 0;
+    public static MapSelectController Instance { get; private set; }
     #endregion
 
 
@@ -72,6 +73,11 @@ public class MapSelectController : MonoBehaviour
     
     #endregion
 
+
+    private void Awake()
+    {
+        Instance = this; // ไม่ต้อง DontDestroyOnLoad เพราะอยู่ใน MainMenu scene
+    }
 
     #region Dependencies
     /// <summary>

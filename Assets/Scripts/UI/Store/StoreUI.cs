@@ -31,7 +31,7 @@ public class StoreUI : MonoBehaviour
     private Currency _currency;
     private StoreUpgrade _storeUpgrade;
     private StoreMap _storeMap;
-
+    public static StoreUI Instance { get; private set; }
 
     public StoreMap StoreMapRef => _storeMap;
     public IEnumerable<SlotUI> MapSlots => mapSlots;
@@ -45,7 +45,7 @@ public class StoreUI : MonoBehaviour
 
     private void Awake()
     {
-
+        Instance = this;
         if (panelExchange != null) panelExchange.SetActive(false);
         if (panelMap != null) panelMap.SetActive(false);
         if (panelUpgrade != null) panelUpgrade.SetActive(false);

@@ -1,21 +1,27 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIButton_Play : MonoBehaviour
+public class UIButton_UIManager : MonoBehaviour
 {
-    private Button _btn;
+    public enum Action { MainMenu, SelectMap, Store, Settings }
+
+    [SerializeField] Action action;
 
     void Awake()
     {
-        _btn = GetComponent<Button>();
-        _btn.onClick.AddListener(OnPlay);
+        GetComponent<Button>().onClick.AddListener(InvokeAction);
     }
 
-    void OnPlay()
+    void InvokeAction()
     {
-        if (UIManager.Instance != null)
-            UIManager.Instance.ShowSelectMap();
-        else
-            Debug.LogError("UIManager INSTANCE NOT FOUND");
+        if (UIManager.Instance == null) return;
+
+        switch (action)
+        {
+            case Action.MainMenu:   UIManager.Instance.ShowMainMenu(); break;
+            case Action.SelectMap:  UIManager.Instance.ShowSelectMap(); break;
+            case Action.Store:      UIManager.Instance.ShowStoreBase(); break;
+            case Action.Settings:   UIManager.Instance.SetPanel(UIManager.Instance.panelSettings); break;
+        }
     }
 }

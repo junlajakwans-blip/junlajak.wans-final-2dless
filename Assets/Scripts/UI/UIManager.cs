@@ -15,7 +15,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] public GameObject panelHUDMain;
 
     [Header("Card Selection")]
-    // NOTE: Field นี้ถูกกำหนดใน Inspector (Manual)
     [SerializeField] private GameObject _cardSelectionPanel;
 
     [Header("Main UI References")]
@@ -273,7 +272,7 @@ public void ShowMainMenu()
     }
 
 
-    private void SetPanel(GameObject target)
+    public void SetPanel(GameObject target)
     {
         // 🔥 Logic ดั้งเดิมของคุณ (ที่ทำให้ Panel อื่นๆ ปิด/เปิดตามเงื่อนไข Target)
         
@@ -475,9 +474,9 @@ public void ShowMainMenu()
         if (panelStoreUpgrade != null) panelStoreUpgrade.SetActive(false);
         
         if (_cardSelectionPanel != null) _cardSelectionPanel.SetActive(true);
-        // var cardPanel = GameObject.Find("Panel_Card"); // <-- ลบโค้ด Find นี้ออก
-        // if (cardPanel != null)
-        // cardPanel.SetActive(true); // <-- ลบโค้ด SetActive นี้ออก
+        var cardPanel = GameObject.Find("Panel_Card");
+        if (cardPanel != null)
+            cardPanel.SetActive(true);
     }
     #endregion
 
