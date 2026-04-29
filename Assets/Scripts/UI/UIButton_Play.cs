@@ -3,8 +3,15 @@ using UnityEngine.UI;
 
 public class UIButton_UIManager : MonoBehaviour
 {
-    public enum Action { MainMenu, SelectMap, Store, Settings }
-
+    public enum Action 
+    { 
+        MainMenu, 
+        SelectMode, 
+        SelectMap, 
+        Store, 
+        Settings 
+    }
+    
     [SerializeField] Action action;
 
     void Awake()
@@ -19,6 +26,7 @@ public class UIButton_UIManager : MonoBehaviour
         switch (action)
         {
             case Action.MainMenu:   UIManager.Instance.ShowMainMenu(); break;
+            case Action.SelectMode: UIManager.Instance.ShowSelectMode(); break;
             case Action.SelectMap:  UIManager.Instance.ShowSelectMap(); break;
             case Action.Store:      UIManager.Instance.ShowStoreBase(); break;
             case Action.Settings:   UIManager.Instance.SetPanel(UIManager.Instance.panelSettings); break;

@@ -47,6 +47,7 @@ public class GameModeSelector : MonoBehaviour
         // ไปหน้าเลือกแมพ
         if (UIManager.Instance != null)
         {
+            UIManager.Instance.UpdateModeUI(mode);
             UIManager.Instance.ShowSelectMap();
         }
     }

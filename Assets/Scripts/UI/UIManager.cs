@@ -17,6 +17,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private CardSlotUI _cardSlotUI;
     [SerializeField] private MenuUI _menuUI;
     [SerializeField] public GameObject panelHUDMain;
+    [SerializeField] public GameObject panelSelectMode;
+    [SerializeField] private TMPro.TextMeshProUGUI modeText;
 
     [Header("Card Selection")]
     [SerializeField] private GameObject _cardSelectionPanel;
@@ -386,6 +388,27 @@ public class UIManager : MonoBehaviour
         SetPanel(panelMainMenu);
     }
 
+    public void ShowSelectMode()
+    {
+        Debug.Log(">> OPEN SELECT MODE");
+        SetPanel(panelSelectMode);
+    }
+
+    public void UpdateModeUI(GameModeManager.GameMode mode)
+    {
+        if (modeText == null) return;
+
+        string label = mode switch
+        {
+            GameModeManager.GameMode.Solo => "MODE: SOLO",
+            GameModeManager.GameMode.Coop => "MODE: CO-OP",
+            GameModeManager.GameMode.Competition => "MODE: VERSUS",
+            _ => "MODE: -"
+        };
+
+        modeText.text = label;
+    }
+
     public void ShowSelectMap()
     {
         Debug.Log(">> OPEN SELECT MAP");
@@ -411,6 +434,9 @@ public class UIManager : MonoBehaviour
         //ควบคุม Panel in MainMenu Scene
         if (panelMainMenu != null)
             panelMainMenu.SetActive(target == panelMainMenu);
+
+        if (panelSelectMode != null)
+            panelSelectMode.SetActive(target == panelSelectMode);
             
         if (panelSelectMap != null)
             panelSelectMap.SetActive(target == panelSelectMap);
