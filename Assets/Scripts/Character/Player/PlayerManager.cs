@@ -50,6 +50,16 @@ public class PlayerManager : MonoBehaviour
         }
 
         Debug.Log($"[PlayerManager] Mode: {GameModeSelector.Instance?.CurrentMode}, TwoPlayer: {isTwoPlayer}");
+       var cam = Camera.main.GetComponent<CameraFollow>();
+
+        if (cam != null)
+        {
+            cam.SetTargets(
+                Player1.transform,
+                isTwoPlayer ? Player2.transform : null
+            );
+        }
+    
     }
 
     private void FindSpawnPoints()
