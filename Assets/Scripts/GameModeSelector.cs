@@ -17,6 +17,8 @@ public class GameModeSelector : MonoBehaviour
         }
 
         Instance = this;
+        DontDestroyOnLoad(gameObject);
+        Debug.Log("[GameModeSelector] Singleton handled in Awake.");
     }
 
     // ===== ใช้กับปุ่ม UI =====

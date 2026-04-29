@@ -16,6 +16,8 @@ TagManager:
   - Collectible
   - MainEventSystem
   - 'CardPickup '
+  - SpawnP1
+  - SpawnP2
   layers:
   - Default
   - TransparentFX
