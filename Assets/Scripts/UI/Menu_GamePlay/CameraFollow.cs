@@ -18,39 +18,54 @@
 // }
 
 using UnityEngine;
+using System.Collections.Generic;
 
 public class CameraFollow : MonoBehaviour
 {
     [SerializeField] private float smoothSpeed = 5f;
     [SerializeField] private Vector3 offset = new Vector3(0f, 2f, -10f);
 
-    private Transform target1;
-    private Transform target2;
-
-    public void SetTargets(Transform p1, Transform p2 = null)
-    {
-        target1 = p1;
-        target2 = p2;
-    }
+    private Vector3 velocity;
 
     private void LateUpdate()
     {
-        if (target1 == null) return;
+        var players = FindObjectsByType<Player>(FindObjectsSortMode.None);
+
+        List<Player> alive = new List<Player>();
+
+        foreach (var p in players)
+        {
+            if (p != null && !p.IsDead)
+                alive.Add(p);
+        }
+
+        if (alive.Count == 0)
+            return;
 
         Vector3 targetPosition;
 
-        // 🟢 Solo
-        if (target2 == null)
+        // 🟢 มีคนเดียว
+        if (alive.Count == 1)
         {
-            targetPosition = target1.position;
+            targetPosition = alive[0].transform.position;
         }
-        // 🔵 2 Player
+        // 🔵 มีหลายคน → เอาค่าเฉลี่ย
         else
         {
-            targetPosition = (target1.position + target2.position) / 2f;
+            Vector3 sum = Vector3.zero;
+            foreach (var p in alive)
+                sum += p.transform.position;
+
+            targetPosition = sum / alive.Count;
         }
 
         Vector3 desired = targetPosition + offset;
-        transform.position = Vector3.Lerp(transform.position, desired, smoothSpeed * Time.deltaTime);
+
+        transform.position = Vector3.SmoothDamp(
+            transform.position,
+            desired,
+            ref velocity,
+            0.2f
+        );
     }
 }
