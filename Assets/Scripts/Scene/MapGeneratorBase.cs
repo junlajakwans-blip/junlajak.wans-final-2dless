@@ -140,21 +140,39 @@ public abstract class MapGeneratorBase : MonoBehaviour
     public virtual void InitializeGenerators(Transform pivot = null)
     {
         _objectPoolManager = ObjectPoolManager.Instance;
-        if (_objectPoolManager == null)
-        {
-            Debug.LogError("MapGeneratorBase: ObjectPoolManager.Instance is NULL!");
-            return;
-        }
+        if (pivot != null)
+        {
+            _generationPivot = pivot;
+        }
+
+        if (_generationPivot == null)
+        {
+            Debug.LogError("[MapGen] Pivot is NULL → Map will NOT run");
+            return;
+        }
+
+        //if (_objectPoolManager == null)
+        //{
+        //    Debug.LogError("MapGeneratorBase: ObjectPoolManager.Instance is NULL!");
+        //    return;
+       // }
         
         // 1. ค้นหา Player ก่อนเพื่อใช้เป็น Pivot และส่งให้ Spawner
-        Player player = FindFirstObjectByType<Player>();
+        //         Player player = FindFirstObjectByType<Player>();
 
-        if (pivot != null) _generationPivot = pivot;
-        else if (_generationPivot == null)
-        {
-            // ใช้ player ที่หามาได้
-            if (player != null) _generationPivot = player.transform;
-        }
+        //         if (pivot != null) _generationPivot = pivot;
+        //         else if (_generationPivot == null)
+        //         {
+        //             // ใช้ player ที่หามาได้
+        //             if (player != null) _generationPivot = player.transform;
+        //         }
+
+        Player player = _generationPivot.GetComponent<Player>();
+
+        if (player == null)
+        {
+            Debug.LogError("[MapGen] Pivot has no Player component!");
+        }
 
         _wallPushSpeed = _baseWallPushSpeed;
         _isPlatformBreakable = true;
@@ -226,7 +244,7 @@ public abstract class MapGeneratorBase : MonoBehaviour
     
     }
 
-    protected void InitializePlatformGeneration()
+    public void InitializePlatformGeneration()
     {
         _nextSpawnX = _spawnStartPosition.x;
         _nextFloorX = _spawnStartPosition.x;
@@ -265,8 +283,13 @@ public abstract class MapGeneratorBase : MonoBehaviour
     protected IEnumerator GeneratePlatformsLoop()
     {
         // WebGL/Mobile Optimization: ใช้ Coroutine และ Timer เพื่อแบ่งภาระงานหนัก
-        while (_generationPivot != null)
-        {
+        while (true)
+        {
+            if (_generationPivot == null)
+            {
+                yield return null;
+                continue;
+            }
             _generationTimer += Time.deltaTime;
 
             // ตรวจสอบ Logic การสร้างแผนที่ทุกๆ GENERATION_CHECK_INTERVAL (0.1 วินาที) เพื่อประหยือบ CPU

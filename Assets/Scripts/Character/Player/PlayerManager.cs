@@ -59,6 +59,20 @@ public class PlayerManager : MonoBehaviour
                 isTwoPlayer ? Player2.transform : null
             );
         }
+
+        var mapGen = FindFirstObjectByType<MapGeneratorBase>();
+
+        if (mapGen != null)
+        {
+            mapGen.InitializeGenerators(Player1.transform);
+            mapGen.InitializePlatformGeneration();
+
+            Debug.Log("[PlayerManager] MapGenerator initialized");
+        }
+        else
+        {
+            Debug.LogError("MapGenerator NOT FOUND");
+        }
     
     }
 
