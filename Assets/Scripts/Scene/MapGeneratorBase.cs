@@ -285,12 +285,16 @@ public abstract class MapGeneratorBase : MonoBehaviour
         // WebGL/Mobile Optimization: ใช้ Coroutine และ Timer เพื่อแบ่งภาระงานหนัก
         while (true)
         {
+            _generationPivot = GetAlivePlayerPivot();
+
             if (_generationPivot == null)
             {
-                yield return null;
+                Debug.LogWarning("[MapGen] No alive players found for pivot. Generation paused.");
+                yield return new WaitForSeconds(1f); // รอ 1 วินาทีก่อนลองหาใหม่
                 continue;
             }
-            _generationTimer += Time.deltaTime;
+
+            _generationTimer += Time.deltaTime;
 
             // ตรวจสอบ Logic การสร้างแผนที่ทุกๆ GENERATION_CHECK_INTERVAL (0.1 วินาที) เพื่อประหยือบ CPU
             if (_generationTimer >= GENERATION_CHECK_INTERVAL)
@@ -327,6 +331,16 @@ public abstract class MapGeneratorBase : MonoBehaviour
             yield return null;
         }
     }
+
+    private Transform GetAlivePlayerPivot()
+    {
+        var pm = FindFirstObjectByType<PlayerManager>();
+
+        if (pm == null) return null;
+
+        var player = pm.GetAlivePlayer();
+        return player != null ? player.transform : null;
+    }
 
     protected virtual void OnDisable()
     {

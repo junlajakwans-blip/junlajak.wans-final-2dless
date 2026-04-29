@@ -67,6 +67,7 @@ public class PlayerManager : MonoBehaviour
     
     }
 
+
     private void FindSpawnPoints()
     {
         var p1 = GameObject.FindGameObjectWithTag("SpawnP1");
@@ -88,5 +89,13 @@ public class PlayerManager : MonoBehaviour
         }
 
         Debug.Log($"[PlayerManager] Spawned Player {id}");
+    }
+
+    public Player GetAlivePlayer()
+    {
+        if (Player1 != null && !Player1.IsDead) return Player1;
+        if (Player2 != null && !Player2.IsDead) return Player2;
+
+        return null;
     }
 }
