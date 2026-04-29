@@ -19,22 +19,23 @@ public class WallPushController : MonoBehaviour
   [Header("Settings")]
   [SerializeField] private float _pushSpeed = 1.0f; // overwritten by MapGenerator
   [SerializeField] private bool _isPushing = true;
+  [SerializeField] private float safeDistance = 3f;
 
   [Header("Runtime")]
-  private Transform _player;
 
-  private void Start()
-  {
-    // ใช้ FindFirstObjectByType<Player>()? เพื่อหา Player
-    _player = FindFirstObjectByType<Player>()?.transform; 
-  }
+  private Player[] _players;
+  private float _refreshTimer = 0f;
+
   
   private void LateUpdate()
   {
-    if (!_isPushing || _player == null) return;
+    if (!_isPushing) return;
+
+    var center = GetCenterPosition();
+    if (_players == null || _players.Length == 0) return;
 
         // 1. คำนวณความห่างระหว่าง Player กับกำแพง
-    float dist = _player.position.x - transform.position.x; // ความห่าง
+    float dist = Mathf.Max(0f, center.x - transform.position.x - safeDistance); // ความห่าง
     
         // 2. คำนวณค่า t (0 ถึง 1) โดยให้ 45 หน่วย เป็นระยะที่กำแพงต้องวิ่งเต็มสปีด
     float t = Mathf.Clamp01(dist / 45f);           // ระยะ 45 หน่วย = ไล่เต็มสปีด
@@ -51,6 +52,27 @@ public class WallPushController : MonoBehaviour
     transform.Translate(Vector3.right * _pushSpeed * Time.deltaTime);
   }
 
+  private Vector3 GetCenterPosition()
+  {
+      _refreshTimer -= Time.deltaTime;
+
+      if (_players == null || _players.Length == 0 || _refreshTimer <= 0f)
+      {
+          _players = FindObjectsByType<Player>(FindObjectsSortMode.None);
+          _refreshTimer = 0.5f;
+      }
+
+      if (_players == null || _players.Length == 0) return Vector3.zero;
+
+      Vector3 sum = Vector3.zero;
+
+      foreach (var p in _players)
+      {
+          sum += p.transform.position;
+      }
+
+      return sum / _players.Length;
+  }
 
   /// <summary>
   /// Called by MapGeneratorBase to sync speed and toggle state
