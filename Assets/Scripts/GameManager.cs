@@ -45,6 +45,8 @@ public class GameManager : MonoBehaviour
     public float PlayTime => _playTime;
     private GameProgressData _persistentProgress;
     private Currency _currencyData;
+    private int _coins;
+
     private StoreManager _storeManager;
     [SerializeField] private StoreExchange _exchangeStore;
     [SerializeField] private StoreUpgrade _upgradeStore;
@@ -115,7 +117,10 @@ public class GameManager : MonoBehaviour
             _playTime += Time.deltaTime;
 
             int score = Mathf.FloorToInt(_playTime);
-            _scoreUI.UpdateScore(score);
+            //_scoreUI.UpdateScore(score);
+            _score = Mathf.FloorToInt(_playTime);
+
+            _uiManager?.UpdateScore(_score);
 
             // อัปเดตค่า Debug ใน Inspector (เพื่อให้แท็บดูได้)
             _score = score;
@@ -265,7 +270,8 @@ public class GameManager : MonoBehaviour
             _scoreUI.DisplaySavedHighScore(_persistentProgress.BestScore);
             _scoreUI.InitializeScore(0);
             _scoreUI.UpdateCoins(0);
-            _scoreUI.UpdateScore(0);  
+            _uiManager?.UpdateScore(0);
+            //_scoreUI.UpdateScore(0);  
             Debug.Log($"[GM] ScoreUI forced refresh — Score=0");
             // Pass baseline (saved) total coins so ScoreUI will show only session-collected coins
             _player.HookScoreUI(_scoreUI, _currencyData != null ? _currencyData.Coin : 0);
@@ -549,6 +555,17 @@ public void InitializeGame()
         _uiManager?.UpdateScore(_score);
 
         Debug.Log($"[GameManager] Score +{amount} (Total: {_score})");
+    }
+
+    public void AddCoins(int amount)
+    {
+        if (amount <= 0) return;
+
+        _coins += amount;
+
+        _uiManager?.GetScoreUI()?.UpdateCoins(_coins);
+
+        Debug.Log($"[GameManager] Coins +{amount} (Total: {_coins})");
     }
 
     public float GetPlayTime() => _playTime;

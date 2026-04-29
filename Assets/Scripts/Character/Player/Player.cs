@@ -55,6 +55,8 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     [SerializeField] private bool _isInvulnerable = false;
     public bool IsInvulnerable => _isInvulnerable;
 
+    public static event System.Action<Player> OnAnyPlayerDied;
+
     [Header("UI References")]
     [SerializeField] private HealthBarUI _healthBarUI;
     public event System.Action<int> OnCoinCollected;
@@ -522,6 +524,7 @@ public override void Move(Vector2 direction)
         }
 
         _isDead = true;
+        OnAnyPlayerDied?.Invoke(this); // Notify GameModeManager and others about the death
 
         // 1) Disable own collider → Enemies stop attacking/colliding immediately
         var coll = GetComponent<Collider2D>();
@@ -546,14 +549,14 @@ public override void Move(Vector2 direction)
 
         Debug.Log("[Player] Player died.");
 
-        StartCoroutine(HandleGameOver());
+        //StartCoroutine(HandleGameOver()); // GameManager will handle game over logic based on the current game mode
     }
 
-    private IEnumerator HandleGameOver()
+    /*private IEnumerator HandleGameOver()
     {
         yield return new WaitForSeconds(2f);
         GameManager.Instance.EndGame(); // or LoadScene("GameOver")
-    }
+    }*/ // Moved to GameModeManager to handle different game modes
 
     public DuckCareer GetCurrentCareerID()
     {
@@ -608,13 +611,25 @@ public override void Move(Vector2 direction)
 
 
     #region Currency System
+    // public void AddCoin(int amount)
+    // {
+    //     if (_currency == null) return;
+    //     _currency.AddCoin(amount);
+    //     Debug.Log($"Coin Added → {_currency.Coin}");
+    //     OnCoinCollected?.Invoke(_currency.Coin);
+
+    // }
+
     public void AddCoin(int amount)
     {
         if (_currency == null) return;
-        _currency.AddCoin(amount);
-        Debug.Log($"Coin Added → {_currency.Coin}");
-        OnCoinCollected?.Invoke(_currency.Coin);
 
+        _currency.AddCoin(amount);
+
+        // ยิงเข้า GameManager แทน
+        GameManager.Instance.AddCoins(amount);
+
+        Debug.Log($"Coin Added → {_currency.Coin}");
     }
 
     public void AddToken(int amount)

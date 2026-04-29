@@ -29,7 +29,60 @@ public class BuffManager : MonoBehaviour
         _gameManagerRef = gm;
     }
 
-    public void ApplyCollectibleBuff(CollectibleType type, Player player, int value, float duration)
+//1PlayerBuff
+    // public void ApplyCollectibleBuff(CollectibleType type, Player player, int value, float duration)
+    // {
+    //     switch (type)
+    //     {
+    //         case CollectibleType.Coffee:
+    //             StartCoroutine(CoffeeBuffRoutine(player, value, duration));
+    //             break;
+
+    //         case CollectibleType.MooKrata:
+    //             StartCoroutine(MooKrataBuffRoutine(duration));
+    //             break;
+
+    //         case CollectibleType.Takoyaki:
+    //             StartCoroutine(TakoyakiRoutine(player, value, duration));
+    //             break;
+
+    //         case CollectibleType.GreenTea:
+    //             ApplyGreenTeaPermanent(player, value);
+    //             break;
+    //     }
+    // }
+
+    public void ApplyCollectibleBuff(CollectibleType type, Player source, int value, float duration)
+    {
+        // เช็คว่าเป็น Coop มั้ย
+        bool isCoop = false;
+
+        if (FindFirstObjectByType<GameModeManager>() != null)
+        {
+            var gm = FindFirstObjectByType<GameModeManager>();
+            isCoop = gm.CurrentMode == GameModeManager.GameMode.Coop;
+        }
+
+        if (isCoop)
+        {
+            // แจกทั้งทีม
+            var players = FindObjectsByType<Player>(FindObjectsSortMode.None);
+
+            foreach (var p in players)
+            {
+                ApplyBuffToPlayer(type, p, value, duration);
+            }
+
+            Debug.Log($"[BuffManager] TEAM BUFF: {type}");
+        }
+        else
+        {
+            // Solo / Competition → เฉพาะคนเก็บ
+            ApplyBuffToPlayer(type, source, value, duration);
+        }
+    }
+
+    private void ApplyBuffToPlayer(CollectibleType type, Player player, int value, float duration)
     {
         switch (type)
         {
