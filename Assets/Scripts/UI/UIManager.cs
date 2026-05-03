@@ -16,7 +16,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private ScoreUI _scoreUI;
     [SerializeField] private CardSlotUI _cardSlotUI;
     [SerializeField] private MenuUI _menuUI;
-    [SerializeField] private MenuUI_HUD _menuHUD;
     [SerializeField] public GameObject panelHUDMain;
     [SerializeField] public GameObject panelSelectMode;
     [SerializeField] private TMPro.TextMeshProUGUI modeText;
@@ -347,15 +346,6 @@ public class UIManager : MonoBehaviour
     // START is removed to prevent double bind (previous fix)
     // private void Start() { } 
 
-    private void BindHUD()
-    {
-        if (_menuHUD == null)
-        {
-            _menuHUD = FindFirstObjectByType<MenuUI_HUD>(FindObjectsInactive.Include);
-            Debug.Log($"[UIManager] Bind HUD = {_menuHUD}");
-        }
-    }
-
     #endregion
 
 
@@ -547,8 +537,7 @@ public class UIManager : MonoBehaviour
     #region Menu UI During Gameplay
     public void ShowPauseMenu(bool isActive)
     {
-        Debug.Log($"UIManager.ShowPauseMenu called | HUD = {_menuHUD}");
-        _menuHUD?.ShowPauseMenu(isActive);
+        _menuUI?.ShowPauseMenu(isActive);
     }
 
     public void ShowResultMenu()
@@ -558,18 +547,18 @@ public class UIManager : MonoBehaviour
         {
             _scoreUI.ShowFinalResult();
         }
-        _menuHUD?.ShowResultMenu();     // เปิด Panel หน้า Result
+        _menuUI?.ShowResultMenu();     // เปิด Panel หน้า Result
     }
 
 
     public void CloseAllMenus()
     {
-        _menuHUD?.CloseAllPanels();
+        _menuUI?.CloseAllPanels();
     }
 
     public bool IsAnyMenuOpen()
     {
-        return _menuHUD != null && _menuHUD.IsAnyPanelActive();
+        return _menuUI != null && _menuUI.IsAnyPanelActive();
     }
 
     public void ShowGameplayHUD()

@@ -8217,12 +8217,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1071875931}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0f7fb53d0b65468459b0c36b51a01236, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MenuUI_HUD
-  _pausePanel: {fileID: 1082791812}
+  _pausePanel: {fileID: 0}
   _resultPanel: {fileID: 1374955806}
   _currentActivePanel: {fileID: 0}
 --- !u!1 &1073300782
@@ -8456,7 +8456,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1082791813
 RectTransform:
   m_ObjectHideFlags: 0
@@ -15802,7 +15802,6 @@ MonoBehaviour:
   _scoreUI: {fileID: 387684699}
   _cardSlotUI: {fileID: 1798947143}
   _menuUI: {fileID: 0}
-  _menuHUD: {fileID: 0}
   panelHUDMain: {fileID: 1071875931}
   panelSelectMode: {fileID: 223557213}
   modeText: {fileID: 1570189499}

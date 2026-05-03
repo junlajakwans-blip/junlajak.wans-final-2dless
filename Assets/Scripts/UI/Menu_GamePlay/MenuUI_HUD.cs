@@ -11,7 +11,8 @@ public class MenuUI_HUD : MonoBehaviour
 
     private void Awake()
     {
-
+        // ❌ ไม่มี Singleton
+        // ❌ ไม่ DontDestroyOnLoad
     }
 
     public void ShowPauseMenu(bool isActive)

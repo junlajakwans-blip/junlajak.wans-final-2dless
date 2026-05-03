@@ -101,12 +101,6 @@ public class GameManager : MonoBehaviour
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                TogglePause();
-            }
-
-
             // ไม่ต้องทำงานระหว่างเมนู หรือไม่มี Player ยังไม่พร้อม
             if (_currentScene == "MainMenu" || _player == null)
                 return;
@@ -463,9 +457,8 @@ public void InitializeGame()
     {
         _isPaused = true;
         Time.timeScale = 0f;
-        Debug.Log("PauseGame CALLED");
-        UIManager.Instance?.ShowPauseMenu(true);
-        Debug.Log("[GameManager] Game Paused.");
+        _uiManager?.ShowPauseMenu(true);
+         Debug.Log("[GameManager] Game Paused.");
     }
 
     public void ResumeGame()
