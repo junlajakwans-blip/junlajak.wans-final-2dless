@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Linq;
+using System.Collections.Generic;
 
 public class PlayerManager : MonoBehaviour
 {
@@ -13,12 +15,24 @@ public class PlayerManager : MonoBehaviour
 
     private Transform _anchorP1;
     private Transform _anchorP2;
+    private List<Player> _players = new List<Player>();
 
     public Player Player1 { get; private set; }
     public Player Player2 { get; private set; }
 
+    public static PlayerManager Instance { get; private set; }
+
+
     private void Awake()
     {
+        if (Instance == null)
+            Instance = this;
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         // โหลด prefab จาก Resources (ถ้ายังไม่มีใน inspector)
         _healthBarPrefab = Resources.Load<HealthBarUI>("UI/Panel_HealthBar");
 
@@ -54,51 +68,33 @@ public class PlayerManager : MonoBehaviour
 
     private void SpawnPlayers()
     {
-        if (_spawnPointP1 == null)
+        int playerCount = GameModeManager.Instance.PlayerCount;
+
+        Transform[] spawnPoints = new Transform[]
         {
-            Debug.LogError("P1 spawn missing");
-            return;
-        }
+            _spawnPointP1,
+            _spawnPointP2
+        };
 
-        Player1 = Instantiate(_playerPrefab, _spawnPointP1.position, Quaternion.identity);
-        SetupPlayer(Player1, 1);
-
-        bool isTwoPlayer = false;
-
-        if (GameModeSelector.Instance != null)
+        for (int i = 0; i < playerCount; i++)
         {
-            var mode = GameModeSelector.Instance.CurrentMode;
-            isTwoPlayer = mode != GameModeManager.GameMode.Solo;
-        }
+            Transform spawn = spawnPoints[i];
 
-        if (isTwoPlayer)
-        {
-            if (_spawnPointP2 == null)
+            if (spawn == null)
             {
-                Debug.LogWarning("P2 spawn missing → ใช้ตำแหน่ง P1");
-                _spawnPointP2 = _spawnPointP1;
+                Debug.LogWarning($"Spawn {i} missing → ใช้ P1");
+                spawn = _spawnPointP1;
             }
 
-            Player2 = Instantiate(_playerPrefab, _spawnPointP2.position, Quaternion.identity);
-            SetupPlayer(Player2, 2);
+            var player = Instantiate(_playerPrefab, spawn.position, Quaternion.identity);
+            _players.Add(player);
+            SetupPlayer(player, i + 1);
+
+            if (i == 0) Player1 = player;
+            if (i == 1) Player2 = player;
         }
 
-        Debug.Log($"[PlayerManager] Mode: {GameModeSelector.Instance?.CurrentMode}, TwoPlayer: {isTwoPlayer}");
-
-        var mapGen = FindFirstObjectByType<MapGeneratorBase>();
-
-        if (mapGen != null)
-        {
-            mapGen.InitializeGenerators(Player1.transform);
-            mapGen.InitializePlatformGeneration();
-
-            Debug.Log("[PlayerManager] MapGenerator initialized");
-        }
-        else
-        {
-            Debug.LogError("MapGenerator NOT FOUND");
-        }
-    
+        Debug.Log($"[PlayerManager] Spawned {playerCount} players");
     }
 
 
@@ -121,7 +117,7 @@ public class PlayerManager : MonoBehaviour
             controller.SetPlayerID(id);
 
         string uiName = $"UI_HealthBar_P{id}";
-        Transform anchor = GameObject.Find(uiName)?.transform;
+        Transform anchor = (id == 1) ? _anchorP1 : _anchorP2;
 
         if (anchor == null)
         {
@@ -145,9 +141,11 @@ public class PlayerManager : MonoBehaviour
 
     public Player GetAlivePlayer()
     {
-        if (Player1 != null && !Player1.IsDead) return Player1;
-        if (Player2 != null && !Player2.IsDead) return Player2;
+        return _players.FirstOrDefault(p => p != null && !p.IsDead);
+    }
 
-        return null;
+    public List<Player> GetAllPlayers()
+    {
+        return _players;
     }
 }

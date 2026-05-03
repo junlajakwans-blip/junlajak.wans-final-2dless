@@ -10,19 +10,29 @@ public class GameModeManager : MonoBehaviour
         Competition
     }
 
+    private bool _isGameOver = false;
     private GameMode _currentMode = GameMode.Solo;
     public GameMode CurrentMode => _currentMode;
 
-    private void Start()
+    public static GameModeManager Instance { get; private set; }
+
+    private void Awake()
     {
-        //  ดึงค่าจาก UI Selector
+        if (Instance == null)
+            Instance = this;
+        else
+        {
+            Destroy(gameObject);
+            return; 
+        }
+
         if (GameModeSelector.Instance != null)
         {
             _currentMode = GameModeSelector.Instance.CurrentMode;
         }
-
         Debug.Log("[GameMode] Mode = " + _currentMode);
     }
+
 
     private void OnEnable()
     {
@@ -38,7 +48,7 @@ public class GameModeManager : MonoBehaviour
     {
         Debug.Log($"[GameMode] Player {deadPlayer.PlayerName} died");
 
-        var players = FindObjectsByType<Player>(FindObjectsSortMode.None);
+        var players = PlayerManager.Instance.GetAllPlayers();
         var alivePlayers = players.Where(p => !p.IsDead).ToList();
 
         switch (_currentMode)
@@ -92,14 +102,49 @@ public class GameModeManager : MonoBehaviour
 
     private void EndGame(string result)
     {
+        if (_isGameOver) return; // ถ้าเกมจบแสดงผลลัพธ์
+        _isGameOver = true; 
+
         Debug.Log($"[GameMode] GAME OVER → {result}");
 
-        //  ส่งไป UIManager
         if (UIManager.Instance != null)
-        {
             UIManager.Instance.ShowResultMenu();
-        }
 
         Time.timeScale = 0f; // หยุดเกม
+    }
+
+    public int PlayerCount
+    {
+        get
+        {
+            switch (_currentMode)
+            {
+                case GameMode.Solo:
+                    return 1;
+
+                case GameMode.Coop:
+                case GameMode.Competition:
+                    return 2;
+
+                default:
+                    return 1;
+            }
+        }
+    }
+
+    public bool AllowFriendlyFire
+    {
+        get
+        {
+            return _currentMode == GameMode.Competition;
+        }
+    }
+
+    public bool AllowRevive
+    {
+        get
+        {
+            return _currentMode == GameMode.Coop;
+        }
     }
 }
