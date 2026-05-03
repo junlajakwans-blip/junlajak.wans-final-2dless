@@ -9,8 +9,42 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private Transform _spawnPointP1;
     [SerializeField] private Transform _spawnPointP2;
 
+    [SerializeField] private HealthBarUI _healthBarPrefab;
+
+    private Transform _anchorP1;
+    private Transform _anchorP2;
+
     public Player Player1 { get; private set; }
     public Player Player2 { get; private set; }
+
+    private void Awake()
+    {
+        // โหลด prefab จาก Resources (ถ้ายังไม่มีใน inspector)
+        _healthBarPrefab = Resources.Load<HealthBarUI>("UI/Panel_HealthBar");
+
+        if (_healthBarPrefab == null)
+        {
+            Debug.LogError("Load prefab failed: Resources/UI/Panel_HealthBar");
+            return;
+        }
+
+        // หา Canvas และ Anchor สำหรับ UI
+        var canvasGO = GameObject.Find("Canvas_HUD");
+
+        if (canvasGO == null)
+        {
+            Debug.LogError("Canvas_HUD not found");
+            return;
+        }
+
+        var panel = canvasGO.transform.Find("Panel_HUD");
+
+        _anchorP1 = panel.Find("UI_HealthBar_P1");
+        _anchorP2 = panel.Find("UI_HealthBar_P2");
+
+        if (_anchorP1 == null || _anchorP2 == null)
+            Debug.LogError("Anchor not found");
+    }
 
     private void Start()
     {
@@ -84,11 +118,29 @@ public class PlayerManager : MonoBehaviour
     {
         var controller = player.GetComponent<PlayerController>();
         if (controller != null)
-        {
             controller.SetPlayerID(id);
+
+        string uiName = $"UI_HealthBar_P{id}";
+        Transform anchor = GameObject.Find(uiName)?.transform;
+
+        if (anchor == null)
+        {
+            Debug.LogError("Anchor NULL");
+            return;
         }
 
+        if (_healthBarPrefab == null)
+        {
+            Debug.LogError("HealthBar Prefab NULL");
+            return;
+        }
+
+        var ui = Instantiate(_healthBarPrefab, anchor);
+        ui.Setup(player);
+
         Debug.Log($"[PlayerManager] Spawned Player {id}");
+
+        Debug.Log($"Spawned UI for P{id}: " + (ui != null));
     }
 
     public Player GetAlivePlayer()

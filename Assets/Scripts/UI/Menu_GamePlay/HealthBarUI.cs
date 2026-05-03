@@ -4,7 +4,6 @@ using TMPro;
 
 public class HealthBarUI : MonoBehaviour
 {
-    #region Fields
     [Header("UI Components")]
     [SerializeField] private Image _healthBarFill;
     [SerializeField] private TextMeshProUGUI _healthText;
@@ -12,9 +11,22 @@ public class HealthBarUI : MonoBehaviour
     [Header("Runtime Values")]
     [SerializeField] private int _currentHealth;
     [SerializeField] private int _maxHealth;
-    #endregion
 
-    #region Public Methods
+    private Player _target; // reference to the player character
+
+    // เรียกตอน spawn
+    public void Setup(Player player)
+    {
+        _target = player;
+
+        // bind เข้าระบบเดิมของมึง
+        _target.SetHealthBarUI(this);
+
+        // init ครั้งแรก
+        InitializeHealth(_target.MaxHealth);
+        UpdateHealth(_target.CurrentHealth);
+    }
+
     public void InitializeHealth(int maxHP)
     {
         _maxHealth = maxHP;
@@ -35,12 +47,11 @@ public class HealthBarUI : MonoBehaviour
 
     public void AnimateDamageEffect()
     {
-        Debug.Log(" Damage effect animation triggered!");
+        Debug.Log("Damage effect animation triggered!");
     }
 
     public void AnimateHealEffect()
     {
-        Debug.Log(" Heal effect animation triggered!");
+        Debug.Log("Heal effect animation triggered!");
     }
-    #endregion
 }

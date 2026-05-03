@@ -1008,8 +1008,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 755c07c4346053b429c36b42050cff6b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraFollow
-  target1: {fileID: 0}
-  target2: {fileID: 0}
   smoothSpeed: 5
   offset: {x: 3, y: -0.17, z: -10}
 --- !u!1 &2093980295
@@ -1146,6 +1144,7 @@ MonoBehaviour:
   _playerPrefab: {fileID: 8952884402048639063, guid: 55870ec7ad28a074a82a753116ce2b0f, type: 3}
   _spawnPointP1: {fileID: 1671218607}
   _spawnPointP2: {fileID: 1711396943}
+  _healthBarPrefab: {fileID: 0}
 --- !u!4 &2100870835
 Transform:
   m_ObjectHideFlags: 0
