@@ -57,6 +57,12 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
 
     public static event System.Action<Player> OnAnyPlayerDied;
 
+    [RuntimeInitializeOnLoadMethod]
+    static void ResetStatics()
+    {
+        OnAnyPlayerDied = null;
+    }
+
     [Header("UI References")]
     [SerializeField] private HealthBarUI _healthBarUI;
     public event System.Action<int> OnCoinCollected;
