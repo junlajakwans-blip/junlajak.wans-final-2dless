@@ -638,6 +638,9 @@ public override void Move(Vector2 direction)
         GameManager.Instance.AddCoins(amount);
 
         Debug.Log($"Coin Added → {_currency?.Coin ?? 0}");
+        // Notify any UI or subscribers about this player's coin total (supports 2P UI hooks)
+        int totalCoins = _currency?.Coin ?? 0;
+        OnCoinCollected?.Invoke(totalCoins);
     }
 
     public void AddToken(int amount)

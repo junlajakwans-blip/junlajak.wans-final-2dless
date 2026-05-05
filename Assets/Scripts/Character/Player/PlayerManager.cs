@@ -124,6 +124,51 @@ public class PlayerManager : MonoBehaviour
         Debug.Log("MODE = " + GameModeManager.Instance.CurrentMode);
         Debug.Log("COUNT = " + GameModeManager.Instance.PlayerCount);
         
+        // If ScoreUI is available, ensure each player has its own ScoreUI instance (clone for P2 if needed)
+        if (UIManager.Instance != null && GameManager.Instance != null)
+        {
+            var scoreUI = UIManager.Instance.GetScoreUI();
+            int baseline = GameManager.Instance.GetCurrency() != null ? GameManager.Instance.GetCurrency().Coin : 0;
+            if (scoreUI != null)
+            {
+                // Default: use existing ScoreUI for P1
+                var scoreUI_P1 = scoreUI;
+                ScoreUI scoreUI_P2 = null;
+
+                // If we have two players, try to create/locate a P2 ScoreUI under Canvas_HUD
+                if (_players.Count >= 2)
+                {
+                    var canvasHUD = GameObject.Find("Canvas_HUD");
+                    if (canvasHUD != null)
+                    {
+                        var p2Transform = canvasHUD.transform.Find("ScoreUI_P2");
+                        if (p2Transform != null)
+                            scoreUI_P2 = p2Transform.GetComponent<ScoreUI>();
+                        else
+                        {
+                            var go = Instantiate(scoreUI.gameObject, canvasHUD.transform);
+                            go.name = "ScoreUI_P2";
+                            scoreUI_P2 = go.GetComponent<ScoreUI>();
+                            if (scoreUI_P2 != null)
+                                scoreUI_P2.SetPlayerNumber(2);
+                            Debug.Log("[PlayerManager] Spawned ScoreUI_P2 under Canvas_HUD. Position it in the scene as needed.");
+                        }
+                    }
+                }
+
+                // Ensure original scoreUI marks as Player 1
+                scoreUI_P1.SetPlayerNumber(1);
+
+                // Hook players: P1 -> scoreUI_P1, P2 -> scoreUI_P2 (fallback to P1 if P2 UI missing)
+                if (Player1 != null)
+                    Player1.HookScoreUI(scoreUI_P1, baseline);
+                if (Player2 != null)
+                    Player2.HookScoreUI(scoreUI_P2 ?? scoreUI_P1, baseline);
+
+                Debug.Log("[PlayerManager] Hooked ScoreUI to spawned players.");
+            }
+        }
+        
         
     }
 

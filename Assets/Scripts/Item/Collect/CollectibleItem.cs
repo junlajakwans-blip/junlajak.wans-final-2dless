@@ -68,11 +68,10 @@ public class CollectibleItem : MonoBehaviour, ICollectable
         // ตรวจสอบว่า Collider นี้ยังเปิดอยู่ (ป้องกันการชนซ้ำหากมี Magnet ด้วย)
         if (!GetComponent<Collider2D>().enabled) return; 
 
-        if (!other.CompareTag("Player")) return;
-
-        var player = other.GetComponent<Player>();
+        // Allow any collider that has a Player component (supports Player_1, Player_2 tags/prefabs)
+        var player = other.GetComponent<Player>() ?? other.GetComponentInParent<Player>();
         if (player == null) return;
-        
+
         // เรียก Collect() ทันทีที่ชน
         Collect(player);
     }

@@ -568,7 +568,30 @@ public class UIManager : MonoBehaviour
 
     public void UpdateCompetitionScores(int p1Score, int p2Score)
     {
-        _scoreUI?.UpdateCompetitionScores(p1Score, p2Score);
+        // Route scores to ScoreUI instances per player slot if present
+        var allScoreUIs = Object.FindObjectsOfType<ScoreUI>(true);
+        if (allScoreUIs != null && allScoreUIs.Length > 1)
+        {
+            // Multiple ScoreUI instances → route per player slot
+            foreach (var sui in allScoreUIs)
+            {
+                if (sui == null) continue;
+                if (sui.PlayerNumber == 1)
+                    sui.UpdateScore(p1Score);
+                else if (sui.PlayerNumber == 2)
+                    sui.UpdateScore(p2Score);
+            }
+        }
+        else if (allScoreUIs != null && allScoreUIs.Length == 1)
+        {
+            // Single ScoreUI instance → show combined competition display
+            allScoreUIs[0].UpdateCompetitionScores(p1Score, p2Score);
+        }
+        else
+        {
+            // No ScoreUI found → fallback to stored reference
+            _scoreUI?.UpdateCompetitionScores(p1Score, p2Score);
+        }
     }
 
     public void CloseAllMenus()

@@ -16,8 +16,20 @@ public class ScoreUI : MonoBehaviour
     [SerializeField] private int _savedHighScore; 
     [SerializeField] private int _currentCoins; 
     
+    [Header("Player Slot")]
+    [Tooltip("Which player this ScoreUI instance represents (1 = P1, 2 = P2).")]
+    [SerializeField] private int _playerNumber = 1;
+    
     // เปลี่ยนชื่อ Property สำหรับดึงค่า High Score ที่บันทึกไว้
     public int GetSavedHighScoreValue() => _savedHighScore;
+
+    // Expose player slot so other systems can target this UI
+    public int PlayerNumber => _playerNumber;
+
+    public void SetPlayerNumber(int num)
+    {
+        _playerNumber = num;
+    }
 
     #endregion
 
@@ -128,8 +140,15 @@ public class ScoreUI : MonoBehaviour
     /// </summary>
     public void UpdateCompetitionScores(int p1Score, int p2Score)
     {
-        if (_scoreText != null)
-            _scoreText.text = $"P1:{p1Score:D6}  P2:{p2Score:D6}";
+            if (_scoreText != null)
+            {
+                _scoreText.text = $"P1:{p1Score:D6}  P2:{p2Score:D6}";
+                Debug.Log($"[ScoreUI] UpdateCompetitionScores -> P1: {p1Score:D6} | P2: {p2Score:D6}");
+            }
+            else
+            {
+                Debug.LogWarning("[ScoreUI] _scoreText is NULL — cannot display competition scores.");
+            }
     }
 
     #endregion
