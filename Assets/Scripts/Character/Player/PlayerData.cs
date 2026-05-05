@@ -32,6 +32,21 @@ public class PlayerData
     public float AttackPower { get => _attackPower; set => _attackPower = value; }
     public int Defense { get => _defense; set => _defense = value; }
 
+    [SerializeField] private int _score;
+    public int Score => _score;
+
+    public void AddScore(int value)
+    {
+        _score += value;
+        Debug.Log($"[PlayerData] Score increased by {value}. Total Score: {_score}");
+    }
+
+    public void ResetScore()
+    {
+        _score = 0;
+    }
+
+
     public Currency Currency => _currency;
     public GameProgressData Progress => _progress;
     #endregion

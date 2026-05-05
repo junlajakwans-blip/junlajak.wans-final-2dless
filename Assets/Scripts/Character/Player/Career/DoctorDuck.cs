@@ -127,6 +127,22 @@ public class DoctorSkill : CareerSkillBase
         // Self-heal burst
         player.Heal(_healAmount * 2);
 
+        // Coop: revive dead ally
+        if (GameModeManager.Instance != null && GameModeManager.Instance.AllowRevive
+            && PlayerManager.Instance != null)
+        {
+            foreach (var ally in PlayerManager.Instance.GetAllPlayers())
+            {
+                if (ally != player && ally.IsDead)
+                {
+                    ally.transform.position = player.transform.position;
+                    int reviveHP = Mathf.RoundToInt(ally.MaxHealth * _reviveHealthPercent);
+                    ally.Revive(reviveHP);
+                    Debug.Log($"[DoctorSkill] Revived ally {ally.PlayerName} with {reviveHP} HP!");
+                }
+            }
+        }
+
         // Damage AOE
         Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, _healRadius);
         foreach (var hit in hits)

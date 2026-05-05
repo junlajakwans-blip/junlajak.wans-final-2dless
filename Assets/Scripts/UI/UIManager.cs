@@ -183,15 +183,11 @@ public class UIManager : MonoBehaviour
             _scoreUI.InitializeScore(0); // เริ่มคะแนนใหม่
         }
 
-        if (_healthBarUI != null && gm != null && gm.PlayerRef != null)
+        if (_healthBarUI != null && gm != null && gm.PlayerRef != null && !gm.PlayerRef.HasHealthBar)
         {
-            // 1. ส่ง Reference ของ Health Bar ไปให้ Player เพื่อให้ Player ใช้ Update ค่าได้
             gm.PlayerRef.SetHealthBarUI(_healthBarUI);
-            
-            // 2. ตั้งค่า Health Bar สูงสุดและค่าปัจจุบันตาม Player (MaxHealth = 500)
-            InitializeHealth(gm.PlayerRef.MaxHealth); 
+            InitializeHealth(gm.PlayerRef.MaxHealth);
             UpdateHealth(gm.PlayerRef.CurrentHealth);
-            
             Debug.Log($"[UIManager] Health Bar Initialized with Max HP: {gm.PlayerRef.MaxHealth}");
         }
 
@@ -537,22 +533,49 @@ public class UIManager : MonoBehaviour
     #region Menu UI During Gameplay
     public void ShowPauseMenu(bool isActive)
     {
+        var hud = Object.FindFirstObjectByType<MenuUI_HUD>();
+        if (hud != null)
+            hud.ShowPauseMenu(isActive);
         _menuUI?.ShowPauseMenu(isActive);
     }
 
     public void ShowResultMenu()
     {
-        //  ตรวจสอบ null ก่อนเรียก ShowFinalResult() (อาจเป็นสาเหตุของบั๊ก)
         if (_scoreUI != null)
         {
-            _scoreUI.ShowFinalResult();
+            bool isCompetition = GameModeManager.Instance != null
+                                 && GameModeManager.Instance.CurrentMode == GameModeManager.GameMode.Competition
+                                 && PlayerManager.Instance != null;
+            if (isCompetition)
+            {
+                int p1 = PlayerManager.Instance.Player1 != null && PlayerManager.Instance.Player1.Data != null
+                    ? PlayerManager.Instance.Player1.Data.Score : 0;
+                int p2 = PlayerManager.Instance.Player2 != null && PlayerManager.Instance.Player2.Data != null
+                    ? PlayerManager.Instance.Player2.Data.Score : 0;
+                _scoreUI.ShowCompetitionResult(p1, p2);
+            }
+            else
+            {
+                _scoreUI.ShowFinalResult();
+            }
         }
-        _menuUI?.ShowResultMenu();     // เปิด Panel หน้า Result
+
+        var hud = Object.FindFirstObjectByType<MenuUI_HUD>();
+        if (hud != null)
+            hud.ShowResultMenu();
+        _menuUI?.ShowResultMenu();
     }
 
+    public void UpdateCompetitionScores(int p1Score, int p2Score)
+    {
+        _scoreUI?.UpdateCompetitionScores(p1Score, p2Score);
+    }
 
     public void CloseAllMenus()
     {
+        var hud = Object.FindFirstObjectByType<MenuUI_HUD>();
+        if (hud != null)
+            hud.CloseAllPanels();
         _menuUI?.CloseAllPanels();
     }
 

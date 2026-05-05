@@ -44,6 +44,11 @@ public class GameModeSelector : MonoBehaviour
     {
         CurrentMode = mode;
 
+        if (GameModeManager.Instance != null)
+        {
+            GameModeManager.Instance.SetMode(mode);
+        }       
+
         Debug.Log($"[GameModeSelector] Selected: {mode}");
 
         // ไปหน้าเลือกแมพ

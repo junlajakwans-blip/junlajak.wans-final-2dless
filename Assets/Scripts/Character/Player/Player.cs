@@ -14,6 +14,7 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
 #region Fields
     [Header("Core Data")]
     [SerializeField] private PlayerData _playerData;
+    public PlayerData Data => _playerData;
     private CareerSwitcher _careerSwitcher;
     public DuckCareerData CurrentCareerData => _careerSwitcher?.CurrentCareer;
 
@@ -65,6 +66,7 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
 
     [Header("UI References")]
     [SerializeField] private HealthBarUI _healthBarUI;
+    public bool HasHealthBar => _healthBarUI != null;
     public event System.Action<int> OnCoinCollected;
     // Stored handler for ScoreUI so we can unsubscribe cleanly
     private System.Action<int> _scoreUIHandler;
@@ -79,6 +81,7 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     private Coroutine _speedRoutine;
     private WaitForSeconds _speedWait;
     private PlayerInteract _interact;
+    private Collider2D _collider;
 
     public CareerEffectProfile FXProfile => _fxProfile;
     public string PlayerName => _playerData != null ? _playerData.PlayerName : "Unknown";
@@ -182,8 +185,10 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
         _rigAnimator ??= GetComponent<CharacterRigAnimator>();
         if (_rigAnimator == null) Debug.LogError("[Player] ❌ CharacterRigAnimator component is missing!");
 
-        _interact = GetComponent<PlayerInteract>(); 
+        _interact = GetComponent<PlayerInteract>();
         if (_interact == null) Debug.LogError("[Player] ❌ PlayerInteract component is missing on Player or children!");
+
+        _collider = GetComponent<Collider2D>();
 
 
         // -----------------------------------------------------------------
@@ -199,22 +204,11 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
             _cardManager.Initialize(this);
 
         
-        if (UIManager.Instance != null)
+        if (_healthBarUI == null && UIManager.Instance != null)
         {
-            // UIManager.Instance is the DDoL Singleton holding HealthBarUI
             HealthBarUI healthBar = UIManager.Instance.GetPlayerHealthBarUI();
-            
-            // Use the existing SetHealthBarUI method to Inject Reference and Initialize Max HP
             if (healthBar != null)
-            {
-                // SetHealthBarUI will call healthBar.InitializeHealth(_maxHealth) again
-                // _maxHealth is already set by base.Initialize(finalMaxHealth)
                 SetHealthBarUI(healthBar);
-            }
-        }
-        else
-        {
-            Debug.LogWarning("[Player] ❌ UIManager Instance not found (DDoL not ready). Cannot set HealthBarUI.");
         }
 
         UpdatePlayerFormState();
@@ -419,24 +413,25 @@ public override void Move(Vector2 direction)
     /// </summary>
     protected virtual void DetectMap()
     {
-        var sceneManager = FindFirstObjectByType<SceneManager>();
+        // เริ่ม Coroutine เพื่อรอ SceneManager แทนการเช็คครั้งเดียวแล้วจบ
+        StartCoroutine(WaitAndDetectMapRoutine());
+    }
 
-        if (sceneManager != null && sceneManager.IsInitialized)
-        {
-            _currentMapType = sceneManager.GetCurrentMapType();
-            Debug.Log($"[{name}] detected map: {_currentMapType}");
-        }
-        else
-        {
-            Debug.LogWarning($"[{name}] SceneManager not found or not ready!");
-        }
+    private IEnumerator WaitAndDetectMapRoutine()
+    {
+        // รอจนกว่า SceneManager.Instance จะมีตัวตน และ Initialized เสร็จจริงๆ
+        yield return new WaitUntil(() => 
+            SceneManager.Instance != null && SceneManager.Instance.IsInitialized
+        );
+
+        _currentMapType = SceneManager.Instance.GetCurrentMapType();
+        Debug.Log($"[{name}] detected map: {_currentMapType} (Wait Success)");
     }
 
     /// <summary>
     /// Returns the cached current map type for subclasses (careers).
     /// </summary>
     protected MapType GetCurrentMapType() => _currentMapType;
-
     #endregion
 
 
@@ -502,7 +497,14 @@ public override void Move(Vector2 direction)
     {
         _isDead = false;
         _currentHealth = Mathf.Clamp(reviveHP, 1, _maxHealth);
-        // Update UI / animation if available
+
+        if (_collider != null) _collider.enabled = true;
+        _rigidbody.simulated = true;
+        if (_cardManager != null) _cardManager.enabled = true;
+        enabled = true;
+
+        if (_healthBarUI != null) _healthBarUI.UpdateHealth(_currentHealth);
+        Debug.Log($"[{PlayerName}] Revived with {reviveHP} HP!");
     }
 
 
@@ -530,11 +532,13 @@ public override void Move(Vector2 direction)
         }
 
         _isDead = true;
+        _currentHealth = 0;
+        if (_healthBarUI != null) _healthBarUI.UpdateHealth(0);
+
         OnAnyPlayerDied?.Invoke(this); // Notify GameModeManager and others about the death
 
         // 1) Disable own collider → Enemies stop attacking/colliding immediately
-        var coll = GetComponent<Collider2D>();
-        if (coll != null) coll.enabled = false;
+        if (_collider != null) _collider.enabled = false;
 
         // 2) Disable Rigidbody interaction → prevent excessive damage registration
     #if UNITY_2022_3_OR_NEWER
@@ -628,14 +632,12 @@ public override void Move(Vector2 direction)
 
     public void AddCoin(int amount)
     {
-        if (_currency == null) return;
+        if (amount <= 0) return;
 
-        _currency.AddCoin(amount);
-
-        // ยิงเข้า GameManager แทน
+        _currency?.AddCoin(amount);
         GameManager.Instance.AddCoins(amount);
 
-        Debug.Log($"Coin Added → {_currency.Coin}");
+        Debug.Log($"Coin Added → {_currency?.Coin ?? 0}");
     }
 
     public void AddToken(int amount)
@@ -645,6 +647,31 @@ public override void Move(Vector2 direction)
     }
 
     public Currency GetCurrency() => _currency;
+
+    #endregion
+
+    #region  Add score
+
+    public void AddScore(int amount)
+    {
+        if (amount <= 0) return;
+
+        _playerData?.AddScore(amount);
+        GameManager.Instance.AddScore(amount);
+
+        if (GameModeManager.Instance != null
+            && GameModeManager.Instance.CurrentMode == GameModeManager.GameMode.Competition
+            && PlayerManager.Instance != null)
+        {
+            var pm = PlayerManager.Instance;
+            int p1 = pm.Player1 != null && pm.Player1.Data != null ? pm.Player1.Data.Score : 0;
+            int p2 = pm.Player2 != null && pm.Player2.Data != null ? pm.Player2.Data.Score : 0;
+            if (UIManager.Instance != null)
+                UIManager.Instance.UpdateCompetitionScores(p1, p2);
+        }
+
+        Debug.Log($"Score Added → {amount}");
+    }
 
     #endregion
 

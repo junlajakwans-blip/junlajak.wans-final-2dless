@@ -70,7 +70,7 @@ public class PerformanceManager : MonoBehaviour
             
             UpdateFPS();
             UpdateMemoryUsage();
-            LogPerformanceData();
+            //LogPerformanceData();
             
             // Reset counters after logging
             _timeSinceLastUpdate = 0f;
@@ -130,19 +130,19 @@ public class PerformanceManager : MonoBehaviour
         return _collectibleSpawner != null ? _collectibleSpawner.GetSpawnCount() : 0;
     }
 
-    public void LogPerformanceData()
-    {
-        if (!_showDebugLog) return;
+    // public void LogPerformanceData()
+    // {
+    //     if (!_showDebugLog) return;
 
-        Debug.Log(
-            $"[Performance]\n" +
-            $"- FPS: {_currentFps:F1}\n" +
-            $"- Memory: {_memoryUsageMB:F2} MB\n" +
-            $"- Pooled Objects: {GetTotalPooledObjects()}\n" +
-            $"- Enemies: {GetActiveEnemyCount()}\n" +
-            $"- Collectibles: {GetActiveCollectibleCount()}"
-        );
-    }
+    //     Debug.Log(
+    //         $"[Performance]\n" +
+    //         $"- FPS: {_currentFps:F1}\n" +
+    //         $"- Memory: {_memoryUsageMB:F2} MB\n" +
+    //         $"- Pooled Objects: {GetTotalPooledObjects()}\n" +
+    //         $"- Enemies: {GetActiveEnemyCount()}\n" +
+    //         $"- Collectibles: {GetActiveCollectibleCount()}"
+    //     );
+    // }
 
     public void ToggleDebugLog(bool enable)
     {

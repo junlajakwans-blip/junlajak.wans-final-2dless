@@ -503,6 +503,7 @@ MonoBehaviour:
       _playTime: 241.97243
       GlobalHighScore: 0
     _isDefaultDuckling: 1
+    _score: 0
   _rigAnimator: {fileID: 0}
   _jumpForce: 8
   _fallDeathY: -5
@@ -528,7 +529,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   disableAnimation: 1
   _animator: {fileID: 0}
-  _playerID: 1
+  _playerID: 0
   _inputP1:
     left: 97
     right: 100

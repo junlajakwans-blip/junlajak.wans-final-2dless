@@ -11,8 +11,35 @@ public class MenuUI_HUD : MonoBehaviour
 
     private void Awake()
     {
-        // ❌ ไม่มี Singleton
-        // ❌ ไม่ DontDestroyOnLoad
+        if (_pausePanel == null || _resultPanel == null)
+            AutoFindPanels();
+    }
+
+    private void AutoFindPanels()
+    {
+        var canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (var canvas in canvases)
+        {
+            if (!canvas.gameObject.scene.isLoaded) continue;
+            if (canvas.gameObject.scene.name == "DontDestroyOnLoad") continue;
+            if (_pausePanel == null)
+                _pausePanel = FindInChildren(canvas.transform, "Panel_Pause");
+            if (_resultPanel == null)
+                _resultPanel = FindInChildren(canvas.transform, "Panel_Result");
+            if (_pausePanel != null && _resultPanel != null) break;
+        }
+        Debug.Log($"[MenuUI_HUD] AutoFind → Pause:{(_pausePanel != null ? "OK" : "NULL")} Result:{(_resultPanel != null ? "OK" : "NULL")}");
+    }
+
+    private GameObject FindInChildren(Transform parent, string name)
+    {
+        foreach (Transform child in parent)
+        {
+            if (child.name == name) return child.gameObject;
+            var found = FindInChildren(child, name);
+            if (found != null) return found;
+        }
+        return null;
     }
 
     public void ShowPauseMenu(bool isActive)

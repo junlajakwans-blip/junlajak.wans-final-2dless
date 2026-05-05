@@ -94,26 +94,42 @@ public class ScoreUI : MonoBehaviour
     }
 
     /// <summary>
-    ///  เมธอดหลักที่เรียกเมื่อจบรอบ
-    /// จะแสดงคะแนนสุดท้ายใน Result Text และตรวจสอบสถิติสูงสุดใหม่
+    ///  เมธอดหลักที่เรียกเมื่อจบรอบ (Solo / Coop)
     /// </summary>
     public void ShowFinalResult()
     {
         int finalScore = _currentScore;
-        
-        // 1. แสดงคะแนนสุดท้ายของรอบนั้น
-        UpdateFinalResultDisplay(finalScore); 
+        UpdateFinalResultDisplay(finalScore);
 
-        // 2. ตรวจสอบสถิติสูงสุดที่บันทึกไว้ (Global High Score)
         if (finalScore > _savedHighScore)
         {
             _savedHighScore = finalScore;
             if (SaveSystem.Instance != null)
-            {
                 SaveSystem.Instance.SetGlobalHighScore(_savedHighScore);
-            }
             Debug.Log($"NEW GLOBAL HIGH SCORE RECORD: {_savedHighScore}");
         }
+    }
+
+    /// <summary>
+    /// แสดงผลแบบ Competition (P1 vs P2)
+    /// </summary>
+    public void ShowCompetitionResult(int p1Score, int p2Score)
+    {
+        if (_finalResultScoreText == null) return;
+
+        string winner = p1Score > p2Score ? "P1 WIN!"
+                      : p2Score > p1Score ? "P2 WIN!"
+                      : "DRAW!";
+        _finalResultScoreText.text = $"P1: {p1Score:D6}\nP2: {p2Score:D6}\n{winner}";
+    }
+
+    /// <summary>
+    /// อัปเดต Score HUD แบบ Competition (ใช้ _scoreText เดิม แสดงทั้ง P1 และ P2)
+    /// </summary>
+    public void UpdateCompetitionScores(int p1Score, int p2Score)
+    {
+        if (_scoreText != null)
+            _scoreText.text = $"P1:{p1Score:D6}  P2:{p2Score:D6}";
     }
 
     #endregion

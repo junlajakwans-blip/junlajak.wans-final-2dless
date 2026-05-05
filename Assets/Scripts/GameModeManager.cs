@@ -13,17 +13,22 @@ public class GameModeManager : MonoBehaviour
     private bool _isGameOver = false;
     private GameMode _currentMode = GameMode.Solo;
     public GameMode CurrentMode => _currentMode;
+    
 
     public static GameModeManager Instance { get; private set; }
 
     private void Awake()
     {
         if (Instance == null)
+        {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+        }
         else
         {
             Destroy(gameObject);
-            return; 
+            return;
         }
 
         if (GameModeSelector.Instance != null)
@@ -31,6 +36,17 @@ public class GameModeManager : MonoBehaviour
             _currentMode = GameModeSelector.Instance.CurrentMode;
         }
         Debug.Log("[GameMode] Mode = " + _currentMode);
+    }
+
+    private void OnDestroy()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        if (scene.name != "MainMenu")
+            _isGameOver = false;
     }
 
 
@@ -98,19 +114,136 @@ public class GameModeManager : MonoBehaviour
         }
     }
 
+    public void HandleScoreEvent(Player actor, string eventType, int baseValue)
+    {
+        if (actor == null) return;
+
+        int final = baseValue;
+
+        switch (_currentMode)
+        {
+            case GameMode.Solo:
+                // ปกติ
+                break;
+
+            case GameMode.Coop:
+                // ตัวอย่าง: โบนัสทีมเล็กน้อย
+                final = Mathf.RoundToInt(baseValue * 1.1f);
+                break;
+
+            case GameMode.Competition:
+                // กันฟาร์มแปลกๆ / กติกาเฉพาะ PvP
+                if (actor.IsDead) return;
+                break;
+        }
+
+        actor.AddScore(final);
+        Debug.Log($"[ScoreEvent] {eventType} | Base: {baseValue} | Final: {final} | Player: {actor.PlayerName}");
+    }
+
+
     // ===== END GAME =====
 
     private void EndGame(string result)
     {
-        if (_isGameOver) return; // ถ้าเกมจบแสดงผลลัพธ์
-        _isGameOver = true; 
+        if (_isGameOver) return;
+        _isGameOver = true;
 
         Debug.Log($"[GameMode] GAME OVER → {result}");
+
+        SaveScore();
+
+        if (GameManager.Instance != null)
+            GameManager.Instance.SetGameOver();
 
         if (UIManager.Instance != null)
             UIManager.Instance.ShowResultMenu();
 
-        Time.timeScale = 0f; // หยุดเกม
+        Time.timeScale = 0f;
+    }
+
+    private void EvaluateResult()
+    {
+        var players = PlayerManager.Instance.GetAllPlayers();
+
+        switch (_currentMode)
+        {
+            case GameMode.Solo:
+                EndGame($"Score: {players[0].Data.Score}");
+                break;
+
+            case GameMode.Coop:
+                int team = players.Sum(p => p.Data.Score);
+                EndGame($"Team Score: {team}");
+                break;
+
+            case GameMode.Competition:
+                var p1 = players[0];
+                var p2 = players[1];
+
+                if (p1.Data.Score > p2.Data.Score)
+                    EndGame($"Winner: {p1.PlayerName}");
+                else if (p2.Data.Score > p1.Data.Score)
+                    EndGame($"Winner: {p2.PlayerName}");
+                else
+                    EndGame("Draw");
+                break;
+        }
+    }
+
+    private void SaveScore()
+    {
+        var players = PlayerManager.Instance.GetAllPlayers();
+
+        Debug.Log($"===== SAVE SCORE | MODE: {_currentMode} =====");
+
+        foreach (var p in players)
+        {
+            Debug.Log($"[Before Save] {p.PlayerName} | Score: {p.Data.Score}");
+        }
+
+        switch (_currentMode)
+        {
+            case GameMode.Solo:
+            {
+                int score = players[0].Data.Score;
+                players[0].Data.Progress.UpdateBestScore(score);
+
+                Debug.Log($"[Solo] Saved Score: {score}");
+                break;
+            }
+
+            case GameMode.Coop:
+            {
+                int teamScore = players.Sum(p => p.Data.Score);
+
+                Debug.Log($"[Coop] Team Score: {teamScore}");
+
+                foreach (var p in players)
+                {
+                    p.Data.Progress.UpdateBestScore(teamScore);
+                    Debug.Log($"[Coop] {p.PlayerName} Save: {teamScore}");
+                }
+                break;
+            }
+
+            case GameMode.Competition:
+            {
+                foreach (var p in players)
+                {
+                    p.Data.Progress.UpdateBestScore(p.Data.Score);
+                    Debug.Log($"[PvP] {p.PlayerName} Save: {p.Data.Score}");
+                }
+                break;
+            }
+        }
+
+        Debug.Log("===== SAVE COMPLETE =====");
+    }
+
+    public void SetMode(GameMode mode)
+    {
+        _currentMode = mode;
     }
 
     public int PlayerCount
@@ -147,4 +280,6 @@ public class GameModeManager : MonoBehaviour
             return _currentMode == GameMode.Coop;
         }
     }
+
+
 }

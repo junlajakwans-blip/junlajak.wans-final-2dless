@@ -40,6 +40,7 @@ public class MenuUI : MonoBehaviour
 
     public void ShowResultMenu()
     {
+        if (_resultPanel == null) return;
         _resultPanel.SetActive(true);
         _currentActivePanel = _resultPanel;
     }

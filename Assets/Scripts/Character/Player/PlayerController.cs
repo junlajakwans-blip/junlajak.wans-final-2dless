@@ -40,7 +40,6 @@ public class PlayerController : MonoBehaviour
         _player = GetComponent<Player>();
         _rigidbody = GetComponent<Rigidbody2D>();
         
-        SetPlayerID(_playerID);
 
         if (disableAnimation)
         {

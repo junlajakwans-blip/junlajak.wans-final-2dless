@@ -101,29 +101,13 @@ public class GameManager : MonoBehaviour
 
         private void Update()
         {
-            // ไม่ต้องทำงานระหว่างเมนู หรือไม่มี Player ยังไม่พร้อม
             if (_currentScene == "MainMenu" || _player == null)
                 return;
 
-            // ถ้า UI ยังไม่พร้อมหรือ ScoreUI ยังไม่มี → ไม่รันเพื่อตัด Null
-            if (_scoreUI == null)
-                return;
-
-            // หยุดเวลาระหว่าง Pause / เลือกการ์ด / GameOver
             if (_isPaused || _isGameOver || _isSelectingStarterCard)
                 return;
 
-            // เกมกำลังเล่น → กลไก Playtime Score
             _playTime += Time.deltaTime;
-
-            int score = Mathf.FloorToInt(_playTime);
-            //_scoreUI.UpdateScore(score);
-            _score = Mathf.FloorToInt(_playTime);
-
-            _uiManager?.UpdateScore(_score);
-
-            // อัปเดตค่า Debug ใน Inspector (เพื่อให้แท็บดูได้)
-            _score = score;
         }
 
         private void OnEnable()
@@ -146,12 +130,11 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void LoadGameLevel(string sceneName, MapType mapType)
     {
-        CurrentMapType = mapType; // Set map type BEFORE loading scene
-        
-        // Reset Gameplay Values immediately
+        CurrentMapType = mapType;
         _score = 0;
         _playTime = 0f;
         _isPaused = false;
+        _isGameOver = false;
         Time.timeScale = 1f;
 
         Debug.Log($"[GameManager] Loading Map: {sceneName} with Type: {mapType}");
@@ -259,7 +242,8 @@ public class GameManager : MonoBehaviour
 
         // 3. Bind UI Dependencies
         _uiManager.SetDependencies(this, _currencyData, _storeManager, GetStoreList());
-        _player.SetHealthBarUI(_uiManager.GetPlayerHealthBarUI());
+        if (!_player.HasHealthBar)
+            _player.SetHealthBarUI(_uiManager.GetPlayerHealthBarUI());
 
         // 4. Score system + UI
         _scoreUI = _uiManager.GetScoreUI();   // ดึง ScoreUI ตัวใหม่ทุกครั้ง
@@ -279,7 +263,6 @@ public class GameManager : MonoBehaviour
         }
 
         // 5. Scene inject to Map + Player system
-        sceneLogic.Inject(mapGen, _player);
         sceneLogic.TryInitializeScene();
 
         // 6. Career + CardManager Dependencies
@@ -304,10 +287,9 @@ public class GameManager : MonoBehaviour
       
         if (_player != null && _uiManager != null)
         {
-            // SetHealthBarUI จะทำให้ Player เรียก HealthBarUI.InitializeHealth(_maxHealth) อีกครั้ง
-            _player.SetHealthBarUI(_uiManager.GetPlayerHealthBarUI());
+            if (!_player.HasHealthBar)
+                _player.SetHealthBarUI(_uiManager.GetPlayerHealthBarUI());
             Debug.Log($"[GM DEBUG] Player's Max Health AFTER Initialize (Final Value): {_player.MaxHealth}");
-            Debug.Log("[GM] HealthBarUI re-synced with final Max HP.");
         }
 
 
@@ -433,6 +415,12 @@ public void InitializeGame()
 
 
     #region Game Flow
+    public void SetGameOver()
+    {
+        _isPaused = true;
+        _isGameOver = true;
+    }
+
     public void StartGame() //TODO: Implement start game logic
     {
         _isPaused = false;
@@ -532,6 +520,7 @@ public void InitializeGame()
         _score = 0;
         _playTime = 0f;
         _isPaused = false;
+        _isGameOver = false;
         LoadScene(_currentScene);
     }
 
