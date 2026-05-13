@@ -23,13 +23,11 @@ public class SingerSkill : CareerSkillBase
 
     private bool _isSkillActive;
     private bool _isCooldown;
-    private bool _mapBuffActive;
     private Coroutine _routine;
     private CareerSwitcher _switcherRef;
 
     public override void Initialize(Player player)
     {
-        _mapBuffActive = true;
 
         if (player.TryGetComponent(out _switcherRef))
         {
@@ -41,14 +39,12 @@ public class SingerSkill : CareerSkillBase
     private void HandleRevert()
     {
         // ถูกเรียกโดย CardManager / Switcher เมื่อกลับ Duckling
-        _mapBuffActive = false;
         _isSkillActive = false;
         _isCooldown = false;
     }
 
     public override void Cleanup(Player player)
     {
-        _mapBuffActive = false;
         _isSkillActive = false;
         _isCooldown = false;
 

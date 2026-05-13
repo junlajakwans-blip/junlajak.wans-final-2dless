@@ -22,7 +22,6 @@ using System.Collections.Generic;
 
 public class CameraFollow : MonoBehaviour
 {
-    [SerializeField] private float smoothSpeed = 5f;
     [SerializeField] private Vector3 offset = new Vector3(0f, 2f, -10f);
 
     private Vector3 velocity;

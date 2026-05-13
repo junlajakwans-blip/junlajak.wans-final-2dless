@@ -19,6 +19,9 @@ public class ScoreUI : MonoBehaviour
     [Header("Player Slot")]
     [Tooltip("Which player this ScoreUI instance represents (1 = P1, 2 = P2).")]
     [SerializeField] private int _playerNumber = 1;
+    [Header("Display Mode")]
+    [Tooltip("When true this ScoreUI will render the player's Score into the coin area (used for 2-player side displays).")]
+    [SerializeField] private bool _sideMode = false;
     
     // เปลี่ยนชื่อ Property สำหรับดึงค่า High Score ที่บันทึกไว้
     public int GetSavedHighScoreValue() => _savedHighScore;
@@ -31,9 +34,62 @@ public class ScoreUI : MonoBehaviour
         _playerNumber = num;
     }
 
+    /// <summary>
+    /// When enabled, Score text will be rendered to the coin area and the central score text will be hidden.
+    /// Used for per-player side displays in 2-player modes.
+    /// </summary>
+    public void SetSideMode(bool enabled)
+    {
+        _sideMode = enabled;
+        if (_scoreText != null)
+            _scoreText.gameObject.SetActive(!enabled);
+        if (_coinText != null)
+        {
+            if (enabled)
+            {
+                _coinText.gameObject.SetActive(true);
+                _coinText.color = new Color(_coinText.color.r, _coinText.color.g, _coinText.color.b, 1f);
+                _coinText.text = ""; // will be updated by UpdateScore when needed
+            }
+        }
+    }
+
+    /// <summary>
+    /// Debug helper: logs whether serialized Text references are assigned.
+    /// </summary>
+    public void DebugLogBindings()
+    {
+        Debug.Log($"[ScoreUI] {name} bindings -> _scoreText={( _scoreText != null ? _scoreText.name : "NULL")}, _coinText={( _coinText != null ? _coinText.name : "NULL")}, _finalResultScoreText={( _finalResultScoreText != null ? _finalResultScoreText.name : "NULL")}, sideMode={_sideMode}");
+    }
+
     #endregion
 
     #region Public Methods
+
+    [Header("Highlight")]
+    [SerializeField] private Color _highlightColor = new Color(1f, 0.85f, 0f, 1f);
+    [SerializeField] private float _highlightDuration = 0.8f;
+    private Coroutine _flashCoroutine;
+
+    private void StartFlash(TextMeshProUGUI target)
+    {
+        if (target == null) return;
+        // If the target or its GameObject is inactive, do not start coroutine — it will warn in Unity.
+        if (!target.gameObject.activeInHierarchy || !this.gameObject.activeInHierarchy)
+            return;
+
+        if (_flashCoroutine != null) StopCoroutine(_flashCoroutine);
+        _flashCoroutine = StartCoroutine(FlashText(target));
+    }
+
+    private System.Collections.IEnumerator FlashText(TextMeshProUGUI target)
+    {
+        var original = target.color;
+        target.color = _highlightColor;
+        yield return new WaitForSeconds(_highlightDuration);
+        try { target.color = original; } catch { }
+        _flashCoroutine = null;
+    }
 
     public void InitializeScore(int startScore)
     {
@@ -44,20 +100,68 @@ public class ScoreUI : MonoBehaviour
     /// <summary> Updates the main competitive score display (Distance/Time based). </summary>
     public void UpdateScore(int newScore)
     {
+        Debug.Log($"<color=cyan>[ScoreUI: {name}] UpdateScore({newScore}) | SideMode={_sideMode} | scoreText={(_scoreText != null)} | coinText={(_coinText != null)}</color>");
         _currentScore = newScore;
 
-        if (_scoreText != null)
-            _scoreText.text = $"Score: {_currentScore:D6}";  
+        if (_sideMode)
+        {
+            // Render score into coin area for side displays
+            if (_coinText != null)
+            {
+                // Ensure target text is visible
+                try
+                {
+                    if (!_coinText.gameObject.activeInHierarchy)
+                        _coinText.gameObject.SetActive(true);
+                    var c = _coinText.color;
+                    if (c.a <= 0f)
+                        _coinText.color = new Color(c.r, c.g, c.b, 1f);
+                }
+                catch { }
+
+                _coinText.text = $"{_currentScore}"; // shorter display for coin-area
+                StartFlash(_coinText);
+            }
+            else
+            {
+                // Fallback: write to central score text if coin text unavailable
+                if (_scoreText != null)
+                {
+                    _scoreText.gameObject.SetActive(true);
+                    _scoreText.text = $"Score: {_currentScore:D6}";
+                }
+            }
+        }
+        else
+        {
+                if (_scoreText != null)
+                {
+                    _scoreText.text = $"Score: {_currentScore:D6}";
+                    StartFlash(_scoreText);
+                }
+                else {
+                    Debug.LogWarning($"<color=red>[ScoreUI: {name}] ScoreText is NULL!</color>");
+                }
+        }
     }
 
     /// <summary> Updates the coin count display. </summary>
     public void UpdateCoins(int newCoins)
     {
+        Debug.Log($"<color=yellow>[ScoreUI: {name}] UpdateCoins({newCoins}) | SideMode={_sideMode}</color>");
+        // When in side mode, coins are replaced by score display — ignore coin updates
+        if (_sideMode) return;
+
         _currentCoins = newCoins;
         if (_coinText != null)
+        {
+            // Show only session-collected coins (starts at 0 each run)
             _coinText.text = $"Coins: {_currentCoins}";
-        Debug.Log($" Coin Remain : {_currentCoins} ");
-        Debug.Log("SCORE UI RECEIVED COIN UPDATE");
+            StartFlash(_coinText);
+        }
+        else {
+             Debug.LogWarning($"<color=red>[ScoreUI: {name}] CoinText is NULL!</color>");
+        }
     }
 
     public void ShowComboEffect(int comboValue)
@@ -144,11 +248,29 @@ public class ScoreUI : MonoBehaviour
             {
                 _scoreText.text = $"P1:{p1Score:D6}  P2:{p2Score:D6}";
                 Debug.Log($"[ScoreUI] UpdateCompetitionScores -> P1: {p1Score:D6} | P2: {p2Score:D6}");
+                StartFlash(_scoreText);
             }
             else
             {
                 Debug.LogWarning("[ScoreUI] _scoreText is NULL — cannot display competition scores.");
             }
+    }
+
+    /// <summary>
+    /// Debug helper: force enable both score and coin texts and reset alpha.
+    /// Use to diagnose visibility issues at runtime.
+    /// </summary>
+    public void ForceShowAll()
+    {
+        if (_scoreText != null)
+        {
+            try { _scoreText.gameObject.SetActive(true); _scoreText.color = new Color(_scoreText.color.r, _scoreText.color.g, _scoreText.color.b, 1f); } catch { }
+        }
+        if (_coinText != null)
+        {
+            try { _coinText.gameObject.SetActive(true); _coinText.color = new Color(_coinText.color.r, _coinText.color.g, _coinText.color.b, 1f); } catch { }
+        }
+        Debug.Log($"[ScoreUI] {name} ForceShowAll called — scoreText={( _scoreText != null ? "ok" : "NULL")}, coinText={( _coinText != null ? "ok" : "NULL")}");
     }
 
     #endregion

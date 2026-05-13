@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
 using TMPro;
@@ -178,6 +178,9 @@ public class UIManager : MonoBehaviour
 
         _mapSelectController?.SetDependencies(gm, currency);
 
+        // Try to bind ScoreUI from scene if not already assigned
+        TryBindScoreUI();
+
         if (_scoreUI != null)
         {
             _scoreUI.InitializeScore(0); // เริ่มคะแนนใหม่
@@ -199,11 +202,49 @@ public class UIManager : MonoBehaviour
         RefreshStoreUI();
     }
     
-    public ScoreUI GetScoreUI() => _scoreUI;
+    public ScoreUI GetScoreUI() {
+        if (_scoreUI == null) _scoreUI = Object.FindFirstObjectByType<ScoreUI>();
+        return _scoreUI;
+    }
     public HealthBarUI GetPlayerHealthBarUI()
     {
         // คืนค่า HealthBarUI ที่ถูก Serialize ไว้ใน UIManager
         return _healthBarUI; 
+    }
+
+    /// <summary>
+    /// Attempts to find and bind a ScoreUI in the loaded scene, preferring the Panel_Score hierarchy.
+    /// This searches inactive objects as well to support prebuilt HUD layouts.
+    /// </summary>
+    private void TryBindScoreUI()
+    {
+        if (_scoreUI != null) return;
+
+        // 1) Prefer ScoreUI under Panel_Score
+        var panelScore = FindInAllChildren<Transform>("Panel_Score");
+        if (panelScore != null)
+        {
+            var sui = panelScore.GetComponentInChildren<ScoreUI>(true);
+            if (sui != null)
+            {
+                _scoreUI = sui;
+                try { _scoreUI.SetPlayerNumber(1); } catch { }
+                Debug.Log("[UIManager] ScoreUI bound from Panel_Score.");
+                return;
+            }
+        }
+
+        // 2) Fallback: any ScoreUI in scene (inactive included)
+        var all = Resources.FindObjectsOfTypeAll<ScoreUI>();
+        if (all != null && all.Length > 0)
+        {
+            _scoreUI = all[0];
+            try { _scoreUI.SetPlayerNumber(1); } catch { }
+            Debug.Log("[UIManager] ScoreUI bound from scene fallback.");
+            return;
+        }
+
+        Debug.LogWarning("[UIManager] TryBindScoreUI: no ScoreUI found in scene.");
     }
 
     #endregion 
@@ -319,6 +360,9 @@ public class UIManager : MonoBehaviour
 
 
         Debug.Log("<color=yellow>[UIManager] AutoBindMainMenuUI finished ✔ (Captured all MainMenu UI)</color>");
+
+        // Ensure ScoreUI is bound as part of AutoBind
+        TryBindScoreUI();
 
         // Re-link dependencies if ref already exists
         if (_currencyRef != null)
@@ -569,7 +613,7 @@ public class UIManager : MonoBehaviour
     public void UpdateCompetitionScores(int p1Score, int p2Score)
     {
         // Route scores to ScoreUI instances per player slot if present
-        var allScoreUIs = Object.FindObjectsOfType<ScoreUI>(true);
+        var allScoreUIs = Object.FindObjectsByType<ScoreUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         if (allScoreUIs != null && allScoreUIs.Length > 1)
         {
             // Multiple ScoreUI instances → route per player slot
@@ -665,7 +709,14 @@ public class UIManager : MonoBehaviour
 
     public void UpdateScore(int newScore)
     {
-        _scoreUI?.UpdateScore(newScore);
+        if (_scoreUI == null) TryBindScoreUI();
+        if (_scoreUI != null)
+            _scoreUI.UpdateScore(newScore);
+        else {
+            // Fallback: search for ANY ScoreUI in hierarchy
+            var fallback = Object.FindFirstObjectByType<ScoreUI>();
+            fallback?.UpdateScore(newScore);
+        }
     }
 
     public void ShowComboEffect(int combo)

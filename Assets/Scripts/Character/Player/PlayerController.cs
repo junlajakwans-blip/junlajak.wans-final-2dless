@@ -33,6 +33,27 @@ public class PlayerController : MonoBehaviour
     {
         _playerID = id;
         _input = (_playerID == 1) ? _inputP1 : _inputP2;
+        // Ensure we always have an input config (avoid null from prefab missing values)
+        if (_input == null)
+        {
+            _input = new PlayerInputConfig();
+        }
+
+        // Fill sensible defaults when any binding is left as KeyCode.None
+        if (_input.left == KeyCode.None)
+            _input.left = (_playerID == 1) ? KeyCode.A : KeyCode.LeftArrow;
+        if (_input.right == KeyCode.None)
+            _input.right = (_playerID == 1) ? KeyCode.D : KeyCode.RightArrow;
+        if (_input.jump == KeyCode.None)
+            _input.jump = (_playerID == 1) ? KeyCode.Space : KeyCode.I;
+        if (_input.attack == KeyCode.None)
+            _input.attack = (_playerID == 1) ? KeyCode.W : KeyCode.UpArrow;
+        if (_input.skill == KeyCode.None)
+            _input.skill = (_playerID == 1) ? KeyCode.O : KeyCode.P;
+        if (_input.interact == KeyCode.None)
+            _input.interact = (_playerID == 1) ? KeyCode.E : KeyCode.K;
+
+        Debug.Log($"[PlayerController] Player{_playerID} input mapped: L={_input.left}, R={_input.right}, Jump={_input.jump}, Attack={_input.attack}, Skill={_input.skill}, Interact={_input.interact}");
     }
 
     private void Awake()

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using System.Linq;
 
 
 /// <summary>
@@ -18,7 +19,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] private string _currentScene;
     [SerializeField] private bool _isPaused;
     [SerializeField] private int _score;
-    [SerializeField] private float _playTime;
+    private float _playTime;
+    private float _startPosX;
+    private int _lastDistanceScore;
 
     [Header("References")]
     [SerializeField] private Player _player;
@@ -108,6 +111,59 @@ public class GameManager : MonoBehaviour
                 return;
 
             _playTime += Time.deltaTime;
+
+            // 🔥 NEW: Distance-based scoring
+            UpdateDistanceScore();
+        }
+
+        private void UpdateDistanceScore()
+        {
+            if (_player == null) return;
+
+            var players = PlayerManager.Instance != null ? PlayerManager.Instance.GetAllPlayers() : null;
+            bool isCompetition = GameModeManager.Instance != null && GameModeManager.Instance.CurrentMode == GameModeManager.GameMode.Competition;
+
+            if (isCompetition && players != null)
+            {
+                // 🔥 In Competition: Track each player individually
+                foreach (var p in players)
+                {
+                    if (p == null || p.Data == null) continue;
+                    
+                    float dist = p.transform.position.x - _startPosX; // Assuming same start for both
+                    int scoreAtDist = Mathf.Max(0, Mathf.FloorToInt(dist * 10));
+                    
+                    // We need a way to track last distance per player
+                    // For simplicity, let's use the delta compared to their current data score
+                    // But better to check if it's purely distance. 
+                    // Let's use a simple per-player check.
+                    if (scoreAtDist > p.LastDistanceScore)
+                    {
+                        int inc = scoreAtDist - p.LastDistanceScore;
+                        p.AddScore(inc); 
+                        p.LastDistanceScore = scoreAtDist;
+                    }
+                }
+            }
+            else
+            {
+                // In Solo/Coop: Track the furthest player for shared score
+                float currentX = _player.transform.position.x;
+                if (players != null && players.Count > 0)
+                {
+                    currentX = players.Max(p => p.transform.position.x);
+                }
+
+                float distance = currentX - _startPosX;
+                int distanceScore = Mathf.Max(0, Mathf.FloorToInt(distance * 10));
+
+                if (distanceScore > _lastDistanceScore)
+                {
+                    int increment = distanceScore - _lastDistanceScore;
+                    AddScore(increment);
+                    _lastDistanceScore = distanceScore;
+                }
+            }
         }
 
         private void OnEnable()
@@ -249,7 +305,9 @@ public class GameManager : MonoBehaviour
         _scoreUI = _uiManager.GetScoreUI();   // ดึง ScoreUI ตัวใหม่ทุกครั้ง
         _score = 0;                           // reset ตัวแปร score
         _playTime = 0f;                       // reset ตัวแปรเวลา
-        if (_scoreUI != null)
+        _startPosX = _player != null ? _player.transform.position.x : 0f;
+        _lastDistanceScore = 0;
+            if (_scoreUI != null)
         {
             _scoreUI.DisplaySavedHighScore(_persistentProgress.BestScore);
             _scoreUI.InitializeScore(0);
@@ -258,8 +316,19 @@ public class GameManager : MonoBehaviour
             //_scoreUI.UpdateScore(0);  
             Debug.Log($"[GM] ScoreUI forced refresh — Score=0");
             // Pass baseline (saved) total coins so ScoreUI will show only session-collected coins
-            _player.HookScoreUI(_scoreUI, _currencyData != null ? _currencyData.Coin : 0);
-            Debug.Log("[GM] ScoreUI initialized and linked.");
+            // If a PlayerManager exists, let it bind ScoreUI per-player to avoid single-player-only binding
+            if (PlayerManager.Instance == null)
+            {
+                if (_player != null)
+                {
+                    _player.HookScoreUI(_scoreUI, _currencyData != null ? _currencyData.Coin : 0);
+                    Debug.Log("[GM] ScoreUI initialized and linked (single-player fallback).");
+                }
+            }
+            else
+            {
+                Debug.Log("[GM] PlayerManager present — skipping direct ScoreUI hook. PlayerManager will bind per-player UI.");
+            }
         }
 
         // 5. Scene inject to Map + Player system
@@ -421,7 +490,7 @@ public void InitializeGame()
         _isGameOver = true;
     }
 
-    public void StartGame() //TODO: Implement start game logic
+    public void StartGame()
     {
         _isPaused = false;
         _playTime = 0f;
@@ -433,12 +502,12 @@ public void InitializeGame()
     public void TogglePause()
     {
         if (IsPaused && _uiManager != null && _uiManager.IsAnyMenuOpen()) 
-                {
-                    return;
-                }
+        {
+            return;
+        }
 
-                if (_isPaused) ResumeGame();
-                else PauseGame();
+        if (_isPaused) ResumeGame();
+        else PauseGame();
     }
 
     public void PauseGame()
@@ -536,15 +605,31 @@ public void InitializeGame()
     #endregion
 
     #region Score & Progress
-    public void AddScore(int amount)
-    {
-        if (amount <= 0) return;
+        public void AddScore(int amount)
+        {
+            if (amount <= 0) return;
 
-        _score += amount;
-        _uiManager?.UpdateScore(_score);
+            _score += amount;
 
-        Debug.Log($"[GameManager] Score +{amount} (Total: {_score})");
-    }
+            bool isCompetition = GameModeManager.Instance != null && GameModeManager.Instance.CurrentMode == GameModeManager.GameMode.Competition;
+
+            // 1. Update central UI (for Solo or general display)
+            if (GameModeManager.Instance == null || GameModeManager.Instance.PlayerCount == 1)
+                _uiManager?.UpdateScore(_score);
+
+            // 2. Broadcast to all players' bound UIs only in Solo/Coop
+            // In Competition, players handle their own per-player scores via player.AddScore()
+            if (!isCompetition && PlayerManager.Instance != null)
+            {
+                var players = PlayerManager.Instance.GetAllPlayers();
+                foreach (var p in players)
+                {
+                    if (p != null) p.UpdateBoundScoreUI(_score);
+                }
+            }
+
+            Debug.Log($"[GM] Score Added: {amount} | Total: {_score} | Mode: {(isCompetition ? "Competition" : "Shared")}");
+        }
 
     public void AddCoins(int amount)
     {
@@ -552,7 +637,9 @@ public void InitializeGame()
 
         _coins += amount;
 
-        _uiManager?.GetScoreUI()?.UpdateCoins(_coins);
+        // Only update central coin UI in single-player mode
+        if (GameModeManager.Instance == null || GameModeManager.Instance.PlayerCount == 1)
+            _uiManager?.GetScoreUI()?.UpdateCoins(_coins);
 
         Debug.Log($"[GameManager] Coins +{amount} (Total: {_coins})");
     }

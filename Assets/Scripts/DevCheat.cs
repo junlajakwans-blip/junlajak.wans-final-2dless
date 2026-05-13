@@ -96,8 +96,57 @@ public class DevCheat : MonoBehaviour
 
         if (Input.GetKeyDown(addScoreKey))
         {
-            _gmRef.AddScore(250);
-            Debug.Log("<color=yellow>[CHEAT]</color> +250 Score");
+            Debug.Log("[DevCheat] F6 pressed (addScoreKey)");
+
+            // Try preferred route: PlayerManager -> Player1
+            var pm = FindFirstObjectByType<PlayerManager>();
+            if (pm != null && pm.Player1 != null)
+            {
+                pm.Player1.AddScore(250);
+                Debug.Log("<color=yellow>[CHEAT]</color> +250 Score to Player1 (via PlayerManager)");
+                // Ensure UI reflects the change immediately
+                if (UIManager.Instance != null)
+                {
+                    var p1Score = pm.Player1 != null && pm.Player1.Data != null ? pm.Player1.Data.Score : 0;
+                    var p2Score = (pm.Player2 != null && pm.Player2.Data != null) ? pm.Player2.Data.Score : 0;
+                    UIManager.Instance.UpdateCompetitionScores(p1Score, p2Score);
+                }
+                return;
+            }
+
+            // Fallback: try any Player in scene
+            var anyPlayer = FindFirstObjectByType<Player>();
+            if (anyPlayer != null)
+            {
+                anyPlayer.AddScore(250);
+                Debug.Log("<color=yellow>[CHEAT]</color> +250 Score to first Player found");
+                if (UIManager.Instance != null)
+                {
+                    // Try to update per-player UI if available, otherwise force central score refresh
+                    var pmInst = PlayerManager.Instance;
+                    if (pmInst != null)
+                    {
+                        var p1 = pmInst.Player1 != null && pmInst.Player1.Data != null ? pmInst.Player1.Data.Score : 0;
+                        var p2 = pmInst.Player2 != null && pmInst.Player2.Data != null ? pmInst.Player2.Data.Score : 0;
+                        UIManager.Instance.UpdateCompetitionScores(p1, p2);
+                    }
+                    else
+                    {
+                        UIManager.Instance.UpdateScore(_gmRef != null ? _gmRef.Score : GameManager.Instance?.Score ?? 0);
+                    }
+                }
+                return;
+            }
+
+            // Last resort: global GameManager (may only update central UI)
+            if (_gmRef != null)
+            {
+                _gmRef.AddScore(250);
+                Debug.Log("<color=yellow>[CHEAT]</color> +250 Score (global GameManager fallback)");
+                // Force central UI refresh as last resort
+                if (UIManager.Instance != null)
+                    UIManager.Instance.UpdateScore(_gmRef.Score);
+            }
         }
 
         if (Input.GetKeyDown(resetSaveKey))

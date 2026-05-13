@@ -15,6 +15,7 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     [Header("Core Data")]
     [SerializeField] private PlayerData _playerData;
     public PlayerData Data => _playerData;
+    public int LastDistanceScore { get; set; }
     private CareerSwitcher _careerSwitcher;
     public DuckCareerData CurrentCareerData => _careerSwitcher?.CurrentCareer;
 
@@ -70,6 +71,8 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     public event System.Action<int> OnCoinCollected;
     // Stored handler for ScoreUI so we can unsubscribe cleanly
     private System.Action<int> _scoreUIHandler;
+    // Bound ScoreUI for this player (for score display)
+    private ScoreUI _boundScoreUI;
 
     [Header("Fx References")]
     [SerializeField] private CareerEffectProfile _fxProfile;
@@ -586,7 +589,7 @@ public override void Move(Vector2 direction)
         }
     #endregion
 
-    public void HookScoreUI(ScoreUI scoreUI, int initialCoin)
+    public void HookScoreUI(ScoreUI scoreUI, int initialCoin, int playerNumber = 1)
     {
         Debug.Log("[Player] HookScoreUI CALLED");
 
@@ -614,8 +617,14 @@ public override void Move(Vector2 direction)
 
         Debug.Log("[Player] AFTER HOOK delegate = " + OnCoinCollected);
 
+        // Store bound ScoreUI for score updates
+        _boundScoreUI = scoreUI;
+        try { _boundScoreUI?.SetPlayerNumber(playerNumber); } catch { }
+
         // Initialize UI with zero collected at start
         scoreUI.UpdateCoins(0);
+        // Immediately refresh score display so UI shows current score at bind time
+        try { scoreUI.UpdateScore(_playerData != null ? _playerData.Score : 0); } catch { }
     }
 
 
@@ -653,14 +662,69 @@ public override void Move(Vector2 direction)
 
     #endregion
 
-    #region  Add score
+    public void UpdateBoundScoreUI(int totalScore)
+    {
+        if (_boundScoreUI != null)
+        {
+            _boundScoreUI.UpdateScore(totalScore);
+        }
+    }
 
     public void AddScore(int amount)
     {
         if (amount <= 0) return;
 
         _playerData?.AddScore(amount);
+        
+        // 🔥 FIX: Update bound UI immediately whenever score changes
+        if (_boundScoreUI != null && _playerData != null)
+        {
+            _boundScoreUI.UpdateScore(_playerData.Score);
+        }
+
         GameManager.Instance.AddScore(amount);
+
+        Debug.Log($"[Player] AddScore called for {name} amount={amount} total={_playerData?.Score}");
+
+        // Debug: report whether ScoreUI is bound for this player
+        if (_boundScoreUI == null)
+        {
+            Debug.LogWarning($"[Player] {_playerData?.PlayerName ?? name} has no bound ScoreUI (_boundScoreUI is NULL)");
+        }
+        else
+        {
+            Debug.Log($"[Player] {_playerData?.PlayerName ?? name} bound ScoreUI = {_boundScoreUI.name}");
+            try { _boundScoreUI.DebugLogBindings(); } catch { }
+        }
+
+        // Update this player's own ScoreUI if bound (separate per-player display)
+        if (_playerData != null)
+        {
+            if (_boundScoreUI != null)
+            {
+                _boundScoreUI.UpdateScore(_playerData.Score);
+            }
+            else
+            {
+                Debug.LogWarning($"[Player] {_playerData.PlayerName ?? name} has no bound ScoreUI — attempting auto-bind via UIManager.");
+                var sui = UIManager.Instance != null ? UIManager.Instance.GetScoreUI() : null;
+                if (sui != null)
+                {
+                    try
+                    {
+                        // Use baseline coins from GameManager if available
+                        int baseline = GameManager.Instance != null && GameManager.Instance.GetCurrency() != null ? GameManager.Instance.GetCurrency().Coin : 0;
+                        HookScoreUI(sui, baseline, _playerData != null ? (_playerData.PlayerName != null ? 1 : 1) : 1);
+                        Debug.Log($"[Player] Auto-bound ScoreUI '{sui.name}' to {name} and updating.");
+                        sui.UpdateScore(_playerData.Score);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"[Player] Auto-bind ScoreUI failed: {ex.Message}");
+                    }
+                }
+            }
+        }
 
         if (GameModeManager.Instance != null
             && GameModeManager.Instance.CurrentMode == GameModeManager.GameMode.Competition
@@ -669,6 +733,7 @@ public override void Move(Vector2 direction)
             var pm = PlayerManager.Instance;
             int p1 = pm.Player1 != null && pm.Player1.Data != null ? pm.Player1.Data.Score : 0;
             int p2 = pm.Player2 != null && pm.Player2.Data != null ? pm.Player2.Data.Score : 0;
+            Debug.Log($"[Player] Competition scores calculated P1={p1} P2={p2} | UIManager present={(UIManager.Instance!=null)}");
             if (UIManager.Instance != null)
                 UIManager.Instance.UpdateCompetitionScores(p1, p2);
         }
@@ -676,7 +741,8 @@ public override void Move(Vector2 direction)
         Debug.Log($"Score Added → {amount}");
     }
 
-    #endregion
+
+
 
 
     #region Combat System (IAttackable, ISkillUser)
