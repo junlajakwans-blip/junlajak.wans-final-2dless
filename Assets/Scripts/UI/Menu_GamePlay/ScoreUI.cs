@@ -62,6 +62,34 @@ public class ScoreUI : MonoBehaviour
         Debug.Log($"[ScoreUI] {name} bindings -> _scoreText={( _scoreText != null ? _scoreText.name : "NULL")}, _coinText={( _coinText != null ? _coinText.name : "NULL")}, _finalResultScoreText={( _finalResultScoreText != null ? _finalResultScoreText.name : "NULL")}, sideMode={_sideMode}");
     }
 
+    /// <summary>
+    /// Fine-tune the X positions of HUD elements for specific layout requirements.
+    /// </summary>
+    public void SetPositions(float scoreX, float coinImgX, float coinTextX)
+    {
+        if (_scoreText != null)
+        {
+            var rt = _scoreText.GetComponent<RectTransform>();
+            if (rt != null) rt.anchoredPosition = new Vector2(scoreX, rt.anchoredPosition.y);
+        }
+
+        if (_coinText != null)
+        {
+            var rt = _coinText.GetComponent<RectTransform>();
+            if (rt != null) rt.anchoredPosition = new Vector2(coinTextX, rt.anchoredPosition.y);
+        }
+
+        // Search for the coin icon (could be named Image_Coin, Icon, or similar)
+        Transform icon = transform.Find("Image_Coin") ?? transform.Find("Icon") ?? transform.Find("CoinImage") ?? transform.Find("Coin_Icon");
+        if (icon == null) icon = GetComponentInChildren<UnityEngine.UI.Image>()?.transform;
+
+        if (icon != null)
+        {
+            var rt = icon.GetComponent<RectTransform>();
+            if (rt != null) rt.anchoredPosition = new Vector2(coinImgX, rt.anchoredPosition.y);
+        }
+    }
+
     #endregion
 
     #region Public Methods

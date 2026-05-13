@@ -272,11 +272,14 @@ public class PlayerManager : MonoBehaviour
                 // If we didn't anchor to healthbars, fall back to coin-area side-mode behaviour
                 if (!anchoredPerHealthbar && _players.Count >= 2)
                 {
-                    scoreUI_P1.SetSideMode(true);
-                    try { scoreUI_P1.ForceShowAll(); } catch { }
+                    if (scoreUI_P1 != null)
+                    {
+                        scoreUI_P1.SetSideMode(false);
+                        try { scoreUI_P1.ForceShowAll(); } catch { }
+                    }
                     if (scoreUI_P2 != null)
                     {
-                        scoreUI_P2.SetSideMode(true);
+                        scoreUI_P2.SetSideMode(false);
                         try { scoreUI_P2.ForceShowAll(); } catch { }
                     }
                 }
@@ -317,85 +320,53 @@ public class PlayerManager : MonoBehaviour
                             if (coinP2 == coinP1) coinP2 = null;
                         }
 
-                        // Re-parent scoreUI_P1 to coinP1 parent and match position
-                        if (coinP1 != null && scoreUI_P1 != null)
+                        // 🔥 NEW: Anchor ScoreUI directly to HealthBar anchors
+                        // 🔥 Disable the original/default HUD panel so it doesn't show as a 3rd HUD
+                        if (panelScore != null) panelScore.gameObject.SetActive(false);
+
+                        // 🔥 NEW: Anchor ScoreUI directly to HealthBar anchors
+                        if (scoreUI_P1 != null && _anchorP1 != null)
                         {
-                            var rtSrc = scoreUI_P1.GetComponent<RectTransform>();
-                            var rtDst = coinP1.GetComponent<RectTransform>();
-                            if (rtDst != null && rtSrc != null)
+                            scoreUI_P1.transform.SetParent(_anchorP1, false);
+                            var rt1 = scoreUI_P1.GetComponent<RectTransform>();
+                            if (rt1 != null)
                             {
-                                scoreUI_P1.transform.SetParent(rtDst.parent, false);
-                                rtSrc.anchoredPosition = rtDst.anchoredPosition;
-                                ClampToParent(rtSrc);
+                                rt1.anchorMin = new Vector2(0, 0);
+                                rt1.anchorMax = new Vector2(0, 0);
+                                rt1.pivot = new Vector2(0.5f, 1);
+                                rt1.anchoredPosition = new Vector2(-200, -60f); // Move down
                             }
-                            else
-                            {
-                                scoreUI_P1.transform.SetParent(coinP1.parent, false);
-                                scoreUI_P1.transform.localPosition = coinP1.localPosition;
-                            }
+                            scoreUI_P1.SetPositions(-511.8f, -800.5f, -300.4f);
                         }
 
-                        // For P2, if specific placeholder found use it, otherwise place near coinP1 with offset
-                        if (scoreUI_P2 != null)
+                        if (scoreUI_P2 != null && _anchorP2 != null)
                         {
-                            if (coinP2 != null)
+                            scoreUI_P2.transform.SetParent(_anchorP2, false);
+                            var rt2 = scoreUI_P2.GetComponent<RectTransform>();
+                            if (rt2 != null)
                             {
-                                var rtSrc2 = scoreUI_P2.GetComponent<RectTransform>();
-                                var rtDst2 = coinP2.GetComponent<RectTransform>();
-                                if (rtDst2 != null && rtSrc2 != null)
-                                {
-                                    scoreUI_P2.transform.SetParent(rtDst2.parent, false);
-                                    rtSrc2.anchoredPosition = rtDst2.anchoredPosition;
-                                    ClampToParent(rtSrc2);
-                                }
-                                else
-                                {
-                                    scoreUI_P2.transform.SetParent(coinP2.parent, false);
-                                    scoreUI_P2.transform.localPosition = coinP2.localPosition;
-                                }
+                                // Adjust anchor/pivot for P2 to keep it from falling off the right edge
+                                rt2.anchorMin = new Vector2(1, 0);
+                                rt2.anchorMax = new Vector2(1, 0);
+                                rt2.pivot = new Vector2(1, 1);
+                                rt2.anchoredPosition = new Vector2(-800f, -60f); // ขยับมาทางซ้าย 300
                             }
-                            else if (coinP1 != null)
-                            {
-                                // place P2 beside P1 coin placeholder (use P1 rect as reference)
-                                var rtP1 = scoreUI_P1.GetComponent<RectTransform>();
-                                var rtP2 = scoreUI_P2.GetComponent<RectTransform>();
-                                if (rtP1 != null && rtP2 != null)
-                                {
-                                    // parent P2 to same parent as P1 so anchored positions are comparable
-                                    scoreUI_P2.transform.SetParent(rtP1.parent, false);
-                                    // try place to the right; if overflow, place to left
-                                    rtP2.anchoredPosition = rtP1.anchoredPosition + new Vector2(120f, 0f);
-                                    ClampToParent(rtP2);
-                                    // if still outside bounds (clamped to same pos), try left side
-                                    if (Mathf.Approximately(rtP2.anchoredPosition.x, rtP1.anchoredPosition.x))
-                                    {
-                                        rtP2.anchoredPosition = rtP1.anchoredPosition + new Vector2(-120f, 0f);
-                                        ClampToParent(rtP2);
-                                    }
-                                }
-                                else if (rtP1 != null)
-                                {
-                                    scoreUI_P2.transform.SetParent(rtP1.parent, false);
-                                    scoreUI_P2.transform.localPosition = scoreUI_P1.transform.localPosition + new Vector3(120f, 0f, 0f);
-                                    var rtTmp = scoreUI_P2.GetComponent<RectTransform>();
-                                    ClampToParent(rtTmp);
-                                }
-                                else
-                                {
-                                    scoreUI_P2.transform.localPosition = scoreUI_P1.transform.localPosition + new Vector3(120f, 0f, 0f);
-                                    var rtTmp2 = scoreUI_P2.GetComponent<RectTransform>();
-                                    ClampToParent(rtTmp2);
-                                }
-                            }
+                            scoreUI_P2.SetPositions(-87.1f, -45.7f, 107.5f);
                         }
                     }
                 }
 
                 // Hook players: P1 -> scoreUI_P1, P2 -> scoreUI_P2 (fallback to P1 if P2 UI missing)
                 if (Player1 != null)
-                    Player1.HookScoreUI(scoreUI_P1, baseline, 1);
+                {
+                    int baselineP1 = Player1.Data?.Currency?.Coin ?? 0;
+                    Player1.HookScoreUI(scoreUI_P1, baselineP1, 1);
+                }
                 if (Player2 != null)
-                    Player2.HookScoreUI(scoreUI_P2 ?? scoreUI_P1, baseline, 2);
+                {
+                    int baselineP2 = Player2.Data?.Currency?.Coin ?? 0;
+                    Player2.HookScoreUI(scoreUI_P2 ?? scoreUI_P1, baselineP2, 2);
+                }
 
                 Debug.Log("[PlayerManager] Hooked ScoreUI to spawned players.");
             
