@@ -644,6 +644,25 @@ public void InitializeGame()
         Debug.Log($"[GameManager] Coins +{amount} (Total: {_coins})");
     }
 
+    public PlayerData GetPlayer1Data()
+    {
+        PlayerData data = new PlayerData(_currencyData, _persistentProgress);
+        int hpBonus = _upgradeStore != null ? _upgradeStore.GetTotalHPBonus() : 0;
+        data.UpgradeStat("MaxHealth", hpBonus);
+        return data;
+    }
+
+    public PlayerData GetPlayer2Data()
+    {
+        // For now, P2 uses the same base data (shared currency/progress in non-persistent modes)
+        // Or you could create a fresh one if you want P2 to always start fresh
+        PlayerData data = new PlayerData(new Currency(), new GameProgressData());
+        // Still give them the HP bonus if applicable
+        int hpBonus = _upgradeStore != null ? _upgradeStore.GetTotalHPBonus() : 0;
+        data.UpgradeStat("MaxHealth", hpBonus);
+        return data;
+    }
+
     public float GetPlayTime() => _playTime;
 
     public void SaveProgress() 

@@ -85,6 +85,7 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     private WaitForSeconds _speedWait;
     private PlayerInteract _interact;
     private Collider2D _collider;
+    private int _playerID = 1;
 
     public CareerEffectProfile FXProfile => _fxProfile;
     public string PlayerName => _playerData != null ? _playerData.PlayerName : "Unknown";
@@ -122,6 +123,29 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
     }
 
     #region Initialization
+    public void SetupPlayer(int id, PlayerData data)
+    {
+        _playerID = id;
+        _playerData = data;
+        
+        // Ensure controller is synced
+        var controller = GetComponent<PlayerController>();
+        if (controller != null) controller.SetPlayerID(id);
+
+        // Auto-inherit FX from P1 if missing (common for P2 clones)
+        if (id == 2 && _fxProfile == null)
+        {
+            var p1 = PlayerManager.Instance?.Player1 != null ? PlayerManager.Instance.Player1.GetComponent<Player>() : null;
+            if (p1 != null && p1.FXProfile != null)
+            {
+                _fxProfile = p1.FXProfile;
+                Debug.Log("[Player] P2 inherited FXProfile from P1");
+            }
+        }
+
+        Initialize(_playerData, GetComponent<CardManager>(), GetComponent<CareerSwitcher>());
+    }
+
     public void Initialize(PlayerData data, CardManager cardManager, CareerSwitcher careerSwitcher)
     {
         gameObject.SetActive(true);

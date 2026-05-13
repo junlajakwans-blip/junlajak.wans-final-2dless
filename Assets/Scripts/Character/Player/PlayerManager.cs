@@ -444,6 +444,13 @@ public class PlayerManager : MonoBehaviour
 
     private void SetupPlayer(Player player, int id)
     {
+        // 0. Setup Player Data & ID (Crucial for score/duckling/FX logic)
+        PlayerData data = (id == 1) 
+            ? (GameManager.Instance != null ? GameManager.Instance.GetPlayer1Data() : null)
+            : (GameManager.Instance != null ? GameManager.Instance.GetPlayer2Data() : null);
+            
+        player.SetupPlayer(id, data);
+
         // 1. ตั้งค่า PlayerID ให้ Controller
         var controller = player.GetComponent<PlayerController>();
         if (controller != null)

@@ -100,67 +100,41 @@ public class ScoreUI : MonoBehaviour
     /// <summary> Updates the main competitive score display (Distance/Time based). </summary>
     public void UpdateScore(int newScore)
     {
-        Debug.Log($"<color=cyan>[ScoreUI: {name}] UpdateScore({newScore}) | SideMode={_sideMode} | scoreText={(_scoreText != null)} | coinText={(_coinText != null)}</color>");
         _currentScore = newScore;
-
-        if (_sideMode)
-        {
-            // Render score into coin area for side displays
-            if (_coinText != null)
-            {
-                // Ensure target text is visible
-                try
-                {
-                    if (!_coinText.gameObject.activeInHierarchy)
-                        _coinText.gameObject.SetActive(true);
-                    var c = _coinText.color;
-                    if (c.a <= 0f)
-                        _coinText.color = new Color(c.r, c.g, c.b, 1f);
-                }
-                catch { }
-
-                _coinText.text = $"{_currentScore}"; // shorter display for coin-area
-                StartFlash(_coinText);
-            }
-            else
-            {
-                // Fallback: write to central score text if coin text unavailable
-                if (_scoreText != null)
-                {
-                    _scoreText.gameObject.SetActive(true);
-                    _scoreText.text = $"Score: {_currentScore:D6}";
-                }
-            }
-        }
-        else
-        {
-                if (_scoreText != null)
-                {
-                    _scoreText.text = $"Score: {_currentScore:D6}";
-                    StartFlash(_scoreText);
-                }
-                else {
-                    Debug.LogWarning($"<color=red>[ScoreUI: {name}] ScoreText is NULL!</color>");
-                }
-        }
+        RefreshDisplay();
     }
 
     /// <summary> Updates the coin count display. </summary>
     public void UpdateCoins(int newCoins)
     {
-        Debug.Log($"<color=yellow>[ScoreUI: {name}] UpdateCoins({newCoins}) | SideMode={_sideMode}</color>");
-        // When in side mode, coins are replaced by score display — ignore coin updates
-        if (_sideMode) return;
-
         _currentCoins = newCoins;
-        if (_coinText != null)
+        RefreshDisplay();
+    }
+
+    private void RefreshDisplay()
+    {
+        if (_sideMode)
         {
-            // Show only session-collected coins (starts at 0 each run)
-            _coinText.text = $"Coins: {_currentCoins}";
-            StartFlash(_coinText);
+            if (_coinText != null)
+            {
+                // 🔥 Display BOTH Score and Coins in the side area
+                _coinText.text = $"S:{_currentScore}\nC:{_currentCoins}";
+                _coinText.gameObject.SetActive(true);
+                StartFlash(_coinText);
+            }
         }
-        else {
-             Debug.LogWarning($"<color=red>[ScoreUI: {name}] CoinText is NULL!</color>");
+        else
+        {
+            if (_scoreText != null)
+            {
+                _scoreText.text = $"Score: {_currentScore:D6}";
+                StartFlash(_scoreText);
+            }
+            if (_coinText != null)
+            {
+                _coinText.text = $"Coins: {_currentCoins}";
+                StartFlash(_coinText);
+            }
         }
     }
 
