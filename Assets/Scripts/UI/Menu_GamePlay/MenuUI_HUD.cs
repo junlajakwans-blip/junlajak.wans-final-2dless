@@ -17,18 +17,53 @@ public class MenuUI_HUD : MonoBehaviour
 
     private void AutoFindPanels()
     {
+        // Search in all loaded canvases
         var canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         foreach (var canvas in canvases)
         {
-            if (!canvas.gameObject.scene.isLoaded) continue;
-            if (canvas.gameObject.scene.name == "DontDestroyOnLoad") continue;
+            // Priority: Find in scene canvases first
             if (_pausePanel == null)
-                _pausePanel = FindInChildren(canvas.transform, "Panel_Pause");
+            {
+                _pausePanel = FindInChildren(canvas.transform, "Panel_Menu_Pause");
+                if (_pausePanel == null) _pausePanel = FindInChildren(canvas.transform, "Panel_Pause");
+            }
+            
             if (_resultPanel == null)
+            {
                 _resultPanel = FindInChildren(canvas.transform, "Panel_Result");
+            }
+
             if (_pausePanel != null && _resultPanel != null) break;
         }
-        Debug.Log($"[MenuUI_HUD] AutoFind → Pause:{(_pausePanel != null ? "OK" : "NULL")} Result:{(_resultPanel != null ? "OK" : "NULL")}");
+
+        // Fallback: If still not found, search by Name globally
+        if (_pausePanel == null)
+        {
+             _pausePanel = SearchGlobal("Panel_Menu_Pause") ?? SearchGlobal("Panel_Pause");
+        }
+        
+        if (_resultPanel == null)
+        {
+             _resultPanel = SearchGlobal("Panel_Result");
+        }
+
+        Debug.Log($"[MenuUI_HUD] AutoFind Result -> Pause:{(_pausePanel != null ? _pausePanel.name : "MISSING")} | Result:{(_resultPanel != null ? _resultPanel.name : "MISSING")}");
+        
+        if (_pausePanel != null) _pausePanel.SetActive(false);
+        if (_resultPanel != null) _resultPanel.SetActive(false);
+    }
+
+    private GameObject SearchGlobal(string name)
+    {
+        var allTransforms = Resources.FindObjectsOfTypeAll<Transform>();
+        foreach (var t in allTransforms)
+        {
+            if (t.name == name && (t.gameObject.scene.isLoaded || t.gameObject.scene.name == "DontDestroyOnLoad"))
+            {
+                return t.gameObject;
+            }
+        }
+        return null;
     }
 
     private GameObject FindInChildren(Transform parent, string name)

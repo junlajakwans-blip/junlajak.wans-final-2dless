@@ -17,6 +17,8 @@ public class AICommandBridge : MonoBehaviour
     private static string lastStatus = "Idle";
     private static Color statusColor = Color.green;
 
+    private bool showGUI = false;
+
     void Awake()
     {
         DontDestroyOnLoad(this.gameObject);
@@ -26,6 +28,12 @@ public class AICommandBridge : MonoBehaviour
     void Update()
     {
         while (mainThreadActions.TryDequeue(out Action action)) { action.Invoke(); }
+
+        // Toggle visibility with '*' key (matches DevCheat)
+        if (Input.GetKeyDown(KeyCode.KeypadMultiply) || (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.Alpha8)))
+        {
+            showGUI = !showGUI;
+        }
     }
 
     void OnDestroy()
@@ -35,6 +43,8 @@ public class AICommandBridge : MonoBehaviour
 
     void OnGUI()
     {
+        if (!showGUI) return;
+
         GUIStyle style = new GUIStyle(GUI.skin.box);
         style.fontSize = 14;
         style.normal.textColor = Color.white;

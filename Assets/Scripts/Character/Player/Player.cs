@@ -143,7 +143,11 @@ public class Player : Character, IDamageable, IAttackable, ISkillUser
             }
         }
 
-        Initialize(_playerData, GetComponent<CardManager>(), GetComponent<CareerSwitcher>());
+        // IMPROVED: Search for global managers if not on the player object itself (injection fallback)
+        var cardManager = GetComponent<CardManager>() ?? FindFirstObjectByType<CardManager>();
+        var careerSwitcher = GetComponent<CareerSwitcher>() ?? FindFirstObjectByType<CareerSwitcher>();
+
+        Initialize(_playerData, cardManager, careerSwitcher);
     }
 
     public void Initialize(PlayerData data, CardManager cardManager, CareerSwitcher careerSwitcher)
@@ -560,9 +564,8 @@ public override void Move(Vector2 direction)
 
         _isDead = true;
         _currentHealth = 0;
-        if (_healthBarUI != null) _healthBarUI.UpdateHealth(0);
-
-        OnAnyPlayerDied?.Invoke(this); // Notify GameModeManager and others about the death
+        // Notify GameModeManager and others about the death
+        OnAnyPlayerDied?.Invoke(this); 
 
         // 1) Disable own collider → Enemies stop attacking/colliding immediately
         if (_collider != null) _collider.enabled = false;
@@ -581,19 +584,47 @@ public override void Move(Vector2 direction)
 
         this.enabled = false; // Disable Player.cs update for the entire class
 
-        if (_animator != null)
-            _animator.SetTrigger("Die");
+        if (_rigAnimator != null)
+            _rigAnimator.SetTrigger("Die");
 
-        Debug.Log("[Player] Player died.");
+        Debug.Log($"[Player] {PlayerName} died. Event subscribers: {(OnAnyPlayerDied != null ? OnAnyPlayerDied.GetInvocationList().Length : 0)}");
 
-        //StartCoroutine(HandleGameOver()); // GameManager will handle game over logic based on the current game mode
+        // Fallback: Start HandleGameOver to ensure result screen appears even if GameModeManager is missing
+        StartCoroutine(HandleGameOver()); 
     }
 
-    /*private IEnumerator HandleGameOver()
+    private IEnumerator HandleGameOver()
     {
-        yield return new WaitForSeconds(2f);
-        GameManager.Instance.EndGame(); // or LoadScene("GameOver")
-    }*/ // Moved to GameModeManager to handle different game modes
+        // Wait a moment for death animation/effects (using Realtime in case timeScale is already 0)
+        yield return new WaitForSecondsRealtime(1.5f);
+        
+        // 🔥 COOP Support: Check if anyone else is still alive
+        if (PlayerManager.Instance != null)
+        {
+            var players = PlayerManager.Instance.GetAllPlayers();
+            int aliveCount = 0;
+            foreach (var p in players)
+            {
+                if (p != null && !p.IsDead) aliveCount++;
+            }
+
+            if (aliveCount > 0)
+            {
+                Debug.Log($"[Player] {aliveCount} players still alive. Staying in game.");
+                yield break;
+            }
+        }
+
+        if (GameManager.Instance != null)
+        {
+            Debug.Log("[Player] HandleGameOver: No players alive. Calling GameManager.EndGame() fallback.");
+            GameManager.Instance.EndGame();
+        }
+        else
+        {
+            Debug.LogWarning("[Player] HandleGameOver: GameManager.Instance is NULL!");
+        }
+    } // Moved to GameModeManager to handle different game modes
 
     public DuckCareer GetCurrentCareerID()
     {

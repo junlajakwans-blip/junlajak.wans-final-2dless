@@ -146,18 +146,32 @@ public class GameModeManager : MonoBehaviour
 
     private void EndGame(string result)
     {
-        if (_isGameOver) return;
+        if (_isGameOver)
+        {
+            Debug.Log($"[GameMode] EndGame already called. Ignoring: {result}");
+            return;
+        }
         _isGameOver = true;
 
-        Debug.Log($"[GameMode] GAME OVER → {result}");
+        Debug.Log($"[GameMode] ★★★ GAME OVER TRIGGERED ★★★ Result: {result}");
 
         SaveScore();
 
         if (GameManager.Instance != null)
+        {
+            Debug.Log("[GameMode] Telling GameManager to set game over state.");
             GameManager.Instance.SetGameOver();
+        }
 
         if (UIManager.Instance != null)
+        {
+            Debug.Log("[GameMode] Telling UIManager to show Result Menu.");
             UIManager.Instance.ShowResultMenu();
+        }
+        else
+        {
+            Debug.LogError("[GameMode] UIManager.Instance is MISSING during EndGame!");
+        }
 
         Time.timeScale = 0f;
     }

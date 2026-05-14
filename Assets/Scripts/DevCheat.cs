@@ -45,9 +45,24 @@ public class DevCheat : MonoBehaviour
         Debug.Log("[DevCheat] Dependencies initialized.");
     }
 
+    private void Start()
+    {
+        // Hide cheat panel by default for presentation
+        if (cheatPanel != null)
+            cheatPanel.SetActive(false);
+    }
+
     private void Update()
     {
         if (!cheatEnabled) return;
+
+        // Toggle cheat panel visibility with '*' key (Keypad or Alpha8)
+        if (Input.GetKeyDown(KeyCode.KeypadMultiply) || (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.Alpha8)))
+        {
+            if (cheatPanel != null)
+                cheatPanel.SetActive(!cheatPanel.activeSelf);
+        }
+
         if (_gmRef == null || _currencyRef == null) return; // ป้องกันตอนเกมยังโหลดไม่เสร็จ
 
         // เติมระบบ UI หากโหลด Scene ใหม่
@@ -155,8 +170,7 @@ public class DevCheat : MonoBehaviour
             Debug.Log("<color=red>[CHEAT] ALL SAVE DATA RESET</color>");
         }
 
-        if (Input.GetKeyDown(KeyCode.Y) && cheatPanel != null)
-            cheatPanel.SetActive(!cheatPanel.activeSelf);
+
 
         if (Input.GetKeyDown(addRandomCardKey))
         {

@@ -257,10 +257,17 @@ public class PlayerController : MonoBehaviour
 
     private void TogglePauseGame()
     {
-        bool isPaused = Time.timeScale == 0;
-        Time.timeScale = isPaused ? 1 : 0;
-
-        Debug.Log(isPaused ? "[Game] Resumed" : "[Game] Paused");
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.TogglePause();
+        }
+        else
+        {
+            // Fallback if GameManager is missing
+            bool isPaused = Time.timeScale == 0;
+            Time.timeScale = isPaused ? 1 : 0;
+            Debug.Log(isPaused ? "[Game] Resumed (Fallback)" : "[Game] Paused (Fallback)");
+        }
     }
 
     #endregion

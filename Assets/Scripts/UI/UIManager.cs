@@ -577,16 +577,41 @@ public class UIManager : MonoBehaviour
     #region Menu UI During Gameplay
     public void ShowPauseMenu(bool isActive)
     {
+        Debug.Log($"[UIManager] ShowPauseMenu({isActive})");
+        
+        // 1. Try to find the HUD-specific menu controller first
         var hud = Object.FindFirstObjectByType<MenuUI_HUD>();
         if (hud != null)
+        {
             hud.ShowPauseMenu(isActive);
-        _menuUI?.ShowPauseMenu(isActive);
+            // If we found a HUD menu, we usually don't want to show the persistent MenuUI pause panel
+            // unless they are both intended to show something (rare).
+            // But to be safe, we'll only call _menuUI if hud didn't handle it or if it's explicitly needed.
+        }
+        
+        // 2. Call persistent MenuUI as fallback or secondary
+        if (_menuUI != null)
+        {
+            _menuUI.ShowPauseMenu(isActive);
+        }
     }
 
     public void ShowResultMenu()
     {
+        Debug.Log("[UIManager] ShowResultMenu requested.");
+
+        // 1. Ensure ScoreUI is bound so we can update the final score text
+        if (_scoreUI == null) TryBindScoreUI();
+
         if (_scoreUI != null)
         {
+            // Sync latest SESSION score and coins from GameManager before showing final result
+            if (GameManager.Instance != null)
+            {
+                _scoreUI.UpdateScore(GameManager.Instance.SessionScore);
+                _scoreUI.UpdateCoins(GameManager.Instance.SessionCoins);
+            }
+
             bool isCompetition = GameModeManager.Instance != null
                                  && GameModeManager.Instance.CurrentMode == GameModeManager.GameMode.Competition
                                  && PlayerManager.Instance != null;
@@ -603,11 +628,38 @@ public class UIManager : MonoBehaviour
                 _scoreUI.ShowFinalResult();
             }
         }
+        else
+        {
+            Debug.LogWarning("[UIManager] ShowResultMenu: No ScoreUI found to update results.");
+        }
 
+        // 2. Show the actual UI panels
         var hud = Object.FindFirstObjectByType<MenuUI_HUD>();
         if (hud != null)
+        {
             hud.ShowResultMenu();
-        _menuUI?.ShowResultMenu();
+        }
+        
+        if (_menuUI != null)
+        {
+            _menuUI.ShowResultMenu();
+        }
+
+        // 3. FINAL FALLBACK: If nothing happened, search for Panel_Result and activate it directly
+        if ((hud == null || !hud.IsAnyPanelActive()) && (_menuUI == null || !_menuUI.IsAnyPanelActive()))
+        {
+            Debug.Log("[UIManager] Aggressive search for Result/Pause panels...");
+            
+            // Try to find Result Panel
+            var resultPanel = FindInAllChildren<Transform>("Panel_Result");
+            if (resultPanel != null)
+            {
+                resultPanel.gameObject.SetActive(true);
+                Debug.Log("[UIManager] Panel_Result activated directly via Fallback.");
+            }
+            
+            // Try to find Pause Panel (if needed, though this is ShowResultMenu)
+        }
     }
 
     public void UpdateCompetitionScores(int p1Score, int p2Score)

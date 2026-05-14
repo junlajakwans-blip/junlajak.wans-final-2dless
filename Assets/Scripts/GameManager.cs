@@ -22,6 +22,12 @@ public class GameManager : MonoBehaviour
     private float _playTime;
     private float _startPosX;
     private int _lastDistanceScore;
+    
+    // 🔥 Session-specific tracking (resets each run)
+    private int _sessionScore;
+    private int _sessionCoins;
+    public int SessionScore => _sessionScore;
+    public int SessionCoins => _sessionCoins;
 
     [Header("References")]
     [SerializeField] private Player _player;
@@ -375,6 +381,13 @@ public class GameManager : MonoBehaviour
         var throwableSpawner = FindFirstObjectByType<ThrowableSpawner>();
         if (throwableSpawner != null && _player != null)
         {
+            // Ensure spawner is initialized (pool created) before spawning
+            if (!throwableSpawner.CanInteract) 
+            {
+                var enemySpawner = FindFirstObjectByType<EnemySpawner>();
+                throwableSpawner.Initialize(_player.transform, enemySpawner);
+            }
+
             Vector3 pos = _player.transform.position;
             pos.x += 1.8f;
             throwableSpawner.SpawnAtPosition(pos);
@@ -501,13 +514,22 @@ public void InitializeGame()
 
     public void TogglePause()
     {
-        if (IsPaused && _uiManager != null && _uiManager.IsAnyMenuOpen()) 
-        {
-            return;
-        }
+        Debug.Log($"[GameManager] TogglePause called. Current State: _isPaused={_isPaused}, TimeScale={Time.timeScale}");
 
-        if (_isPaused) ResumeGame();
-        else PauseGame();
+        if (_isPaused) 
+        {
+            ResumeGame();
+        }
+        else 
+        {
+            // Only block pausing if a "hard" menu (Store/Settings) is open
+            if (_uiManager != null && _uiManager.IsAnyMenuOpen())
+            {
+                Debug.Log("[GameManager] Pause blocked because a Persistent Menu (Store/Settings) is open.");
+                return;
+            }
+            PauseGame();
+        }
     }
 
     public void PauseGame()
@@ -605,43 +627,46 @@ public void InitializeGame()
     #endregion
 
     #region Score & Progress
-        public void AddScore(int amount)
+    public void AddScore(int amount)
+    {
+        if (amount <= 0) return;
+
+        _score += amount;
+        _sessionScore += amount; // Track session-specific score
+
+        bool isCompetition = GameModeManager.Instance != null && GameModeManager.Instance.CurrentMode == GameModeManager.GameMode.Competition;
+
+        // 1. Update central UI (for Solo or general display)
+        if (GameModeManager.Instance == null || GameModeManager.Instance.PlayerCount == 1)
+            _uiManager?.UpdateScore(_sessionScore); // Show session score on UI
+
+        // 2. Broadcast to all players' bound UIs only in Solo/Coop
+        if (!isCompetition && PlayerManager.Instance != null)
         {
-            if (amount <= 0) return;
-
-            _score += amount;
-
-            bool isCompetition = GameModeManager.Instance != null && GameModeManager.Instance.CurrentMode == GameModeManager.GameMode.Competition;
-
-            // 1. Update central UI (for Solo or general display)
-            if (GameModeManager.Instance == null || GameModeManager.Instance.PlayerCount == 1)
-                _uiManager?.UpdateScore(_score);
-
-            // 2. Broadcast to all players' bound UIs only in Solo/Coop
-            // In Competition, players handle their own per-player scores via player.AddScore()
-            if (!isCompetition && PlayerManager.Instance != null)
+            var players = PlayerManager.Instance.GetAllPlayers();
+            foreach (var p in players)
             {
-                var players = PlayerManager.Instance.GetAllPlayers();
-                foreach (var p in players)
-                {
-                    if (p != null) p.UpdateBoundScoreUI(_score);
-                }
+                if (p != null) p.UpdateBoundScoreUI(_sessionScore);
             }
-
-            Debug.Log($"[GM] Score Added: {amount} | Total: {_score} | Mode: {(isCompetition ? "Competition" : "Shared")}");
         }
+
+        Debug.Log($"[GM] Score Added: {amount} | Session: {_sessionScore} | Total (Saved): {_score} | Mode: {(isCompetition ? "Competition" : "Shared")}");
+    }
 
     public void AddCoins(int amount)
     {
         if (amount <= 0) return;
 
-        _coins += amount;
+        _sessionCoins += amount; // Track session-specific coins
+        
+        if (_currencyData != null)
+            _currencyData.Coin += amount; // Add to global currency
 
         // Only update central coin UI in single-player mode
         if (GameModeManager.Instance == null || GameModeManager.Instance.PlayerCount == 1)
-            _uiManager?.GetScoreUI()?.UpdateCoins(_coins);
+            _uiManager?.GetScoreUI()?.UpdateCoins(_sessionCoins);
 
-        Debug.Log($"[GameManager] Coins +{amount} (Total: {_coins})");
+        Debug.Log($"[GameManager] Coins +{amount} (Session: {_sessionCoins})");
     }
 
     public PlayerData GetPlayer1Data()
